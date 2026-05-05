@@ -28,11 +28,14 @@ ls specs/ | sort | tail -1  # find next number
 
 ## Installing Skills
 
-The `skills/` directory contains Claude Code skills for the SDK team. Install them with:
+The `skills/` directory contains Claude Code skills for the SDK team. Install without cloning the repo:
 
 ```bash
-./scripts/install-skills.sh           # install all skills
-./scripts/install-skills.sh sdk-spec  # install a specific skill
+# install all skills
+curl -fsSL https://raw.githubusercontent.com/supabase/sdk/main/scripts/install-skills.sh | bash
+
+# install a specific skill
+curl -fsSL https://raw.githubusercontent.com/supabase/sdk/main/scripts/install-skills.sh | bash -s sdk-spec
 ```
 
 Skills are copied to `~/.claude/skills/`. Restart Claude Code after installing.
