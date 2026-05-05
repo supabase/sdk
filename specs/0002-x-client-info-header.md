@@ -2,7 +2,7 @@
 
 | Field      | Value                                               |
 | ---------- | --------------------------------------------------- |
-| Version    | 0.2.1                                               |
+| Version    | 0.2.2                                               |
 | Status     | Draft                                               |
 | Date       | 2026-04-28                                          |
 | Authors    | Supabase SDK Team                                   |
@@ -46,7 +46,7 @@ The key words "MUST", "MUST NOT", "SHOULD", "SHOULD NOT", and "MAY" in this docu
 
 **R2.1** The header value MUST begin with a library token of the form `name/version`, where `name` is the lowercase hyphenated library name and `version` is a [semver](https://semver.org) string.
 
-**R2.2** Parameters MUST be appended after the library token, each separated from the preceding token or parameter by the two-character sequence `; ` (semicolon followed by a single space).
+**R2.2** When parameters are present, each MUST be separated from the preceding token or parameter by the two-character sequence `; ` (semicolon followed by a single space).
 
 **R2.3** Each parameter MUST be of the form `key=value`, where `key` is a lowercase hyphenated ASCII string and `value` is a string containing no semicolons.
 
@@ -181,7 +181,7 @@ Client library on a known platform includes the platform parameter.
 Platform is known but its version cannot be determined.
 
 **Stimulus**: Client runs in an environment where the OS version is not accessible.
-**Expected**: `X-Client-Info` includes `platform=<value>` and omits `platform-version` entirely. No empty or placeholder value appears.
+**Expected**: `X-Client-Info` includes a `platform` parameter whose value is drawn from the defined table in R3.1 (e.g. `platform=Linux`) and omits `platform-version` entirely. No empty or placeholder value appears.
 
 #### `runtime-included`
 Client library on a known runtime includes runtime and runtime-version parameters.
@@ -232,3 +232,4 @@ Client library cannot determine which framework is in use.
 | 0.1.0   | 2026-04-28 | Initial draft |
 | 0.2.0   | 2026-04-28 | R2.5: parameter order is not mandated. Added R3.5–R3.6 for `framework` and `framework-version`; former R3.5 (omission rule) renumbered to R3.7 |
 | 0.2.1   | 2026-04-28 | Added `framework` to Definitions. Removed out-of-scope parser normative text from R2.5. Added rationale entries for R3.1 and R3.2 nested SHOULDs. Regrouped scenarios; fixed `standalone-sub-client` and `framework-detected` wording; added `platform-included` and `runtime-included` scenarios |
+| 0.2.2   | 2026-04-28 | R2.2: clarified that separator requirement is conditional on parameters being present. `missing-platform-version` scenario: replaced `<value>` placeholder with concrete wording referencing R3.1 table |
