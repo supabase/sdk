@@ -249,6 +249,38 @@ Track every version that changed observable behavior.
 
 ---
 
+## Implementation Status Table
+
+`README.md` contains a single matrix table showing which SDKs have implemented each spec. It is the source of truth for implementation status — not the spec files themselves.
+
+### Table format
+
+```markdown
+| Spec | JavaScript | Python | Swift | Flutter | Kotlin | C# | Go |
+|------|:----------:|:------:|:-----:|:-------:|:------:|:--:|:--:|
+| [0001 — PostgREST Automatic Retry](specs/0001-postgrest-retry.md) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+
+**Legend**: ✅ Implemented &nbsp;·&nbsp; 🚧 In Progress &nbsp;·&nbsp; ⬜ Not Started &nbsp;·&nbsp; ➖ N/A
+```
+
+### Status values
+
+| Symbol | Meaning |
+| ------ | ------- |
+| ✅ | Implemented — shipped in a release, conformance tests pass |
+| 🚧 | In Progress — work has started but is not yet shipped |
+| ⬜ | Not Started — no work begun |
+| ➖ | N/A — the behavior does not apply to this SDK |
+
+### Rules
+
+- Columns are fixed to the eight SDKs above. Do not add or remove columns without updating all existing rows.
+- Every spec row MUST appear in the table. Add the row when creating a new spec (all cells start as ⬜).
+- Update the relevant cell whenever an SDK ships or begins work on an implementation.
+- The legend block MUST remain directly below the table.
+
+---
+
 ## Creating a New Spec
 
 1. Find the next number: `ls specs/ | sort | tail -1`. Start at `0001` if the directory is empty.
@@ -259,6 +291,7 @@ Track every version that changed observable behavior.
 6. Add one scenario per distinct behavioral claim in Requirements
 7. Write a Rationale entry for every `SHOULD`, non-obvious limit, or explicit exclusion
 8. Add the initial changelog entry
+9. Add a row to the implementation status table in `README.md` with all cells set to ⬜
 
 ---
 
