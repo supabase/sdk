@@ -12,9 +12,11 @@ scripts/     # Tooling for SDK team members
 
 ## Specs
 
-| # | Topic | Status |
-|---|-------|--------|
-| [0001](specs/0001-postgrest-retry.md) | PostgREST — Automatic Retry | Draft |
+| Spec | JavaScript | Python | Swift | Flutter | Kotlin | C# | Go |
+|------|:----------:|:------:|:-----:|:-------:|:------:|:--:|:--:|
+| [0001 — PostgREST Automatic Retry](specs/0001-postgrest-retry.md) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+
+**Legend**: ✅ Implemented &nbsp;·&nbsp; 🚧 In Progress &nbsp;·&nbsp; ⬜ Not Started &nbsp;·&nbsp; ➖ N/A
 
 ## Writing a Spec
 
