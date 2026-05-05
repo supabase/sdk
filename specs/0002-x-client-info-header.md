@@ -2,7 +2,7 @@
 
 | Field      | Value                                               |
 | ---------- | --------------------------------------------------- |
-| Version    | 0.2.0                                               |
+| Version    | 0.2.1                                               |
 | Status     | Draft                                               |
 | Date       | 2026-04-28                                          |
 | Authors    | Supabase SDK Team                                   |
@@ -26,8 +26,9 @@ The key words "MUST", "MUST NOT", "SHOULD", "SHOULD NOT", and "MAY" in this docu
 | **sub-client** | A constituent library shipped inside or alongside a client library that makes its own HTTP requests (e.g. auth-js, postgrest-js). |
 | **library token** | The `name/version` string that identifies the client library or sub-client. |
 | **parameter** | A `key=value` pair appended to the header value after the library token. |
-| **runtime** | The language runtime or execution environment in which the client library runs (e.g. `swift`, `node`, `python`). |
-| **platform** | The operating system or host environment (e.g. `iOS`, `macOS`, `Android`, `Linux`). |
+| **platform** | The operating system or host environment in which the client library runs (e.g. `iOS`, `macOS`, `Android`, `Linux`). |
+| **runtime** | The language runtime or execution environment in which the client library executes (e.g. `swift`, `node`, `python`). |
+| **framework** | An application framework detected in the host environment that wraps or extends the runtime (e.g. `next`, `flutter`, `expo`). |
 
 ---
 
@@ -61,7 +62,7 @@ key           = 1*( ALPHA / DIGIT / "-" )
 value         = *( %x20-3A / %x3C-7E )   ; printable ASCII except ";"
 ```
 
-**R2.5** Parameters MAY appear in any order after the library token. Parsers MUST NOT rely on parameters appearing in a particular position; they MUST locate a parameter by its key.
+**R2.5** Parameters MAY appear in any order after the library token.
 
 **Example** (Swift client on iOS):
 
@@ -142,29 +143,25 @@ A client library emits the header on a normal request.
 **Stimulus**: Application initializes client; client makes any HTTP request.
 **Expected**: Request contains exactly one `X-Client-Info` header. Value begins with `name/semver`. All present parameters follow the library token, are `; `-separated, and are in `key=value` form with no semicolons in any value.
 
-#### `parameter-key-lookup`
-A parser extracts a specific parameter from a header that contains multiple parameters in an arbitrary order.
+#### `no-duplicate-header`
+Exactly one `X-Client-Info` header is present on every request.
 
-**Stimulus**: `X-Client-Info: supabase-js/2.0.0; runtime=node; platform=Linux; runtime-version=20.10.0; platform-version=5.15.0`
-**Expected**: Parser correctly retrieves `platform=Linux` and `runtime=node` regardless of their position in the value.
+**Stimulus**: Client makes any HTTP request.
+**Expected**: Exactly one `X-Client-Info` header field is present on the request; no duplicate header names.
 
-#### `missing-platform-version`
-Platform is known but its version cannot be determined.
-
-**Stimulus**: Client runs in an environment where the OS version is not accessible.
-**Expected**: `X-Client-Info` includes `platform=<value>` and omits `platform-version` entirely. No empty or placeholder value appears.
+### Inheritance
 
 #### `standalone-sub-client`
 Auth sub-client used without a parent Supabase client.
 
-**Stimulus**: Application creates an `AuthClient` (or language equivalent) directly.
-**Expected**: Every HTTP request made by the auth client includes `X-Client-Info: auth-<lang>/version [; ...]` using the auth sub-client's own library token.
+**Stimulus**: Application creates an `AuthClient` (or language equivalent) directly; the auth client makes an HTTP request.
+**Expected**: The request contains `X-Client-Info` whose library token is the auth sub-client's own name and version (e.g. `auth-js/2.0.0`). No parent library token is present.
 
 #### `parent-overrides-sub-client`
 Auth sub-client initialized via parent SupabaseClient.
 
 **Stimulus**: Application creates a `SupabaseClient`; the resulting auth client makes a request.
-**Expected**: The request carries the parent's `X-Client-Info` value (e.g. `supabase-swift/2.45.0; ...`), not the sub-client's own token.
+**Expected**: The request carries the parent's `X-Client-Info` value (e.g. `supabase-swift/2.45.0; ...`), not the sub-client's own library token.
 
 #### `user-supplied-header`
 Application provides a custom `X-Client-Info` value.
@@ -172,23 +169,39 @@ Application provides a custom `X-Client-Info` value.
 **Stimulus**: Application initializes client with `headers: { "X-Client-Info": "my-app/1.0.0" }`; client makes a request.
 **Expected**: Request contains `X-Client-Info: my-app/1.0.0`. The library does not modify or append to the value.
 
+### Parameters
+
+#### `platform-included`
+Client library on a known platform includes the platform parameter.
+
+**Stimulus**: supabase-swift initializes and makes a request on an iOS device.
+**Expected**: `X-Client-Info` includes `platform=iOS`.
+
+#### `missing-platform-version`
+Platform is known but its version cannot be determined.
+
+**Stimulus**: Client runs in an environment where the OS version is not accessible.
+**Expected**: `X-Client-Info` includes `platform=<value>` and omits `platform-version` entirely. No empty or placeholder value appears.
+
+#### `runtime-included`
+Client library on a known runtime includes runtime and runtime-version parameters.
+
+**Stimulus**: supabase-swift initializes on a device compiled with Swift 6.0 and makes a request.
+**Expected**: `X-Client-Info` includes `runtime=swift` and `runtime-version=6.0`.
+
+### Framework
+
 #### `framework-detected`
 Client library running inside a detectable framework includes framework parameters.
 
-**Stimulus**: supabase-js is used inside a Next.js application; client makes a request.
-**Expected**: `X-Client-Info` includes `framework=next` and `framework-version=<detected-version>`.
+**Stimulus**: supabase-js is used inside a Next.js 15.1.0 application; client makes a request.
+**Expected**: `X-Client-Info` includes `framework=next` and `framework-version=15.1.0` (the version string resolved from the application's dependency manifest).
 
 #### `framework-not-detectable`
 Client library cannot determine which framework is in use.
 
 **Stimulus**: supabase-js is used in a plain Node.js script with no framework present.
 **Expected**: `X-Client-Info` omits both `framework` and `framework-version` entirely.
-
-#### `no-duplicate-header`
-Exactly one `X-Client-Info` header is present on every request.
-
-**Stimulus**: Client makes any HTTP request.
-**Expected**: Exactly one `X-Client-Info` header field is present on the request; no duplicate header names.
 
 ---
 
@@ -198,11 +211,15 @@ Exactly one `X-Client-Info` header is present on every request.
 
 **Why semicolon-delimited `key=value` parameters?** This is the convention used by the `Content-Type` header (e.g. `application/json; charset=utf-8`). It is trivially parseable — split on `; `, treat the first segment as `name/version`, treat the rest as `key=value` pairs — and is already well-understood by HTTP tooling and log processors.
 
-**Why SHOULD rather than MUST for the four defined parameters?** Not all runtime environments expose platform or runtime version information through a public API. Mandating these parameters would require implementations to ship placeholder values or stub strings, which is worse for analytics than omitting the parameter entirely. `SHOULD` permits omission when the information is genuinely unavailable while making the intent clear.
+**Why SHOULD rather than MUST for platform, runtime, and their versions?** Not all runtime environments expose platform or runtime version information through a public API. Mandating these parameters would require implementations to ship placeholder values or stub strings, which is worse for analytics than omitting the parameter entirely. `SHOULD` permits omission when the information is genuinely unavailable while making the intent clear.
 
 **Why MUST omit rather than use a placeholder when a value is unknown?** An empty string or `unknown` value reaches analytics pipelines and distorts aggregations (e.g. an `unknown` iOS version would appear as a distinct platform version rather than a missing data point). Omitting the parameter entirely is unambiguous: its absence signals unavailability.
 
-**Why is parameter order not mandated?** Client libraries are implemented independently across many languages and execution environments. Enforcing a fixed order would require coordinated changes whenever a new parameter is introduced and would make conformance harder to verify. Parsers that locate parameters by key are trivially correct regardless of order; prefix-based parsing that relies on position is fragile and is explicitly disallowed.
+**Why is parameter order not mandated?** Client libraries are implemented independently across many languages and execution environments. Enforcing a fixed order would require coordinated changes whenever a new parameter is introduced and would make conformance harder to verify. Data pipeline parsers that consume this header are expected to locate parameters by key, not by position; that responsibility is outside the scope of this spec.
+
+**Why SHOULD for the closest table value when using an unlisted platform?** Forcing an exact match to the defined table would break client libraries on emerging platforms before the spec can be updated. Permitting any value with a preference for the closest match balances forward-compatibility against analytics consistency.
+
+**Why SHOULD for platform-version format following host convention?** Version string formats differ meaningfully across platforms (e.g. macOS uses `major.minor`, Linux kernel versions include a patch and build string). Mandating a single format would require normalization logic in every client library and could produce less useful values than the native format. Downstream parsers are better placed to normalize for aggregation.
 
 **Why SHOULD for framework rather than MUST?** Framework detection is not universally possible. In server-side environments a library can inspect environment variables or `package.json` dependencies; in bundled or compiled outputs this information may not be available at runtime. `SHOULD` conveys that detection is expected where feasible without penalising environments where it is not.
 
@@ -213,4 +230,5 @@ Exactly one `X-Client-Info` header is present on every request.
 | Version | Date       | Description   |
 | ------- | ---------- | ------------- |
 | 0.1.0   | 2026-04-28 | Initial draft |
-| 0.2.0   | 2026-04-28 | R2.5: parameter order is not mandated; parsers MUST locate by key. Added R3.5–R3.6 for `framework` and `framework-version` parameters |
+| 0.2.0   | 2026-04-28 | R2.5: parameter order is not mandated. Added R3.5–R3.6 for `framework` and `framework-version`; former R3.5 (omission rule) renumbered to R3.7 |
+| 0.2.1   | 2026-04-28 | Added `framework` to Definitions. Removed out-of-scope parser normative text from R2.5. Added rationale entries for R3.1 and R3.2 nested SHOULDs. Regrouped scenarios; fixed `standalone-sub-client` and `framework-detected` wording; added `platform-included` and `runtime-included` scenarios |
