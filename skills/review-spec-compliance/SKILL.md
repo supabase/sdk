@@ -51,33 +51,35 @@ For each requirement, do one of:
 
 ### What to look for per requirement type
 
-**Eligibility rules (which requests retry)**
-- Find the branch/condition that gates retries
-- Verify the allowed methods are exactly what the spec lists — no more, no fewer
+Derive the categories from the spec's own Requirements sections — each `R{N}` group maps to one category. The guidance below covers the types that appear most commonly across SDK behavior specs.
 
-**Retryable conditions (which errors trigger retry)**
-- Find where HTTP status codes and error types are checked
-- Verify all listed codes trigger retry; verify unlisted codes do not
+**Eligibility / trigger conditions** (e.g. R1 — Eligibility)
+- Find the branch or predicate that gates the behavior
+- Verify the allowed inputs are exactly what the spec lists — no more, no fewer
+- Verify excluded inputs are rejected immediately without entering the behavior
 
-**Limits (max attempts)**
-- Find the retry loop or recursion
-- Count the max iterations; verify it matches the spec exactly (off-by-one is common)
+**Trigger conditions** (e.g. R2 — which states or responses activate the path)
+- Find where the triggering states are checked
+- Verify all listed conditions activate the path; verify unlisted conditions do not
 
-**Delay / backoff**
-- Find the delay computation
-- Verify: base delay > 0, base delay increases between attempts, max cap is enforced
-- If `Retry-After` handling is required: verify it reads the header and uses it as the delay
+**Limits** (e.g. R3 — max attempts, max connections, timeouts)
+- Find the code that enforces the limit
+- Verify the limit matches the spec exactly — off-by-one is common, especially when the spec distinguishes total count from incremental count
 
-**Observability (headers, logs)**
-- Find where outgoing request headers are set
-- Verify the header name matches exactly (case-insensitive per HTTP, but check for typos)
-- Verify the value computation matches the spec (retry count, not attempt count)
-- Verify the header is absent on the initial attempt
+**Computed values** (e.g. R4 — delay formula, backoff, expiry)
+- Find the computation
+- Verify every constraint the spec imposes (minimum, growth, maximum cap)
+- If the spec requires reading a signal from an external source (header, token field, config value), verify the code reads the correct key and uses it as the spec describes
 
-**Configuration**
-- Find the global config and per-request config APIs
-- Verify per-request takes precedence over global (test the override path)
-- Verify disabling retries causes retryable conditions to surface immediately
+**Observability** (e.g. R5 — headers, events, signals)
+- Find where outgoing headers or signals are set
+- Verify names match the spec exactly — case matters for string comparisons even when HTTP headers are case-insensitive
+- Verify values match the spec's definition, paying attention to whether the spec counts from zero or one, and whether it counts total occurrences or incremental ones
+
+**Configuration** (e.g. R6 — global vs scoped settings)
+- Find both the global config and the scoped (per-request / per-call) config APIs
+- Verify scoped config takes precedence over global (the override path is frequently untested)
+- Verify that disabling the behavior causes triggering conditions to surface immediately
 
 ## Step 4: Map Scenarios to Tests
 
@@ -98,9 +100,9 @@ Implementation: <path/to/implementation>
 |-----|----------|--------|----------------|
 | R1.1 | MUST | ✅ Compliant | `retry.ts:42` — method allowlist `['GET','HEAD','OPTIONS']` |
 | R1.2 | MUST | ✅ Compliant | `retry.ts:38` — `retryEnabled` defaults to `true` |
-| R1.3 | MUST | ❌ Non-Compliant | AbortError not checked; all errors enter retry loop |
-| R4.5 | SHOULD | ⚠️ Not Implemented | No jitter. Deliberate omission not documented. |
-| R5.1 | MUST | 🔶 Partial | Header set on retries, but value is attempt count not retry count |
+| R1.3 | MUST | ❌ Non-Compliant | Caller cancellation not checked; all errors enter retry loop |
+| R4.3 | MUST | ❌ Non-Compliant | No cap enforced; delay can exceed 30 s on slow networks |
+| R5.1 | MUST | 🔶 Partial | Header set on retries, but value is total attempt count not retry count |
 
 ### Scenario Coverage
 
@@ -135,7 +137,7 @@ Implementation: <path/to/implementation>
 ## Rules
 
 - **Never infer compliance from test names alone** — read the test body to verify the assertion matches the spec's Expected
-- **Off-by-one on attempt counts is a common bug** — the spec says "retry count" (retries only) vs "attempt count" (initial + retries); check both header values and loop limits
-- **Per-request override is frequently missing** — always verify the precedence logic, not just that both config levels exist
-- **Verify exact header names** — `X-Retry-Count` vs `x-retry-count` vs `Retry-Count` are different; HTTP header names are case-insensitive but typos still break clients that check exact strings
-- **A `SHOULD` not implemented is only acceptable if the Rationale section documents why** — if it isn't documented, flag it as a gap
+- **Off-by-one on counts is a common bug** — whenever the spec defines a count, confirm whether it is ordinal (1st, 2nd, Nth occurrence) or cumulative (N total); verify the implementation uses the same definition and check both the limit enforcement and any observable value derived from that count
+- **Scoped config overrides are frequently missing** — when the spec defines both global and per-request configuration, always verify the precedence logic, not just that both config levels exist
+- **Verify exact field and header names** — `My-Header` vs `my-header` are equivalent by HTTP spec but typos still break string comparisons; verify names character-for-character against the spec
+- **A `SHOULD` not implemented is only acceptable if the spec's Rationale section documents why** — if it isn't documented, flag it as a gap

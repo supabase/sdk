@@ -63,9 +63,12 @@ Flag:
 - `MUST` used where behavior is clearly optional (should be `MAY`)
 - `SHOULD` used where the spec treats it as absolute (should be `MUST`)
 - Implementation details (internal timers, data structures, loop logic) — requirements describe behavior only
+- Platform-specific error type names (e.g. `AbortError`, `NetworkError`, `CancellationException`) — requirements must use abstract terms defined in Definitions
+- Unit-conversion instructions (e.g. "in seconds, converted to milliseconds") — state the semantic meaning; conversion is an implementation concern
+- `SHOULD` requirements for behaviors where every SDK cell in `README.md` shows ⬜ (not started) — flag for confirmation that the behavior is intentional and not a best-practice insertion
 
 ### Every SHOULD needs a Rationale entry
-Flag any `SHOULD` requirement that has no corresponding entry in the Rationale section.
+Flag any `SHOULD` requirement that has no corresponding entry in the Rationale section. This is a **Warning**: it does not break conformance, but without a rationale entry a reviewer cannot tell whether an implementation's deviation is justified.
 
 ## Scenarios Checks
 
@@ -81,17 +84,21 @@ Flag:
 - Given/When/Then format — must use Stimulus/Expected
 - Vague expected outcomes ("succeeds", "fails") — must state what caller receives
 - Implementation assertions in Expected ("timer fires", "counter increments") — only observable behavior
+- Stimulus written as prose (e.g. "four total attempts") instead of a `→`-separated sequence — every scenario must have the full explicit chain
+- Description that counts events differently from the Stimulus chain (e.g. "three times" when the stimulus shows four) — check description against chain
+- Platform-specific error names in Stimulus or Expected (e.g. `AbortError`, `NetworkError`) — use the abstract term from Definitions
 
 ### Slug naming conventions
-- Retry eligibility: `retry-{method}-{status}` or `no-retry-{reason}`
-- Otherwise: descriptive, hyphenated, lowercase
+- Descriptive, hyphenated, lowercase — derived from the behavior being tested
+- Examples from a retry-type spec: `retry-get-520`, `no-retry-post-520`, `no-retry-abort`
+- Flag slugs that use generic numbering (`tc-01`) or opaque abbreviations
 
 ### Coverage
 - Every distinct behavioral claim in Requirements SHOULD have at least one scenario
 - Flag requirements with no corresponding scenario
 
 ### Cross-spec overlap
-If behavior depends on another spec, the requirement must be self-contained here — not deferred with "see the retry spec for R3.x". Flag cross-spec references in normative text.
+If behavior depends on another spec, the requirement must be self-contained here — not deferred with "see spec NNNN for R3.x". Flag cross-spec references in normative text.
 
 ## Rationale Checks
 
@@ -100,6 +107,7 @@ If behavior depends on another spec, the requirement must be self-contained here
 - Every `SHOULD` requirement needs a rationale entry explaining when deviation is acceptable
 - Every non-obvious limit and every explicit exclusion needs a rationale entry
 - Flag missing rationale for `SHOULD` requirements
+- Flag numerical claims (worst-case times, sums, totals) that cannot be independently verified from the information given in the spec — ask the author to show the computation
 
 ## Changelog Checks
 
@@ -113,9 +121,9 @@ If behavior depends on another spec, the requirement must be self-contained here
 ## Terminology Consistency
 
 Build a glossary from the Definitions section, then check:
-- Same concept referred to by different names across sections
+- Same concept referred to by different names across sections (e.g. "attempt" in Requirements vs "request" in Scenarios)
 - Same name used for different concepts
-- Field/property names that vary (e.g. `created_at` vs `createdAt` vs `creation_date`)
+- Config option names that vary between Requirements and Scenarios (e.g. `retry` vs `autoRetry` vs `retryEnabled`)
 - RFC 2119 keywords capitalized in Requirements but not in Abstract/Rationale (acceptable) vs lowercase in normative Requirements (flag)
 
 ## Output Format
