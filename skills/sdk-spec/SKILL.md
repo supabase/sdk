@@ -1,6 +1,6 @@
 ---
 name: sdk-spec
-description: Use when creating a new SDK behavior specification, updating an existing spec, or reviewing a spec for completeness and consistency. Covers file naming, document structure, RFC 2119 requirement language, scenario format, status lifecycle, and changelog maintenance.
+description: Use when creating a new SDK behavior specification or updating an existing one. Covers file naming, document structure, RFC 2119 requirement language, scenario format, status lifecycle, and changelog maintenance.
 ---
 
 # SDK Behavior Specification
@@ -10,6 +10,28 @@ description: Use when creating a new SDK behavior specification, updating an exi
 Supabase SDK specs are stack-agnostic behavior contracts consumed by two audiences simultaneously: SDK authors implementing behavior in a new language, and QA teams writing conformance tests. Every spec must serve both without ambiguity.
 
 The reference spec repository is `supabase/sdk`, under the `specs/` folder. Specs authored in other repos (e.g. alongside a reference implementation) carry a note indicating their destination.
+
+---
+
+## Before You Write — Required Clarifications
+
+A spec encodes decisions that were made by people, not defaults that seem reasonable. **Do not infer, guess, or apply general best practices — ask explicitly.** A well-intentioned default that turns out to be wrong is harder to remove than a gap that was never filled.
+
+Before drafting any section, identify every fact the spec will assert and confirm it with the requester. This includes numeric limits, formula parameters, configuration surface, error conditions, and rationale claims referencing external systems. If a reference implementation exists, ask for a pointer to it — derive values from the code, not from convention.
+
+### Signals that you are making an assumption
+
+Stop and ask when you notice yourself:
+
+- Writing "typically" or "usually" about behavior you have not verified
+- Including a feature because it is a "best practice" and not because it was explicitly requested or already implemented
+- Deriving a numeric value (limit, timeout, delay) from intuition rather than from the requester or the reference implementation
+- Writing rationale that you cannot attribute to a decision the requester described
+- Using a platform-specific name (error class, API, language construct) instead of an abstract term
+
+### If you cannot get an answer
+
+Mark the open question inline with `[UNRESOLVED: <question>]` and skip that section. Do not substitute a plausible default. An unresolved marker surfaces a gap; a plausible default hides one.
 
 ---
 
@@ -71,7 +93,7 @@ Never add, remove, or reorder sections. Never merge sections.
 | `Deprecated` | Superseded by a newer spec; link to replacement             |
 
 **Version** follows semver:
-- Patch (`0.1.0 → 0.1.1`): Clarifications, scenario additions, rationale updates — no behavioral change
+- Patch (`0.1.0 → 0.1.1`): Clarifications, factual corrections, scenario additions, rationale updates — no behavioral change
 - Minor (`0.1.0 → 0.2.0`): New requirements or scenarios that extend behavior
 - Major (`0.1.0 → 1.0.0`): Breaking changes to existing requirements
 
@@ -159,6 +181,8 @@ Retry behavior is enabled by default.
 - Implementation details (internal timers, loop structures, data structures)
 - Code examples
 - Rationale — that goes in the Rationale section
+- Platform-specific error types — use abstract terms defined in Definitions (e.g. "cancellation" not "AbortError", "network error" not "NetworkError")
+- Unit-conversion details — the spec states the semantic meaning of a value; how a language converts units is an implementation concern
 
 ---
 
@@ -169,8 +193,9 @@ Named, machine-readable test cases. QA teams translate these directly into confo
 ### Notation
 
 ```
-→   separates steps in a sequence
+→         separates steps in a sequence
 [delay]   indicates a pause between attempts (duration unspecified)
+[delay₁]  subscript distinguishes multiple delays when they are compared (e.g. delay₁ < delay₂)
 ```
 
 ### Scenario format
@@ -185,14 +210,13 @@ One sentence describing the situation.
 
 ### Naming conventions for slugs
 
-- `retry-{method}-{status}` for retry eligibility: `retry-get-520`, `no-retry-post-520`
-- `no-retry-{reason}` for non-retry cases: `no-retry-abort`, `no-retry-get-404`
-- Descriptive for everything else: `delay-increases`, `retry-exhaustion`, `x-retry-count-header`
+- Derive from the requirement being tested: `{condition}-{outcome}` or `no-{outcome}-{reason}`
+- Examples from a retry-type spec: `retry-get-520`, `no-retry-post-520`, `no-retry-abort`, `delay-increases`
 - Use hyphens only, lowercase
 
 ### Group scenarios under headings
 
-Group by concern, not by audience. Typical groups: Eligibility, Limits, Delay, Observability, Configuration.
+Group by concern, not by audience. Derive group names from the spec's own Requirements sections — each `R{N}` group typically maps to one scenario group. Examples from a retry-type spec: Eligibility, Limits, Delay, Observability, Configuration.
 
 ### Exact vs. approximate values in Expected
 
@@ -225,8 +249,9 @@ Format: bold question → answer paragraph.
 **Why only GET, HEAD, OPTIONS?** These HTTP methods are defined as safe and idempotent.
 Retrying a `POST` or `DELETE` risks duplicate side effects (e.g. double-inserting a row)...
 
-**Why SHOULD for jitter rather than MUST?** Jitter is most valuable when many clients
-retry simultaneously...
+**Why cap at N retries?** This value was agreed upon with the server team to balance
+resilience against latency. With exponential backoff capped at 30 s, N retries consume
+at most X seconds worst-case...
 ```
 
 Write a rationale entry for every `SHOULD`, every non-obvious limit, and every place where the spec explicitly excludes something.
@@ -240,11 +265,11 @@ Track every version that changed observable behavior.
 ```markdown
 ## Changelog
 
-| Version | Date       | Description                             |
-| ------- | ---------- | --------------------------------------- |
-| 0.1.0   | YYYY-MM-DD | Initial draft                           |
-| 0.1.1   | YYYY-MM-DD | Clarified R2.2 — any 503 triggers retry |
-| 0.2.0   | YYYY-MM-DD | Added R4.5 jitter recommendation        |
+| Version | Date       | Description                                        |
+| ------- | ---------- | -------------------------------------------------- |
+| 0.2.0   | YYYY-MM-DD | Added R4 — delay and backoff requirements          |
+| 0.1.1   | YYYY-MM-DD | Corrected worst-case latency calculation in R3.1   |
+| 0.1.0   | YYYY-MM-DD | Initial draft                                      |
 ```
 
 ---
@@ -283,26 +308,28 @@ Track every version that changed observable behavior.
 
 ## Creating a New Spec
 
-1. Find the next number: `ls specs/ | sort | tail -1`. Start at `0001` if the directory is empty.
-2. Create `NNNN-<topic>.md` with all seven sections
-3. Set Status to `Draft`
-4. Set Version to `0.1.0`
-5. Write Requirements in RFC 2119 language — observable behavior only
-6. Add one scenario per distinct behavioral claim in Requirements
-7. Write a Rationale entry for every `SHOULD`, non-obvious limit, or explicit exclusion
-8. Add the initial changelog entry
-9. Add a row to the implementation status table in `README.md` with all cells set to ⬜
+1. **Ask all clarifying questions first** — work through the "Before You Write" checklist above. Do not proceed to step 2 until every open question is answered or marked `[UNRESOLVED]`.
+2. Find the next number: `ls specs/ | sort | tail -1`. Start at `0001` if the directory is empty.
+3. Create `NNNN-<topic>.md` with all seven sections
+4. Set Status to `Draft`
+5. Set Version to `0.1.0`
+6. Write Requirements in RFC 2119 language — observable behavior only
+7. Add one scenario per distinct behavioral claim in Requirements
+8. Write a Rationale entry for every `SHOULD`, non-obvious limit, or explicit exclusion — attribute each decision to its source (team agreement, server team guidance, reference implementation)
+9. Add the initial changelog entry
+10. Add a row to the implementation status table in `README.md` with all cells set to ⬜
 
 ---
 
 ## Updating an Existing Spec
 
-1. Determine the change type (patch / minor / major — see Version in §1)
-2. Edit the relevant section(s)
-3. Bump the version in the header table
-4. Update the Status if appropriate (e.g. `Draft → Review`)
-5. Add a changelog entry with the new version, today's date, and a one-line description
-6. If removing or changing a requirement, add a Rationale entry explaining why
+1. If adding new behavioral content (requirements, scenarios), clarify any open questions first — same principle as "Before You Write" above.
+2. Determine the change type (patch / minor / major — see Version in §1)
+3. Edit the relevant section(s)
+4. Bump the version in the header table
+5. Update the Status if appropriate (e.g. `Draft → Review`)
+6. Add a changelog entry with the new version, today's date, and a one-line description
+7. If removing or changing a requirement, add a Rationale entry explaining why
 
 **Never remove a changelog entry.** History is permanent.
 
@@ -320,3 +347,10 @@ Track every version that changed observable behavior.
 | Writing `MUST` for a SHOULD-level recommendation | `MUST` = conformance breaks without it; `SHOULD` = strong but deviation is justified |
 | Skipping Rationale for a `SHOULD` requirement | Every `SHOULD` needs a rationale entry explaining when deviation is acceptable |
 | Bumping version without updating Changelog | Always add a changelog entry when the version changes |
+| Drafting before all clarifying questions are answered | Ask first, draft second — use `[UNRESOLVED: <question>]` for anything still open |
+| Platform-specific error names in Requirements or Scenarios | Define an abstract term in Definitions; use that term everywhere (e.g. "cancellation" covers AbortError, CancellationException, TaskCanceledException, etc.) |
+| Unit conversion details in Requirements (e.g. "in seconds, converted to milliseconds") | State the semantic meaning ("the header's value as the delay duration"); leave unit handling to the implementation |
+| Including `SHOULD` requirements for behaviors not implemented by any existing SDK | A `SHOULD` signals intent to implement; do not include it for hypothetical features that were never discussed or prototyped |
+| Scenario description count mismatches the stimulus chain | Count the events in the Stimulus line and make the description match exactly |
+| Omitting the stimulus chain from a scenario (using prose like "four attempts") | Always write out the full `→`-separated sequence, even if repetitive |
+| Unverified numerical claims in Rationale (worst-case times, totals) | Compute the value explicitly before writing it; show the formula if it aids clarity |
