@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supabase.com/sdk/capability-matrix.schema.json",
+  "title": "Supabase SDK Capability Matrix area file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["area", "title", "description", "features"],
+  "properties": {
+    "area": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/feature" }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "description", "sdks"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+$" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "group": { "type": "string", "minLength": 1 },
+        "sdks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "javascript", "flutter", "python", "swift", "csharp", "go", "kotlin"
+          ],
+          "properties": {
+            "javascript": { "$ref": "#/$defs/sdkEntry" },
+            "flutter": { "$ref": "#/$defs/sdkEntry" },
+            "python": { "$ref": "#/$defs/sdkEntry" },
+            "swift": { "$ref": "#/$defs/sdkEntry" },
+            "csharp": { "$ref": "#/$defs/sdkEntry" },
+            "go": { "$ref": "#/$defs/sdkEntry" },
+            "kotlin": { "$ref": "#/$defs/sdkEntry" }
+          }
+        }
+      }
+    },
+    "sdkEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["implemented", "not_implemented", "not_applicable"] },
+        "since": { "type": "string", "minLength": 1 },
+        "notes": { "type": "string", "minLength": 1 },
+        "references": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/reference" }
+        }
+      },
+      "if": { "properties": { "status": { "const": "implemented" } } },
+      "then": { "required": ["references"] },
+      "else": { "not": { "required": ["references"] } }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repo", "path"],
+      "properties": {
+        "repo": { "type": "string", "pattern": "^[^/\\s]+/[^/\\s]+$" },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "not": { "pattern": ":[0-9]+$" }
+        },
+        "symbols": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "ref": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
