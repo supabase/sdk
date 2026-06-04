@@ -1,0 +1,139 @@
+# yaml-language-server: $schema=../schema/capability-matrix.schema.json
+area: auth
+title: Authentication
+description: User sign-in flows, session management, MFA, and admin operations.
+
+features:
+  - id: auth.sign_in_with_password
+    name: Sign in with password
+    description: Authenticate a user with an email/phone and password.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithPassword]
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInWithPassword]
+      python:
+        status: implemented
+        references:
+          - repo: supabase/auth-py
+            path: supabase_auth/_async/gotrue_client.py
+            symbols: [sign_in_with_password]
+      swift:
+        status: implemented
+        references:
+          - repo: supabase/supabase-swift
+            path: Sources/Auth/AuthClient.swift
+            symbols: [signIn]
+      csharp:
+        status: implemented
+        references:
+          - repo: supabase/gotrue-csharp
+            path: Gotrue/Client.cs
+            symbols: [SignInWithPassword]
+      go:
+        status: not_applicable
+        notes: gotrue-go targets server-side admin use; password sign-in is out of scope.
+      kotlin:
+        status: implemented
+        references:
+          - repo: jan-tennert/supabase-kt
+            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
+            symbols: [signInWith]
+
+  - id: auth.sign_in_with_otp
+    name: Sign in with OTP
+    description: Send a one-time password (email or SMS) and authenticate with it.
+    group: passwordless
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithOtp]
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInWithOtp]
+      python:
+        status: implemented
+        references:
+          - repo: supabase/auth-py
+            path: supabase_auth/_async/gotrue_client.py
+            symbols: [sign_in_with_otp]
+      swift:
+        status: implemented
+        references:
+          - repo: supabase/supabase-swift
+            path: Sources/Auth/AuthClient.swift
+            symbols: [signInWithOTP]
+      csharp:
+        status: not_implemented
+      go:
+        status: not_applicable
+        notes: OTP sign-in is out of scope for gotrue-go.
+      kotlin:
+        status: implemented
+        references:
+          - repo: jan-tennert/supabase-kt
+            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
+            symbols: [signInWith]
+
+  - id: auth.sign_out
+    name: Sign out
+    description: Revoke the current session and clear stored credentials.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signOut]
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signOut]
+      python:
+        status: implemented
+        references:
+          - repo: supabase/auth-py
+            path: supabase_auth/_async/gotrue_client.py
+            symbols: [sign_out]
+      swift:
+        status: implemented
+        references:
+          - repo: supabase/supabase-swift
+            path: Sources/Auth/AuthClient.swift
+            symbols: [signOut]
+      csharp:
+        status: implemented
+        references:
+          - repo: supabase/gotrue-csharp
+            path: Gotrue/Client.cs
+            symbols: [SignOut]
+      go:
+        status: implemented
+        references:
+          - repo: supabase-community/gotrue-go
+            path: endpoints/logout.go
+            symbols: [Logout]
+      kotlin:
+        status: implemented
+        references:
+          - repo: jan-tennert/supabase-kt
+            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
+            symbols: [signOut]
