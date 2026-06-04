@@ -25,4 +25,16 @@ describe("makeRepoClient", () => {
     const client = makeRepoClient(getContent);
     await expect(client.getFile("supabase/auth-js", "src/a.ts")).rejects.toThrow("rate limited");
   });
+
+  it("forwards the ref argument to getContent", async () => {
+    let recordedParams: Parameters<GetContent>[0] | undefined;
+    const getContent: GetContent = async (params) => {
+      recordedParams = params;
+      return { data: { content: Buffer.from("ok").toString("base64"), encoding: "base64" } };
+    };
+    const client = makeRepoClient(getContent);
+    await client.getFile("supabase/x", "a.ts", "v1.2.3");
+    expect(recordedParams).toBeDefined();
+    expect(recordedParams!.ref).toBe("v1.2.3");
+  });
 });

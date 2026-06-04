@@ -21,7 +21,9 @@ export function makeRepoClient(getContent: GetContent): RepoClient {
         if (data.content && data.encoding === "base64") {
           return Buffer.from(data.content, "base64").toString("utf8");
         }
-        // Path exists (e.g. a directory) but has no decodable content.
+        // The path exists but has no decodable file content (e.g. it is a directory).
+        // Symbol checks against this empty string will simply fail to match.
+        // This is intentionally distinct from null (path not found).
         return "";
       } catch (e) {
         if ((e as { status?: number }).status === 404) return null;

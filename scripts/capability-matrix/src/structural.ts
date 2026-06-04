@@ -20,11 +20,13 @@ export function checkStructural(loaded: LoadedArea[]): Finding[] {
         findings.push({ level: "error", file, message: `feature id "${feature.id}" must start with "${prefix}"` });
       }
 
-      const prev = seenIds.get(feature.id);
-      if (prev !== undefined) {
-        findings.push({ level: "error", file, message: `duplicate feature id "${feature.id}" (also defined in ${prev})` });
-      } else {
-        seenIds.set(feature.id, file);
+      if (feature.id) {
+        const prev = seenIds.get(feature.id);
+        if (prev !== undefined) {
+          findings.push({ level: "error", file, message: `duplicate feature id "${feature.id}" (also defined in ${prev})` });
+        } else {
+          seenIds.set(feature.id, file);
+        }
       }
 
       for (const lang of LANGUAGES) {

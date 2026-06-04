@@ -3,7 +3,7 @@ import addFormats from "ajv-formats";
 import type { Finding, LoadedArea } from "./types";
 
 export function compileSchema(schema: object) {
-  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  const ajv = new Ajv2020({ allErrors: true, strictRequired: false });
   addFormats(ajv);
   return ajv.compile(schema);
 }

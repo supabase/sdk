@@ -52,4 +52,58 @@ describe("run", () => {
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.report?.overall).toBe(0);
   });
+
+  it("only queries references for changedFiles areas", async () => {
+    const jsImpl = (repo: string, path: string) =>
+      `      javascript: { status: implemented, references: [{ repo: "${repo}", path: "${path}", symbols: [mySymbol] }] }`;
+    const authYaml = [
+      "area: auth",
+      "title: Auth",
+      "description: d",
+      "features:",
+      "  - id: auth.a",
+      "    name: A",
+      "    description: d",
+      "    sdks:",
+      jsImpl("supabase/auth-js", "src/auth.ts"),
+      ...langs.filter((l) => l !== "javascript").map((l) => `      ${l}: { status: not_implemented }`),
+    ].join("\n") + "\n";
+    const storageYaml = [
+      "area: storage",
+      "title: Storage",
+      "description: d",
+      "features:",
+      "  - id: storage.a",
+      "    name: A",
+      "    description: d",
+      "    sdks:",
+      jsImpl("supabase/storage-js", "src/storage.ts"),
+      ...langs.filter((l) => l !== "javascript").map((l) => `      ${l}: { status: not_implemented }`),
+    ].join("\n") + "\n";
+
+    const capDir = tempCapabilities({ "auth.yaml": authYaml, "storage.yaml": storageYaml });
+    const queriedPairs: Array<[string, string]> = [];
+    const fakeClient = {
+      async getFile(repo: string, path: string): Promise<string> {
+        queriedPairs.push([repo, path]);
+        return "mySymbol";
+      },
+    };
+
+    const authFile = join(capDir, "auth.yaml");
+    const result = await run({
+      mode: "validate",
+      capabilitiesDir: capDir,
+      schema,
+      online: true,
+      changedFiles: [authFile],
+      repoClient: fakeClient,
+    });
+    rmSync(join(capDir, ".."), { recursive: true, force: true });
+
+    // Should have queried auth-js but NOT storage-js
+    expect(queriedPairs.some(([repo]) => repo === "supabase/auth-js")).toBe(true);
+    expect(queriedPairs.some(([repo]) => repo === "supabase/storage-js")).toBe(false);
+    expect(result.errorCount).toBe(0);
+  });
 });

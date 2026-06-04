@@ -4,7 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { loadAreas } from "./load";
 import { checkSchema } from "./schema";
 import { checkStructural } from "./structural";
-import { checkReferences } from "./references";
+import { checkReferences, type RepoClient } from "./references";
 import { githubClient } from "./github";
 import { computeParity, type ParityReport } from "./report";
 import type { Finding } from "./types";
@@ -16,6 +16,7 @@ export interface RunOptions {
   online: boolean;
   changedFiles?: string[];
   token?: string;
+  repoClient?: RepoClient;
 }
 
 export interface RunResult {
@@ -28,7 +29,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   const { areas, findings: loadFindings } = loadAreas(opts.capabilitiesDir);
 
   if (opts.mode === "report") {
-    return { findings: [], errorCount: 0, report: computeParity(areas) };
+    return { findings: loadFindings, errorCount: loadFindings.filter((f) => f.level === "error").length, report: computeParity(areas) };
   }
 
   const findings: Finding[] = [...loadFindings];
@@ -41,7 +42,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
       const set = new Set(opts.changedFiles.map((f) => resolve(f)));
       target = areas.filter((a) => set.has(resolve(a.file)));
     }
-    findings.push(...(await checkReferences(target, githubClient(opts.token))));
+    findings.push(...(await checkReferences(target, opts.repoClient ?? githubClient(opts.token))));
   }
 
   const errorCount = findings.filter((f) => f.level === "error").length;
@@ -73,6 +74,12 @@ async function main(): Promise<void> {
 
   if (result.report) {
     console.log(JSON.stringify(result.report, null, 2));
+    if (result.findings.length > 0) {
+      for (const f of result.findings) {
+        const tag = f.level === "error" ? "ERROR" : "WARN ";
+        process.stderr.write(`${tag} ${f.file}: ${f.message}\n`);
+      }
+    }
     return;
   }
 
