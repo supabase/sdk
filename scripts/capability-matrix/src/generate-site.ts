@@ -290,7 +290,11 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     .site-main { padding: 2rem; }
 
     /* ── Area section ──────────────────────────────────────── */
-    .area-section { margin-bottom: 3rem; }
+    .area-section {
+      margin-bottom: 3rem;
+      /* keep the section title visible below the sticky nav when linked */
+      scroll-margin-top: 52px;
+    }
     .area-header { margin-bottom: 1rem; }
     .area-header h2 {
       font-size: 1.1rem;
@@ -312,7 +316,9 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
       width: 100%;
       min-width: 820px;
     }
-    thead { position: sticky; top: 40px; z-index: 5; }
+    /* NOTE: thead sticky is intentionally omitted — position:sticky does not
+       work reliably inside overflow-x:auto containers in all browsers. The
+       sticky site-nav above is sufficient for orientation while scrolling. */
     thead tr { background: #f8fafc; }
     th {
       padding: 0.55rem 0.75rem;
@@ -347,7 +353,8 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
       letter-spacing: 0.08em;
       color: #64748b;
       padding: 0.35rem 0.75rem;
-      border-bottom: none;
+      border-top: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     /* ── Feature name ──────────────────────────────────────── */
