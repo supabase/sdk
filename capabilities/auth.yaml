@@ -1,12 +1,33 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: auth
 title: Authentication
-description: User sign-in flows, session management, MFA, and admin operations.
+description: User sign-in flows, session management, MFA, passkeys, identity linking, and admin operations.
 
 features:
+
+  # ── Sign-in / sign-up ────────────────────────────────────────────────────────
+
+  - id: auth.sign_up
+    name: Sign Up
+    description: Register a new user with email or phone and password.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signUp]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
   - id: auth.sign_in_with_password
-    name: Sign in with password
-    description: Authenticate a user with an email/phone and password.
+    name: Sign In with Password
+    description: Authenticate an existing user with email or phone and password.
     group: sign-in
     sdks:
       javascript:
@@ -15,44 +36,17 @@ features:
           - repo: supabase/auth-js
             path: src/GoTrueClient.ts
             symbols: [signInWithPassword]
-      flutter:
-        status: implemented
-        references:
-          - repo: supabase/supabase-flutter
-            path: packages/gotrue/lib/src/gotrue_client.dart
-            symbols: [signInWithPassword]
-      python:
-        status: implemented
-        references:
-          - repo: supabase/auth-py
-            path: supabase_auth/_async/gotrue_client.py
-            symbols: [sign_in_with_password]
-      swift:
-        status: implemented
-        references:
-          - repo: supabase/supabase-swift
-            path: Sources/Auth/AuthClient.swift
-            symbols: [signIn]
-      csharp:
-        status: implemented
-        references:
-          - repo: supabase/gotrue-csharp
-            path: Gotrue/Client.cs
-            symbols: [SignInWithPassword]
-      go:
-        status: not_applicable
-        notes: gotrue-go targets server-side admin use; password sign-in is out of scope.
-      kotlin:
-        status: implemented
-        references:
-          - repo: jan-tennert/supabase-kt
-            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
-            symbols: [signInWith]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
 
   - id: auth.sign_in_with_otp
-    name: Sign in with OTP
-    description: Send a one-time password (email or SMS) and authenticate with it.
-    group: passwordless
+    name: Sign In with OTP
+    description: Send a one-time password (email or SMS) or magic link and authenticate with it.
+    group: sign-in
     sdks:
       javascript:
         status: implemented
@@ -60,39 +54,362 @@ features:
           - repo: supabase/auth-js
             path: src/GoTrueClient.ts
             symbols: [signInWithOtp]
-      flutter:
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.sign_in_with_oauth
+    name: Sign In with OAuth
+    description: Initiate a third-party OAuth sign-in flow (Google, GitHub, etc.).
+    group: sign-in
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/supabase-flutter
-            path: packages/gotrue/lib/src/gotrue_client.dart
-            symbols: [signInWithOtp]
-      python:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithOAuth]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.sign_in_with_id_token
+    name: Sign In with ID Token
+    description: Authenticate using a provider-issued ID token (e.g. from Apple or Google).
+    group: sign-in
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/auth-py
-            path: supabase_auth/_async/gotrue_client.py
-            symbols: [sign_in_with_otp]
-      swift:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithIdToken]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.sign_in_with_sso
+    name: Sign In with SSO
+    description: Sign in via SAML SSO by supplying a domain or provider ID.
+    group: sign-in
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/supabase-swift
-            path: Sources/Auth/AuthClient.swift
-            symbols: [signInWithOTP]
-      csharp:
-        status: not_implemented
-      go:
-        status: not_applicable
-        notes: OTP sign-in is out of scope for gotrue-go.
-      kotlin:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithSSO]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.sign_in_anonymously
+    name: Sign In Anonymously
+    description: Create an anonymous (guest) session without user credentials.
+    group: sign-in
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: jan-tennert/supabase-kt
-            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
-            symbols: [signInWith]
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInAnonymously]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.sign_in_with_web3
+    name: Sign In with Web3
+    description: Authenticate using a Web3 wallet (Solana or Ethereum) via a signed message.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [signInWithWeb3]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.verify_otp
+    name: Verify OTP
+    description: Verify a one-time password or token hash to complete sign-in or email confirmation.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [verifyOtp]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.exchange_code_for_session
+    name: Exchange Code for Session
+    description: Exchange a PKCE authorization code for a user session.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [exchangeCodeForSession]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.resend
+    name: Resend Confirmation
+    description: Resend a signup confirmation or OTP email/SMS to a user.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [resend]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.reauthenticate
+    name: Reauthenticate
+    description: Send a reauthentication nonce to verify the user before sensitive operations such as password change.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [reauthenticate]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.reset_password_for_email
+    name: Reset Password for Email
+    description: Send a password-reset email to a user.
+    group: sign-in
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [resetPasswordForEmail]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── Passkeys ──────────────────────────────────────────────────────────────────
+
+  - id: auth.sign_in_with_passkey
+    name: Sign In with Passkey
+    description: Authenticate using a WebAuthn passkey registered on the device.
+    group: passkey
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [signInWithPasskey]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.register_passkey
+    name: Register Passkey
+    description: Register a new WebAuthn passkey for the currently authenticated user.
+    group: passkey
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [registerPasskey]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── Session & user ────────────────────────────────────────────────────────────
+
+  - id: auth.get_session
+    name: Get Session
+    description: Return the current active session, refreshing the access token if needed.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [getSession]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.set_session
+    name: Set Session
+    description: Manually set the current session from a known access token and refresh token.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [setSession]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.refresh_session
+    name: Refresh Session
+    description: Force an immediate refresh of the current session using the refresh token.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [refreshSession]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.get_user
+    name: Get User
+    description: Fetch the authenticated user's profile from the server, verifying the JWT.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [getUser]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.update_user
+    name: Update User
+    description: Update the current user's attributes such as email, password, or metadata.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [updateUser]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.get_claims
+    name: Get Claims
+    description: Verify and return the JWT claims for the current session using asymmetric keys.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [getClaims]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.on_auth_state_change
+    name: On Auth State Change
+    description: Subscribe to authentication state change events (sign-in, sign-out, token refresh, etc.).
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [onAuthStateChange]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
 
   - id: auth.sign_out
-    name: Sign out
-    description: Revoke the current session and clear stored credentials.
+    name: Sign Out
+    description: Revoke the current user session and clear stored credentials.
     group: session
     sdks:
       javascript:
@@ -101,39 +418,739 @@ features:
           - repo: supabase/auth-js
             path: src/GoTrueClient.ts
             symbols: [signOut]
-      flutter:
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.auto_refresh_token
+    name: Auto Refresh Token
+    description: SDK automatically refreshes the access token in the background before it expires; exposes hooks to start and stop the refresh loop.
+    group: session
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/supabase-flutter
-            path: packages/gotrue/lib/src/gotrue_client.dart
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [startAutoRefresh, stopAutoRefresh]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.restore_session
+    name: Restore Session
+    description: SDK restores a persisted session from local storage on client initialization.
+    group: session
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [initialize]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── Identity linking ──────────────────────────────────────────────────────────
+
+  - id: auth.get_user_identities
+    name: Get User Identities
+    description: List all external identities linked to the current user's account.
+    group: identities
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [getUserIdentities]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.link_identity
+    name: Link Identity
+    description: Link an additional OAuth or ID-token identity to the current user's account.
+    group: identities
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [linkIdentity]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.unlink_identity
+    name: Unlink Identity
+    description: Remove a linked identity from the current user's account.
+    group: identities
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [unlinkIdentity]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── MFA ───────────────────────────────────────────────────────────────────────
+
+  - id: auth.mfa_enroll
+    name: MFA Enroll
+    description: Enroll a new MFA factor (TOTP or phone) for the current user.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [enroll]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_challenge
+    name: MFA Challenge
+    description: Create a challenge for an enrolled MFA factor to begin the verification flow.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [challenge]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_verify
+    name: MFA Verify
+    description: Verify a code against an active MFA challenge to complete second-factor authentication.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [verify]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_challenge_and_verify
+    name: MFA Challenge and Verify
+    description: Create a challenge and verify a code in a single call for convenience.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [challengeAndVerify]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_unenroll
+    name: MFA Unenroll
+    description: Remove an enrolled MFA factor from the current user's account.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [unenroll]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_list_factors
+    name: MFA List Factors
+    description: List all MFA factors enrolled for the current user.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [listFactors]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_get_aal
+    name: MFA Get Authenticator Assurance Level
+    description: Return the current and next authenticator assurance levels (AAL1/AAL2) for the session.
+    group: mfa
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueClient.ts
+            symbols: [getAuthenticatorAssuranceLevel]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── WebAuthn MFA ──────────────────────────────────────────────────────────────
+
+  - id: auth.mfa_webauthn_start_registration
+    name: MFA WebAuthn Start Registration
+    description: Begin WebAuthn authenticator registration by generating credential creation options.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_startPasskeyRegistration]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_verify_registration
+    name: MFA WebAuthn Verify Registration
+    description: Complete WebAuthn authenticator registration by verifying the credential response.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_verifyPasskeyRegistration]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_start_authentication
+    name: MFA WebAuthn Start Authentication
+    description: Begin WebAuthn authentication by generating assertion options for an enrolled authenticator.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_startPasskeyAuthentication]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_verify_authentication
+    name: MFA WebAuthn Verify Authentication
+    description: Complete WebAuthn authentication by verifying the assertion response.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_verifyPasskeyAuthentication]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_list
+    name: MFA WebAuthn List Authenticators
+    description: List all WebAuthn authenticators registered for the current user.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_listPasskeys]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_update
+    name: MFA WebAuthn Update Authenticator
+    description: Update metadata (e.g. friendly name) on a registered WebAuthn authenticator.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_updatePasskey]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.mfa_webauthn_delete
+    name: MFA WebAuthn Delete Authenticator
+    description: Remove a registered WebAuthn authenticator from the current user's account.
+    group: mfa-webauthn
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_deletePasskey]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── OAuth server (Supabase as OAuth provider) ─────────────────────────────────
+
+  - id: auth.oauth_get_authorization_details
+    name: OAuth Get Authorization Details
+    description: Fetch the details of a pending OAuth authorization request (for consent screens).
+    group: oauth-server
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_getAuthorizationDetails]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.oauth_approve_authorization
+    name: OAuth Approve Authorization
+    description: Approve a pending OAuth authorization request on behalf of the current user.
+    group: oauth-server
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_approveAuthorization]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.oauth_deny_authorization
+    name: OAuth Deny Authorization
+    description: Deny a pending OAuth authorization request on behalf of the current user.
+    group: oauth-server
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_denyAuthorization]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.oauth_list_grants
+    name: OAuth List Grants
+    description: List all active OAuth grants the current user has approved.
+    group: oauth-server
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_listOAuthGrants]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.oauth_revoke_grant
+    name: OAuth Revoke Grant
+    description: Revoke a specific OAuth grant that the current user previously approved.
+    group: oauth-server
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
+            symbols: [_revokeOAuthGrant]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  # ── Admin API (service-role) ──────────────────────────────────────────────────
+
+  - id: auth.admin_sign_out
+    name: Admin Sign Out
+    description: Revoke a user's session server-side by their access token (requires service role).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
             symbols: [signOut]
-      python:
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_invite_user_by_email
+    name: Admin Invite User by Email
+    description: Send an invite email to a new user (requires service role).
+    group: admin
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/auth-py
-            path: supabase_auth/_async/gotrue_client.py
-            symbols: [sign_out]
-      swift:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [inviteUserByEmail]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_generate_link
+    name: Admin Generate Link
+    description: Generate an email action link (confirmation, magic link, recovery) for a user.
+    group: admin
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/supabase-swift
-            path: Sources/Auth/AuthClient.swift
-            symbols: [signOut]
-      csharp:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [generateLink]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_create_user
+    name: Admin Create User
+    description: Create a new user with specified attributes without sending a confirmation email.
+    group: admin
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase/gotrue-csharp
-            path: Gotrue/Client.cs
-            symbols: [SignOut]
-      go:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [createUser]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_list_users
+    name: Admin List Users
+    description: Retrieve a paginated list of all users in the project.
+    group: admin
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: supabase-community/gotrue-go
-            path: endpoints/logout.go
-            symbols: [Logout]
-      kotlin:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [listUsers]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_get_user_by_id
+    name: Admin Get User by ID
+    description: Fetch a single user's profile and metadata by their UUID.
+    group: admin
+    sdks:
+      javascript:
         status: implemented
         references:
-          - repo: jan-tennert/supabase-kt
-            path: Auth/src/commonMain/kotlin/io/github/jan/supabase/auth/Auth.kt
-            symbols: [signOut]
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [getUserById]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_update_user_by_id
+    name: Admin Update User by ID
+    description: Update a user's attributes (email, password, metadata, role, etc.) by their UUID.
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [updateUserById]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_delete_user
+    name: Admin Delete User
+    description: Permanently delete a user by their UUID (hard or soft delete).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [deleteUser]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_mfa_list_factors
+    name: Admin MFA List Factors
+    description: List all MFA factors enrolled for a specific user (requires service role).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [listFactors]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_mfa_delete_factor
+    name: Admin MFA Delete Factor
+    description: Delete a specific MFA factor from a user's account (requires service role).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/auth-js
+            path: src/GoTrueAdminApi.ts
+            symbols: [deleteFactor]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_list_clients
+    name: Admin OAuth List Clients
+    description: List all registered OAuth clients for the project (requires service role).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_listOAuthClients]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_create_client
+    name: Admin OAuth Create Client
+    description: Register a new OAuth client application for the project (requires service role).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_createOAuthClient]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_get_client
+    name: Admin OAuth Get Client
+    description: Retrieve details of a specific OAuth client by its client ID.
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_getOAuthClient]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_update_client
+    name: Admin OAuth Update Client
+    description: Update a registered OAuth client's settings (name, redirect URIs, etc.).
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_updateOAuthClient]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_delete_client
+    name: Admin OAuth Delete Client
+    description: Remove a registered OAuth client from the project.
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_deleteOAuthClient]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
+
+  - id: auth.admin_oauth_regenerate_client_secret
+    name: Admin OAuth Regenerate Client Secret
+    description: Regenerate the client secret for a registered OAuth application.
+    group: admin
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
+            symbols: [_regenerateOAuthClientSecret]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
