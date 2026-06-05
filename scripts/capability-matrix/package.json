@@ -9,7 +9,8 @@
     "validate:online": "tsx src/cli.ts validate --online",
     "report": "tsx src/cli.ts report",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build-site": "tsx src/generate-site.ts"
   },
   "dependencies": {
     "@octokit/rest": "^21.0.2",
