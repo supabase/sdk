@@ -1,57 +1,70 @@
-# Supabase SDK Specifications
+# Supabase SDK Capability Matrix
 
-Stack-agnostic behavior contracts for Supabase client libraries. Specs in this repo are the single source of truth for how Supabase SDKs behave across all languages.
+The canonical, machine-readable record of which features each official Supabase client SDK implements. One YAML file per product area, validated in CI against a JSON Schema, with every claim of "implemented" backed by a verifiable reference to source code in the SDK's repository.
 
-## Structure
+A static site rendered from these files is published at **https://shiny-adventure-ww2255r.pages.github.io/** (see `.github/workflows/deploy-pages.yml`).
+
+## Repository layout
 
 ```
-specs/       # Behavior specifications (NNNN-<topic>.md)
-skills/      # Claude Code skills for working with specs
-scripts/     # Tooling for SDK team members
+capabilities/   # One YAML file per product area (auth, database, storage, realtime, functions)
+schema/         # JSON Schema for area files
+scripts/        # TypeScript validator + site generator (scripts/capability-matrix)
+.github/        # CI: structural validation, nightly reference drift, Pages deploy
 ```
 
-## Specs
+## SDKs tracked
 
-| Spec | JavaScript | Python | Swift | Flutter | Kotlin | C# | Go |
-|------|:----------:|:------:|:-----:|:-------:|:------:|:--:|:--:|
-| [0001 — PostgREST Automatic Retry](specs/0001-postgrest-retry.md) | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ |
+Every feature must declare a status for all seven official SDKs:
 
-**Legend**: ✅ Implemented &nbsp;·&nbsp; 🚧 In Progress &nbsp;·&nbsp; ⬜ Not Started &nbsp;·&nbsp; ➖ N/A
+`javascript` · `flutter` · `python` · `swift` · `csharp` · `go` · `kotlin`
 
-## Writing a Spec
+## Status values
 
-Install the `sdk-spec` skill (see below), then ask Claude to write a new spec. The skill enforces the format — RFC 2119 requirements, named scenario slugs, status lifecycle, and changelog.
+| Status | Meaning |
+|---|---|
+| `implemented` | Feature ships in the SDK. Requires at least one `references` entry pointing to the implementation. |
+| `not_implemented` | Feature is in scope but not yet shipped. Must not include references. |
+| `not_applicable` | Feature does not apply to this SDK (e.g. browser-only APIs in server SDKs). Must not include references. |
 
-New specs go in `specs/` with the next available number:
+## Adding or updating a capability
+
+1. Open the YAML for the relevant area under `capabilities/` (or create a new file matching the schema).
+2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, optional `group`, and an `sdks` block covering all seven languages.
+3. For any SDK marked `implemented`, add `references` pointing to the source:
+
+   ```yaml
+   references:
+     - repo: supabase/postgrest-js
+       path: src/PostgrestQueryBuilder.ts
+       symbols: [select]
+       ref: v1.2.3   # optional pin to a tag, branch, or commit
+   ```
+
+4. Validate locally (see below).
+5. Open a PR. CI runs structural checks on every PR and reference checks on changed files. A nightly job re-runs reference checks across the whole matrix to catch upstream renames.
+
+The full schema lives in `schema/capability-matrix.schema.json` — the validator and editors that understand JSON Schema (via the `yaml-language-server` header at the top of each area file) will autocomplete and error-check as you type.
+
+## Local development
 
 ```bash
-ls specs/ | sort | tail -1  # find next number
+cd scripts/capability-matrix
+npm ci
+
+npm test               # vitest suite for the validator
+npm run typecheck      # tsc --noEmit
+npm run validate       # tier 1: schema + structural checks (no network)
+npm run validate:online # tier 2: also fetch each reference and verify the file/symbol exists
+npm run report         # parity report as JSON (overall, per-area, per-language)
+npm run build-site     # render the static site to scripts/capability-matrix/site/
 ```
 
-## Installing Skills
+`validate:online` and the nightly CI job hit the GitHub REST API; set `GITHUB_TOKEN` in the environment to avoid rate limits.
 
-The `skills/` directory contains Claude Code skills for the SDK team. Install without cloning the repo:
+## CI
 
-```bash
-# install all skills
-curl -fsSL https://raw.githubusercontent.com/supabase/sdk/main/scripts/install-skills.sh | bash
-
-# install a specific skill
-curl -fsSL https://raw.githubusercontent.com/supabase/sdk/main/scripts/install-skills.sh | bash -s sdk-spec
-```
-
-Skills are copied to `~/.claude/skills/`. Restart Claude Code after installing.
-
-## Spec Format
-
-Every spec has seven sections in this order:
-
-1. **Header table** — version, status, date, authors
-2. **Abstract** — 2–3 sentence summary
-3. **Definitions** — RFC 2119 boilerplate + domain terms
-4. **Requirements** — normative behavior in `MUST`/`SHOULD`/`MAY` language, grouped as `R{n}.{m}`
-5. **Scenarios** — named test cases (`slug`, Stimulus → Expected)
-6. **Rationale** — non-normative explanation of non-obvious decisions
-7. **Changelog** — version history
-
-See [skills/sdk-spec/SKILL.md](skills/sdk-spec/SKILL.md) for the complete authoring guide.
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `validate-capabilities.yml` | push to `main`, PRs touching matrix files, nightly cron | Tier 1 structural on every run; tier 2 references on PRs (changed files) and nightly (all files). |
+| `deploy-pages.yml` | push to `main` touching matrix files, manual dispatch | Builds the site and deploys to GitHub Pages. |
