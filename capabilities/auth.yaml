@@ -15,8 +15,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signUp]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -33,8 +33,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithPassword]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -51,8 +51,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithOtp]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -69,8 +69,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithOAuth]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -87,8 +87,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithIdToken]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -105,8 +105,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithSSO]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -123,8 +123,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInAnonymously]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -141,8 +141,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithWeb3]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -159,8 +159,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [verifyOtp]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -177,8 +177,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [exchangeCodeForSession]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -195,8 +195,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [resend]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -213,8 +213,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [reauthenticate]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -231,8 +231,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [resetPasswordForEmail]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -289,8 +289,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getSession]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -307,8 +307,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [setSession]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -325,8 +325,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [refreshSession]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -343,8 +343,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getUser]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -361,8 +361,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [updateUser]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -379,8 +379,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getClaims]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -397,8 +397,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [onAuthStateChange]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -415,8 +415,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signOut]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -433,8 +433,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [startAutoRefresh, stopAutoRefresh]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -451,8 +451,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [initialize]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -471,8 +471,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getUserIdentities]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -489,8 +489,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [linkIdentity]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -507,8 +507,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [unlinkIdentity]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -527,8 +527,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [enroll]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -545,8 +545,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [challenge]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -563,8 +563,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [verify]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -581,8 +581,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [challengeAndVerify]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -599,8 +599,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [unenroll]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -617,8 +617,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [listFactors]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -635,8 +635,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueClient.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getAuthenticatorAssuranceLevel]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -875,8 +875,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [signOut]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -893,8 +893,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [inviteUserByEmail]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -911,8 +911,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [generateLink]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -929,8 +929,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [createUser]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -947,8 +947,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [listUsers]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -965,8 +965,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [getUserById]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -983,8 +983,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [updateUserById]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -1001,8 +1001,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [deleteUser]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -1019,8 +1019,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [listFactors]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
@@ -1037,8 +1037,8 @@ features:
       javascript:
         status: implemented
         references:
-          - repo: supabase/auth-js
-            path: src/GoTrueAdminApi.ts
+          - repo: supabase/supabase-js
+            path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [deleteFactor]
       flutter: { status: not_implemented }
       python: { status: not_implemented }
