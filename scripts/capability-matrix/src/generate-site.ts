@@ -88,7 +88,10 @@ function renderArea(loaded: LoadedArea): string {
     for (const f of features) {
       const fp = featureParity(f);
       rows += `      <tr>
-        <td class="feature-name" title="${esc(f.description)}">${esc(f.name)}</td>
+        <td class="feature-name">
+          <div class="feature-name-text">${esc(f.name)}</div>
+          <div class="feature-desc">${esc(f.description)}</div>
+        </td>
         ${LANGUAGES.map((l) => statusCell(f, l)).join("")}
         <td class="parity-cell ${parityClass(fp)}">${pct(fp)}</td>
       </tr>\n`;
@@ -358,11 +361,9 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     }
 
     /* ── Feature name ──────────────────────────────────────── */
-    .feature-name {
-      font-weight: 500;
-      color: #171717;
-      cursor: default;
-    }
+    .feature-name { cursor: default; }
+    .feature-name-text { font-weight: 500; color: #171717; }
+    .feature-desc { font-size: 0.72rem; color: #888; margin-top: 0.1rem; }
 
     /* ── Status cells ──────────────────────────────────────── */
     .cell-yes, .cell-no, .cell-na {
