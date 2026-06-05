@@ -60,8 +60,18 @@ function statusCell(feature: Feature, lang: Language): string {
   const entry = feature.sdks[lang];
   if (!entry) return `<td class="cell-na">➖</td>`;
   switch (entry.status) {
-    case "implemented":
-      return `<td class="cell-yes" title="${esc(LANG_LABELS[lang])}: implemented">✅</td>`;
+    case "implemented": {
+      const symbolLinks = entry.references?.flatMap((r) => {
+        const url = `https://github.com/${r.repo}/blob/${r.ref ?? "HEAD"}/${r.path}`;
+        return (r.symbols ?? []).map((s) => ({ s, url }));
+      }) ?? [];
+      const symbolsHtml = symbolLinks.length > 0
+        ? `<div class="cell-symbols">${symbolLinks.map(({ s, url }) =>
+            `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><code>${esc(s)}</code></a>`
+          ).join("")}</div>`
+        : "";
+      return `<td class="cell-yes" title="${esc(LANG_LABELS[lang])}: implemented">✅${symbolsHtml}</td>`;
+    }
     case "not_implemented":
       return `<td class="cell-no" title="${esc(LANG_LABELS[lang])}: not implemented">⬜</td>`;
     case "not_applicable":
@@ -369,10 +379,33 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     .cell-yes, .cell-no, .cell-na {
       text-align: center;
       font-size: 1rem;
+      vertical-align: top;
+      padding-top: 0.55rem;
     }
     .cell-yes { background: #f0fdf4; }
     .cell-no  { color: #cbd5e1; }
     .cell-na  { color: #cbd5e1; opacity: 0.6; }
+
+    /* ── Symbol pills ──────────────────────────────────────── */
+    .cell-symbols {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      margin-top: 0.3rem;
+    }
+    .cell-symbols a { text-decoration: none; }
+    .cell-symbols a:hover code { background: #a7f3d0; text-decoration: underline; }
+    .cell-symbols code {
+      display: block;
+      font-family: ui-monospace, "SF Mono", Consolas, monospace;
+      font-size: 0.58rem;
+      color: #059669;
+      background: #d1fae5;
+      padding: 0.05rem 0.3rem;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
 
     /* ── Parity cell ───────────────────────────────────────── */
     .parity-cell {
