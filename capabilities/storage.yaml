@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/capability-matrix.schema.json
+area: storage
+title: Storage
+description: Object storage — upload, download, list, and manage files in buckets.
+
+features:
+  - id: storage.upload
+    name: Upload file
+    description: Upload a file to a storage bucket.
+    group: objects
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/storage-js
+            path: src/packages/StorageFileApi.ts
+            symbols: [upload]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }

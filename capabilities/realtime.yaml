@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schema/capability-matrix.schema.json
+area: realtime
+title: Realtime
+description: Subscribe to Postgres changes, broadcast, and presence over websockets.
+
+features:
+  - id: realtime.postgres_changes
+    name: Subscribe to Postgres changes
+    description: Receive insert/update/delete events for a table over a channel.
+    group: channels
+    sdks:
+      javascript:
+        status: implemented
+        references:
+          - repo: supabase/realtime-js
+            path: src/RealtimeChannel.ts
+            symbols: [on]
+      flutter: { status: not_implemented }
+      python: { status: not_implemented }
+      swift: { status: not_implemented }
+      csharp: { status: not_implemented }
+      go: { status: not_implemented }
+      kotlin: { status: not_implemented }
