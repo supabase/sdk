@@ -1,0 +1,48 @@
+auth:
+  title: Authentication
+  description: User sign-in flows, session management, MFA, passkeys, identity linking, and admin operations.
+  groups:
+    - id: sign-in
+      title: Sign-in / Sign-up
+    - id: passkey
+      title: Passkeys
+    - id: session
+      title: Session & User
+    - id: identities
+      title: Identity Linking
+    - id: mfa
+      title: Multi-Factor Authentication
+    - id: mfa-webauthn
+      title: WebAuthn MFA
+    - id: oauth-server
+      title: OAuth Server
+    - id: admin
+      title: Admin API
+
+database:
+  title: Database (PostgREST)
+  description: Query builder over PostgREST — select, insert, update, delete, RPC.
+  groups:
+    - id: query
+      title: Query
+
+realtime:
+  title: Realtime
+  description: Subscribe to Postgres changes, broadcast, and presence over websockets.
+  groups:
+    - id: channels
+      title: Channels
+
+storage:
+  title: Storage
+  description: Object storage — upload, download, list, and manage files in buckets.
+  groups:
+    - id: objects
+      title: Objects
+
+functions:
+  title: Edge Functions
+  description: Invoke Supabase Edge Functions from the client.
+  groups:
+    - id: invocation
+      title: Invocation
