@@ -2,12 +2,6 @@
 name: Unlink Identity
 description: Remove a linked identity from the current user's account.
 group: identities
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: DELETE
-      path: "/user/identities/{identityId}"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueClient.ts
         symbols: [unlinkIdentity]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `DELETE /user/identities/{identityId}`

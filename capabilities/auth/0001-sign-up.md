@@ -2,12 +2,6 @@
 name: Sign Up
 description: Register a new user with email or phone and password.
 group: sign-in
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: POST
-      path: "/signup"
 sdks:
   javascript:
     status: implemented
@@ -16,6 +10,12 @@ sdks:
         path: packages/core/auth-js/src/GoTrueClient.ts
         symbols: [signUp]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `POST /signup`
 
 ## Behavior
 

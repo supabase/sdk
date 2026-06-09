@@ -2,12 +2,6 @@
 name: Admin OAuth Get Client
 description: Retrieve details of a specific OAuth client by its client ID.
 group: admin
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: GET
-      path: "/admin/oauth/clients/{client_id}"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueAdminApi.ts
         symbols: [_getOAuthClient]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `GET /admin/oauth/clients/{client_id}`

@@ -2,12 +2,6 @@
 name: Admin Delete User
 description: Permanently delete a user by their UUID (hard or soft delete).
 group: admin
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: DELETE
-      path: "/admin/users/{userId}"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueAdminApi.ts
         symbols: [deleteUser]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `DELETE /admin/users/{userId}`

@@ -2,14 +2,6 @@
 name: Sign In with Password
 description: Authenticate an existing user with email or phone and password.
 group: sign-in
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: POST
-      path: "/token"
-      params:
-        grant_type: password
 sdks:
   javascript:
     status: implemented
@@ -18,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueClient.ts
         symbols: [signInWithPassword]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `POST /token` — `grant_type=password`

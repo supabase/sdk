@@ -2,12 +2,6 @@
 name: Admin Sign Out
 description: Revoke a user's session server-side by their access token (requires service role).
 group: admin
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: POST
-      path: "/logout"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueAdminApi.ts
         symbols: [signOut]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `POST /logout`

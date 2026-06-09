@@ -11,6 +11,16 @@ sdks:
         symbols: [symbolName]
 ---
 
+## API
+
+<!-- Optional — remove this section if the feature makes no direct HTTP call (client-side only).
+     Link to the OpenAPI spec and list the operations this feature maps to.
+     For /token variants, note the grant_type discriminator. -->
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `METHOD /path`
+
 ## Behavior
 
 <!-- Required. Describe what the function accepts, what it does, and what it returns.

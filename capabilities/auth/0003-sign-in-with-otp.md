@@ -2,12 +2,6 @@
 name: Sign In with OTP
 description: Send a one-time password (email or SMS) or magic link and authenticate with it.
 group: sign-in
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: POST
-      path: "/otp"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueClient.ts
         symbols: [signInWithOtp]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `POST /otp`

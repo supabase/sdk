@@ -2,12 +2,6 @@
 name: OAuth Approve Authorization
 description: Approve a pending OAuth authorization request on behalf of the current user.
 group: oauth-server
-openapi:
-  repo: supabase/auth
-  path: openapi.yaml
-  operations:
-    - method: POST
-      path: "/oauth/authorizations/{authorization_id}/consent"
 sdks:
   javascript:
     status: implemented
@@ -16,3 +10,9 @@ sdks:
         path: packages/core/auth-js/src/GoTrueClient.ts
         symbols: [_approveAuthorization]
 ---
+
+## API
+
+Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+
+- `POST /oauth/authorizations/{authorization_id}/consent`
