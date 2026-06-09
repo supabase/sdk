@@ -2,6 +2,12 @@
 name: Sign Up
 description: Register a new user with email or phone and password.
 group: sign-in
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: POST
+      path: "/signup"
 sdks:
   javascript:
     status: implemented

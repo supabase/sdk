@@ -2,6 +2,16 @@
 name: Register Passkey
 description: Register a new WebAuthn passkey for the currently authenticated user.
 group: passkey
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: POST
+      path: "/factors"
+      params:
+        factor_type: webauthn
+    - method: POST
+      path: "/factors/{factorId}/verify"
 sdks:
   javascript:
     status: implemented

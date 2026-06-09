@@ -2,6 +2,12 @@
 name: MFA WebAuthn List Authenticators
 description: List all WebAuthn authenticators registered for the current user.
 group: mfa-webauthn
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: GET
+      path: "/user"
 sdks:
   javascript:
     status: implemented

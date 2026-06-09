@@ -2,6 +2,12 @@
 name: Update User
 description: Update the current user's attributes such as email, password, or metadata.
 group: session
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: PUT
+      path: "/user"
 sdks:
   javascript:
     status: implemented

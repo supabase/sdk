@@ -2,6 +2,12 @@
 name: MFA WebAuthn Delete Authenticator
 description: Remove a registered WebAuthn authenticator from the current user's account.
 group: mfa-webauthn
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: DELETE
+      path: "/factors/{factorId}"
 sdks:
   javascript:
     status: implemented

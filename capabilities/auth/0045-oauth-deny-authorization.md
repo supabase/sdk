@@ -2,6 +2,12 @@
 name: OAuth Deny Authorization
 description: Deny a pending OAuth authorization request on behalf of the current user.
 group: oauth-server
+openapi:
+  repo: supabase/auth
+  path: openapi.yaml
+  operations:
+    - method: POST
+      path: "/oauth/authorizations/{authorization_id}/consent"
 sdks:
   javascript:
     status: implemented
