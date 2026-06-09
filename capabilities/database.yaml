@@ -15,7 +15,12 @@ features:
           - repo: supabase/postgrest-js
             path: src/PostgrestQueryBuilder.ts
             symbols: [select]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/postgrest/lib/src/postgrest_query_builder.dart
+            symbols: [select]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }

@@ -15,7 +15,12 @@ features:
           - repo: supabase/storage-js
             path: src/packages/StorageFileApi.ts
             symbols: [upload]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/storage_client/lib/src/storage_file_api.dart
+            symbols: [upload]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }

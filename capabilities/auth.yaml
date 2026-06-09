@@ -18,7 +18,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signUp]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signUp]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -36,7 +41,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithPassword]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInWithPassword]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -54,7 +64,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithOtp]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInWithOtp]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -72,7 +87,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithOAuth]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Exposed as getOAuthSignInUrl in the gotrue package and signInWithOAuth in supabase_flutter. The skipBrowserRedirect option is not publicly exposed.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getOAuthSignInUrl]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -90,7 +111,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithIdToken]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInWithIdToken]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -108,7 +134,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithSSO]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Exposed as getSSOSignInUrl; returns Future<String> (the redirect URL) rather than the structured {data, error} shape used by JS.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getSSOSignInUrl]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -126,7 +158,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInAnonymously]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signInAnonymously]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -162,7 +199,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [verifyOtp]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [verifyOTP]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -180,7 +222,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [exchangeCodeForSession]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [exchangeCodeForSession]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -198,7 +245,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [resend]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [resend]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -216,7 +268,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [reauthenticate]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Returns Future<void> instead of the session; callers cannot inspect the updated session after reauthentication.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [reauthenticate]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -234,7 +292,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [resetPasswordForEmail]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [resetPasswordForEmail]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -254,7 +317,7 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithPasskey]
-      flutter: { status: not_implemented }
+      flutter: { status: not_applicable }
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -272,7 +335,7 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [registerPasskey]
-      flutter: { status: not_implemented }
+      flutter: { status: not_applicable }
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -292,7 +355,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getSession]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Exposed as the synchronous currentSession getter only. There is no async getSession() with lock acquisition or on-demand storage read.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [currentSession]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -310,7 +379,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [setSession]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [setSession]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -328,7 +402,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [refreshSession]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [refreshSession]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -346,7 +425,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getUser]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getUser]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -364,7 +448,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [updateUser]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: PKCE code challenge is not included when changing email in PKCE flow, breaking email-change confirmation for PKCE users.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [updateUser]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -382,7 +472,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getClaims]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Custom JWKS injection via the keys/jwks option is not supported.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getClaims]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -400,7 +496,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [onAuthStateChange]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [onAuthStateChange]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -418,7 +519,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signOut]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Default scope is local (current session only); JS defaults to global (all sessions).
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [signOut]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -436,7 +543,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [startAutoRefresh, stopAutoRefresh]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [startAutoRefresh, stopAutoRefresh]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -454,7 +566,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [initialize]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [recoverSession]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -474,7 +591,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getUserIdentities]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getUserIdentities]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -492,7 +614,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [linkIdentity]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Split into getLinkIdentityUrl (OAuth path) and linkIdentityWithIdToken (ID token path) rather than a single overloaded method.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [getLinkIdentityUrl, linkIdentityWithIdToken]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -510,7 +638,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [unlinkIdentity]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_client.dart
+            symbols: [unlinkIdentity]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -530,7 +663,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [enroll]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Supports totp and phone factor types only; webauthn is not supported.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [enroll]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -548,7 +687,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [challenge]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: The channel parameter (sms/whatsapp) for phone factors is not supported; always defaults to SMS.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [challenge]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -566,7 +711,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [verify]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [verify]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -584,7 +734,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [challengeAndVerify]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [challengeAndVerify]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -602,7 +757,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [unenroll]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [unenroll]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -620,7 +780,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [listFactors]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: The webauthn field is absent from AuthMFAListFactorsResponse; only all, totp, and phone are present.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [listFactors]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -638,7 +804,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [getAuthenticatorAssuranceLevel]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_mfa_api.dart
+            symbols: [getAuthenticatorAssuranceLevel]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -878,7 +1049,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [signOut]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [signOut]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -896,7 +1072,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [inviteUserByEmail]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [inviteUserByEmail]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -914,7 +1095,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [generateLink]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [generateLink]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -932,7 +1118,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [createUser]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [createUser]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -950,7 +1141,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [listUsers]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: Pagination metadata (total, nextPage, lastPage) from response headers is not returned; only the user list is returned.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [listUsers]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -968,7 +1165,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [getUserById]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [getUserById]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -986,7 +1188,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [updateUserById]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [updateUserById]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -1004,7 +1211,13 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [deleteUser]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        notes: The shouldSoftDelete parameter is not supported; always performs a hard delete.
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [deleteUser]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -1022,7 +1235,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [listFactors]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [listFactors]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -1040,7 +1258,12 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueAdminApi.ts
             symbols: [deleteFactor]
-      flutter: { status: not_implemented }
+      flutter:
+        status: implemented
+        references:
+          - repo: supabase/supabase-flutter
+            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            symbols: [deleteFactor]
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
