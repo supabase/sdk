@@ -317,7 +317,9 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [signInWithPasskey]
-      flutter: { status: not_applicable }
+      flutter:
+        status: not_applicable
+        notes: WebAuthn passkeys require browser APIs and are not applicable to Flutter mobile.
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -335,7 +337,9 @@ features:
           - repo: supabase/supabase-js
             path: packages/core/auth-js/src/GoTrueClient.ts
             symbols: [registerPasskey]
-      flutter: { status: not_applicable }
+      flutter:
+        status: not_applicable
+        notes: WebAuthn passkeys require browser APIs and are not applicable to Flutter mobile.
       python: { status: not_implemented }
       swift: { status: not_implemented }
       csharp: { status: not_implemented }
@@ -1239,7 +1243,7 @@ features:
         status: implemented
         references:
           - repo: supabase/supabase-flutter
-            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            path: packages/gotrue/lib/src/gotrue_admin_mfa_api.dart
             symbols: [listFactors]
       python: { status: not_implemented }
       swift: { status: not_implemented }
@@ -1262,7 +1266,7 @@ features:
         status: implemented
         references:
           - repo: supabase/supabase-flutter
-            path: packages/gotrue/lib/src/gotrue_admin_api.dart
+            path: packages/gotrue/lib/src/gotrue_admin_mfa_api.dart
             symbols: [deleteFactor]
       python: { status: not_implemented }
       swift: { status: not_implemented }
