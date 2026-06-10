@@ -7,6 +7,8 @@
   "scripts": {
     "validate": "tsx src/cli.ts validate",
     "validate:online": "tsx src/cli.ts validate --online",
+    "validate-compliance": "tsx src/compliance-cli.ts",
+    "aggregate": "tsx src/aggregate.ts",
     "report": "tsx src/cli.ts report",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
