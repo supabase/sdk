@@ -1,15 +1,7 @@
----
-name: Feature Name
-description: One-sentence description of what this feature does.
-group: group-id
-sdks:
-  javascript:
-    status: implemented
-    references:
-      - repo: owner/repo
-        path: path/to/file.ts
-        symbols: [symbolName]
----
+# Feature Name
+
+<!-- File naming: {feature_id_stem}.md  e.g. auth.sign_up → specs/auth/sign_up.md
+     This file is optional — features without a spec file are still valid. -->
 
 ## API
 
