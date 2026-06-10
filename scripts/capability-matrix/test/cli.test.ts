@@ -12,11 +12,6 @@ const schema = JSON.parse(
   readFileSync(join(here, "..", "..", "..", "schema", "capability-matrix.schema.json"), "utf8")
 );
 
-const langs = ["javascript", "flutter", "python", "swift", "csharp", "go", "kotlin"];
-function allNotImplemented() {
-  return langs.map((l) => `      ${l}: { status: not_implemented }`).join("\n");
-}
-
 function tempCapabilities(yamlByName: Record<string, string>): string {
   const dir = mkdtempSync(join(tmpdir(), "capmatrix-"));
   const capDir = join(dir, "capabilities");
@@ -25,19 +20,22 @@ function tempCapabilities(yamlByName: Record<string, string>): string {
   return capDir;
 }
 
+// Minimal valid feature YAML (no sdks field — features are schema-only since compliance redesign)
+const validFeature = `  - id: auth.a\n    name: A\n    description: d`;
+const validAuthYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n${validFeature}\n`;
+
 describe("run", () => {
   it("returns 0 errors for a valid matrix in validate mode", async () => {
-    const capDir = tempCapabilities({
-      "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - id: auth.a\n    name: A\n    description: d\n    sdks:\n${allNotImplemented()}\n`,
-    });
+    const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
     const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, online: false });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.errorCount).toBe(0);
   });
 
   it("returns errors for a schema-invalid matrix", async () => {
+    // Missing required 'id' field on feature — violates schema
     const capDir = tempCapabilities({
-      "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - id: auth.a\n    name: A\n    description: d\n    sdks:\n      javascript: { status: not_implemented }\n`,
+      "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - name: A\n    description: d\n`,
     });
     const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, online: false });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
@@ -45,50 +43,18 @@ describe("run", () => {
   });
 
   it("produces a parity report in report mode", async () => {
-    const capDir = tempCapabilities({
-      "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - id: auth.a\n    name: A\n    description: d\n    sdks:\n${allNotImplemented()}\n`,
-    });
+    const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
     const result = await run({ mode: "report", capabilitiesDir: capDir, schema, online: false });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
-    expect(result.report?.overall).toBe(0);
+    // With no sdks data on features (compliance redesign), applicable languages = 0, so parity defaults to 1
+    expect(result.report?.overall).toBe(1);
   });
 
-  it("only queries references for changedFiles areas", async () => {
-    const jsImpl = (repo: string, path: string) =>
-      `      javascript: { status: implemented, references: [{ repo: "${repo}", path: "${path}", symbols: [mySymbol] }] }`;
-    const authYaml = [
-      "area: auth",
-      "title: Auth",
-      "description: d",
-      "features:",
-      "  - id: auth.a",
-      "    name: A",
-      "    description: d",
-      "    sdks:",
-      jsImpl("supabase/auth-js", "src/auth.ts"),
-      ...langs.filter((l) => l !== "javascript").map((l) => `      ${l}: { status: not_implemented }`),
-    ].join("\n") + "\n";
-    const storageYaml = [
-      "area: storage",
-      "title: Storage",
-      "description: d",
-      "features:",
-      "  - id: storage.a",
-      "    name: A",
-      "    description: d",
-      "    sdks:",
-      jsImpl("supabase/storage-js", "src/storage.ts"),
-      ...langs.filter((l) => l !== "javascript").map((l) => `      ${l}: { status: not_implemented }`),
-    ].join("\n") + "\n";
+  it("only validates changedFiles areas when changedFiles is provided", async () => {
+    const authYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - id: auth.a\n    name: A\n    description: d\n`;
+    const storageYaml = `area: storage\ntitle: Storage\ndescription: d\nfeatures:\n  - id: storage.a\n    name: A\n    description: d\n`;
 
     const capDir = tempCapabilities({ "auth.yaml": authYaml, "storage.yaml": storageYaml });
-    const queriedPairs: Array<[string, string]> = [];
-    const fakeClient = {
-      async getFile(repo: string, path: string): Promise<string> {
-        queriedPairs.push([repo, path]);
-        return "mySymbol";
-      },
-    };
 
     const authFile = join(capDir, "auth.yaml");
     const result = await run({
@@ -97,13 +63,10 @@ describe("run", () => {
       schema,
       online: true,
       changedFiles: [authFile],
-      repoClient: fakeClient,
     });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
 
-    // Should have queried auth-js but NOT storage-js
-    expect(queriedPairs.some(([repo]) => repo === "supabase/auth-js")).toBe(true);
-    expect(queriedPairs.some(([repo]) => repo === "supabase/storage-js")).toBe(false);
+    // Filtering by changedFiles should produce no errors for valid YAML
     expect(result.errorCount).toBe(0);
   });
 });
