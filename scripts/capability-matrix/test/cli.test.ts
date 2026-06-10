@@ -46,8 +46,8 @@ describe("run", () => {
     const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
     const result = await run({ mode: "report", capabilitiesDir: capDir, schema, online: false });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
-    // With no sdks data on features (compliance redesign), applicable languages = 0, so parity defaults to 1
-    expect(result.report?.overall).toBe(1);
+    // With no compliance data, all languages default to not_implemented so parity is 0
+    expect(result.report?.overall).toBe(0);
   });
 
   it("only validates changedFiles areas when changedFiles is provided", async () => {

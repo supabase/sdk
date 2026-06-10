@@ -1,5 +1,5 @@
-import { LANGUAGES } from "./types";
-import type { Language, LoadedArea } from "./types";
+import { LANGUAGES } from "./types.js";
+import type { ComplianceMap, Language, LoadedArea } from "./types.js";
 
 export interface ParityReport {
   overall: number;
@@ -7,9 +7,13 @@ export interface ParityReport {
   perLanguage: Record<Language, number>;
 }
 
-const mean = (xs: number[]): number => (xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length);
+const mean = (xs: number[]): number =>
+  xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length;
 
-export function computeParity(loaded: LoadedArea[]): ParityReport {
+export function computeParity(
+  loaded: LoadedArea[],
+  compliance: Partial<Record<Language, ComplianceMap>>
+): ParityReport {
   const featureParities: number[] = [];
   const perAreaParities: Record<string, number[]> = {};
   const langImplemented = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
@@ -21,11 +25,11 @@ export function computeParity(loaded: LoadedArea[]): ParityReport {
       let implemented = 0;
       let applicable = 0;
       for (const lang of LANGUAGES) {
-        const status = feature.sdks?.[lang]?.status;
-        if (status === undefined || status === "not_applicable") continue;
+        const status = compliance[lang]?.[feature.id]?.status ?? "not_implemented";
+        if (status === "not_applicable") continue;
         applicable++;
         langApplicable[lang]++;
-        if (status === "implemented") {
+        if (status === "implemented" || status === "partially_implemented") {
           implemented++;
           langImplemented[lang]++;
         }

@@ -29,7 +29,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   const { areas, findings: loadFindings } = loadAreas(opts.capabilitiesDir);
 
   if (opts.mode === "report") {
-    return { findings: loadFindings, errorCount: loadFindings.filter((f) => f.level === "error").length, report: computeParity(areas) };
+    return { findings: loadFindings, errorCount: loadFindings.filter((f) => f.level === "error").length, report: computeParity(areas, {}) };
   }
 
   const findings: Finding[] = [...loadFindings];
