@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAreas } from "./load.js";
@@ -17,6 +17,22 @@ const LANG_LABELS: Record<Language, string> = {
   go: "Go",
   kotlin: "Kotlin",
 };
+
+const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/specs";
+
+function buildSpecSet(root: string): Set<string> {
+  const specsDir = join(root, "specs");
+  const ids = new Set<string>();
+  try {
+    for (const entry of readdirSync(specsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      for (const file of readdirSync(join(specsDir, entry.name))) {
+        if (file.endsWith(".md")) ids.add(`${entry.name}.${file.slice(0, -3)}`);
+      }
+    }
+  } catch { /* specs dir absent */ }
+  return ids;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -73,7 +89,7 @@ function statusCell(feature: Feature, lang: Language, compliance: Partial<Record
 
 // ── Area table ───────────────────────────────────────────────────────────────
 
-function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>): string {
+function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, specs: Set<string>): string {
   const { area } = loaded;
 
   // Group features preserving insertion order
@@ -89,9 +105,12 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
     rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 2}">${esc(group)}</td></tr>\n`;
     for (const f of features) {
       const fp = featureParity(f, compliance);
+      const nameHtml = specs.has(f.id)
+        ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replace(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
+        : esc(f.name);
       rows += `      <tr>
         <td class="feature-name">
-          <div class="feature-name-text">${esc(f.name)}</div>
+          <div class="feature-name-text">${nameHtml}</div>
           <div class="feature-desc">${esc(f.description)}</div>
         </td>
         ${LANGUAGES.map((l) => statusCell(f, l, compliance)).join("")}
@@ -127,6 +146,7 @@ ${rows}        </tbody>
 export function renderHtml(
   areas: LoadedArea[],
   compliance: Partial<Record<Language, ComplianceMap>>,
+  specs: Set<string>,
   buildDate: string
 ): string {
   const parity = computeParity(areas, compliance);
@@ -162,7 +182,7 @@ export function renderHtml(
     })
     .join("");
 
-  const areaSections = areas.map((a) => renderArea(a, compliance)).join("\n");
+  const areaSections = areas.map((a) => renderArea(a, compliance, specs)).join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -369,6 +389,8 @@ export function renderHtml(
     /* ── Feature name ──────────────────────────────────────── */
     .feature-name { cursor: default; }
     .feature-name-text { font-weight: 500; color: #171717; }
+    .feature-name-text a.feature-spec-link { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
+    .feature-name-text a.feature-spec-link:hover { color: #3ECF8E; text-decoration-style: solid; }
     .feature-desc { font-size: 0.72rem; color: #888; margin-top: 0.1rem; }
 
     /* ── Status cells ──────────────────────────────────────── */
@@ -523,8 +545,9 @@ function main() {
     if (findings.some((f) => f.level === "error")) process.exit(1);
   }
 
+  const specs = buildSpecSet(root);
   const buildDate = new Date().toISOString().slice(0, 10);
-  const html = renderHtml(areas, compliance, buildDate);
+  const html = renderHtml(areas, compliance, specs, buildDate);
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), html, "utf8");
