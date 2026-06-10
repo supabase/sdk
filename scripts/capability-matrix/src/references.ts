@@ -5,7 +5,7 @@ export interface RepoClient {
 }
 
 // Source-code references were removed from capability YAML in the SDK compliance redesign.
-// Compliance files (supabase-capabilities.yaml in each SDK repo) carry status only.
+// Compliance files (sdk-compliance.yaml in each SDK repo) carry status only.
 export async function checkReferences(
   _loaded: LoadedArea[],
   _client: RepoClient

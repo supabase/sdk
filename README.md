@@ -38,7 +38,7 @@ The full schema lives in `schema/capability-matrix.schema.json`.
 
 ## SDK compliance
 
-SDK compliance is **declared in each SDK repo**, not here. To report which features your SDK implements, add a `supabase-capabilities.yaml` file to the root of your SDK repo:
+SDK compliance is **declared in each SDK repo**, not here. To report which features your SDK implements, add a `sdk-compliance.yaml` file to the root of your SDK repo:
 
 ```yaml
 sdk: javascript   # one of: javascript, flutter, python, swift, csharp, go, kotlin
@@ -79,7 +79,7 @@ npm test                           # vitest suite for the validator
 npm run typecheck                  # tsc --noEmit
 npm run validate                   # schema + structural checks (no network)
 npm run report                     # parity report as JSON (overall, per-area, per-language)
-npm run validate-compliance <file> # validate a supabase-capabilities.yaml against the canonical spec
+npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
 npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
 npm run build-site                 # render the static site to site/index.html
 npm run build-site compliance.json # render the site with compliance data
@@ -90,5 +90,5 @@ npm run build-site compliance.json # render the site with compliance data
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `validate-capabilities.yml` | push to `main`, PRs touching matrix files | Schema + structural checks including spec file validation. |
-| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `supabase-capabilities.yaml` against the canonical feature list. |
+| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list. |
 | `aggregate-capabilities.yml` | hourly cron + `workflow_dispatch` | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages. |

@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       file:
-        description: Path to supabase-capabilities.yaml in the calling repo
+        description: Path to sdk-compliance.yaml in the calling repo
         type: string
-        default: supabase-capabilities.yaml
+        default: sdk-compliance.yaml
 
 jobs:
   validate:

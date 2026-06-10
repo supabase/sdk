@@ -14,7 +14,7 @@ function repoRoot(): string {
 async function main(): Promise<void> {
   const filePath = process.argv[2];
   if (!filePath) {
-    console.error("Usage: compliance-cli.ts <path-to-supabase-capabilities.yaml>");
+    console.error("Usage: compliance-cli.ts <path-to-sdk-compliance.yaml>");
     process.exit(1);
   }
 

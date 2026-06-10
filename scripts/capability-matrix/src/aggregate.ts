@@ -29,7 +29,7 @@ function repoRoot(): string {
 }
 
 async function fetchComplianceFile(slug: string, token: string): Promise<string | null> {
-  const url = `https://api.github.com/repos/${slug}/contents/supabase-capabilities.yaml`;
+  const url = `https://api.github.com/repos/${slug}/contents/sdk-compliance.yaml`;
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
