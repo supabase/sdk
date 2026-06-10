@@ -1,0 +1,35 @@
+name: Validate SDK Compliance (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      file:
+        description: Path to supabase-capabilities.yaml in the calling repo
+        type: string
+        default: supabase-capabilities.yaml
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SDK repo
+        uses: actions/checkout@v4
+
+      - name: Checkout capability spec
+        uses: actions/checkout@v4
+        with:
+          repository: supabase/sdk
+          path: _sdk-spec
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Validate compliance file
+        run: npm run validate-compliance -- "${{ github.workspace }}/${{ inputs.file }}"
+        working-directory: _sdk-spec/scripts/capability-matrix
