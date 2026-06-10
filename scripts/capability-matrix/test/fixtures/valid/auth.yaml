@@ -5,11 +5,3 @@ features:
   - id: auth.sign_in_with_otp
     name: Sign in with OTP
     description: Send a one-time password and authenticate with it.
-    sdks:
-      javascript: { status: not_implemented }
-      flutter: { status: not_implemented }
-      python: { status: not_implemented }
-      swift: { status: not_implemented }
-      csharp: { status: not_implemented }
-      go: { status: not_implemented }
-      kotlin: { status: not_implemented }
