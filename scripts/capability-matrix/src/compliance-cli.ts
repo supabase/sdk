@@ -7,7 +7,8 @@ import { validateCompliance, collectFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
 
 function repoRoot(): string {
-  return dirname(dirname(dirname(fileURLToPath(import.meta.url))));
+  const here = dirname(fileURLToPath(import.meta.url));
+  return resolve(here, "..", "..", "..");
 }
 
 async function main(): Promise<void> {

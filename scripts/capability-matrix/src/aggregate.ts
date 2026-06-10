@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { parse } from "yaml";
 import { loadAreas } from "./load.js";
 import { validateCompliance, normalizeCompliance, collectFeatureIds } from "./compliance.js";
@@ -24,7 +24,8 @@ const REPOS: Repo[] = [
 ];
 
 function repoRoot(): string {
-  return dirname(dirname(dirname(fileURLToPath(import.meta.url))));
+  const here = dirname(fileURLToPath(import.meta.url));
+  return resolve(here, "..", "..", "..");
 }
 
 async function fetchComplianceFile(slug: string, token: string): Promise<string | null> {
