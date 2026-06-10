@@ -8,9 +8,9 @@ describe("constants", () => {
     );
   });
 
-  it("defines the three status values", () => {
+  it("defines the four status values", () => {
     expect([...STATUSES].sort()).toEqual(
-      ["implemented", "not_applicable", "not_implemented"]
+      ["implemented", "not_applicable", "not_implemented", "partially_implemented"]
     );
   });
 });

@@ -9,21 +9,17 @@ export const LANGUAGES = [
 ] as const;
 export type Language = (typeof LANGUAGES)[number];
 
-export const STATUSES = ["implemented", "not_implemented", "not_applicable"] as const;
+export const STATUSES = [
+  "implemented",
+  "partially_implemented",
+  "not_implemented",
+  "not_applicable",
+] as const;
 export type Status = (typeof STATUSES)[number];
 
-export interface Reference {
-  repo: string;
-  path: string;
-  symbols?: string[];
-  ref?: string;
-}
-
-export interface SdkEntry {
-  status: Status;
-  since?: string;
-  notes?: string;
-  references?: Reference[];
+export interface Group {
+  id: string;
+  title: string;
 }
 
 export interface Feature {
@@ -31,13 +27,13 @@ export interface Feature {
   name: string;
   description: string;
   group?: string;
-  sdks: Record<Language, SdkEntry>;
 }
 
 export interface AreaFile {
   area: string;
   title: string;
   description: string;
+  groups?: Group[];
   features: Feature[];
 }
 
@@ -51,3 +47,11 @@ export interface Finding {
   file: string;
   message: string;
 }
+
+export interface ComplianceEntry {
+  status: Status;
+  note?: string;
+}
+
+// Feature ID → ComplianceEntry (sparse; unlisted features default to not_implemented)
+export type ComplianceMap = Record<string, ComplianceEntry>;
