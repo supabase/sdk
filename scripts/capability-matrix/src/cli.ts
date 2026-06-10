@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { loadAreas } from "./load";
 import { checkSchema } from "./schema";
-import { checkStructural } from "./structural";
+import { checkStructural, checkSpecs } from "./structural";
 import { checkReferences, type RepoClient } from "./references";
 import { githubClient } from "./github";
 import { computeParity, type ParityReport } from "./report";
@@ -14,6 +14,7 @@ export interface RunOptions {
   capabilitiesDir: string;
   schema: object;
   online: boolean;
+  specsDir?: string;
   changedFiles?: string[];
   token?: string;
   repoClient?: RepoClient;
@@ -35,6 +36,11 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   const findings: Finding[] = [...loadFindings];
   findings.push(...checkSchema(areas, opts.schema));
   findings.push(...checkStructural(areas));
+
+  if (opts.specsDir) {
+    const knownIds = new Set(areas.flatMap((a) => a.area.features.map((f) => f.id)));
+    findings.push(...checkSpecs(opts.specsDir, knownIds));
+  }
 
   if (opts.online) {
     let target = areas;
@@ -66,6 +72,7 @@ async function main(): Promise<void> {
   const result = await run({
     mode,
     capabilitiesDir: join(root, "capabilities"),
+    specsDir: join(root, "specs"),
     schema,
     online,
     changedFiles: positionals.length > 0 ? positionals : undefined,
