@@ -36,6 +36,7 @@ async function fetchComplianceFile(slug: string, token: string): Promise<string 
       Accept: "application/vnd.github.raw+json",
       "X-GitHub-Api-Version": "2022-11-28",
     },
+    signal: AbortSignal.timeout(10_000),
   });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`GitHub API ${res.status} for ${slug}`);
