@@ -1,7 +1,9 @@
 # Feature Name
 
 <!-- File naming: {feature_id_stem}.md  e.g. auth.sign_up → specs/auth/sign_up.md
-     This file is optional — features without a spec file are still valid. -->
+     This file is optional — features without a spec file are still valid.
+     Structured metadata (id, name, description, group) lives in capabilities/{area}.yaml.
+     This file is free-form prose for humans and LLMs: behavior, contracts, edge cases. -->
 
 ## API
 
