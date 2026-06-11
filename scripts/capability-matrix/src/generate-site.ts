@@ -1,10 +1,10 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAreas } from "./load.js";
 import { computeParity } from "./report.js";
 import { LANGUAGES } from "./types.js";
-import type { Feature, Language, LoadedArea } from "./types.js";
+import type { ComplianceMap, Feature, Language, LoadedArea } from "./types.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,22 @@ const LANG_LABELS: Record<Language, string> = {
   kotlin: "Kotlin",
 };
 
+const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/specs";
+
+function buildSpecSet(root: string): Set<string> {
+  const specsDir = join(root, "specs");
+  const ids = new Set<string>();
+  try {
+    for (const entry of readdirSync(specsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      for (const file of readdirSync(join(specsDir, entry.name))) {
+        if (file.endsWith(".md")) ids.add(`${entry.name}.${file.slice(0, -3)}`);
+      }
+    }
+  } catch { /* specs dir absent */ }
+  return ids;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function pct(n: number) {
@@ -28,14 +44,14 @@ function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
 }
 
-function featureParity(feature: Feature): number {
+function featureParity(feature: Feature, compliance: Partial<Record<Language, ComplianceMap>>): number {
   let impl = 0;
   let applicable = 0;
   for (const lang of LANGUAGES) {
-    const status = feature.sdks[lang]?.status;
-    if (!status || status === "not_applicable") continue;
+    const status = compliance[lang]?.[feature.id]?.status ?? "not_implemented";
+    if (status === "not_applicable") continue;
     applicable++;
-    if (status === "implemented") impl++;
+    if (status === "implemented" || status === "partially_implemented") impl++;
   }
   return applicable === 0 ? 1 : impl / applicable;
 }
@@ -56,32 +72,24 @@ function esc(s: string) {
 
 // ── Cell rendering ───────────────────────────────────────────────────────────
 
-function statusCell(feature: Feature, lang: Language): string {
-  const entry = feature.sdks[lang];
-  if (!entry) return `<td class="cell-na">➖</td>`;
-  switch (entry.status) {
-    case "implemented": {
-      const symbolLinks = entry.references?.flatMap((r) => {
-        const url = `https://github.com/${r.repo}/blob/${r.ref ?? "HEAD"}/${r.path}`;
-        return (r.symbols ?? []).map((s) => ({ s, url }));
-      }) ?? [];
-      const symbolsHtml = symbolLinks.length > 0
-        ? `<div class="cell-symbols">${symbolLinks.map(({ s, url }) =>
-            `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><code>${esc(s)}</code></a>`
-          ).join("")}</div>`
-        : "";
-      return `<td class="cell-yes" title="${esc(LANG_LABELS[lang])}: implemented">✅${symbolsHtml}</td>`;
-    }
+function statusCell(feature: Feature, lang: Language, compliance: Partial<Record<Language, ComplianceMap>>): string {
+  const entry = compliance[lang]?.[feature.id];
+  const status = entry?.status ?? "not_implemented";
+  switch (status) {
+    case "implemented":
+      return `<td class="cell-yes" title="${esc(LANG_LABELS[lang])}: implemented">✅</td>`;
+    case "partially_implemented":
+      return `<td class="cell-partial" title="${esc(LANG_LABELS[lang])}: partially implemented${entry?.note ? " — " + esc(entry.note) : ""}">🔶</td>`;
     case "not_implemented":
       return `<td class="cell-no" title="${esc(LANG_LABELS[lang])}: not implemented">⬜</td>`;
     case "not_applicable":
-      return `<td class="cell-na" title="${esc(LANG_LABELS[lang])}: not applicable${entry.notes ? " — " + esc(entry.notes) : ""}">➖</td>`;
+      return `<td class="cell-na" title="${esc(LANG_LABELS[lang])}: not applicable${entry?.note ? " — " + esc(entry.note) : ""}">➖</td>`;
   }
 }
 
 // ── Area table ───────────────────────────────────────────────────────────────
 
-function renderArea(loaded: LoadedArea): string {
+function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, specs: Set<string>): string {
   const { area } = loaded;
 
   // Group features preserving insertion order
@@ -96,13 +104,16 @@ function renderArea(loaded: LoadedArea): string {
   for (const [group, features] of groups) {
     rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 2}">${esc(group)}</td></tr>\n`;
     for (const f of features) {
-      const fp = featureParity(f);
+      const fp = featureParity(f, compliance);
+      const nameHtml = specs.has(f.id)
+        ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
+        : esc(f.name);
       rows += `      <tr>
         <td class="feature-name">
-          <div class="feature-name-text">${esc(f.name)}</div>
+          <div class="feature-name-text">${nameHtml}</div>
           <div class="feature-desc">${esc(f.description)}</div>
         </td>
-        ${LANGUAGES.map((l) => statusCell(f, l)).join("")}
+        ${LANGUAGES.map((l) => statusCell(f, l, compliance)).join("")}
         <td class="parity-cell ${parityClass(fp)}">${pct(fp)}</td>
       </tr>\n`;
     }
@@ -132,8 +143,13 @@ ${rows}        </tbody>
 
 // ── Full page ────────────────────────────────────────────────────────────────
 
-export function renderHtml(areas: LoadedArea[], buildDate: string): string {
-  const parity = computeParity(areas);
+export function renderHtml(
+  areas: LoadedArea[],
+  compliance: Partial<Record<Language, ComplianceMap>>,
+  specs: Set<string>,
+  buildDate: string
+): string {
+  const parity = computeParity(areas, compliance);
 
   const navLinks = areas
     .map(
@@ -166,7 +182,7 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     })
     .join("");
 
-  const areaSections = areas.map((a) => renderArea(a)).join("\n");
+  const areaSections = areas.map((a) => renderArea(a, compliance, specs)).join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -373,10 +389,12 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     /* ── Feature name ──────────────────────────────────────── */
     .feature-name { cursor: default; }
     .feature-name-text { font-weight: 500; color: #171717; }
+    .feature-name-text a.feature-spec-link { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 2px; }
+    .feature-name-text a.feature-spec-link:hover { color: #3ECF8E; text-decoration-style: solid; }
     .feature-desc { font-size: 0.72rem; color: #888; margin-top: 0.1rem; }
 
     /* ── Status cells ──────────────────────────────────────── */
-    .cell-yes, .cell-no, .cell-na {
+    .cell-yes, .cell-no, .cell-na, .cell-partial {
       text-align: center;
       font-size: 1rem;
       vertical-align: top;
@@ -385,6 +403,7 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
     .cell-yes { background: #f0fdf4; }
     .cell-no  { color: #cbd5e1; }
     .cell-na  { color: #cbd5e1; opacity: 0.6; }
+    .cell-partial { background: #fffbeb; }
 
     /* ── Symbol pills ──────────────────────────────────────── */
     .cell-symbols {
@@ -472,6 +491,7 @@ export function renderHtml(areas: LoadedArea[], buildDate: string): string {
 
 <footer class="legend">
   <span class="legend-item">✅ Implemented</span>
+  <span class="legend-item">🔶 Partially implemented</span>
   <span class="legend-item">⬜ Not implemented</span>
   <span class="legend-item">➖ Not applicable</span>
   <span class="legend-item" style="color:#16a34a">● ≥ 80% parity</span>
@@ -509,10 +529,15 @@ function repoRoot(): string {
   return resolve(here, "..", "..", "..");
 }
 
-async function main() {
+function main() {
   const root = repoRoot();
   const capDir = join(root, "capabilities");
   const outDir = join(root, "site");
+  const compliancePath = process.argv[2];
+
+  const compliance: Partial<Record<Language, ComplianceMap>> = compliancePath
+    ? JSON.parse(readFileSync(compliancePath, "utf8"))
+    : {};
 
   const { areas, findings } = loadAreas(capDir);
   if (findings.length > 0) {
@@ -520,12 +545,13 @@ async function main() {
     if (findings.some((f) => f.level === "error")) process.exit(1);
   }
 
+  const specs = buildSpecSet(root);
   const buildDate = new Date().toISOString().slice(0, 10);
-  const html = renderHtml(areas, buildDate);
+  const html = renderHtml(areas, compliance, specs, buildDate);
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), html, "utf8");
   console.log(`Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main();

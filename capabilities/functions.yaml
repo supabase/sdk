@@ -2,22 +2,11 @@
 area: functions
 title: Edge Functions
 description: Invoke Supabase Edge Functions from the client.
-
+groups:
+  - id: invocation
+    title: Invocation
 features:
   - id: functions.invoke
     name: Invoke function
     description: Call a deployed Edge Function by name with a request body.
     group: invocation
-    sdks:
-      javascript:
-        status: implemented
-        references:
-          - repo: supabase/functions-js
-            path: src/FunctionsClient.ts
-            symbols: [invoke]
-      flutter: { status: not_implemented }
-      python: { status: not_implemented }
-      swift: { status: not_implemented }
-      csharp: { status: not_implemented }
-      go: { status: not_implemented }
-      kotlin: { status: not_implemented }

@@ -10,68 +10,68 @@ const schema = JSON.parse(
   readFileSync(join(here, "..", "..", "..", "schema", "capability-matrix.schema.json"), "utf8")
 );
 
-function sdksAllImplemented() {
-  const langs = ["javascript", "flutter", "python", "swift", "csharp", "go", "kotlin"];
-  return Object.fromEntries(
-    langs.map((l) => [l, { status: "implemented", references: [{ repo: "supabase/x", path: "src/a.ts" }] }])
-  );
-}
-
 function loaded(area: unknown): LoadedArea[] {
   return [{ file: "auth.yaml", area: area as never }];
 }
 
 describe("checkSchema", () => {
-  it("accepts a well-formed area file", () => {
+  it("accepts a minimal valid area file", () => {
     const area = {
-      area: "auth", title: "Authentication", description: "x",
-      features: [{ id: "auth.f", name: "F", description: "d", sdks: sdksAllImplemented() }],
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      features: [{ id: "auth.f", name: "F", description: "d" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
 
-  it("rejects an implemented entry with no references", () => {
-    const sdks = sdksAllImplemented();
-    (sdks as Record<string, { status: string; references?: unknown }>).swift = { status: "implemented" };
+  it("accepts a feature with an optional group", () => {
     const area = {
-      area: "auth", title: "Authentication", description: "x",
-      features: [{ id: "auth.f", name: "F", description: "d", sdks }],
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      features: [{ id: "auth.f", name: "F", description: "d", group: "sign-in" }],
+    };
+    expect(checkSchema(loaded(area), schema)).toEqual([]);
+  });
+
+  it("accepts an area file with groups metadata", () => {
+    const area = {
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      groups: [{ id: "sign-in", title: "Sign-in / Sign-up" }],
+      features: [{ id: "auth.f", name: "F", description: "d", group: "sign-in" }],
+    };
+    expect(checkSchema(loaded(area), schema)).toEqual([]);
+  });
+
+  it("rejects a feature with an extra field (sdks)", () => {
+    const area = {
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      features: [{ id: "auth.f", name: "F", description: "d", sdks: {} }],
     };
     expect(checkSchema(loaded(area), schema).length).toBeGreaterThan(0);
   });
 
-  it("rejects references on a not_implemented entry", () => {
-    const sdks = sdksAllImplemented();
-    (sdks as Record<string, unknown>).swift = {
-      status: "not_implemented",
-      references: [{ repo: "supabase/x", path: "src/a.ts" }],
-    };
+  it("rejects a feature missing required id", () => {
     const area = {
-      area: "auth", title: "Authentication", description: "x",
-      features: [{ id: "auth.f", name: "F", description: "d", sdks }],
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      features: [{ name: "F", description: "d" }],
     };
     expect(checkSchema(loaded(area), schema).length).toBeGreaterThan(0);
   });
 
-  it("rejects a missing language key", () => {
-    const sdks = sdksAllImplemented();
-    delete (sdks as Record<string, unknown>).kotlin;
+  it("rejects a feature id that does not match area.feature pattern", () => {
     const area = {
-      area: "auth", title: "Authentication", description: "x",
-      features: [{ id: "auth.f", name: "F", description: "d", sdks }],
-    };
-    expect(checkSchema(loaded(area), schema).length).toBeGreaterThan(0);
-  });
-
-  it("rejects a path with a line-number suffix", () => {
-    const sdks = sdksAllImplemented();
-    (sdks as Record<string, unknown>).go = {
-      status: "implemented",
-      references: [{ repo: "supabase/x", path: "src/a.ts:42" }],
-    };
-    const area = {
-      area: "auth", title: "Authentication", description: "x",
-      features: [{ id: "auth.f", name: "F", description: "d", sdks }],
+      area: "auth",
+      title: "Authentication",
+      description: "x",
+      features: [{ id: "auth", name: "F", description: "d" }],
     };
     expect(checkSchema(loaded(area), schema).length).toBeGreaterThan(0);
   });

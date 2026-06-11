@@ -1,2 +1,8 @@
+# Claude Code internal state (worktree metadata, session files)
 .claude/
+
+# Generated site output
 site/
+
+# AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
+docs/superpowers/

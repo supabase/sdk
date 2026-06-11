@@ -1,8 +1,6 @@
-import { basename } from "node:path";
-import { LANGUAGES } from "./types";
-import type { Finding, LoadedArea } from "./types";
-
-const SEMVER = /^\d+\.\d+\.\d+(?:[-+].+)?$/;
+import { readdirSync } from "node:fs";
+import { basename, join } from "node:path";
+import type { Finding, LoadedArea } from "./types.js";
 
 export function checkStructural(loaded: LoadedArea[]): Finding[] {
   const findings: Finding[] = [];
@@ -11,35 +9,57 @@ export function checkStructural(loaded: LoadedArea[]): Finding[] {
   for (const { file, area } of loaded) {
     const fileArea = basename(file, ".yaml");
     if (area?.area !== fileArea) {
-      findings.push({ level: "error", file, message: `area "${area?.area}" does not match filename "${fileArea}"` });
+      findings.push({
+        level: "error",
+        file,
+        message: `area "${area?.area}" does not match filename "${fileArea}"`,
+      });
     }
 
     for (const feature of area?.features ?? []) {
       const prefix = `${area.area}.`;
       if (!feature.id?.startsWith(prefix)) {
-        findings.push({ level: "error", file, message: `feature id "${feature.id}" must start with "${prefix}"` });
+        findings.push({
+          level: "error",
+          file,
+          message: `feature id "${feature.id}" must start with "${prefix}"`,
+        });
       }
 
       if (feature.id) {
         const prev = seenIds.get(feature.id);
         if (prev !== undefined) {
-          findings.push({ level: "error", file, message: `duplicate feature id "${feature.id}" (also defined in ${prev})` });
+          findings.push({
+            level: "error",
+            file,
+            message: `duplicate feature id "${feature.id}" (also defined in ${prev})`,
+          });
         } else {
           seenIds.set(feature.id, file);
         }
       }
+    }
+  }
+  return findings;
+}
 
-      for (const lang of LANGUAGES) {
-        const entry = feature.sdks?.[lang];
-        if (!entry) continue;
-        if (entry.since !== undefined && !SEMVER.test(entry.since)) {
-          findings.push({ level: "error", file, message: `${feature.id}.${lang}.since "${entry.since}" is not valid semver` });
-        }
-        if (entry.status === "not_applicable" && !entry.notes) {
-          findings.push({ level: "warning", file, message: `${feature.id}.${lang} is not_applicable without notes` });
+export function checkSpecs(specsDir: string, knownIds: Set<string>): Finding[] {
+  const findings: Finding[] = [];
+  try {
+    for (const entry of readdirSync(specsDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      for (const file of readdirSync(join(specsDir, entry.name))) {
+        if (!file.endsWith(".md")) continue;
+        const id = `${entry.name}.${file.slice(0, -3)}`;
+        if (!knownIds.has(id)) {
+          findings.push({
+            level: "error",
+            file: join(specsDir, entry.name, file),
+            message: `spec has no matching feature id "${id}" in any capabilities YAML`,
+          });
         }
       }
     }
-  }
+  } catch { /* specs dir absent */ }
   return findings;
 }

@@ -1,21 +1,20 @@
 # Supabase SDK Capability Matrix
 
-The canonical, machine-readable record of which features each official Supabase client SDK implements. One YAML file per product area, validated in CI against a JSON Schema, with every claim of "implemented" backed by a verifiable reference to source code in the SDK's repository.
+The canonical, machine-readable record of which features exist across Supabase client SDKs. This repository is a **pure feature registry** — it defines what features exist and what they mean. Each SDK repo is responsible for declaring which features it implements.
 
-A static site rendered from these files is published at **https://shiny-adventure-ww2255r.pages.github.io/** (see `.github/workflows/deploy-pages.yml`).
+A static site rendered from this data is published at **https://shiny-adventure-ww2255r.pages.github.io/**.
 
 ## Repository layout
 
 ```
 capabilities/   # One YAML file per product area (auth, database, storage, realtime, functions)
+specs/          # Optional human-readable spec per feature: specs/{area}/{feature}.md
 schema/         # JSON Schema for area files
 scripts/        # TypeScript validator + site generator (scripts/capability-matrix)
-.github/        # CI: structural validation, nightly reference drift, Pages deploy
+.github/        # CI workflows (see below)
 ```
 
 ## SDKs tracked
-
-Every feature must declare a status for all seven official SDKs:
 
 `javascript` · `flutter` · `python` · `swift` · `csharp` · `go` · `kotlin`
 
@@ -23,28 +22,52 @@ Every feature must declare a status for all seven official SDKs:
 
 | Status | Meaning |
 |---|---|
-| `implemented` | Feature ships in the SDK. Requires at least one `references` entry pointing to the implementation. |
-| `not_implemented` | Feature is in scope but not yet shipped. Must not include references. |
-| `not_applicable` | Feature does not apply to this SDK (e.g. browser-only APIs in server SDKs). Must not include references. |
+| `implemented` | Feature is fully implemented in the SDK. |
+| `partially_implemented` | Feature is partially implemented. A `note` explaining what is missing is required. |
+| `not_implemented` | Feature is in scope but not yet shipped (default for unlisted features). |
+| `not_applicable` | Feature does not apply to this SDK (e.g. browser-only APIs in a server SDK). |
 
 ## Adding or updating a capability
 
 1. Open the YAML for the relevant area under `capabilities/` (or create a new file matching the schema).
-2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, optional `group`, and an `sdks` block covering all seven languages.
-3. For any SDK marked `implemented`, add `references` pointing to the source:
+2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, and an optional `group`.
+3. Optionally add a spec file at `specs/<area>/<feature>.md` documenting the expected behavior. The validator enforces that every spec file has a matching feature ID.
+4. Validate locally and open a PR. CI runs structural checks (including spec file validation) on every PR.
 
-   ```yaml
-   references:
-     - repo: supabase/postgrest-js
-       path: src/PostgrestQueryBuilder.ts
-       symbols: [select]
-       ref: v1.2.3   # optional pin to a tag, branch, or commit
-   ```
+The full schema lives in `schema/capability-matrix.schema.json`.
 
-4. Validate locally (see below).
-5. Open a PR. CI runs structural checks on every PR and reference checks on changed files. A nightly job re-runs reference checks across the whole matrix to catch upstream renames.
+## SDK compliance
 
-The full schema lives in `schema/capability-matrix.schema.json` — the validator and editors that understand JSON Schema (via the `yaml-language-server` header at the top of each area file) will autocomplete and error-check as you type.
+SDK compliance is **declared in each SDK repo**, not here. To report which features your SDK implements, add a `sdk-compliance.yaml` file to the root of your SDK repo:
+
+```yaml
+sdk: javascript   # one of: javascript, flutter, python, swift, csharp, go, kotlin
+
+features:
+  auth.sign_up:                implemented
+  auth.sign_in_with_password:  implemented
+
+  auth.mfa_enroll:
+    status: partially_implemented
+    note: "TOTP only — phone factor not yet supported"
+
+  # Unlisted features default to not_implemented
+```
+
+The file is **sparse** — only list features that differ from `not_implemented`. Unknown feature IDs and invalid status values fail CI.
+
+### Opt-in to validation
+
+Add `.github/workflows/validate-capabilities.yml` to your SDK repo:
+
+```yaml
+on: [pull_request]
+jobs:
+  validate:
+    uses: supabase/sdk/.github/workflows/validate-sdk-compliance.yml@main
+```
+
+This checks out the canonical feature list from this repo and validates your compliance file against it on every PR.
 
 ## Local development
 
@@ -52,19 +75,20 @@ The full schema lives in `schema/capability-matrix.schema.json` — the validato
 cd scripts/capability-matrix
 npm ci
 
-npm test               # vitest suite for the validator
-npm run typecheck      # tsc --noEmit
-npm run validate       # tier 1: schema + structural checks (no network)
-npm run validate:online # tier 2: also fetch each reference and verify the file/symbol exists
-npm run report         # parity report as JSON (overall, per-area, per-language)
-npm run build-site     # render the static site to scripts/capability-matrix/site/
+npm test                           # vitest suite for the validator
+npm run typecheck                  # tsc --noEmit
+npm run validate                   # schema + structural checks (no network)
+npm run report                     # parity report as JSON (overall, per-area, per-language)
+npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
+npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
+npm run build-site                 # render the static site to site/index.html
+npm run build-site compliance.json # render the site with compliance data
 ```
-
-`validate:online` and the nightly CI job hit the GitHub REST API; set `GITHUB_TOKEN` in the environment to avoid rate limits.
 
 ## CI
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `validate-capabilities.yml` | push to `main`, PRs touching matrix files, nightly cron | Tier 1 structural on every run; tier 2 references on PRs (changed files) and nightly (all files). |
-| `deploy-pages.yml` | push to `main` touching matrix files, manual dispatch | Builds the site and deploys to GitHub Pages. |
+| `validate-capabilities.yml` | push to `main`, PRs touching matrix files | Schema + structural checks including spec file validation. |
+| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list. |
+| `aggregate-capabilities.yml` | hourly cron + `workflow_dispatch` | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages. |
