@@ -17,9 +17,9 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 ## Behavior
 
-<!-- Required. Describe what the function accepts, what it does, and what it returns.
-     Include the function signature inline where it aids clarity:
-       fn(params: ParamType) → ReturnType -->
+<!-- Required. Describe what the feature accepts, what it does, and what it returns.
+     Focus on observable behavior — inputs, outputs, side effects, branching conditions.
+     Do not include language-specific function signatures; implementations vary across SDKs. -->
 
 ## Prerequisites
 
