@@ -4,8 +4,6 @@ import { dirname, join, resolve } from "node:path";
 import { loadAreas } from "./load";
 import { checkSchema } from "./schema";
 import { checkStructural, checkSpecs } from "./structural";
-import { checkReferences, type RepoClient } from "./references";
-import { githubClient } from "./github";
 import { computeParity, type ParityReport } from "./report";
 import type { Finding } from "./types";
 
@@ -13,11 +11,8 @@ export interface RunOptions {
   mode: "validate" | "report";
   capabilitiesDir: string;
   schema: object;
-  online: boolean;
   specsDir?: string;
   changedFiles?: string[];
-  token?: string;
-  repoClient?: RepoClient;
 }
 
 export interface RunResult {
@@ -42,15 +37,6 @@ export async function run(opts: RunOptions): Promise<RunResult> {
     findings.push(...checkSpecs(opts.specsDir, knownIds));
   }
 
-  if (opts.online) {
-    let target = areas;
-    if (opts.changedFiles && opts.changedFiles.length > 0) {
-      const set = new Set(opts.changedFiles.map((f) => resolve(f)));
-      target = areas.filter((a) => set.has(resolve(a.file)));
-    }
-    findings.push(...(await checkReferences(target, opts.repoClient ?? githubClient(opts.token))));
-  }
-
   const errorCount = findings.filter((f) => f.level === "error").length;
   return { findings, errorCount };
 }
@@ -64,9 +50,7 @@ async function main(): Promise<void> {
   const root = repoRoot();
   const argv = process.argv.slice(2);
   const mode = (argv[0] === "report" ? "report" : "validate") as "validate" | "report";
-  const flags = argv.filter((a) => a.startsWith("--"));
   const positionals = argv.slice(1).filter((a) => !a.startsWith("--"));
-  const online = flags.includes("--online") || process.env.CHECK_REFERENCES === "1";
 
   const schema = JSON.parse(readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"));
   const result = await run({
@@ -74,9 +58,7 @@ async function main(): Promise<void> {
     capabilitiesDir: join(root, "capabilities"),
     specsDir: join(root, "specs"),
     schema,
-    online,
     changedFiles: positionals.length > 0 ? positionals : undefined,
-    token: process.env.GITHUB_TOKEN,
   });
 
   if (result.report) {

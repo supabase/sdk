@@ -27,7 +27,7 @@ const validAuthYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n${val
 describe("run", () => {
   it("returns 0 errors for a valid matrix in validate mode", async () => {
     const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
-    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, online: false });
+    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.errorCount).toBe(0);
   });
@@ -37,36 +37,16 @@ describe("run", () => {
     const capDir = tempCapabilities({
       "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - name: A\n    description: d\n`,
     });
-    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, online: false });
+    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.errorCount).toBeGreaterThan(0);
   });
 
   it("produces a parity report in report mode", async () => {
     const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
-    const result = await run({ mode: "report", capabilitiesDir: capDir, schema, online: false });
+    const result = await run({ mode: "report", capabilitiesDir: capDir, schema });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     // With no compliance data, all languages default to not_implemented so parity is 0
     expect(result.report?.overall).toBe(0);
-  });
-
-  it("only validates changedFiles areas when changedFiles is provided", async () => {
-    const authYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - id: auth.a\n    name: A\n    description: d\n`;
-    const storageYaml = `area: storage\ntitle: Storage\ndescription: d\nfeatures:\n  - id: storage.a\n    name: A\n    description: d\n`;
-
-    const capDir = tempCapabilities({ "auth.yaml": authYaml, "storage.yaml": storageYaml });
-
-    const authFile = join(capDir, "auth.yaml");
-    const result = await run({
-      mode: "validate",
-      capabilitiesDir: capDir,
-      schema,
-      online: true,
-      changedFiles: [authFile],
-    });
-    rmSync(join(capDir, ".."), { recursive: true, force: true });
-
-    // Filtering by changedFiles should produce no errors for valid YAML
-    expect(result.errorCount).toBe(0);
   });
 });
