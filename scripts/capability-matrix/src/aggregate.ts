@@ -50,6 +50,7 @@ async function main(): Promise<void> {
   const knownIds = collectFeatureIds(areas);
 
   const result: Partial<Record<Language, ComplianceMap>> = {};
+  let errorCount = 0;
 
   for (const { slug, language } of REPOS) {
     let content: string | null;
@@ -57,11 +58,13 @@ async function main(): Promise<void> {
       content = await fetchComplianceFile(slug, token);
     } catch (e) {
       console.error(`${language}: fetch failed for ${slug}: ${(e as Error).message}`);
+      errorCount++;
       continue;
     }
 
     if (!content) {
       console.error(`${language}: no sdk-compliance.yaml found in ${slug} — skipping`);
+      errorCount++;
       continue;
     }
 
@@ -70,6 +73,7 @@ async function main(): Promise<void> {
       raw = parse(content) as RawCompliance;
     } catch (e) {
       console.error(`${language}: YAML parse error in ${slug}: ${(e as Error).message}`);
+      errorCount++;
       continue;
     }
 
@@ -77,11 +81,17 @@ async function main(): Promise<void> {
     if (findings.length > 0) {
       for (const f of findings) console.error(`${language} (${slug}): ${f.message}`);
       console.error(`${language}: skipping ${slug} due to ${findings.length} error(s)`);
+      errorCount++;
       continue;
     }
 
     result[language] = normalizeCompliance(raw);
     console.log(`${language}: ${Object.keys(result[language]!).length} features loaded from ${slug}`);
+  }
+
+  if (Object.keys(result).length === 0 && errorCount > 0) {
+    console.error(`All ${errorCount} SDK(s) failed — aborting to avoid deploying a blank matrix`);
+    process.exit(1);
   }
 
   const outDir = join(root, "site");
