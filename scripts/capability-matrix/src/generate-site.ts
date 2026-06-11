@@ -106,7 +106,7 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
     for (const f of features) {
       const fp = featureParity(f, compliance);
       const nameHtml = specs.has(f.id)
-        ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replace(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
+        ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
       rows += `      <tr>
         <td class="feature-name">
