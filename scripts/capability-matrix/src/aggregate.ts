@@ -61,7 +61,7 @@ async function main(): Promise<void> {
     }
 
     if (!content) {
-      console.log(`${language}: no compliance file in ${slug} — treating all as not_implemented`);
+      console.error(`${language}: no sdk-compliance.yaml found in ${slug} — skipping`);
       continue;
     }
 
