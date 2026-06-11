@@ -7,6 +7,10 @@ groups:
     title: Invocation
 features:
   - id: functions.invoke
-    name: Invoke function
-    description: Call a deployed Edge Function by name with a request body.
+    name: Invoke
+    description: Invokes a function
+    group: invocation
+  - id: functions.set_auth
+    name: Set Auth
+    description: Updates the authorization header
     group: invocation
