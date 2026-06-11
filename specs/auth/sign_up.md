@@ -67,7 +67,12 @@ The caller must not already have an active session. Signing up while authenticat
 
 ## Notes
 
-If a confirmed account already exists for the given email or phone, the server returns an obfuscated success response rather than an error to avoid leaking whether an address is registered. SDKs must not attempt to distinguish this case from a genuine new registration and must surface the same result to the caller.
+The server intentionally obscures whether an address is already registered:
+
+- **Email confirmation enabled:** if the email is already taken, the server returns an obfuscated error message that does not reveal account existence.
+- **Both email and phone confirmation enabled:** if the account already exists, the server returns a fake user object (no session) that is indistinguishable from a genuine new registration.
+
+SDKs must surface whatever the server returns without attempting to detect or special-case either scenario.
 
 ## Related
 
