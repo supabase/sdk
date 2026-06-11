@@ -41,4 +41,4 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 <!-- Optional — remove this section if there are no meaningfully related features. -->
 
-- [Feature Name](area.feature_id) — why it's related
+- [Feature Name](../<area>/<feature_id>.md) — why it's related
