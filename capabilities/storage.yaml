@@ -3,10 +3,150 @@ area: storage
 title: Storage
 description: Object storage — upload, download, list, and manage files in buckets.
 groups:
-  - id: objects
-    title: Objects
+  - id: files
+    title: Files
+  - id: buckets
+    title: Buckets
+  - id: vectors
+    title: Vectors
 features:
+  - id: storage.copy
+    name: Copy
+    description: Copies an existing file to a new path in the same bucket.
+    group: files
+  - id: storage.create_bucket
+    name: Create Bucket
+    description: Creates a new Storage bucket
+    group: files
+  - id: storage.create_index
+    name: Create Index
+    description: Creates a new vector index in this bucket Convenience method that automatically includes the bucket name
+    group: files
+  - id: storage.create_signed_upload_url
+    name: Create Signed Upload Url
+    description: Creates a signed upload URL. Signed upload URLs can be used to upload files to the bucket without further authentication. They are valid for 2 hours.
+    group: files
+  - id: storage.create_signed_url
+    name: Create Signed Url
+    description: Creates a signed URL. Use a signed URL to share a file for a fixed amount of time.
+    group: files
+  - id: storage.create_signed_urls
+    name: Create Signed Urls
+    description: Creates multiple signed URLs. Use a signed URL to share a file for a fixed amount of time.
+    group: files
+  - id: storage.delete_bucket
+    name: Delete Bucket
+    description: Deletes an existing bucket. A bucket can't be deleted with existing objects inside it. You must first the bucket.
+    group: files
+  - id: storage.delete_index
+    name: Delete Index
+    description: Deletes an index from this bucket Convenience method that automatically includes the bucket name
+    group: files
+  - id: storage.delete_vectors
+    name: Delete Vectors
+    description: Deletes vectors by keys from this index Convenience method that automatically includes bucket and index names
+    group: files
+  - id: storage.download
+    name: Download
+    description: Downloads a file from a private bucket. For public buckets, make a request to the URL returned from instead.
+    group: files
+  - id: storage.empty_bucket
+    name: Empty Bucket
+    description: Removes all objects inside a single bucket.
+    group: files
+  - id: storage.exists
+    name: Exists
+    description: Checks the existence of a file.
+    group: files
+  - id: storage.from
+    name: From
+    description: Perform file operation in a bucket.
+    group: files
+  - id: storage.get_bucket
+    name: Get Bucket
+    description: Retrieves the details of an existing Storage bucket.
+    group: files
+  - id: storage.get_index
+    name: Get Index
+    description: Retrieves metadata for a specific index in this bucket Convenience method that automatically includes the bucket name
+    group: files
+  - id: storage.get_public_url
+    name: Get Public Url
+    description: A simple convenience function to get the URL for an asset in a public bucket. If you do not want to use this function, you can construct the public URL by concatenating the bucket URL with the path to the asset. This function does not verify if the bucket is public. If a public URL is created for a bucket which is not public, you will not be able to download the asset.
+    group: files
+  - id: storage.get_vectors
+    name: Get Vectors
+    description: Retrieves vectors by keys from this index Convenience method that automatically includes bucket and index names
+    group: files
+  - id: storage.index
+    name: Index
+    description: Access operations for a specific index within this bucket Returns a scoped client for vector data operations
+    group: files
+  - id: storage.info
+    name: Info
+    description: Retrieves the details of an existing file.
+    group: files
+  - id: storage.list
+    name: List
+    description: Lists all the files and folders within a path of the bucket.
+    group: files
+  - id: storage.list_buckets
+    name: List Buckets
+    description: Retrieves the details of all Storage buckets within an existing project.
+    group: files
+  - id: storage.list_indexes
+    name: List Indexes
+    description: Lists indexes in this bucket Convenience method that automatically includes the bucket name
+    group: files
+  - id: storage.list_v2
+    name: List V2
+    description: Lists all the files and folders within a bucket using the V2 API with pagination support.
+    group: files
+  - id: storage.list_vectors
+    name: List Vectors
+    description: Lists vectors in this index with pagination Convenience method that automatically includes bucket and index names
+    group: files
+  - id: storage.move
+    name: Move
+    description: Moves an existing file to a new path in the same bucket.
+    group: files
+  - id: storage.put_vectors
+    name: Put Vectors
+    description: Inserts or updates vectors in this index Convenience method that automatically includes bucket and index names
+    group: files
+  - id: storage.query_vectors
+    name: Query Vectors
+    description: Queries for similar vectors in this index Convenience method that automatically includes bucket and index names
+    group: files
+  - id: storage.remove
+    name: Remove
+    description: Deletes files within the same bucket
+    group: files
+  - id: storage.set_header
+    name: Set Header
+    description: Set an HTTP header for the request. Creates a shallow copy of headers to avoid mutating shared state.
+    group: files
+  - id: storage.throw_on_error
+    name: Throw On Error
+    description: Enable throwing errors instead of returning them. When enabled, errors are thrown instead of returned in { data, error } format.
+    group: files
+  - id: storage.to_base64
+    name: To Base64
+    description: To Base64 (no description in source).
+    group: files
+  - id: storage.update
+    name: Update
+    description: Replaces an existing file at the specified path with a new one.
+    group: files
+  - id: storage.update_bucket
+    name: Update Bucket
+    description: Updates a Storage bucket
+    group: files
   - id: storage.upload
-    name: Upload file
-    description: Upload a file to a storage bucket.
-    group: objects
+    name: Upload
+    description: Uploads a file to an existing bucket.
+    group: files
+  - id: storage.upload_to_signed_url
+    name: Upload To Signed Url
+    description: Upload a file with a token generated from .
+    group: files
