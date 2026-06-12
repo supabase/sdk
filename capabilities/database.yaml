@@ -44,8 +44,8 @@ features:
     name: Delete Rows
     description: Delete rows from a table or view that match a filter.
     group: mutations
-  - id: database.return_modified_data
-    name: Return Modified Data
+  - id: database.select_after_mutation
+    name: Select After Mutation
     description: Chain a column selection onto an insert, update, upsert, or delete to return the affected rows in the response.
     group: mutations
   - id: database.filter_eq
@@ -180,8 +180,8 @@ features:
     name: Limit Results
     description: Limit the number of rows returned by the query.
     group: modifiers
-  - id: database.paginate
-    name: Paginate Results
+  - id: database.range
+    name: Range
     description: Return a slice of results by specifying a zero-based start and end offset.
     group: modifiers
   - id: database.single_row

@@ -44,8 +44,8 @@ features:
     name: Set Auth Token
     description: Update the access token used for channel subscription authorization and row-level security.
     group: client
-  - id: realtime.heartbeat_handler
-    name: Heartbeat Handler
+  - id: realtime.listen_heartbeats
+    name: Listen to Heartbeats
     description: Register a callback that receives lifecycle events for internal heartbeat messages, useful for monitoring connection health.
     group: client
   - id: realtime.get_channels
