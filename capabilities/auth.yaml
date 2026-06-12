@@ -11,67 +11,69 @@ groups:
     title: Session & User
   - id: identities
     title: Identity Linking
-  - id: mfa
-    title: Multi-Factor Authentication
-  - id: mfa-webauthn
-    title: WebAuthn MFA
+  - id: auth-admin
+    title: Auth Admin
+  - id: auth-mfa
+    title: Auth MFA
+  - id: oauth-admin
+    title: OAuth Admin
   - id: oauth-server
     title: OAuth Server
-  - id: admin
-    title: Admin API
+  - id: passkey-admin
+    title: Passkey Admin
 features:
   - id: auth.approve_authorization
     name: Approve Authorization
     description: Approves an OAuth authorization request. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-server
   - id: auth.challenge
     name: Challenge
     description: Prepares a challenge used to verify that a user has access to a MFA factor.
-    group: session
+    group: auth-mfa
   - id: auth.challenge_and_verify
     name: Challenge And Verify
     description: Helper method which creates a challenge and immediately uses the given code to verify against it thereafter. The verification code is provided by the user by entering a code seen in their authenticator app.
-    group: session
+    group: auth-mfa
   - id: auth.create_client
     name: Create Client
     description: Creates a new OAuth client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.create_provider
     name: Create Provider
     description: Creates a new custom OIDC/OAuth provider.
-    group: session
+    group: auth-admin
   - id: auth.create_user
     name: Create User
-    description: Creates a new user. This function should only be called on a server. Never expose your key in the browser.
-    group: session
+    description: Creates a new user. This function should only be called on a server. Never expose your `service_role` key in the browser.
+    group: auth-admin
   - id: auth.delete_client
     name: Delete Client
     description: Deletes an OAuth client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.delete_factor
     name: Delete Factor
     description: Deletes a factor on a user. This will log the user out of all active sessions if the deleted factor was verified.
-    group: session
+    group: auth-admin
   - id: auth.delete_passkey
     name: Delete Passkey
     description: Deletes a specific passkey for a specific user.
-    group: passkey
+    group: passkey-admin
   - id: auth.delete_provider
     name: Delete Provider
     description: Deletes a custom provider.
-    group: session
+    group: auth-admin
   - id: auth.delete_user
     name: Delete User
-    description: Delete a user. Requires a key.
-    group: session
+    description: Delete a user. Requires a `service_role` key.
+    group: auth-admin
   - id: auth.deny_authorization
     name: Deny Authorization
     description: Denies an OAuth authorization request. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-server
   - id: auth.enroll
     name: Enroll
-    description: Starts the enrollment process for a new Multi-Factor Authentication (MFA) factor. This method creates a new factor. To verify a factor, present the QR code or secret to the user and ask them to add it to their authenticator app. The user has to enter the code from their authenticator app to verify it.
-    group: session
+    description: Starts the enrollment process for a new Multi-Factor Authentication (MFA) factor. This method creates a new `unverified` factor. To verify a factor, present the QR code or secret to the user and ask them to add it to their authenticator app. The user has to enter the code from their authenticator app to verify it.
+    group: auth-mfa
   - id: auth.exchange_code_for_session
     name: Exchange Code For Session
     description: Log in an existing user by exchanging an Auth Code issued during the PKCE flow.
@@ -79,27 +81,27 @@ features:
   - id: auth.generate_link
     name: Generate Link
     description: Generates email links and OTPs to be sent via a custom email provider.
-    group: session
+    group: auth-admin
   - id: auth.get_authenticator_assurance_level
     name: Get Authenticator Assurance Level
     description: Returns the Authenticator Assurance Level (AAL) for the active session.
-    group: session
+    group: auth-mfa
   - id: auth.get_authorization_details
     name: Get Authorization Details
     description: Retrieves details about an OAuth authorization request. Used to display consent information to the user. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-server
   - id: auth.get_claims
     name: Get Claims
-    description: Extracts the JWT claims present in the access token by first verifying the JWT against the server's JSON Web Key Set endpoint which is often cached, resulting in significantly faster responses. Prefer this method over which always sends a request to the Auth server for each JWT.
+    description: Extracts the JWT claims present in the access token by first verifying the JWT against the server's JSON Web Key Set endpoint `/.well-known/jwks.json` which is often cached, resulting in significantly faster responses. Prefer this method over getUser which always sends a request to the Auth server for each JWT.
     group: session
   - id: auth.get_client
     name: Get Client
     description: Gets details of a specific OAuth client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.get_provider
     name: Get Provider
     description: Gets details of a specific custom provider by identifier.
-    group: session
+    group: auth-admin
   - id: auth.get_session
     name: Get Session
     description: Returns the session, refreshing it if necessary.
@@ -111,19 +113,15 @@ features:
   - id: auth.get_user_by_id
     name: Get User By Id
     description: Get user by id.
-    group: session
+    group: auth-admin
   - id: auth.get_user_identities
     name: Get User Identities
     description: Gets all the identities linked to a user.
     group: identities
-  - id: auth.initialize
-    name: Initialize
-    description: Initialize the auth client by loading the session from storage or detecting it from the URL after an OAuth, magic-link, or password-recovery redirect.
-    group: session
   - id: auth.invite_user_by_email
     name: Invite User By Email
     description: Sends an invite link to an email address.
-    group: session
+    group: auth-admin
   - id: auth.link_identity
     name: Link Identity
     description: Links an oauth identity to an existing user. This method supports the PKCE flow.
@@ -131,27 +129,27 @@ features:
   - id: auth.list_clients
     name: List Clients
     description: Lists all OAuth clients with optional pagination. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.list_factors
     name: List Factors
     description: Lists all factors associated to a user.
-    group: session
+    group: auth-admin
   - id: auth.list_grants
     name: List Grants
     description: Lists all OAuth grants that the authenticated user has authorized. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-server
   - id: auth.list_passkeys
     name: List Passkeys
     description: Lists all passkeys registered for a specific user.
-    group: session
+    group: passkey-admin
   - id: auth.list_providers
     name: List Providers
     description: Lists all custom providers with optional type filter.
-    group: session
+    group: auth-admin
   - id: auth.list_users
     name: List Users
     description: Get a list of users.
-    group: session
+    group: auth-admin
   - id: auth.on_auth_state_change
     name: On Auth State Change
     description: Receive a notification every time an auth event happens. Safe to use without an async function as callback.
@@ -167,7 +165,7 @@ features:
   - id: auth.regenerate_client_secret
     name: Regenerate Client Secret
     description: Regenerates the secret for an OAuth client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.register_passkey
     name: Register Passkey
     description: "Register a passkey for the current authenticated user. Handles the full WebAuthn ceremony: 1. Fetches registration challenge from server 2. Prompts user via navigator.credentials.create() 3. Verifies credential with server"
@@ -183,7 +181,7 @@ features:
   - id: auth.revoke_grant
     name: Revoke Grant
     description: Revokes a user's OAuth grant for a specific client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-server
   - id: auth.set_session
     name: Set Session
     description: Sets the session data from the current session. If the current session is expired, setSession will take care of refreshing it to obtain a new session. If the refresh token or access token in the current session is invalid, an error will be thrown.
@@ -196,8 +194,8 @@ features:
     name: Sign In With Id Token
     description: Allows signing in with an OIDC ID token. The authentication provider used should be enabled and configured.
     group: sign-in
-  - id: auth.sign_in_with_o_auth
-    name: Sign In With O Auth
+  - id: auth.sign_in_with_oauth
+    name: Sign In With Oauth
     description: Log in an existing user via a third-party provider. This method supports the PKCE flow.
     group: sign-in
   - id: auth.sign_in_with_otp
@@ -223,7 +221,7 @@ features:
   - id: auth.sign_out
     name: Sign Out
     description: Removes a logged-in session.
-    group: session
+    group: auth-admin
   - id: auth.sign_up
     name: Sign Up
     description: Creates a new user.
@@ -238,8 +236,8 @@ features:
     group: session
   - id: auth.unenroll
     name: Unenroll
-    description: Unenroll removes a MFA factor. A user has to have an authenticator level in order to unenroll a factor.
-    group: session
+    description: Unenroll removes a MFA factor. A user has to have an `aal2` authenticator level in order to unenroll a `verified` factor.
+    group: auth-mfa
   - id: auth.unlink_identity
     name: Unlink Identity
     description: Unlinks an identity from a user by deleting it. The user will no longer be able to sign in with that identity once it's unlinked.
@@ -247,11 +245,11 @@ features:
   - id: auth.update_client
     name: Update Client
     description: Updates an existing OAuth client. Only relevant when the OAuth 2.1 server is enabled in Supabase Auth.
-    group: session
+    group: oauth-admin
   - id: auth.update_provider
     name: Update Provider
     description: Updates an existing custom provider.
-    group: session
+    group: auth-admin
   - id: auth.update_user
     name: Update User
     description: Updates user data for a logged in user.
@@ -259,11 +257,11 @@ features:
   - id: auth.update_user_by_id
     name: Update User By Id
     description: Updates the user data. Changes are applied directly without confirmation flows.
-    group: session
+    group: auth-admin
   - id: auth.verify
     name: Verify
     description: Verifies a code against a challenge. The verification code is provided by the user by entering a code seen in their authenticator app.
-    group: session
+    group: auth-mfa
   - id: auth.verify_otp
     name: Verify Otp
     description: Log in a user given a User supplied OTP or TokenHash received through mobile or email.

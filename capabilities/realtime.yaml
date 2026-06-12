@@ -7,10 +7,16 @@ groups:
     title: Client
   - id: channel
     title: Channel
+  - id: subscriptions
+    title: Subscriptions
 features:
+  - id: realtime.broadcast
+    name: Broadcast
+    description: Listen for broadcast messages sent on this channel.
+    group: subscriptions
   - id: realtime.channel
     name: Channel
-    description: Creates (or reuses) a for the provided topic.
+    description: Creates (or reuses) a RealtimeChannel for the provided topic.
     group: client
   - id: realtime.connect
     name: Connect
@@ -20,10 +26,6 @@ features:
     name: Connection State
     description: Returns the current state of the socket.
     group: client
-  - id: realtime.copy_bindings
-    name: Copy Bindings
-    description: Copy Bindings (no description in source).
-    group: channel
   - id: realtime.disconnect
     name: Disconnect
     description: Disconnects the socket.
@@ -42,24 +44,28 @@ features:
     group: channel
   - id: realtime.is_connected
     name: Is Connected
-    description: Returns is the connection is open.
+    description: Returns `true` is the connection is open.
     group: client
   - id: realtime.is_connecting
     name: Is Connecting
-    description: Returns if the connection is currently connecting.
+    description: Returns `true` if the connection is currently connecting.
     group: client
   - id: realtime.is_disconnecting
     name: Is Disconnecting
-    description: Returns if the connection is currently disconnecting.
+    description: Returns `true` if the connection is currently disconnecting.
     group: client
-  - id: realtime.on
-    name: "On"
-    description: Creates an event handler that listens to changes.
-    group: channel
   - id: realtime.on_heartbeat
     name: On Heartbeat
     description: Sets a callback that receives lifecycle events for internal heartbeat messages. Useful for instrumenting connection health (e.g. sent/ok/timeout/disconnected).
     group: client
+  - id: realtime.postgres_changes
+    name: Postgres Changes
+    description: Listen for Postgres database changes (insert / update / delete) streamed over this channel.
+    group: subscriptions
+  - id: realtime.presence
+    name: Presence
+    description: Listen for presence events on this channel — when peers join, leave, or sync presence state.
+    group: subscriptions
   - id: realtime.presence_state
     name: Presence State
     description: Returns the current presence state for this channel.
@@ -80,10 +86,6 @@ features:
     name: Send
     description: Sends a message into the channel.
     group: channel
-  - id: realtime.send_heartbeat
-    name: Send Heartbeat
-    description: Sends a heartbeat message if the socket is connected.
-    group: client
   - id: realtime.set_auth
     name: Set Auth
     description: Sets the JWT access token used for channel subscription authorization and Realtime RLS.
@@ -92,13 +94,9 @@ features:
     name: Subscribe
     description: Subscribe registers your client with the server.
     group: channel
-  - id: realtime.teardown
-    name: Teardown
-    description: Destroys and stops related timers.
-    group: channel
   - id: realtime.track
     name: Track
-    description: Sends the supplied payload to the presence tracker so other subscribers can see that this client is online. Use to stop broadcasting presence for the same key.
+    description: Sends the supplied payload to the presence tracker so other subscribers can see that this client is online. Use `untrack` to stop broadcasting presence for the same key.
     group: channel
   - id: realtime.unsubscribe
     name: Unsubscribe
@@ -107,8 +105,4 @@ features:
   - id: realtime.untrack
     name: Untrack
     description: Removes the current presence state for this client.
-    group: channel
-  - id: realtime.update_join_payload
-    name: Update Join Payload
-    description: Updates the payload that will be sent the next time the channel joins (reconnects). Useful for rotating access tokens or updating config without re-creating the channel.
     group: channel
