@@ -1,210 +1,214 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: database
 title: Database (PostgREST)
-description: Query builder over PostgREST — select, insert, update, delete, RPC, filters, and transforms.
+description: Query builder over PostgREST — select, insert, update, delete, RPC, filters, and modifiers.
 groups:
   - id: query
     title: Query
-  - id: mutate
-    title: Mutate
-  - id: using-filters
+  - id: mutations
+    title: Mutations
+  - id: filters
     title: Filters
-  - id: using-modifiers
+  - id: modifiers
     title: Modifiers
 features:
-  - id: database.contained_by
-    name: Contained By
-    description: Only relevant for jsonb, array, and range columns. Match only rows where every element appearing in `column` is contained by `value`.
-    group: using-filters
-  - id: database.contains
-    name: Contains
-    description: Only relevant for jsonb, array, and range columns. Match only rows where `column` contains every element appearing in `value`.
-    group: using-filters
-  - id: database.csv
-    name: Csv
-    description: Return `data` as a string in CSV format.
-    group: using-modifiers
-  - id: database.delete
-    name: Delete
-    description: Perform a DELETE on the table or view.
-    group: mutate
-  - id: database.eq
-    name: Eq
-    description: Match only rows where `column` is equal to `value`.
-    group: using-filters
-  - id: database.explain
-    name: Explain
-    description: Return `data` as the EXPLAIN plan for the query.
-    group: using-modifiers
-  - id: database.filter
-    name: Filter
-    description: Match only rows which satisfy the filter. This is an escape hatch - you should use the specific filter methods wherever possible.
-    group: using-filters
-  - id: database.from
-    name: From
-    description: Perform a query on a table or a view.
-    group: query
-  - id: database.geojson
-    name: Geojson
-    description: Return `data` as an object in [GeoJSON](https://geojson.org) format.
-    group: using-modifiers
-  - id: database.gt
-    name: Gt
-    description: Match only rows where `column` is greater than `value`.
-    group: using-filters
-  - id: database.gte
-    name: Gte
-    description: Match only rows where `column` is greater than or equal to `value`.
-    group: using-filters
-  - id: database.ilike
-    name: Ilike
-    description: Match only rows where `column` matches `pattern` case-insensitively.
-    group: using-filters
-  - id: database.ilike_all_of
-    name: Ilike All Of
-    description: Match only rows where `column` matches all of `patterns` case-insensitively.
-    group: using-filters
-  - id: database.ilike_any_of
-    name: Ilike Any Of
-    description: Match only rows where `column` matches any of `patterns` case-insensitively.
-    group: using-filters
-  - id: database.in
-    name: In
-    description: Match only rows where `column` is included in the `values` array.
-    group: using-filters
-  - id: database.insert
-    name: Insert
-    description: Perform an INSERT into the table or view.
-    group: mutate
-  - id: database.is
-    name: Is
-    description: Match only rows where `column` IS `value`.
-    group: using-filters
-  - id: database.is_distinct
-    name: Is Distinct
-    description: Match only rows where `column` IS DISTINCT FROM `value`.
-    group: using-filters
-  - id: database.like
-    name: Like
-    description: Match only rows where `column` matches `pattern` case-sensitively.
-    group: using-filters
-  - id: database.like_all_of
-    name: Like All Of
-    description: Match only rows where `column` matches all of `patterns` case-sensitively.
-    group: using-filters
-  - id: database.like_any_of
-    name: Like Any Of
-    description: Match only rows where `column` matches any of `patterns` case-sensitively.
-    group: using-filters
-  - id: database.limit
-    name: Limit
-    description: Limit the query result by `rows`.
-    group: using-modifiers
-  - id: database.lt
-    name: Lt
-    description: Match only rows where `column` is less than `value`.
-    group: using-filters
-  - id: database.lte
-    name: Lte
-    description: Match only rows where `column` is less than or equal to `value`.
-    group: using-filters
-  - id: database.match
-    name: Match
-    description: Match only rows where each column in `query` keys is equal to its associated value. Shorthand for multiple `.eq()`s.
-    group: using-filters
-  - id: database.max_affected
-    name: Max Affected
-    description: Set the maximum number of rows that can be affected by the query. Only available in PostgREST v13+ and only works with PATCH and DELETE methods.
-    group: using-modifiers
-  - id: database.maybe_single
-    name: Maybe Single
-    description: Return `data` as a single object instead of an array of objects.
-    group: using-modifiers
-  - id: database.neq
-    name: Neq
-    description: Match only rows where `column` is not equal to `value`.
-    group: using-filters
-  - id: database.not
-    name: Not
-    description: Match only rows which doesn't satisfy the filter.
-    group: using-filters
-  - id: database.not_in
-    name: Not In
-    description: Match only rows where `column` is NOT included in the `values` array.
-    group: using-filters
-  - id: database.or
-    name: Or
-    description: Match only rows which satisfy at least one of the filters.
-    group: using-filters
-  - id: database.order
-    name: Order
-    description: Order the query result by `column`.
-    group: using-modifiers
-  - id: database.overlaps
-    name: Overlaps
-    description: Only relevant for array and range columns. Match only rows where `column` and `value` have an element in common.
-    group: using-filters
-  - id: database.range
-    name: Range
-    description: "Limit the query result by starting at an offset `from` and ending at the offset `to`. Only records within this range are returned. This respects the query order and if there is no order clause the range could behave unexpectedly. The `from` and `to` values are 0-based and inclusive: `range(1, 3)` will include the second, third and fourth rows of the query."
-    group: using-modifiers
-  - id: database.range_adjacent
-    name: Range Adjacent
-    description: Only relevant for range columns. Match only rows where `column` is mutually exclusive to `range` and there can be no element between the two ranges.
-    group: using-filters
-  - id: database.range_gt
-    name: Range Gt
-    description: Only relevant for range columns. Match only rows where every element in `column` is greater than any element in `range`.
-    group: using-filters
-  - id: database.range_gte
-    name: Range Gte
-    description: Only relevant for range columns. Match only rows where every element in `column` is either contained in `range` or greater than any element in `range`.
-    group: using-filters
-  - id: database.range_lt
-    name: Range Lt
-    description: Only relevant for range columns. Match only rows where every element in `column` is less than any element in `range`.
-    group: using-filters
-  - id: database.range_lte
-    name: Range Lte
-    description: Only relevant for range columns. Match only rows where every element in `column` is either contained in `range` or less than any element in `range`.
-    group: using-filters
-  - id: database.regex_i_match
-    name: Regex I Match
-    description: Match only rows where `column` matches the PostgreSQL regex `pattern` case-insensitively (using the `~*` operator).
-    group: using-filters
-  - id: database.regex_match
-    name: Regex Match
-    description: Match only rows where `column` matches the PostgreSQL regex `pattern` case-sensitively (using the `~` operator).
-    group: using-filters
-  - id: database.rollback
-    name: Rollback
-    description: "Dry-run this request: execute the query but discard the changes."
-    group: using-modifiers
-  - id: database.rpc
-    name: Rpc
-    description: Perform a function call.
-    group: query
-  - id: database.schema
-    name: Schema
-    description: Select a schema to query or perform an function (rpc) call.
-    group: query
   - id: database.select
-    name: Select
-    description: Perform a SELECT query on the table or view.
+    name: Select Rows
+    description: Read rows from a table or view with column selection.
     group: query
-  - id: database.single
-    name: Single
-    description: Return `data` as a single object instead of an array of objects.
-    group: using-modifiers
-  - id: database.text_search
-    name: Text Search
-    description: Only relevant for text and tsvector columns. Match only rows where `column` matches the query string in `query`.
-    group: using-filters
+  - id: database.from_table
+    name: Query Table or View
+    description: Scope a query to a specific table or view. The entry point for all table-level operations.
+    group: query
+  - id: database.schema_selection
+    name: Schema Selection
+    description: Target a non-default database schema for the query or function call.
+    group: query
+  - id: database.rpc
+    name: Call Function (RPC)
+    description: Invoke a database function via the PostgREST RPC interface.
+    group: query
+  - id: database.insert
+    name: Insert Rows
+    description: Insert one or more rows into a table or view.
+    group: mutations
   - id: database.update
-    name: Update
-    description: Perform an UPDATE on the table or view.
-    group: mutate
+    name: Update Rows
+    description: Update rows in a table or view that match a filter.
+    group: mutations
   - id: database.upsert
-    name: Upsert
-    description: Perform an UPSERT on the table or view. Depending on the column(s) passed to `onConflict`, `.upsert()` allows you to perform the equivalent of `.insert()` if a row with the corresponding `onConflict` columns doesn't exist, or if it does exist, perform an alternative action depending on `ignoreDuplicates`.
-    group: mutate
+    name: Upsert Rows
+    description: Insert rows, or update them on conflict based on specified conflict columns.
+    group: mutations
+  - id: database.delete
+    name: Delete Rows
+    description: Delete rows from a table or view that match a filter.
+    group: mutations
+  - id: database.return_modified_data
+    name: Return Modified Data
+    description: Chain a column selection onto an insert, update, upsert, or delete to return the affected rows in the response.
+    group: mutations
+  - id: database.filter_eq
+    name: Filter Equal
+    description: Match only rows where a column equals a value.
+    group: filters
+  - id: database.filter_neq
+    name: Filter Not Equal
+    description: Match only rows where a column does not equal a value.
+    group: filters
+  - id: database.filter_gt
+    name: Filter Greater Than
+    description: Match only rows where a column is greater than a value.
+    group: filters
+  - id: database.filter_gte
+    name: Filter Greater Than or Equal
+    description: Match only rows where a column is greater than or equal to a value.
+    group: filters
+  - id: database.filter_lt
+    name: Filter Less Than
+    description: Match only rows where a column is less than a value.
+    group: filters
+  - id: database.filter_lte
+    name: Filter Less Than or Equal
+    description: Match only rows where a column is less than or equal to a value.
+    group: filters
+  - id: database.filter_like
+    name: Filter Like (case-sensitive)
+    description: Match only rows where a column matches a pattern case-sensitively (SQL LIKE).
+    group: filters
+  - id: database.filter_ilike
+    name: Filter Like (case-insensitive)
+    description: Match only rows where a column matches a pattern case-insensitively (SQL ILIKE).
+    group: filters
+  - id: database.filter_like_all
+    name: Filter Like All Patterns
+    description: Match only rows where a column matches all of the given patterns case-sensitively.
+    group: filters
+  - id: database.filter_like_any
+    name: Filter Like Any Pattern
+    description: Match only rows where a column matches any of the given patterns case-sensitively.
+    group: filters
+  - id: database.filter_ilike_all
+    name: Filter ILike All Patterns
+    description: Match only rows where a column matches all of the given patterns case-insensitively.
+    group: filters
+  - id: database.filter_ilike_any
+    name: Filter ILike Any Pattern
+    description: Match only rows where a column matches any of the given patterns case-insensitively.
+    group: filters
+  - id: database.filter_in
+    name: Filter In
+    description: Match only rows where a column's value is in a given set.
+    group: filters
+  - id: database.filter_not_in
+    name: Filter Not In
+    description: Match only rows where a column's value is not in a given set.
+    group: filters
+  - id: database.filter_is
+    name: Filter Is
+    description: Match only rows where a column IS a value (null, true, or false).
+    group: filters
+  - id: database.filter_is_distinct
+    name: Filter Is Distinct From
+    description: Match only rows where a column IS DISTINCT FROM a value (null-safe inequality).
+    group: filters
+  - id: database.filter_not
+    name: Filter Not
+    description: Negate a filter so only rows that do not satisfy it are returned.
+    group: filters
+  - id: database.filter_or
+    name: Filter Or
+    description: Match rows that satisfy at least one of multiple filters.
+    group: filters
+  - id: database.filter_match
+    name: Filter Match Object
+    description: Match rows where each key/value pair in an object equals the corresponding column value. Shorthand for multiple equality filters.
+    group: filters
+  - id: database.filter_raw
+    name: Filter Raw
+    description: Apply a raw filter expression. Escape hatch for filter combinations not covered by the specific filter operations.
+    group: filters
+  - id: database.filter_contains
+    name: Filter Contains
+    description: For jsonb, array, and range columns — match only rows where the column contains every element in the given value.
+    group: filters
+  - id: database.filter_contained_by
+    name: Filter Contained By
+    description: For jsonb, array, and range columns — match only rows where every element in the column is contained by the given value.
+    group: filters
+  - id: database.filter_overlaps
+    name: Filter Overlaps
+    description: For array and range columns — match only rows where the column and value share at least one element.
+    group: filters
+  - id: database.filter_text_search
+    name: Filter Full-Text Search
+    description: For text and tsvector columns — match only rows where a column matches a full-text search query.
+    group: filters
+  - id: database.filter_range_gt
+    name: Filter Range Greater Than
+    description: For range columns — match only rows where every element in the column is greater than any element in the given range.
+    group: filters
+  - id: database.filter_range_gte
+    name: Filter Range Greater Than or Equal
+    description: For range columns — match only rows where every element in the column is contained in or greater than any element in the given range.
+    group: filters
+  - id: database.filter_range_lt
+    name: Filter Range Less Than
+    description: For range columns — match only rows where every element in the column is less than any element in the given range.
+    group: filters
+  - id: database.filter_range_lte
+    name: Filter Range Less Than or Equal
+    description: For range columns — match only rows where every element in the column is contained in or less than any element in the given range.
+    group: filters
+  - id: database.filter_range_adjacent
+    name: Filter Range Adjacent
+    description: For range columns — match only rows where the column is mutually exclusive to the given range with no gap between them.
+    group: filters
+  - id: database.filter_regex
+    name: Filter Regex Match
+    description: Match only rows where a column matches a regex pattern case-sensitively.
+    group: filters
+  - id: database.filter_regex_icase
+    name: Filter Regex Match (case-insensitive)
+    description: Match only rows where a column matches a regex pattern case-insensitively.
+    group: filters
+  - id: database.order
+    name: Order Results
+    description: Sort the query result by one or more columns.
+    group: modifiers
+  - id: database.limit
+    name: Limit Results
+    description: Limit the number of rows returned by the query.
+    group: modifiers
+  - id: database.paginate
+    name: Paginate Results
+    description: Return a slice of results by specifying a zero-based start and end offset.
+    group: modifiers
+  - id: database.single_row
+    name: Expect Single Row
+    description: Assert that the query returns exactly one row and unwrap it from the array. Errors if zero or multiple rows are returned.
+    group: modifiers
+  - id: database.maybe_single_row
+    name: Expect At Most One Row
+    description: Return a single row if one exists, or null if no rows match. Errors if multiple rows are returned.
+    group: modifiers
+  - id: database.max_affected_rows
+    name: Limit Affected Rows
+    description: Set the maximum number of rows that a mutation (update or delete) is allowed to affect.
+    group: modifiers
+  - id: database.format_csv
+    name: Return as CSV
+    description: Return the query result as a CSV string instead of a structured object.
+    group: modifiers
+  - id: database.format_geojson
+    name: Return as GeoJSON
+    description: Return the query result as a GeoJSON object.
+    group: modifiers
+  - id: database.explain
+    name: Explain Query Plan
+    description: Return the database query execution plan instead of the result data.
+    group: modifiers
+  - id: database.dry_run
+    name: Dry Run
+    description: Execute the query against the database but discard any changes, returning what would have been affected.
+    group: modifiers

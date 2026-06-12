@@ -9,100 +9,98 @@ groups:
     title: Channel
   - id: subscriptions
     title: Subscriptions
+  - id: presence
+    title: Presence
 features:
-  - id: realtime.broadcast
-    name: Broadcast
-    description: Listen for broadcast messages sent on this channel.
-    group: subscriptions
-  - id: realtime.channel
-    name: Channel
-    description: Creates (or reuses) a RealtimeChannel for the provided topic.
-    group: client
   - id: realtime.connect
     name: Connect
-    description: Connects the socket, unless already connected.
-    group: client
-  - id: realtime.connection_state
-    name: Connection State
-    description: Returns the current state of the socket.
+    description: Open the websocket connection to the Realtime server.
     group: client
   - id: realtime.disconnect
     name: Disconnect
-    description: Disconnects the socket.
+    description: Close the websocket connection to the Realtime server.
     group: client
-  - id: realtime.endpoint_url
-    name: Endpoint Url
-    description: Returns the URL of the websocket.
+  - id: realtime.connection_state
+    name: Connection State
+    description: Return the current state of the websocket connection.
     group: client
-  - id: realtime.get_channels
-    name: Get Channels
-    description: Returns all created channels
-    group: client
-  - id: realtime.http_send
-    name: Http Send
-    description: Sends a broadcast message explicitly via REST API.
-    group: channel
   - id: realtime.is_connected
     name: Is Connected
-    description: Returns `true` is the connection is open.
+    description: Return whether the websocket connection is currently open.
     group: client
   - id: realtime.is_connecting
     name: Is Connecting
-    description: Returns `true` if the connection is currently connecting.
+    description: Return whether the websocket connection is currently being established.
     group: client
   - id: realtime.is_disconnecting
     name: Is Disconnecting
-    description: Returns `true` if the connection is currently disconnecting.
+    description: Return whether the websocket connection is currently closing.
     group: client
-  - id: realtime.on_heartbeat
-    name: On Heartbeat
-    description: Sets a callback that receives lifecycle events for internal heartbeat messages. Useful for instrumenting connection health (e.g. sent/ok/timeout/disconnected).
+  - id: realtime.endpoint_url
+    name: Endpoint URL
+    description: Return the URL of the Realtime websocket endpoint.
     group: client
-  - id: realtime.postgres_changes
-    name: Postgres Changes
-    description: Listen for Postgres database changes (insert / update / delete) streamed over this channel.
-    group: subscriptions
-  - id: realtime.presence
-    name: Presence
-    description: Listen for presence events on this channel — when peers join, leave, or sync presence state.
-    group: subscriptions
-  - id: realtime.presence_state
-    name: Presence State
-    description: Returns the current presence state for this channel.
-    group: channel
-  - id: realtime.push
-    name: Push
-    description: Push out a message if the socket is connected.
+  - id: realtime.set_auth_token
+    name: Set Auth Token
+    description: Update the access token used for channel subscription authorization and row-level security.
     group: client
-  - id: realtime.remove_all_channels
-    name: Remove All Channels
-    description: Unsubscribes, removes and tears down all channels
+  - id: realtime.heartbeat_handler
+    name: Heartbeat Handler
+    description: Register a callback that receives lifecycle events for internal heartbeat messages, useful for monitoring connection health.
+    group: client
+  - id: realtime.get_channels
+    name: Get Channels
+    description: Return all active channels for this client.
     group: client
   - id: realtime.remove_channel
     name: Remove Channel
-    description: Unsubscribes, removes and tears down a single channel
+    description: Unsubscribe from and tear down a single channel.
     group: client
-  - id: realtime.send
-    name: Send
-    description: Sends a message into the channel.
+  - id: realtime.remove_all_channels
+    name: Remove All Channels
+    description: Unsubscribe from and tear down all channels.
+    group: client
+  - id: realtime.channel
+    name: Create or Reuse Channel
+    description: Create a new channel or return an existing one for the given topic.
     group: channel
-  - id: realtime.set_auth
-    name: Set Auth
-    description: Sets the JWT access token used for channel subscription authorization and Realtime RLS.
-    group: client
   - id: realtime.subscribe
     name: Subscribe
-    description: Subscribe registers your client with the server.
-    group: channel
-  - id: realtime.track
-    name: Track
-    description: Sends the supplied payload to the presence tracker so other subscribers can see that this client is online. Use `untrack` to stop broadcasting presence for the same key.
+    description: Register the channel with the server and start receiving events.
     group: channel
   - id: realtime.unsubscribe
     name: Unsubscribe
-    description: Leaves the channel.
+    description: Leave the channel and stop receiving events.
     group: channel
+  - id: realtime.send
+    name: Send Message
+    description: Send a message to other subscribers of the channel.
+    group: channel
+  - id: realtime.broadcast_http
+    name: Broadcast via HTTP
+    description: Send a broadcast message to channel subscribers via the REST API instead of the websocket connection.
+    group: channel
+  - id: realtime.postgres_changes
+    name: Subscribe to Postgres Changes
+    description: Listen for Postgres database change events (insert, update, delete) streamed over this channel.
+    group: subscriptions
+  - id: realtime.broadcast
+    name: Subscribe to Broadcast
+    description: Listen for broadcast messages sent by other clients on this channel.
+    group: subscriptions
+  - id: realtime.subscribe_presence
+    name: Subscribe to Presence Events
+    description: Listen for presence events on this channel — when peers join, leave, or sync their presence state.
+    group: subscriptions
+  - id: realtime.presence_state
+    name: Get Presence State
+    description: Return the current presence state for all tracked clients on this channel.
+    group: presence
+  - id: realtime.track
+    name: Track Presence
+    description: Broadcast a presence payload so other subscribers can see this client as online.
+    group: presence
   - id: realtime.untrack
-    name: Untrack
-    description: Removes the current presence state for this client.
-    group: channel
+    name: Untrack Presence
+    description: Remove this client's presence state, making it appear offline to other subscribers.
+    group: presence
