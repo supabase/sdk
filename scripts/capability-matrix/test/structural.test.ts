@@ -40,42 +40,48 @@ describe("checkStructural", () => {
 });
 
 describe("checkSpecs", () => {
+  // Specs live at specs/<area>/<namespace>/<method>.md and resolve to a
+  // three-segment feature id `area.namespace.method`.
   function makeSpecsDir(files: Record<string, string>): string {
     const tmp = mkdtempSync(join(tmpdir(), "specs-"));
     for (const [rel, content] of Object.entries(files)) {
       const parts = rel.split("/");
-      if (parts.length === 2) mkdirSync(join(tmp, parts[0]), { recursive: true });
+      // Ensure all parent dirs exist.
+      if (parts.length > 1) mkdirSync(join(tmp, ...parts.slice(0, -1)), { recursive: true });
       writeFileSync(join(tmp, rel), content);
     }
     return tmp;
   }
 
   it("passes when every spec has a matching feature id", () => {
-    const dir = makeSpecsDir({ "auth/sign_up.md": "# Sign Up" });
-    expect(checkSpecs(dir, new Set(["auth.sign_up"]))).toEqual([]);
+    const dir = makeSpecsDir({ "auth/sign_in/sign_up.md": "# Sign Up" });
+    expect(checkSpecs(dir, new Set(["auth.sign_in.sign_up"]))).toEqual([]);
   });
 
   it("errors on a spec with no matching feature id", () => {
-    const dir = makeSpecsDir({ "auth/orphan.md": "# Orphan" });
-    const findings = checkSpecs(dir, new Set(["auth.sign_up"]));
+    const dir = makeSpecsDir({ "auth/sign_in/orphan.md": "# Orphan" });
+    const findings = checkSpecs(dir, new Set(["auth.sign_in.sign_up"]));
     expect(findings).toHaveLength(1);
     expect(findings[0].level).toBe("error");
-    expect(findings[0].message).toContain("auth.orphan");
+    expect(findings[0].message).toContain("auth.sign_in.orphan");
   });
 
   it("passes for a known spec and errors for an orphan in the same dir", () => {
     const dir = makeSpecsDir({
-      "auth/sign_up.md": "# Sign Up",
-      "auth/ghost.md": "# Ghost",
+      "auth/sign_in/sign_up.md": "# Sign Up",
+      "auth/sign_in/ghost.md": "# Ghost",
     });
-    const findings = checkSpecs(dir, new Set(["auth.sign_up"]));
+    const findings = checkSpecs(dir, new Set(["auth.sign_in.sign_up"]));
     expect(findings).toHaveLength(1);
-    expect(findings[0].message).toContain("auth.ghost");
+    expect(findings[0].message).toContain("auth.sign_in.ghost");
   });
 
   it("ignores non-.md files in subdirectories", () => {
-    const dir = makeSpecsDir({ "auth/sign_up.md": "ok", "auth/draft.txt": "skip" });
-    expect(checkSpecs(dir, new Set(["auth.sign_up"]))).toEqual([]);
+    const dir = makeSpecsDir({
+      "auth/sign_in/sign_up.md": "ok",
+      "auth/sign_in/draft.txt": "skip",
+    });
+    expect(checkSpecs(dir, new Set(["auth.sign_in.sign_up"]))).toEqual([]);
   });
 
   it("returns empty when the specs directory does not exist", () => {

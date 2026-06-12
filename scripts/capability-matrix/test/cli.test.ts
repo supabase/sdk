@@ -21,7 +21,7 @@ function tempCapabilities(yamlByName: Record<string, string>): string {
 }
 
 // Minimal valid feature YAML (no sdks field — features are schema-only since compliance redesign)
-const validFeature = `  - id: auth.a\n    name: A\n    description: d`;
+const validFeature = `  - id: auth.sign_in.a\n    name: A\n    description: d`;
 const validAuthYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n${validFeature}\n`;
 
 describe("run", () => {

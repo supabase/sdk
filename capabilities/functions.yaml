@@ -6,11 +6,11 @@ groups:
   - id: invocation
     title: Invocation
 features:
-  - id: functions.invoke
+  - id: functions.invocation.invoke
     name: Invoke
     description: Invokes a function
     group: invocation
-  - id: functions.set_auth
+  - id: functions.invocation.set_auth
     name: Set Auth
     description: Updates the authorization header
     group: invocation

@@ -8,131 +8,151 @@ groups:
   - id: vector-buckets
     title: Vector Buckets
 features:
-  - id: storage.copy
+  - id: storage.file_buckets.copy
     name: Copy
     description: Copies an existing file to a new path in the same bucket.
     group: file-buckets
-  - id: storage.create_bucket
+  - id: storage.file_buckets.create_bucket
     name: Create Bucket
     description: Creates a new Storage bucket
     group: file-buckets
-  - id: storage.create_index
-    name: Create Index
-    description: Creates a new vector index in this bucket Convenience method that automatically includes the bucket name
-    group: vector-buckets
-  - id: storage.create_signed_upload_url
+  - id: storage.file_buckets.create_signed_upload_url
     name: Create Signed Upload Url
     description: Creates a signed upload URL. Signed upload URLs can be used to upload files to the bucket without further authentication. They are valid for 2 hours.
     group: file-buckets
-  - id: storage.create_signed_url
+  - id: storage.file_buckets.create_signed_url
     name: Create Signed Url
     description: Creates a signed URL. Use a signed URL to share a file for a fixed amount of time.
     group: file-buckets
-  - id: storage.create_signed_urls
+  - id: storage.file_buckets.create_signed_urls
     name: Create Signed Urls
     description: Creates multiple signed URLs. Use a signed URL to share a file for a fixed amount of time.
     group: file-buckets
-  - id: storage.delete_bucket
+  - id: storage.file_buckets.delete_bucket
     name: Delete Bucket
     description: Deletes an existing bucket. A bucket can't be deleted with existing objects inside it. You must first `empty()` the bucket.
     group: file-buckets
-  - id: storage.delete_index
-    name: Delete Index
-    description: Deletes an index from this bucket Convenience method that automatically includes the bucket name
-    group: vector-buckets
-  - id: storage.delete_vectors
-    name: Delete Vectors
-    description: Deletes vectors by keys from this index Convenience method that automatically includes bucket and index names
-    group: vector-buckets
-  - id: storage.download
+  - id: storage.file_buckets.download
     name: Download
     description: Downloads a file from a private bucket. For public buckets, make a request to the URL returned from `getPublicUrl` instead.
     group: file-buckets
-  - id: storage.empty_bucket
+  - id: storage.file_buckets.empty_bucket
     name: Empty Bucket
     description: Removes all objects inside a single bucket.
     group: file-buckets
-  - id: storage.exists
+  - id: storage.file_buckets.exists
     name: Exists
     description: Checks the existence of a file.
     group: file-buckets
-  - id: storage.from
+  - id: storage.file_buckets.from
     name: From
     description: Perform file operation in a bucket.
     group: file-buckets
-  - id: storage.get_bucket
+  - id: storage.file_buckets.get_bucket
     name: Get Bucket
     description: Retrieves the details of an existing Storage bucket.
     group: file-buckets
-  - id: storage.get_index
-    name: Get Index
-    description: Retrieves metadata for a specific index in this bucket Convenience method that automatically includes the bucket name
-    group: vector-buckets
-  - id: storage.get_public_url
+  - id: storage.file_buckets.get_public_url
     name: Get Public Url
     description: A simple convenience function to get the URL for an asset in a public bucket. If you do not want to use this function, you can construct the public URL by concatenating the bucket URL with the path to the asset. This function does not verify if the bucket is public. If a public URL is created for a bucket which is not public, you will not be able to download the asset.
     group: file-buckets
-  - id: storage.get_vectors
-    name: Get Vectors
-    description: Retrieves vectors by keys from this index Convenience method that automatically includes bucket and index names
-    group: vector-buckets
-  - id: storage.index
-    name: Index
-    description: Access operations for a specific index within this bucket Returns a scoped client for vector data operations
-    group: vector-buckets
-  - id: storage.info
+  - id: storage.file_buckets.info
     name: Info
     description: Retrieves the details of an existing file.
     group: file-buckets
-  - id: storage.list
+  - id: storage.file_buckets.list
     name: List
     description: Lists all the files and folders within a path of the bucket.
     group: file-buckets
-  - id: storage.list_buckets
+  - id: storage.file_buckets.list_buckets
     name: List Buckets
     description: Retrieves the details of all Storage buckets within an existing project.
     group: file-buckets
-  - id: storage.list_indexes
-    name: List Indexes
-    description: Lists indexes in this bucket Convenience method that automatically includes the bucket name
-    group: vector-buckets
-  - id: storage.list_v2
+  - id: storage.file_buckets.list_v2
     name: List V2
     description: Lists all the files and folders within a bucket using the V2 API with pagination support.
     group: file-buckets
-  - id: storage.list_vectors
-    name: List Vectors
-    description: Lists vectors in this index with pagination Convenience method that automatically includes bucket and index names
-    group: vector-buckets
-  - id: storage.move
+  - id: storage.file_buckets.move
     name: Move
     description: Moves an existing file to a new path in the same bucket.
     group: file-buckets
-  - id: storage.put_vectors
-    name: Put Vectors
-    description: Inserts or updates vectors in this index Convenience method that automatically includes bucket and index names
-    group: vector-buckets
-  - id: storage.query_vectors
-    name: Query Vectors
-    description: Queries for similar vectors in this index Convenience method that automatically includes bucket and index names
-    group: vector-buckets
-  - id: storage.remove
+  - id: storage.file_buckets.remove
     name: Remove
     description: Deletes files within the same bucket
     group: file-buckets
-  - id: storage.update
+  - id: storage.file_buckets.update
     name: Update
     description: Replaces an existing file at the specified path with a new one.
     group: file-buckets
-  - id: storage.update_bucket
+  - id: storage.file_buckets.update_bucket
     name: Update Bucket
     description: Updates a Storage bucket
     group: file-buckets
-  - id: storage.upload
+  - id: storage.file_buckets.upload
     name: Upload
     description: Uploads a file to an existing bucket.
     group: file-buckets
-  - id: storage.upload_to_signed_url
+  - id: storage.file_buckets.upload_to_signed_url
     name: Upload To Signed Url
     description: Upload a file with a token generated from `createSignedUploadUrl`.
     group: file-buckets
+  - id: storage.vector_buckets.create_bucket
+    name: Create Bucket
+    description: Creates a new vector bucket Vector buckets are containers for vector indexes and their data
+    group: vector-buckets
+  - id: storage.vector_buckets.create_index
+    name: Create Index
+    description: Creates a new vector index in this bucket Convenience method that automatically includes the bucket name
+    group: vector-buckets
+  - id: storage.vector_buckets.delete_bucket
+    name: Delete Bucket
+    description: Deletes a vector bucket (bucket must be empty) All indexes must be deleted before deleting the bucket
+    group: vector-buckets
+  - id: storage.vector_buckets.delete_index
+    name: Delete Index
+    description: Deletes an index from this bucket Convenience method that automatically includes the bucket name
+    group: vector-buckets
+  - id: storage.vector_buckets.delete_vectors
+    name: Delete Vectors
+    description: Deletes vectors by keys from this index Convenience method that automatically includes bucket and index names
+    group: vector-buckets
+  - id: storage.vector_buckets.from
+    name: From
+    description: Access operations for a specific vector bucket Returns a scoped client for index and vector operations within the bucket
+    group: vector-buckets
+  - id: storage.vector_buckets.get_bucket
+    name: Get Bucket
+    description: Retrieves metadata for a specific vector bucket
+    group: vector-buckets
+  - id: storage.vector_buckets.get_index
+    name: Get Index
+    description: Retrieves metadata for a specific index in this bucket Convenience method that automatically includes the bucket name
+    group: vector-buckets
+  - id: storage.vector_buckets.get_vectors
+    name: Get Vectors
+    description: Retrieves vectors by keys from this index Convenience method that automatically includes bucket and index names
+    group: vector-buckets
+  - id: storage.vector_buckets.index
+    name: Index
+    description: Access operations for a specific index within this bucket Returns a scoped client for vector data operations
+    group: vector-buckets
+  - id: storage.vector_buckets.list_buckets
+    name: List Buckets
+    description: Lists all vector buckets with optional filtering and pagination
+    group: vector-buckets
+  - id: storage.vector_buckets.list_indexes
+    name: List Indexes
+    description: Lists indexes in this bucket Convenience method that automatically includes the bucket name
+    group: vector-buckets
+  - id: storage.vector_buckets.list_vectors
+    name: List Vectors
+    description: Lists vectors in this index with pagination Convenience method that automatically includes bucket and index names
+    group: vector-buckets
+  - id: storage.vector_buckets.put_vectors
+    name: Put Vectors
+    description: Inserts or updates vectors in this index Convenience method that automatically includes bucket and index names
+    group: vector-buckets
+  - id: storage.vector_buckets.query_vectors
+    name: Query Vectors
+    description: Queries for similar vectors in this index Convenience method that automatically includes bucket and index names
+    group: vector-buckets

@@ -46,17 +46,23 @@ export function checkStructural(loaded: LoadedArea[]): Finding[] {
 export function checkSpecs(specsDir: string, knownIds: Set<string>): Finding[] {
   const findings: Finding[] = [];
   try {
-    for (const entry of readdirSync(specsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      for (const file of readdirSync(join(specsDir, entry.name))) {
-        if (!file.endsWith(".md")) continue;
-        const id = `${entry.name}.${file.slice(0, -3)}`;
-        if (!knownIds.has(id)) {
-          findings.push({
-            level: "error",
-            file: join(specsDir, entry.name, file),
-            message: `spec has no matching feature id "${id}" in any capabilities YAML`,
-          });
+    // Expected layout: specs/<area>/<namespace>/<method>.md → id area.namespace.method
+    for (const areaEntry of readdirSync(specsDir, { withFileTypes: true })) {
+      if (!areaEntry.isDirectory()) continue;
+      const areaDir = join(specsDir, areaEntry.name);
+      for (const nsEntry of readdirSync(areaDir, { withFileTypes: true })) {
+        if (!nsEntry.isDirectory()) continue;
+        const nsDir = join(areaDir, nsEntry.name);
+        for (const file of readdirSync(nsDir)) {
+          if (!file.endsWith(".md")) continue;
+          const id = `${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`;
+          if (!knownIds.has(id)) {
+            findings.push({
+              level: "error",
+              file: join(nsDir, file),
+              message: `spec has no matching feature id "${id}" in any capabilities YAML`,
+            });
+          }
         }
       }
     }
