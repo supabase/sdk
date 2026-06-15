@@ -11,7 +11,7 @@ groups:
     title: Subscriptions
   - id: presence
     title: Presence
-  - id: config
+  - id: configuration
     title: Client Configuration
 features:
   - id: realtime.channel.broadcast_http
@@ -130,31 +130,31 @@ features:
     name: Custom Presence Key
     description: Set a stable identifier for the current client's presence entries so multiple connections from the same user share one logical key via the presence.key channel option.
     group: presence
-  - id: realtime.config.custom_websocket_transport
+  - id: realtime.configuration.custom_websocket_transport
     name: Custom WebSocket Transport
     description: Inject a custom WebSocket constructor at client construction time for runtimes without a native global WebSocket, such as Node.js (<22), Cloudflare Workers, or Deno.
-    group: config
-  - id: realtime.config.reconnect_backoff
+    group: configuration
+  - id: realtime.configuration.reconnect_backoff
     name: Configurable Reconnect Backoff
     description: Provide a custom function mapping reconnect attempt count to delay milliseconds, replacing the default stepped backoff strategy.
-    group: config
-  - id: realtime.config.heartbeat_interval
+    group: configuration
+  - id: realtime.configuration.heartbeat_interval
     name: Heartbeat Interval Configuration
     description: Configure the WebSocket heartbeat interval in milliseconds; used to detect stale connections and trigger reconnection.
-    group: config
-  - id: realtime.config.access_token_callback
+    group: configuration
+  - id: realtime.configuration.access_token_callback
     name: Dynamic Access Token Callback
     description: Supply an async callback at construction time that returns the current JWT; called on connect and each heartbeat to keep WebSocket authorization fresh without manual intervention.
-    group: config
-  - id: realtime.config.deferred_disconnect
+    group: configuration
+  - id: realtime.configuration.deferred_disconnect
     name: Deferred Socket Disconnect
     description: Delay WebSocket disconnection after all channels are removed instead of closing immediately, reducing reconnection overhead for short-lived channel patterns.
-    group: config
-  - id: realtime.config.custom_logger
+    group: configuration
+  - id: realtime.configuration.custom_logger
     name: Custom Logger
     description: Provide a custom logging function and log level filter at construction time to route Realtime client diagnostics to an application logger.
-    group: config
-  - id: realtime.config.binary_protocol
+    group: configuration
+  - id: realtime.configuration.binary_protocol
     name: Binary Message Protocol
     description: Select protocol version 2.0.0 for binary-serialized messages, or supply custom encode/decode functions to override transport serialization entirely.
-    group: config
+    group: configuration

@@ -11,7 +11,7 @@ groups:
     title: Filters
   - id: using_modifiers
     title: Modifiers
-  - id: config
+  - id: configuration
     title: Client Configuration
 features:
   - id: database.mutate.delete
@@ -226,15 +226,15 @@ features:
     name: Embed Related Rows
     description: Select columns from related tables within a single query using PostgREST's spread notation; supports inner joins, left joins, aliasing, and nested relationships.
     group: using_modifiers
-  - id: database.config.auto_retry
+  - id: database.configuration.auto_retry
     name: Automatic Retry with Backoff
     description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
-    group: config
-  - id: database.config.custom_http_client
+    group: configuration
+  - id: database.configuration.custom_http_client
     name: Custom HTTP Client
     description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
-    group: config
-  - id: database.config.request_timeout
+    group: configuration
+  - id: database.configuration.request_timeout
     name: Request Timeout
     description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
-    group: config
+    group: configuration
