@@ -11,6 +11,8 @@ groups:
     title: Filters
   - id: using-modifiers
     title: Modifiers
+  - id: config
+    title: Client Configuration
 features:
   - id: database.mutate.delete
     name: Delete Rows
@@ -212,3 +214,31 @@ features:
     name: Expect Single Row
     description: Assert that the query returns exactly one row and unwrap it from the array. Errors if zero or multiple rows are returned.
     group: using-modifiers
+  - id: database.using_modifiers.strip_nulls
+    name: Strip Null Fields
+    description: Omit null-valued properties from response objects using the nulls=stripped Accept header variant; requires PostgREST 11.2+.
+    group: using-modifiers
+  - id: database.using_modifiers.override_response_type
+    name: Override Response Type
+    description: Replace or merge the inferred TypeScript response type without affecting runtime behavior; merge mode (default) retains columns not listed in the override type.
+    group: using-modifiers
+  - id: database.using_modifiers.abort_signal
+    name: Abort Signal
+    description: Cancel an in-flight request via a caller-supplied AbortSignal; merged automatically with any client-level timeout signal.
+    group: using-modifiers
+  - id: database.using_modifiers.relationship_embed
+    name: Embed Related Rows
+    description: Select columns from related tables within a single query using PostgREST's spread notation; supports inner joins, left joins, aliasing, and nested relationships.
+    group: using-modifiers
+  - id: database.config.auto_retry
+    name: Automatic Retry with Backoff
+    description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
+    group: config
+  - id: database.config.custom_fetch
+    name: Custom Fetch Implementation
+    description: Supply a custom fetch function at client construction time for environment-specific HTTP handling such as Node.js, edge runtimes, or test interceptors.
+    group: config
+  - id: database.config.request_timeout
+    name: Request Timeout
+    description: Set a global request timeout in milliseconds at construction time; implemented via an AbortController that merges with any per-request AbortSignal.
+    group: config
