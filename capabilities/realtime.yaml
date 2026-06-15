@@ -142,10 +142,6 @@ features:
     name: Heartbeat Interval Configuration
     description: Configure the WebSocket heartbeat interval in milliseconds; used to detect stale connections and trigger reconnection.
     group: config
-  - id: realtime.config.worker_heartbeat
-    name: Web Worker Heartbeat
-    description: Offload the heartbeat timer to a background Web Worker so it keeps firing while the main thread is suspended; supports a custom worker script URL.
-    group: config
   - id: realtime.config.access_token_callback
     name: Dynamic Access Token Callback
     description: Supply an async callback at construction time that returns the current JWT; called on connect and each heartbeat to keep WebSocket authorization fresh without manual intervention.

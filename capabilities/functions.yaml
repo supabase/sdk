@@ -30,17 +30,17 @@ features:
     name: Invocation Timeout
     description: Abort a function invocation after a specified number of milliseconds using an internally managed AbortController; composable with a caller-supplied AbortSignal.
     group: invocation
-  - id: functions.invocation.abort_signal
-    name: Abort Signal
-    description: Cancel an in-flight function invocation at any point via a caller-supplied AbortSignal.
+  - id: functions.invocation.request_cancellation
+    name: Request Cancellation
+    description: Cancel an in-flight function invocation at any point before a response is received.
     group: invocation
   - id: functions.invocation.response_type_detection
     name: Automatic Response Type Detection
-    description: Parse the function response based on the returned Content-Type — JSON, Blob, FormData, text, or raw Response for event streams — without requiring caller-side type hints.
+    description: Parse the function response automatically based on the returned Content-Type header without requiring the caller to specify the expected type.
     group: invocation
-  - id: functions.invocation.custom_fetch
-    name: Custom Fetch Implementation
-    description: Supply a custom fetch function at client construction time for environment-specific HTTP handling or test interception.
+  - id: functions.invocation.custom_http_client
+    name: Custom HTTP Client
+    description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
     group: invocation
   - id: functions.invocation.typed_errors
     name: Typed Error Classes

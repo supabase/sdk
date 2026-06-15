@@ -218,13 +218,9 @@ features:
     name: Strip Null Fields
     description: Omit null-valued properties from response objects using the nulls=stripped Accept header variant; requires PostgREST 11.2+.
     group: using-modifiers
-  - id: database.using_modifiers.override_response_type
-    name: Override Response Type
-    description: Replace or merge the inferred TypeScript response type without affecting runtime behavior; merge mode (default) retains columns not listed in the override type.
-    group: using-modifiers
-  - id: database.using_modifiers.abort_signal
-    name: Abort Signal
-    description: Cancel an in-flight request via a caller-supplied AbortSignal; merged automatically with any client-level timeout signal.
+  - id: database.using_modifiers.request_cancellation
+    name: Request Cancellation
+    description: Cancel an in-flight request at any point; merges cleanly with any client-level timeout.
     group: using-modifiers
   - id: database.using_modifiers.relationship_embed
     name: Embed Related Rows
@@ -234,11 +230,11 @@ features:
     name: Automatic Retry with Backoff
     description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
     group: config
-  - id: database.config.custom_fetch
-    name: Custom Fetch Implementation
-    description: Supply a custom fetch function at client construction time for environment-specific HTTP handling such as Node.js, edge runtimes, or test interceptors.
+  - id: database.config.custom_http_client
+    name: Custom HTTP Client
+    description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
     group: config
   - id: database.config.request_timeout
     name: Request Timeout
-    description: Set a global request timeout in milliseconds at construction time; implemented via an AbortController that merges with any per-request AbortSignal.
+    description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
     group: config
