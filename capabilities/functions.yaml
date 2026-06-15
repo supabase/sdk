@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: functions
 title: Edge Functions
-description: Invoke Supabase Edge Functions from the client with support for streaming, region routing, typed errors, and flexible request configuration.
+description: Invoke Supabase Edge Functions from the client with support for streaming, region routing, and flexible request configuration.
 groups:
   - id: invocation
     title: Invocation
@@ -28,21 +28,9 @@ features:
     group: invocation
   - id: functions.invocation.timeout
     name: Invocation Timeout
-    description: Abort a function invocation after a specified number of milliseconds using an internally managed AbortController; composable with a caller-supplied AbortSignal.
+    description: Cancel a function invocation after a specified timeout; composable with a caller-supplied cancellation signal.
     group: invocation
   - id: functions.invocation.request_cancellation
     name: Request Cancellation
     description: Cancel an in-flight function invocation at any point before a response is received.
-    group: invocation
-  - id: functions.invocation.response_type_detection
-    name: Automatic Response Type Detection
-    description: Parse the function response automatically based on the returned Content-Type header without requiring the caller to specify the expected type.
-    group: invocation
-  - id: functions.invocation.custom_http_client
-    name: Custom HTTP Client
-    description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
-    group: invocation
-  - id: functions.invocation.typed_errors
-    name: Typed Error Classes
-    description: Distinguish between network failures (FunctionsFetchError), non-2xx HTTP responses (FunctionsHttpError), and Supabase relay errors (FunctionsRelayError); each carries a context property with the raw Response or underlying cause.
     group: invocation

@@ -7,8 +7,6 @@ groups:
     title: File Buckets
   - id: vector_buckets
     title: Vector Buckets
-  - id: transforms
-    title: Image Transforms
   - id: analytics
     title: Analytics Buckets (Iceberg)
 features:
@@ -20,9 +18,9 @@ features:
     name: Copy File
     description: Copy an existing file to a new path within the same bucket.
     group: file_buckets
-  - id: storage.file_buckets.create_bucket
-    name: Create Bucket
-    description: Create a new storage bucket.
+  - id: storage.file_buckets.create_file_bucket
+    name: Create File Bucket
+    description: Create a new file storage bucket.
     group: file_buckets
   - id: storage.file_buckets.create_signed_upload_url
     name: Create Signed Upload URL
@@ -36,9 +34,9 @@ features:
     name: Create Signed URLs (batch)
     description: Create time-limited signed URLs for multiple files in a single request.
     group: file_buckets
-  - id: storage.file_buckets.delete_bucket
-    name: Delete Bucket
-    description: Delete an existing bucket. The bucket must be empty before deletion.
+  - id: storage.file_buckets.delete_file_bucket
+    name: Delete File Bucket
+    description: Delete an existing file bucket. The bucket must be empty before deletion.
     group: file_buckets
   - id: storage.file_buckets.download
     name: Download File
@@ -64,9 +62,9 @@ features:
     name: Get Public URL
     description: Get the public URL for a file in a public bucket.
     group: file_buckets
-  - id: storage.file_buckets.list_buckets
-    name: List Buckets
-    description: List all storage buckets in the project.
+  - id: storage.file_buckets.list_file_buckets
+    name: List File Buckets
+    description: List all file storage buckets in the project.
     group: file_buckets
   - id: storage.file_buckets.list_files
     name: List Files
@@ -180,27 +178,15 @@ features:
     name: URL Cache Invalidation Nonce
     description: Append a cache-busting nonce to public and signed URLs to bypass CDN caching for a specific file version.
     group: file_buckets
-  - id: storage.transforms.image_resize
-    name: Image Resize and Crop
-    description: Resize images server-side with configurable width, height, and resize mode — cover (default), contain, or fill.
-    group: transforms
-  - id: storage.transforms.image_quality
-    name: Image Quality Control
-    description: Set the output compression quality (20–100, default 80) when the server renders a transformed image.
-    group: transforms
-  - id: storage.transforms.image_format
-    name: Image Format Conversion
-    description: Preserve the original image format or allow the server to auto-convert to a modern format such as WebP for bandwidth-optimized delivery.
-    group: transforms
-  - id: storage.analytics.create_bucket
+  - id: storage.analytics.create_analytics_bucket
     name: Create Analytics Bucket
     description: Create a bucket backed by Apache Iceberg table format for structured analytical data storage.
     group: analytics
-  - id: storage.analytics.list_buckets
+  - id: storage.analytics.list_analytics_buckets
     name: List Analytics Buckets
     description: List analytics buckets with optional pagination and sort options.
     group: analytics
-  - id: storage.analytics.delete_bucket
+  - id: storage.analytics.delete_analytics_bucket
     name: Delete Analytics Bucket
     description: Delete an empty analytics bucket.
     group: analytics

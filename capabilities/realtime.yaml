@@ -156,5 +156,5 @@ features:
     group: configuration
   - id: realtime.configuration.binary_protocol
     name: Binary Message Protocol
-    description: Select protocol version 2.0.0 for binary-serialized messages, or supply custom encode/decode functions to override transport serialization entirely.
+    description: Select protocol version 2.0.0 for binary-serialized messages over the WebSocket connection.
     group: configuration

@@ -156,7 +156,7 @@ features:
     group: oauth_server
   - id: auth.oauth_server.get_authorization_details
     name: OAuth Get Authorization Details
-    description: Fetch the details of a pending OAuth authorization request for displaying a consent screen to the user.
+    description: Fetch the details of a pending OAuth authorization request.
     group: oauth_server
   - id: auth.oauth_server.list_grants
     name: OAuth List Grants

@@ -13,7 +13,7 @@ groups:
     title: Observability
 features:
   - id: client.authentication_integration.third_party_auth
-    name: Third-Party Auth via Access Token Callback
+    name: Third-Party Auth
     description: Provide an async token callback at construction time to use an external auth provider; the SDK disables its own auth client and injects the returned JWT into all downstream requests.
     group: authentication_integration
   - id: client.authentication_integration.cross_client_token_sync
@@ -36,10 +36,6 @@ features:
     name: Session Persistence Toggle
     description: Disable automatic session persistence so the session exists only in memory for the lifetime of the client instance.
     group: session_management
-  - id: client.session_management.auto_refresh_token
-    name: Auto-Refresh Token Toggle
-    description: Disable the SDK's background token refresh loop so the application manages token renewal explicitly.
-    group: session_management
   - id: client.request_configuration.custom_http_client
     name: Custom HTTP Client
     description: Supply a custom HTTP client implementation at construction time; the SDK wraps it with automatic API key and authorization header injection and propagates it to all sub-clients.
@@ -47,14 +43,6 @@ features:
   - id: client.request_configuration.global_headers
     name: Global Request Headers
     description: Attach extra HTTP headers to every request made by all sub-clients at construction time.
-    group: request_configuration
-  - id: client.request_configuration.schema_selection
-    name: Default Schema Selection
-    description: Set the default PostgreSQL schema for all database queries at construction time; must be a schema exposed by the PostgREST configuration.
-    group: request_configuration
-  - id: client.request_configuration.db_timeout
-    name: Database Request Timeout
-    description: Set a global timeout for database requests at construction time; requests that exceed the deadline are cancelled.
     group: request_configuration
   - id: client.observability.trace_propagation
     name: Distributed Trace Context Propagation

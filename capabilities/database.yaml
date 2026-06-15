@@ -230,10 +230,6 @@ features:
     name: Automatic Retry with Backoff
     description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
     group: configuration
-  - id: database.configuration.custom_http_client
-    name: Custom HTTP Client
-    description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
-    group: configuration
   - id: database.configuration.request_timeout
     name: Request Timeout
     description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
