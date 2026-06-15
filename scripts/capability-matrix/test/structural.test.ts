@@ -54,34 +54,34 @@ describe("checkSpecs", () => {
   }
 
   it("passes when every spec has a matching feature id", () => {
-    const dir = makeSpecsDir({ "auth/sign-in/sign-up.md": "# Sign Up" });
-    expect(checkSpecs(dir, new Set(["auth.sign-in.sign-up"]))).toEqual([]);
+    const dir = makeSpecsDir({ "auth/sign_in/sign_up.md": "# Sign Up" });
+    expect(checkSpecs(dir, new Set(["auth.sign_in.sign_up"]))).toEqual([]);
   });
 
   it("errors on a spec with no matching feature id", () => {
-    const dir = makeSpecsDir({ "auth/sign-in/orphan.md": "# Orphan" });
-    const findings = checkSpecs(dir, new Set(["auth.sign-in.sign-up"]));
+    const dir = makeSpecsDir({ "auth/sign_in/orphan.md": "# Orphan" });
+    const findings = checkSpecs(dir, new Set(["auth.sign_in.sign_up"]));
     expect(findings).toHaveLength(1);
     expect(findings[0].level).toBe("error");
-    expect(findings[0].message).toContain("auth.sign-in.orphan");
+    expect(findings[0].message).toContain("auth.sign_in.orphan");
   });
 
   it("passes for a known spec and errors for an orphan in the same dir", () => {
     const dir = makeSpecsDir({
-      "auth/sign-in/sign-up.md": "# Sign Up",
-      "auth/sign-in/ghost.md": "# Ghost",
+      "auth/sign_in/sign_up.md": "# Sign Up",
+      "auth/sign_in/ghost.md": "# Ghost",
     });
-    const findings = checkSpecs(dir, new Set(["auth.sign-in.sign-up"]));
+    const findings = checkSpecs(dir, new Set(["auth.sign_in.sign_up"]));
     expect(findings).toHaveLength(1);
-    expect(findings[0].message).toContain("auth.sign-in.ghost");
+    expect(findings[0].message).toContain("auth.sign_in.ghost");
   });
 
   it("ignores non-.md files in subdirectories", () => {
     const dir = makeSpecsDir({
-      "auth/sign-in/sign-up.md": "ok",
-      "auth/sign-in/draft.txt": "skip",
+      "auth/sign_in/sign_up.md": "ok",
+      "auth/sign_in/draft.txt": "skip",
     });
-    expect(checkSpecs(dir, new Set(["auth.sign-in.sign-up"]))).toEqual([]);
+    expect(checkSpecs(dir, new Set(["auth.sign_in.sign_up"]))).toEqual([]);
   });
 
   it("returns empty when the specs directory does not exist", () => {
