@@ -66,7 +66,7 @@ features:
     group: client
   - id: realtime.client.listen_heartbeats
     name: Listen to Heartbeats
-    description: Register a callback that receives lifecycle events for internal heartbeat messages, useful for monitoring connection health.
+    description: Register a callback that receives lifecycle events for internal heartbeat messages.
     group: client
   - id: realtime.client.remove_all_channels
     name: Remove All Channels
