@@ -22,7 +22,7 @@ features:
     name: Insert Rows
     description: Insert one or more rows into a table or view.
     group: mutate
-  - id: database.mutate.select_after_mutation
+  - id: database.mutate.select-after-mutation
     name: Select After Mutation
     description: Chain a column selection onto an insert, update, upsert, or delete to return the affected rows in the response.
     group: mutate
@@ -34,7 +34,7 @@ features:
     name: Upsert Rows
     description: Insert rows, or update them on conflict based on specified conflict columns.
     group: mutate
-  - id: database.query.from_table
+  - id: database.query.from-table
     name: Query Table or View
     description: Scope a query to a specific table or view. The entry point for all table-level operations.
     group: query
@@ -42,7 +42,7 @@ features:
     name: Call Function (RPC)
     description: Invoke a database function via the PostgREST RPC interface.
     group: query
-  - id: database.query.schema_selection
+  - id: database.query.schema-selection
     name: Schema Selection
     description: Target a non-default database schema for the query or function call.
     group: query
@@ -50,191 +50,191 @@ features:
     name: Select Rows
     description: Read rows from a table or view with column selection.
     group: query
-  - id: database.using_filters.contained_by
+  - id: database.using-filters.contained-by
     name: Filter Contained By
     description: For jsonb, array, and range columns — match only rows where every element in the column is contained by the given value.
     group: using-filters
-  - id: database.using_filters.contains
+  - id: database.using-filters.contains
     name: Filter Contains
     description: For jsonb, array, and range columns — match only rows where the column contains every element in the given value.
     group: using-filters
-  - id: database.using_filters.eq
+  - id: database.using-filters.eq
     name: Filter Equal
     description: Match only rows where a column equals a value.
     group: using-filters
-  - id: database.using_filters.gt
+  - id: database.using-filters.gt
     name: Filter Greater Than
     description: Match only rows where a column is greater than a value.
     group: using-filters
-  - id: database.using_filters.gte
+  - id: database.using-filters.gte
     name: Filter Greater Than or Equal
     description: Match only rows where a column is greater than or equal to a value.
     group: using-filters
-  - id: database.using_filters.ilike
+  - id: database.using-filters.ilike
     name: Filter Like (case-insensitive)
     description: Match only rows where a column matches a pattern case-insensitively (SQL ILIKE).
     group: using-filters
-  - id: database.using_filters.ilike_all
+  - id: database.using-filters.ilike-all
     name: Filter ILike All Patterns
     description: Match only rows where a column matches all of the given patterns case-insensitively.
     group: using-filters
-  - id: database.using_filters.ilike_any
+  - id: database.using-filters.ilike-any
     name: Filter ILike Any Pattern
     description: Match only rows where a column matches any of the given patterns case-insensitively.
     group: using-filters
-  - id: database.using_filters.in
+  - id: database.using-filters.in
     name: Filter In
     description: Match only rows where a column's value is in a given set.
     group: using-filters
-  - id: database.using_filters.is
+  - id: database.using-filters.is
     name: Filter Is
     description: Match only rows where a column IS a value (null, true, or false).
     group: using-filters
-  - id: database.using_filters.is_distinct
+  - id: database.using-filters.is-distinct
     name: Filter Is Distinct From
     description: Match only rows where a column IS DISTINCT FROM a value (null-safe inequality).
     group: using-filters
-  - id: database.using_filters.like
+  - id: database.using-filters.like
     name: Filter Like (case-sensitive)
     description: Match only rows where a column matches a pattern case-sensitively (SQL LIKE).
     group: using-filters
-  - id: database.using_filters.like_all
+  - id: database.using-filters.like-all
     name: Filter Like All Patterns
     description: Match only rows where a column matches all of the given patterns case-sensitively.
     group: using-filters
-  - id: database.using_filters.like_any
+  - id: database.using-filters.like-any
     name: Filter Like Any Pattern
     description: Match only rows where a column matches any of the given patterns case-sensitively.
     group: using-filters
-  - id: database.using_filters.lt
+  - id: database.using-filters.lt
     name: Filter Less Than
     description: Match only rows where a column is less than a value.
     group: using-filters
-  - id: database.using_filters.lte
+  - id: database.using-filters.lte
     name: Filter Less Than or Equal
     description: Match only rows where a column is less than or equal to a value.
     group: using-filters
-  - id: database.using_filters.match
+  - id: database.using-filters.match
     name: Filter Match Object
     description: Match rows where each key/value pair in an object equals the corresponding column value. Shorthand for multiple equality filters.
     group: using-filters
-  - id: database.using_filters.neq
+  - id: database.using-filters.neq
     name: Filter Not Equal
     description: Match only rows where a column does not equal a value.
     group: using-filters
-  - id: database.using_filters.not
+  - id: database.using-filters.not
     name: Filter Not
     description: Negate a filter so only rows that do not satisfy it are returned.
     group: using-filters
-  - id: database.using_filters.not_in
+  - id: database.using-filters.not-in
     name: Filter Not In
     description: Match only rows where a column's value is not in a given set.
     group: using-filters
-  - id: database.using_filters.or
+  - id: database.using-filters.or
     name: Filter Or
     description: Match rows that satisfy at least one of multiple filters.
     group: using-filters
-  - id: database.using_filters.overlaps
+  - id: database.using-filters.overlaps
     name: Filter Overlaps
     description: For array and range columns — match only rows where the column and value share at least one element.
     group: using-filters
-  - id: database.using_filters.range_adjacent
+  - id: database.using-filters.range-adjacent
     name: Filter Range Adjacent
     description: For range columns — match only rows where the column is mutually exclusive to the given range with no gap between them.
     group: using-filters
-  - id: database.using_filters.range_gt
+  - id: database.using-filters.range-gt
     name: Filter Range Greater Than
     description: For range columns — match only rows where every element in the column is greater than any element in the given range.
     group: using-filters
-  - id: database.using_filters.range_gte
+  - id: database.using-filters.range-gte
     name: Filter Range Greater Than or Equal
     description: For range columns — match only rows where every element in the column is contained in or greater than any element in the given range.
     group: using-filters
-  - id: database.using_filters.range_lt
+  - id: database.using-filters.range-lt
     name: Filter Range Less Than
     description: For range columns — match only rows where every element in the column is less than any element in the given range.
     group: using-filters
-  - id: database.using_filters.range_lte
+  - id: database.using-filters.range-lte
     name: Filter Range Less Than or Equal
     description: For range columns — match only rows where every element in the column is contained in or less than any element in the given range.
     group: using-filters
-  - id: database.using_filters.raw
+  - id: database.using-filters.raw
     name: Filter Raw
     description: Apply a raw filter expression. Escape hatch for filter combinations not covered by the specific filter operations.
     group: using-filters
-  - id: database.using_filters.regex
+  - id: database.using-filters.regex
     name: Filter Regex Match
     description: Match only rows where a column matches a regex pattern case-sensitively.
     group: using-filters
-  - id: database.using_filters.regex_icase
+  - id: database.using-filters.regex-icase
     name: Filter Regex Match (case-insensitive)
     description: Match only rows where a column matches a regex pattern case-insensitively.
     group: using-filters
-  - id: database.using_filters.text_search
+  - id: database.using-filters.text-search
     name: Filter Full-Text Search
     description: For text and tsvector columns — match only rows where a column matches a full-text search query.
     group: using-filters
-  - id: database.using_modifiers.dry_run
+  - id: database.using-modifiers.dry-run
     name: Dry Run
     description: Execute the query against the database but discard any changes, returning what would have been affected.
     group: using-modifiers
-  - id: database.using_modifiers.explain
+  - id: database.using-modifiers.explain
     name: Explain Query Plan
     description: Return the database query execution plan instead of the result data.
     group: using-modifiers
-  - id: database.using_modifiers.format_csv
+  - id: database.using-modifiers.format-csv
     name: Return as CSV
     description: Return the query result as a CSV string instead of a structured object.
     group: using-modifiers
-  - id: database.using_modifiers.format_geojson
+  - id: database.using-modifiers.format-geojson
     name: Return as GeoJSON
     description: Return the query result as a GeoJSON object.
     group: using-modifiers
-  - id: database.using_modifiers.limit
+  - id: database.using-modifiers.limit
     name: Limit Results
     description: Limit the number of rows returned by the query.
     group: using-modifiers
-  - id: database.using_modifiers.max_affected_rows
+  - id: database.using-modifiers.max-affected-rows
     name: Limit Affected Rows
     description: Set the maximum number of rows that a mutation (update or delete) is allowed to affect.
     group: using-modifiers
-  - id: database.using_modifiers.maybe_single_row
+  - id: database.using-modifiers.maybe-single-row
     name: Expect At Most One Row
     description: Return a single row if one exists, or null if no rows match. Errors if multiple rows are returned.
     group: using-modifiers
-  - id: database.using_modifiers.order
+  - id: database.using-modifiers.order
     name: Order Results
     description: Sort the query result by one or more columns.
     group: using-modifiers
-  - id: database.using_modifiers.range
+  - id: database.using-modifiers.range
     name: Range
     description: Return a slice of results by specifying a zero-based start and end offset.
     group: using-modifiers
-  - id: database.using_modifiers.single_row
+  - id: database.using-modifiers.single-row
     name: Expect Single Row
     description: Assert that the query returns exactly one row and unwrap it from the array. Errors if zero or multiple rows are returned.
     group: using-modifiers
-  - id: database.using_modifiers.strip_nulls
+  - id: database.using-modifiers.strip-nulls
     name: Strip Null Fields
     description: Omit null-valued properties from response objects using the nulls=stripped Accept header variant; requires PostgREST 11.2+.
     group: using-modifiers
-  - id: database.using_modifiers.request_cancellation
+  - id: database.using-modifiers.request-cancellation
     name: Request Cancellation
     description: Cancel an in-flight request at any point; merges cleanly with any client-level timeout.
     group: using-modifiers
-  - id: database.using_modifiers.relationship_embed
+  - id: database.using-modifiers.relationship-embed
     name: Embed Related Rows
     description: Select columns from related tables within a single query using PostgREST's spread notation; supports inner joins, left joins, aliasing, and nested relationships.
     group: using-modifiers
-  - id: database.config.auto_retry
+  - id: database.config.auto-retry
     name: Automatic Retry with Backoff
     description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
     group: config
-  - id: database.config.custom_http_client
+  - id: database.config.custom-http-client
     name: Custom HTTP Client
     description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
     group: config
-  - id: database.config.request_timeout
+  - id: database.config.request-timeout
     name: Request Timeout
     description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
     group: config

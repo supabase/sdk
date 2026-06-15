@@ -10,19 +10,19 @@ features:
     name: Invoke Function
     description: Call a deployed Edge Function by name with an optional request body.
     group: invocation
-  - id: functions.invocation.set_auth_token
+  - id: functions.invocation.set-auth-token
     name: Set Auth Token
     description: Update the authorization token sent with all subsequent function invocations.
     group: invocation
-  - id: functions.invocation.method_override
+  - id: functions.invocation.method-override
     name: HTTP Method Override
     description: Invoke a function using a non-default HTTP method (GET, PUT, PATCH, DELETE) for RESTful Edge Function designs.
     group: invocation
-  - id: functions.invocation.streaming_response
+  - id: functions.invocation.streaming-response
     name: Streaming Response (SSE)
     description: Receive a streaming response from a function; when the function returns text/event-stream the raw Response object is passed through for caller-controlled reading.
     group: invocation
-  - id: functions.invocation.region_selection
+  - id: functions.invocation.region-selection
     name: Region Selection
     description: Route an invocation to a specific geographic deployment region set at client construction time or overridden per individual call.
     group: invocation
@@ -30,19 +30,19 @@ features:
     name: Invocation Timeout
     description: Abort a function invocation after a specified number of milliseconds using an internally managed AbortController; composable with a caller-supplied AbortSignal.
     group: invocation
-  - id: functions.invocation.request_cancellation
+  - id: functions.invocation.request-cancellation
     name: Request Cancellation
     description: Cancel an in-flight function invocation at any point before a response is received.
     group: invocation
-  - id: functions.invocation.response_type_detection
+  - id: functions.invocation.response-type-detection
     name: Automatic Response Type Detection
     description: Parse the function response automatically based on the returned Content-Type header without requiring the caller to specify the expected type.
     group: invocation
-  - id: functions.invocation.custom_http_client
+  - id: functions.invocation.custom-http-client
     name: Custom HTTP Client
     description: Supply a custom HTTP client implementation at construction time for environment-specific handling or test interception.
     group: invocation
-  - id: functions.invocation.typed_errors
+  - id: functions.invocation.typed-errors
     name: Typed Error Classes
     description: Distinguish between network failures (FunctionsFetchError), non-2xx HTTP responses (FunctionsHttpError), and Supabase relay errors (FunctionsRelayError); each carries a context property with the raw Response or underlying cause.
     group: invocation

@@ -12,203 +12,203 @@ groups:
   - id: analytics
     title: Analytics Buckets (Iceberg)
 features:
-  - id: storage.file_buckets.access_bucket
+  - id: storage.file-buckets.access-bucket
     name: Access Bucket
     description: Scope subsequent file operations to a specific bucket.
     group: file-buckets
-  - id: storage.file_buckets.copy
+  - id: storage.file-buckets.copy
     name: Copy File
     description: Copy an existing file to a new path within the same bucket.
     group: file-buckets
-  - id: storage.file_buckets.create_bucket
+  - id: storage.file-buckets.create-bucket
     name: Create Bucket
     description: Create a new storage bucket.
     group: file-buckets
-  - id: storage.file_buckets.create_signed_upload_url
+  - id: storage.file-buckets.create-signed-upload-url
     name: Create Signed Upload URL
     description: Create a signed URL that allows an unauthenticated client to upload a file to the bucket.
     group: file-buckets
-  - id: storage.file_buckets.create_signed_url
+  - id: storage.file-buckets.create-signed-url
     name: Create Signed URL
     description: Create a time-limited signed URL for sharing a file.
     group: file-buckets
-  - id: storage.file_buckets.create_signed_urls
+  - id: storage.file-buckets.create-signed-urls
     name: Create Signed URLs (batch)
     description: Create time-limited signed URLs for multiple files in a single request.
     group: file-buckets
-  - id: storage.file_buckets.delete_bucket
+  - id: storage.file-buckets.delete-bucket
     name: Delete Bucket
     description: Delete an existing bucket. The bucket must be empty before deletion.
     group: file-buckets
-  - id: storage.file_buckets.download
+  - id: storage.file-buckets.download
     name: Download File
     description: Download a file from a private bucket.
     group: file-buckets
-  - id: storage.file_buckets.empty_bucket
+  - id: storage.file-buckets.empty-bucket
     name: Empty Bucket
     description: Delete all objects inside a bucket without deleting the bucket itself.
     group: file-buckets
-  - id: storage.file_buckets.file_exists
+  - id: storage.file-buckets.file-exists
     name: Check File Exists
     description: Check whether a file exists at a given path.
     group: file-buckets
-  - id: storage.file_buckets.file_info
+  - id: storage.file-buckets.file-info
     name: Get File Info
     description: Retrieve the metadata of an existing file.
     group: file-buckets
-  - id: storage.file_buckets.get_bucket
+  - id: storage.file-buckets.get-bucket
     name: Get Bucket
     description: Retrieve the details of a specific storage bucket.
     group: file-buckets
-  - id: storage.file_buckets.get_public_url
+  - id: storage.file-buckets.get-public-url
     name: Get Public URL
     description: Get the public URL for a file in a public bucket.
     group: file-buckets
-  - id: storage.file_buckets.list_buckets
+  - id: storage.file-buckets.list-buckets
     name: List Buckets
     description: List all storage buckets in the project.
     group: file-buckets
-  - id: storage.file_buckets.list_files
+  - id: storage.file-buckets.list-files
     name: List Files
     description: List files and folders within a path of the bucket.
     group: file-buckets
-  - id: storage.file_buckets.list_files_paginated
+  - id: storage.file-buckets.list-files-paginated
     name: List Files (paginated)
     description: List files and folders within a bucket with cursor-based pagination support.
     group: file-buckets
-  - id: storage.file_buckets.move
+  - id: storage.file-buckets.move
     name: Move File
     description: Move an existing file to a new path within the same bucket.
     group: file-buckets
-  - id: storage.file_buckets.remove
+  - id: storage.file-buckets.remove
     name: Delete Files
     description: Delete one or more files from the bucket.
     group: file-buckets
-  - id: storage.file_buckets.update_bucket
+  - id: storage.file-buckets.update-bucket
     name: Update Bucket
     description: Update a storage bucket's settings (public access, file size limits, etc.).
     group: file-buckets
-  - id: storage.file_buckets.update_file
+  - id: storage.file-buckets.update-file
     name: Update File
     description: Replace an existing file at the specified path with a new one.
     group: file-buckets
-  - id: storage.file_buckets.upload
+  - id: storage.file-buckets.upload
     name: Upload File
     description: Upload a file to an existing bucket.
     group: file-buckets
-  - id: storage.file_buckets.upload_with_signed_url
+  - id: storage.file-buckets.upload-with-signed-url
     name: Upload with Signed URL
     description: Upload a file using a pre-signed upload URL, without requiring standard authentication.
     group: file-buckets
-  - id: storage.vector_buckets.access_vector_index
+  - id: storage.vector-buckets.access-vector-index
     name: Access Vector Index
     description: Scope subsequent vector operations to a specific index within a bucket.
     group: vector-buckets
-  - id: storage.vector_buckets.create_index
+  - id: storage.vector-buckets.create-index
     name: Create Vector Index
     description: Create a new vector index in a bucket.
     group: vector-buckets
-  - id: storage.vector_buckets.delete_index
+  - id: storage.vector-buckets.delete-index
     name: Delete Vector Index
     description: Delete a vector index from a bucket.
     group: vector-buckets
-  - id: storage.vector_buckets.delete_vectors
+  - id: storage.vector-buckets.delete-vectors
     name: Delete Vectors
     description: Delete vectors by key from an index.
     group: vector-buckets
-  - id: storage.vector_buckets.get_index
+  - id: storage.vector-buckets.get-index
     name: Get Vector Index
     description: Retrieve metadata for a specific vector index.
     group: vector-buckets
-  - id: storage.vector_buckets.get_vectors
+  - id: storage.vector-buckets.get-vectors
     name: Get Vectors
     description: Retrieve vectors by key from an index.
     group: vector-buckets
-  - id: storage.vector_buckets.list_indexes
+  - id: storage.vector-buckets.list-indexes
     name: List Vector Indexes
     description: List all vector indexes in a bucket.
     group: vector-buckets
-  - id: storage.vector_buckets.list_vectors
+  - id: storage.vector-buckets.list-vectors
     name: List Vectors
     description: List vectors in an index with pagination.
     group: vector-buckets
-  - id: storage.vector_buckets.put_vectors
+  - id: storage.vector-buckets.put-vectors
     name: Put Vectors
     description: Insert or update vectors in an index.
     group: vector-buckets
-  - id: storage.vector_buckets.query_vectors
+  - id: storage.vector-buckets.query-vectors
     name: Query Vectors (similarity search)
     description: Search for similar vectors in an index using a query vector.
     group: vector-buckets
-  - id: storage.vector_buckets.create_vector_bucket
+  - id: storage.vector-buckets.create-vector-bucket
     name: Create Vector Bucket
     description: Create a new bucket dedicated to holding S3 Vectors indexes.
     group: vector-buckets
-  - id: storage.vector_buckets.list_vector_buckets
+  - id: storage.vector-buckets.list-vector-buckets
     name: List Vector Buckets
     description: List all vector buckets with prefix filtering and cursor-based pagination.
     group: vector-buckets
-  - id: storage.vector_buckets.delete_vector_bucket
+  - id: storage.vector-buckets.delete-vector-bucket
     name: Delete Vector Bucket
     description: Delete an empty vector bucket and all its indexes.
     group: vector-buckets
-  - id: storage.vector_buckets.parallel_scan
+  - id: storage.vector-buckets.parallel-scan
     name: Parallel Vector Scan
     description: Distribute a full-index vector scan across multiple workers using segmentCount and segmentIndex parameters to parallelize large-scale retrieval.
     group: vector-buckets
-  - id: storage.file_buckets.download_as_stream
+  - id: storage.file-buckets.download-as-stream
     name: Download File as Stream
     description: Download a file and return its content as a ReadableStream for memory-efficient handling of large files.
     group: file-buckets
-  - id: storage.file_buckets.download_with_transform
+  - id: storage.file-buckets.download-with-transform
     name: Download with Image Transform
     description: Apply server-side image transformations inline during download without creating a separate file.
     group: file-buckets
-  - id: storage.file_buckets.copy_cross_bucket
+  - id: storage.file-buckets.copy-cross-bucket
     name: Copy File to Another Bucket
     description: Copy a file to a path in a different bucket using the destinationBucket option.
     group: file-buckets
-  - id: storage.file_buckets.move_cross_bucket
+  - id: storage.file-buckets.move-cross-bucket
     name: Move File to Another Bucket
     description: Move a file to a path in a different bucket using the destinationBucket option.
     group: file-buckets
-  - id: storage.file_buckets.upload_with_metadata
+  - id: storage.file-buckets.upload-with-metadata
     name: Upload with Custom Metadata
     description: Attach arbitrary JSON metadata, a custom cache-control header, and an explicit content-type to a file at upload time.
     group: file-buckets
-  - id: storage.file_buckets.url_cache_nonce
+  - id: storage.file-buckets.url-cache-nonce
     name: URL Cache Invalidation Nonce
     description: Append a cache-busting nonce to public and signed URLs to bypass CDN caching for a specific file version.
     group: file-buckets
-  - id: storage.transforms.image_resize
+  - id: storage.transforms.image-resize
     name: Image Resize and Crop
     description: Resize images server-side with configurable width, height, and resize mode — cover (default), contain, or fill.
     group: transforms
-  - id: storage.transforms.image_quality
+  - id: storage.transforms.image-quality
     name: Image Quality Control
     description: Set the output compression quality (20–100, default 80) when the server renders a transformed image.
     group: transforms
-  - id: storage.transforms.image_format
+  - id: storage.transforms.image-format
     name: Image Format Conversion
     description: Preserve the original image format or allow the server to auto-convert to a modern format such as WebP for bandwidth-optimized delivery.
     group: transforms
-  - id: storage.analytics.create_bucket
+  - id: storage.analytics.create-bucket
     name: Create Analytics Bucket
     description: Create a bucket backed by Apache Iceberg table format for structured analytical data storage.
     group: analytics
-  - id: storage.analytics.list_buckets
+  - id: storage.analytics.list-buckets
     name: List Analytics Buckets
     description: List analytics buckets with optional pagination and sort options.
     group: analytics
-  - id: storage.analytics.delete_bucket
+  - id: storage.analytics.delete-bucket
     name: Delete Analytics Bucket
     description: Delete an empty analytics bucket.
     group: analytics
-  - id: storage.analytics.iceberg_namespace
+  - id: storage.analytics.iceberg-namespace
     name: Iceberg Namespace Management
     description: Create, list, and drop namespaces within an analytics bucket via the Iceberg REST Catalog API.
     group: analytics
-  - id: storage.analytics.iceberg_table
+  - id: storage.analytics.iceberg-table
     name: Iceberg Table Management
     description: Create, list, load, update, rename, and drop Iceberg tables within a namespace, including schema and partition spec definition.
     group: analytics

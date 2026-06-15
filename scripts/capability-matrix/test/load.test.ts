@@ -14,7 +14,7 @@ describe("loadAreas", () => {
     expect(findings).toEqual([]);
     expect(areas).toHaveLength(1);
     expect(areas[0].area.area).toBe("auth");
-    expect(areas[0].area.features[0].id).toBe("auth.sign_in_with_otp");
+    expect(areas[0].area.features[0].id).toBe("auth.sign-in-with-otp");
     expect(areas[0].file.endsWith("auth.yaml")).toBe(true);
   });
 

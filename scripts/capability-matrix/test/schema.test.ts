@@ -20,7 +20,7 @@ describe("checkSchema", () => {
       area: "auth",
       title: "Authentication",
       description: "x",
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d" }],
+      features: [{ id: "auth.sign-in.f", name: "F", description: "d" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
@@ -30,7 +30,7 @@ describe("checkSchema", () => {
       area: "auth",
       title: "Authentication",
       description: "x",
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign-in" }],
+      features: [{ id: "auth.sign-in.f", name: "F", description: "d", group: "sign-in" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
@@ -41,7 +41,7 @@ describe("checkSchema", () => {
       title: "Authentication",
       description: "x",
       groups: [{ id: "sign-in", title: "Sign-in / Sign-up" }],
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign-in" }],
+      features: [{ id: "auth.sign-in.f", name: "F", description: "d", group: "sign-in" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
@@ -51,7 +51,7 @@ describe("checkSchema", () => {
       area: "auth",
       title: "Authentication",
       description: "x",
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d", sdks: {} }],
+      features: [{ id: "auth.sign-in.f", name: "F", description: "d", sdks: {} }],
     };
     expect(checkSchema(loaded(area), schema).length).toBeGreaterThan(0);
   });

@@ -2,6 +2,6 @@ area: auth
 title: Authentication
 description: User sign-in flows.
 features:
-  - id: auth.sign_in_with_otp
+  - id: auth.sign-in-with-otp
     name: Sign in with OTP
     description: Send a one-time password and authenticate with it.

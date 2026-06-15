@@ -12,51 +12,51 @@ groups:
   - id: observability
     title: Observability
 features:
-  - id: client.auth_integration.third_party_auth
+  - id: client.auth-integration.third-party-auth
     name: Third-Party Auth via Access Token Callback
     description: Provide an async token callback at construction time to use an external auth provider; the SDK disables its own auth client and injects the returned JWT into all downstream requests.
     group: auth-integration
-  - id: client.auth_integration.cross_client_token_sync
+  - id: client.auth-integration.cross-client-token-sync
     name: Cross-Client Token Synchronization
     description: The client listens for auth state change events and automatically propagates the current JWT to all sub-clients (database, realtime, storage, functions) so requests stay authenticated without manual intervention.
     group: auth-integration
-  - id: client.auth_integration.oauth_flow_type
+  - id: client.auth-integration.oauth-flow-type
     name: OAuth Flow Type Selection
     description: Choose between implicit and PKCE OAuth flows at construction time; PKCE is recommended for scenarios where the implicit flow is less secure.
     group: auth-integration
-  - id: client.auth_integration.session_url_detection
+  - id: client.auth-integration.session-url-detection
     name: OAuth Redirect Detection Customization
     description: Configure whether and how the client detects an incoming OAuth redirect; accepts a boolean or a custom predicate so apps using multiple OAuth providers can disambiguate callbacks.
     group: auth-integration
-  - id: client.session_management.custom_storage
+  - id: client.session-management.custom-storage
     name: Pluggable Session Storage
     description: Supply a custom storage backend at construction time to control where the user session is persisted; enables use of platform-native secure storage instead of the default.
     group: session-management
-  - id: client.session_management.persist_session
+  - id: client.session-management.persist-session
     name: Session Persistence Toggle
     description: Disable automatic session persistence so the session exists only in memory for the lifetime of the client instance.
     group: session-management
-  - id: client.session_management.auto_refresh_token
+  - id: client.session-management.auto-refresh-token
     name: Auto-Refresh Token Toggle
     description: Disable the SDK's background token refresh loop so the application manages token renewal explicitly.
     group: session-management
-  - id: client.request_config.custom_http_client
+  - id: client.request-config.custom-http-client
     name: Custom HTTP Client
     description: Supply a custom HTTP client implementation at construction time; the SDK wraps it with automatic API key and authorization header injection and propagates it to all sub-clients.
     group: request-config
-  - id: client.request_config.global_headers
+  - id: client.request-config.global-headers
     name: Global Request Headers
     description: Attach extra HTTP headers to every request made by all sub-clients at construction time.
     group: request-config
-  - id: client.request_config.schema_selection
+  - id: client.request-config.schema-selection
     name: Default Schema Selection
     description: Set the default PostgreSQL schema for all database queries at construction time; must be a schema exposed by the PostgREST configuration.
     group: request-config
-  - id: client.request_config.db_timeout
+  - id: client.request-config.db-timeout
     name: Database Request Timeout
     description: Set a global timeout for database requests at construction time; requests that exceed the deadline are cancelled.
     group: request-config
-  - id: client.observability.trace_propagation
+  - id: client.observability.trace-propagation
     name: Distributed Trace Context Propagation
     description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.
     group: observability
