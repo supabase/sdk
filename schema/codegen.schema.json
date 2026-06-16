@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supabase.com/sdk/codegen.schema.json",
+  "title": "Supabase SDK codegen config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["engine", "specs", "languages"],
+  "properties": {
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool", "version"],
+      "properties": {
+        "tool": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "specs": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "version"],
+        "properties": {
+          "source": { "type": "string", "minLength": 1 },
+          "version": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "languages": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["generator", "templates"],
+        "properties": {
+          "generator": { "type": "string", "minLength": 1 },
+          "templates": { "type": "string", "minLength": 1 },
+          "generatorProperties": {
+            "type": "object",
+            "additionalProperties": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
