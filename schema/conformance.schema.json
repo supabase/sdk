@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://supabase.com/sdk/conformance.schema.json",
+  "title": "Supabase SDK conformance vector file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["feature", "cases"],
+  "properties": {
+    "feature": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+\\.[a-z0-9_]+$"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "input", "expected"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "input": {},
+          "expected": {}
+        }
+      }
+    }
+  }
+}
