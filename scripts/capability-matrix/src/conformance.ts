@@ -21,8 +21,9 @@ export function checkConformance(dir: string, knownIds: Set<string>, schema: obj
   let files: string[];
   try {
     files = collectFiles(dir);
-  } catch {
-    return findings; // conformance dir absent
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return findings; // conformance dir absent
+    throw e;
   }
 
   for (const file of files) {

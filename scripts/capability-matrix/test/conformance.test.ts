@@ -45,4 +45,16 @@ describe("checkConformance", () => {
   it("returns empty when the conformance directory does not exist", () => {
     expect(checkConformance("/nonexistent/conf-xyzzy", new Set(), schema)).toEqual([]);
   });
+
+  it("ignores non-.yaml files", () => {
+    const dir = makeDir({ "storage/upload.yaml": validVector, "storage/notes.txt": "ignored" });
+    expect(checkConformance(dir, new Set(["storage.objects.upload"]), schema)).toEqual([]);
+  });
+
+  it("recurses into nested subdirectories", () => {
+    const dir = makeDir({ "storage/objects/upload.yaml": validVector });
+    const findings = checkConformance(dir, new Set(["storage.objects.list"]), schema);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].message).toContain("storage.objects.upload");
+  });
 });
