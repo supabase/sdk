@@ -36,6 +36,50 @@ scripts/        # TypeScript validator + site generator (scripts/capability-matr
 
 The full schema lives in `schema/capability-matrix.schema.json`.
 
+## Code generation contract
+
+SDKs generate their transport, models, and error types from upstream OpenAPI specs. This repo is the contract:
+
+- A feature may declare an optional `binding` to the OpenAPI operation it maps to:
+
+  ```yaml
+  - id: storage.objects.upload
+    name: Upload Object
+    description: Upload a file to a bucket.
+    group: objects
+    binding:
+      spec: storage          # must match a spec id in codegen.yaml
+      operationId: uploadObject
+  ```
+
+- `codegen.yaml` (repo root) pins the generator engine, the spec sources, and the per-language template packs:
+
+  ```yaml
+  engine:
+    tool: openapi-generator
+    version: 7.10.0
+  specs:
+    storage:
+      source: https://.../storage/openapi.yaml
+      version: <pin>
+  languages:
+    swift:
+      generator: swift5
+      templates: templates/swift
+  ```
+
+- `conformance/**/*.yaml` holds language-agnostic test vectors each SDK runs:
+
+  ```yaml
+  feature: storage.objects.upload
+  cases:
+    - name: uploads a small file
+      input: { path: a.txt, body: hi }
+      expected: { status: 200 }
+  ```
+
+`npm run validate` enforces that bindings reference declared specs, that `codegen.yaml` matches its schema, and that conformance vectors are well-formed and reference real features. The full schemas live in `schema/codegen.schema.json` and `schema/conformance.schema.json`.
+
 ## SDK compliance
 
 SDK compliance is **declared in each SDK repo**, not here. To report which features your SDK implements, add a `sdk-compliance.yaml` file to the root of your SDK repo:
