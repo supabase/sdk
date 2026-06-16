@@ -22,11 +22,17 @@ export interface Group {
   title: string;
 }
 
+export interface Binding {
+  spec: string;
+  operationId: string;
+}
+
 export interface Feature {
   id: string;
   name: string;
   description: string;
   group?: string;
+  binding?: Binding;
 }
 
 export interface AreaFile {
