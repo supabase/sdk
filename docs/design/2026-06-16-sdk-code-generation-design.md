@@ -99,6 +99,12 @@ This repo becomes the **index**. Additive changes only — today's prose-only en
 
 The matrix's existing aggregate/parity job extends to assert that every feature an SDK declares `implemented` has a binding and is covered by generated code — so parity stops being a manual honor system.
 
+### 6.1 Spec normalization (added after the Storage spike)
+
+The Storage spike (`docs/plans/2026-06-16-codegen-swift-storage-spike.md`) found that upstream specs are not always generation-ready. The Storage OpenAPI (3.0.3, 108 operations) has **no `operationId`s at all**, uses Fastify `{*}` wildcard path params (invalid OpenAPI that produces non-compiling Swift), and has placeholder schema names (`def-0`/`def-1`). So the pipeline gains a **normalization step** between the upstream spec and the generator: a committed, deterministic transform that injects `operationId`s, renames non-standard path params, and renames schemas, emitting a committed normalized spec that the generator consumes.
+
+Design consequence: a feature's `binding.operationId` references the **normalized** spec's id (which may be SDK-injected), not necessarily an upstream-native one. Both the pinned upstream spec and the normalized spec are committed, so generation is deterministic and offline, and normalization diffs are reviewable.
+
 ## 7. Repo layout and ownership
 
 The contract is central and singular; the output is per-SDK and owned.
