@@ -1,9 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { loadAreas } from "./load";
 import { checkSchema } from "./schema";
 import { checkStructural, checkSpecs } from "./structural";
+import { loadCodegenConfig, checkCodegenConfig } from "./codegen";
+import { checkBindings } from "./bindings";
+import { checkConformance } from "./conformance";
 import { computeParity, type ParityReport } from "./report";
 import type { Finding } from "./types";
 
@@ -13,6 +16,10 @@ export interface RunOptions {
   schema: object;
   specsDir?: string;
   changedFiles?: string[];
+  codegenConfigPath?: string;
+  codegenSchema?: object;
+  conformanceDir?: string;
+  conformanceSchema?: object;
 }
 
 export interface RunResult {
@@ -32,9 +39,23 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   findings.push(...checkSchema(areas, opts.schema));
   findings.push(...checkStructural(areas));
 
+  const knownIds = new Set(areas.flatMap((a) => a.area.features.map((f) => f.id)));
+
   if (opts.specsDir) {
-    const knownIds = new Set(areas.flatMap((a) => a.area.features.map((f) => f.id)));
     findings.push(...checkSpecs(opts.specsDir, knownIds));
+  }
+
+  if (opts.codegenConfigPath && opts.codegenSchema && existsSync(opts.codegenConfigPath)) {
+    const { config, findings: loadFindings2 } = loadCodegenConfig(opts.codegenConfigPath);
+    findings.push(...loadFindings2);
+    if (config) {
+      findings.push(...checkCodegenConfig(config, opts.codegenSchema, opts.codegenConfigPath));
+      findings.push(...checkBindings(areas, config));
+    }
+  }
+
+  if (opts.conformanceDir && opts.conformanceSchema) {
+    findings.push(...checkConformance(opts.conformanceDir, knownIds, opts.conformanceSchema));
   }
 
   const errorCount = findings.filter((f) => f.level === "error").length;
@@ -53,11 +74,17 @@ async function main(): Promise<void> {
   const positionals = argv.slice(1).filter((a) => !a.startsWith("--"));
 
   const schema = JSON.parse(readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"));
+  const codegenSchema = JSON.parse(readFileSync(join(root, "schema", "codegen.schema.json"), "utf8"));
+  const conformanceSchema = JSON.parse(readFileSync(join(root, "schema", "conformance.schema.json"), "utf8"));
   const result = await run({
     mode,
     capabilitiesDir: join(root, "capabilities"),
     specsDir: join(root, "specs"),
     schema,
+    codegenConfigPath: join(root, "codegen.yaml"),
+    codegenSchema,
+    conformanceDir: join(root, "conformance"),
+    conformanceSchema,
     changedFiles: positionals.length > 0 ? positionals : undefined,
   });
 
