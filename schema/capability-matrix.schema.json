@@ -16,7 +16,7 @@
         "additionalProperties": false,
         "required": ["id", "title"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
           "title": { "type": "string", "minLength": 1 }
         }
       }

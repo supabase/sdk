@@ -3,7 +3,7 @@ area: auth
 title: Authentication
 description: User sign-in flows, session management, MFA, passkeys, identity linking, and admin operations.
 groups:
-  - id: sign-in
+  - id: sign_in
     title: Sign-in / Sign-up
   - id: passkey
     title: Passkeys
@@ -13,13 +13,13 @@ groups:
     title: Identity Linking
   - id: mfa
     title: Multi-Factor Authentication
-  - id: oauth-server
+  - id: oauth_server
     title: OAuth Server
   - id: admin
     title: Admin
-  - id: oauth-admin
+  - id: oauth_admin
     title: Admin — OAuth Clients
-  - id: passkey-admin
+  - id: passkey_admin
     title: Admin — Passkeys
 features:
   - id: auth.admin.create_provider
@@ -125,55 +125,55 @@ features:
   - id: auth.oauth_admin.create_client
     name: Admin Create OAuth Client
     description: Register a new OAuth client application. Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_admin.delete_client
     name: Admin Delete OAuth Client
     description: Remove a registered OAuth client. Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_admin.get_client
     name: Admin Get OAuth Client
     description: Retrieve details of a specific OAuth client by its client ID. Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_admin.list_clients
     name: Admin List OAuth Clients
     description: List all registered OAuth clients for the project. Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_admin.regenerate_client_secret
     name: Admin Regenerate OAuth Client Secret
     description: Regenerate the client secret for a registered OAuth client. Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_admin.update_client
     name: Admin Update OAuth Client
     description: Update a registered OAuth client's settings (name, redirect URIs, etc.). Requires admin/service role.
-    group: oauth-admin
+    group: oauth_admin
   - id: auth.oauth_server.approve_authorization
     name: OAuth Approve Authorization
     description: Approve a pending OAuth authorization request on behalf of the current user.
-    group: oauth-server
+    group: oauth_server
   - id: auth.oauth_server.deny_authorization
     name: OAuth Deny Authorization
     description: Deny a pending OAuth authorization request on behalf of the current user.
-    group: oauth-server
+    group: oauth_server
   - id: auth.oauth_server.get_authorization_details
     name: OAuth Get Authorization Details
     description: Fetch the details of a pending OAuth authorization request.
-    group: oauth-server
+    group: oauth_server
   - id: auth.oauth_server.list_grants
     name: OAuth List Grants
     description: List all active OAuth grants the current user has approved.
-    group: oauth-server
+    group: oauth_server
   - id: auth.oauth_server.revoke_grant
     name: OAuth Revoke Grant
     description: Revoke a specific OAuth grant that the current user previously approved.
-    group: oauth-server
+    group: oauth_server
   - id: auth.passkey_admin.delete_passkey
     name: Admin Delete Passkey
     description: Delete a specific passkey for a user. Requires admin/service role.
-    group: passkey-admin
+    group: passkey_admin
   - id: auth.passkey_admin.list_passkeys
     name: Admin List Passkeys
     description: List all passkeys registered for a specific user. Requires admin/service role.
-    group: passkey-admin
+    group: passkey_admin
   - id: auth.passkey.register_passkey
     name: Register Passkey
     description: Register a new WebAuthn passkey for the currently authenticated user.
@@ -221,52 +221,52 @@ features:
   - id: auth.sign_in.exchange_code_for_session
     name: Exchange Code for Session
     description: Exchange a PKCE authorization code for a user session.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.reauthenticate
     name: Reauthenticate
     description: Send a reauthentication nonce to verify the user before sensitive operations such as a password change.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.resend_confirmation
     name: Resend Confirmation
     description: Resend a signup confirmation or OTP email/SMS to a user.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.reset_password
     name: Reset Password
     description: Send a password-reset link to a user's email address.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_anonymously
     name: Sign In Anonymously
     description: Create an anonymous (guest) session without user credentials.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_id_token
     name: Sign In with ID Token
     description: Authenticate using a provider-issued ID token (e.g. from Apple or Google).
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_oauth
     name: Sign In with OAuth
     description: Initiate a third-party OAuth sign-in flow (Google, GitHub, etc.).
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_otp
     name: Sign In with OTP
     description: Send a one-time password (email or SMS) or magic link and authenticate with it.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_password
     name: Sign In with Password
     description: Authenticate an existing user with email or phone and password.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_sso
     name: Sign In with SSO
     description: Initiate a SAML SSO sign-in by supplying a domain or provider ID. The user is redirected to the identity provider to authenticate.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_in_with_web3
     name: Sign In with Web3
     description: Authenticate using a Web3 wallet (Solana or Ethereum) via a signed message.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.sign_up
     name: Sign Up
     description: Register a new user with email or phone and password.
-    group: sign-in
+    group: sign_in
   - id: auth.sign_in.verify_otp
     name: Verify OTP
     description: Verify a one-time password or token hash to complete sign-in or email confirmation.
-    group: sign-in
+    group: sign_in

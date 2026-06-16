@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../schema/capability-matrix.schema.json
+area: client
+title: Client Initialization
+description: Cross-cutting SupabaseClient configuration — third-party auth integration, custom HTTP client, pluggable session storage, schema selection, and observability.
+groups:
+  - id: authentication_integration
+    title: Authentication Integration
+  - id: session_management
+    title: Session Management
+  - id: request_configuration
+    title: Request Configuration
+  - id: observability
+    title: Observability
+features:
+  - id: client.authentication_integration.third_party_auth
+    name: Third-Party Auth
+    description: Provide an async token callback at construction time to use an external auth provider; the SDK disables its own auth client and injects the returned JWT into all downstream requests.
+    group: authentication_integration
+  - id: client.authentication_integration.cross_client_token_sync
+    name: Cross-Client Token Synchronization
+    description: The client listens for auth state change events and automatically propagates the current JWT to all sub-clients (database, realtime, storage, functions) so requests stay authenticated without manual intervention.
+    group: authentication_integration
+  - id: client.authentication_integration.oauth_flow_type
+    name: OAuth Flow Type Selection
+    description: Choose between implicit and PKCE OAuth flows at construction time; PKCE is recommended for scenarios where the implicit flow is less secure.
+    group: authentication_integration
+  - id: client.authentication_integration.session_url_detection
+    name: OAuth Redirect Detection Customization
+    description: Configure whether and how the client detects an incoming OAuth redirect; accepts a boolean or a custom predicate so apps using multiple OAuth providers can disambiguate callbacks.
+    group: authentication_integration
+  - id: client.session_management.custom_storage
+    name: Pluggable Session Storage
+    description: Supply a custom storage backend at construction time to control where the user session is persisted; enables use of platform-native secure storage instead of the default.
+    group: session_management
+  - id: client.session_management.persist_session
+    name: Session Persistence Toggle
+    description: Disable automatic session persistence so the session exists only in memory for the lifetime of the client instance.
+    group: session_management
+  - id: client.request_configuration.custom_http_client
+    name: Custom HTTP Client
+    description: Supply a custom HTTP client implementation at construction time; the SDK wraps it with automatic API key and authorization header injection and propagates it to all sub-clients.
+    group: request_configuration
+  - id: client.request_configuration.global_headers
+    name: Global Request Headers
+    description: Attach extra HTTP headers to every request made by all sub-clients at construction time.
+    group: request_configuration
+  - id: client.observability.trace_propagation
+    name: Distributed Trace Context Propagation
+    description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.
+    group: observability

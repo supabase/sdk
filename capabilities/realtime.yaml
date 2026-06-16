@@ -11,6 +11,8 @@ groups:
     title: Subscriptions
   - id: presence
     title: Presence
+  - id: configuration
+    title: Client Configuration
 features:
   - id: realtime.channel.broadcast_http
     name: Broadcast via HTTP
@@ -104,3 +106,55 @@ features:
     name: Subscribe to Presence Events
     description: Listen for presence events on this channel — when peers join, leave, or sync their presence state.
     group: subscriptions
+  - id: realtime.subscriptions.postgres_changes_filter
+    name: Postgres Changes Row Filter
+    description: Apply a PostgREST-style filter expression (e.g. id=eq.200) to a Postgres changes subscription to receive events only for matching rows.
+    group: subscriptions
+  - id: realtime.subscriptions.private_channel
+    name: Private Channel (RLS)
+    description: Mark a channel as private to enforce Row Level Security on Postgres change events and restrict broadcast and presence access to authorized users.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_self
+    name: Broadcast Self-Delivery
+    description: Opt in to receiving broadcast messages that the current client sends on the same channel via the broadcast.self channel option.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_ack
+    name: Broadcast Acknowledgment
+    description: Require server confirmation of receipt for each broadcast message before the send resolves via the broadcast.ack channel option.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_replay
+    name: Broadcast Message Replay
+    description: Replay historical broadcast messages from a point in time on a private channel via the broadcast.replay option (requires a since timestamp; supports an optional message limit).
+    group: subscriptions
+  - id: realtime.presence.presence_key
+    name: Custom Presence Key
+    description: Set a stable identifier for the current client's presence entries so multiple connections from the same user share one logical key via the presence.key channel option.
+    group: presence
+  - id: realtime.configuration.custom_websocket_transport
+    name: Custom WebSocket Transport
+    description: Inject a custom WebSocket constructor at client construction time for runtimes without a native global WebSocket, such as Node.js (<22), Cloudflare Workers, or Deno.
+    group: configuration
+  - id: realtime.configuration.reconnect_backoff
+    name: Configurable Reconnect Backoff
+    description: Provide a custom function mapping reconnect attempt count to delay milliseconds, replacing the default stepped backoff strategy.
+    group: configuration
+  - id: realtime.configuration.heartbeat_interval
+    name: Heartbeat Interval Configuration
+    description: Configure the WebSocket heartbeat interval in milliseconds; used to detect stale connections and trigger reconnection.
+    group: configuration
+  - id: realtime.configuration.access_token_callback
+    name: Dynamic Access Token Callback
+    description: Supply an async callback at construction time that returns the current JWT; called on connect and each heartbeat to keep WebSocket authorization fresh without manual intervention.
+    group: configuration
+  - id: realtime.configuration.deferred_disconnect
+    name: Deferred Socket Disconnect
+    description: Delay WebSocket disconnection after all channels are removed instead of closing immediately, reducing reconnection overhead for short-lived channel patterns.
+    group: configuration
+  - id: realtime.configuration.custom_logger
+    name: Custom Logger
+    description: Provide a custom logging function and log level filter at construction time to route Realtime client diagnostics to an application logger.
+    group: configuration
+  - id: realtime.configuration.binary_protocol
+    name: Binary Message Protocol
+    description: Select protocol version 2.0.0 for binary-serialized messages over the WebSocket connection.
+    group: configuration

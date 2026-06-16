@@ -30,7 +30,7 @@ describe("checkSchema", () => {
       area: "auth",
       title: "Authentication",
       description: "x",
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign-in" }],
+      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign_in" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
@@ -40,8 +40,8 @@ describe("checkSchema", () => {
       area: "auth",
       title: "Authentication",
       description: "x",
-      groups: [{ id: "sign-in", title: "Sign-in / Sign-up" }],
-      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign-in" }],
+      groups: [{ id: "sign_in", title: "Sign-in / Sign-up" }],
+      features: [{ id: "auth.sign_in.f", name: "F", description: "d", group: "sign_in" }],
     };
     expect(checkSchema(loaded(area), schema)).toEqual([]);
   });
