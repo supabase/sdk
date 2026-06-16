@@ -1,10 +1,9 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: auth
 title: Authentication
-description: User sign-in flows, session management, MFA, passkeys, identity
-  linking, and admin operations.
+description: User sign-in flows, session management, MFA, passkeys, identity linking, and admin operations.
 groups:
-  - id: sign-in
+  - id: sign_in
     title: Sign-in / Sign-up
   - id: passkey
     title: Passkeys
@@ -14,285 +13,260 @@ groups:
     title: Identity Linking
   - id: mfa
     title: Multi-Factor Authentication
-  - id: mfa-webauthn
-    title: WebAuthn MFA
-  - id: oauth-server
+  - id: oauth_server
     title: OAuth Server
   - id: admin
-    title: Admin API
+    title: Admin
+  - id: oauth_admin
+    title: Admin — OAuth Clients
+  - id: passkey_admin
+    title: Admin — Passkeys
 features:
-  - id: auth.sign_up
-    name: Sign Up
-    description: Register a new user with email or phone and password.
-    group: sign-in
-  - id: auth.sign_in_with_password
-    name: Sign In with Password
-    description: Authenticate an existing user with email or phone and password.
-    group: sign-in
-  - id: auth.sign_in_with_otp
-    name: Sign In with OTP
-    description: Send a one-time password (email or SMS) or magic link and
-      authenticate with it.
-    group: sign-in
-  - id: auth.sign_in_with_oauth
-    name: Sign In with OAuth
-    description: Initiate a third-party OAuth sign-in flow (Google, GitHub, etc.).
-    group: sign-in
-  - id: auth.sign_in_with_id_token
-    name: Sign In with ID Token
-    description: Authenticate using a provider-issued ID token (e.g. from Apple or Google).
-    group: sign-in
-  - id: auth.sign_in_with_sso
-    name: Sign In with SSO
-    description: Sign in via SAML SSO by supplying a domain or provider ID.
-    group: sign-in
-  - id: auth.sign_in_anonymously
-    name: Sign In Anonymously
-    description: Create an anonymous (guest) session without user credentials.
-    group: sign-in
-  - id: auth.sign_in_with_web3
-    name: Sign In with Web3
-    description: Authenticate using a Web3 wallet (Solana or Ethereum) via a signed message.
-    group: sign-in
-  - id: auth.verify_otp
-    name: Verify OTP
-    description: Verify a one-time password or token hash to complete sign-in or
-      email confirmation.
-    group: sign-in
-  - id: auth.exchange_code_for_session
-    name: Exchange Code for Session
-    description: Exchange a PKCE authorization code for a user session.
-    group: sign-in
-  - id: auth.resend
-    name: Resend Confirmation
-    description: Resend a signup confirmation or OTP email/SMS to a user.
-    group: sign-in
-  - id: auth.reauthenticate
-    name: Reauthenticate
-    description: Send a reauthentication nonce to verify the user before sensitive
-      operations such as password change.
-    group: sign-in
-  - id: auth.reset_password_for_email
-    name: Reset Password for Email
-    description: Send a password-reset email to a user.
-    group: sign-in
-  - id: auth.sign_in_with_passkey
-    name: Sign In with Passkey
-    description: Authenticate using a WebAuthn passkey registered on the device.
-    group: passkey
-  - id: auth.register_passkey
-    name: Register Passkey
-    description: Register a new WebAuthn passkey for the currently authenticated user.
-    group: passkey
-  - id: auth.get_session
-    name: Get Session
-    description: Return the current active session, refreshing the access token if needed.
-    group: session
-  - id: auth.set_session
-    name: Set Session
-    description: Manually set the current session from a known access token and
-      refresh token.
-    group: session
-  - id: auth.refresh_session
-    name: Refresh Session
-    description: Force an immediate refresh of the current session using the refresh token.
-    group: session
-  - id: auth.get_user
-    name: Get User
-    description: Fetch the authenticated user's profile from the server, verifying the JWT.
-    group: session
-  - id: auth.update_user
-    name: Update User
-    description: Update the current user's attributes such as email, password, or metadata.
-    group: session
-  - id: auth.get_claims
-    name: Get Claims
-    description: Verify and return the JWT claims for the current session using
-      asymmetric keys.
-    group: session
-  - id: auth.on_auth_state_change
-    name: On Auth State Change
-    description: Subscribe to authentication state change events (sign-in, sign-out,
-      token refresh, etc.).
-    group: session
-  - id: auth.sign_out
-    name: Sign Out
-    description: Revoke the current user session and clear stored credentials.
-    group: session
-  - id: auth.auto_refresh_token
-    name: Auto Refresh Token
-    description: SDK automatically refreshes the access token in the background
-      before it expires; exposes hooks to start and stop the refresh loop.
-    group: session
-  - id: auth.restore_session
-    name: Restore Session
-    description: SDK restores a persisted session from local storage on client
-      initialization.
-    group: session
-  - id: auth.get_user_identities
-    name: Get User Identities
+  - id: auth.admin.create_provider
+    name: Admin Create Provider
+    description: Create a new custom OIDC/OAuth provider. Requires admin/service role.
+    group: admin
+  - id: auth.admin.create_user
+    name: Admin Create User
+    description: Create a new user with specified attributes without sending a confirmation. Requires admin/service role.
+    group: admin
+  - id: auth.admin.delete_mfa_factor
+    name: Admin Delete MFA Factor
+    description: Delete a specific MFA factor from a user's account. Requires admin/service role.
+    group: admin
+  - id: auth.admin.delete_provider
+    name: Admin Delete Provider
+    description: Delete a custom provider. Requires admin/service role.
+    group: admin
+  - id: auth.admin.delete_user
+    name: Admin Delete User
+    description: Permanently delete a user by their ID. Requires admin/service role.
+    group: admin
+  - id: auth.admin.generate_link
+    name: Admin Generate Link
+    description: Generate an action link (confirmation, magic link, recovery) for a user. Requires admin/service role.
+    group: admin
+  - id: auth.admin.get_provider
+    name: Admin Get Provider
+    description: Get details of a specific custom provider by identifier. Requires admin/service role.
+    group: admin
+  - id: auth.admin.get_user
+    name: Admin Get User
+    description: Fetch a single user's profile and metadata by their ID. Requires admin/service role.
+    group: admin
+  - id: auth.admin.invite_user
+    name: Admin Invite User
+    description: Send an invite to a new user. Requires admin/service role.
+    group: admin
+  - id: auth.admin.list_mfa_factors
+    name: Admin List MFA Factors
+    description: List all MFA factors enrolled for a specific user. Requires admin/service role.
+    group: admin
+  - id: auth.admin.list_providers
+    name: Admin List Providers
+    description: List all custom providers with optional type filter. Requires admin/service role.
+    group: admin
+  - id: auth.admin.list_users
+    name: Admin List Users
+    description: Retrieve a paginated list of all users in the project. Requires admin/service role.
+    group: admin
+  - id: auth.admin.sign_out
+    name: Admin Sign Out
+    description: Revoke a user's session server-side by their access token. Requires admin/service role.
+    group: admin
+  - id: auth.admin.update_provider
+    name: Admin Update Provider
+    description: Update an existing custom provider. Requires admin/service role.
+    group: admin
+  - id: auth.admin.update_user
+    name: Admin Update User
+    description: Update a user's attributes (email, password, metadata, role, etc.) by their ID. Requires admin/service role.
+    group: admin
+  - id: auth.identities.link_identity
+    name: Link Identity
+    description: Link an additional OAuth or ID-token identity to the current user's account.
+    group: identities
+  - id: auth.identities.list_identities
+    name: List Identities
     description: List all external identities linked to the current user's account.
     group: identities
-  - id: auth.link_identity
-    name: Link Identity
-    description: Link an additional OAuth or ID-token identity to the current user's
-      account.
-    group: identities
-  - id: auth.unlink_identity
+  - id: auth.identities.unlink_identity
     name: Unlink Identity
     description: Remove a linked identity from the current user's account.
     group: identities
-  - id: auth.mfa_enroll
-    name: MFA Enroll
-    description: Enroll a new MFA factor (TOTP or phone) for the current user.
-    group: mfa
-  - id: auth.mfa_challenge
+  - id: auth.mfa.challenge
     name: MFA Challenge
-    description: Create a challenge for an enrolled MFA factor to begin the
-      verification flow.
+    description: Create a challenge for an enrolled MFA factor to begin the verification flow.
     group: mfa
-  - id: auth.mfa_verify
-    name: MFA Verify
-    description: Verify a code against an active MFA challenge to complete
-      second-factor authentication.
-    group: mfa
-  - id: auth.mfa_challenge_and_verify
+  - id: auth.mfa.challenge_and_verify
     name: MFA Challenge and Verify
     description: Create a challenge and verify a code in a single call for convenience.
     group: mfa
-  - id: auth.mfa_unenroll
-    name: MFA Unenroll
-    description: Remove an enrolled MFA factor from the current user's account.
+  - id: auth.mfa.enroll
+    name: MFA Enroll
+    description: Enroll a new MFA factor (TOTP or phone) for the current user.
     group: mfa
-  - id: auth.mfa_list_factors
+  - id: auth.mfa.get_authenticator_assurance_level
+    name: MFA Get Authenticator Assurance Level
+    description: Return the current and next authenticator assurance levels (AAL1/AAL2) for the session.
+    group: mfa
+  - id: auth.mfa.list_factors
     name: MFA List Factors
     description: List all MFA factors enrolled for the current user.
     group: mfa
-  - id: auth.mfa_get_aal
-    name: MFA Get Authenticator Assurance Level
-    description: Return the current and next authenticator assurance levels
-      (AAL1/AAL2) for the session.
+  - id: auth.mfa.unenroll
+    name: MFA Unenroll
+    description: Remove an enrolled MFA factor from the current user's account.
     group: mfa
-  - id: auth.mfa_webauthn_start_registration
-    name: MFA WebAuthn Start Registration
-    description: Begin WebAuthn authenticator registration by generating credential
-      creation options.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_verify_registration
-    name: MFA WebAuthn Verify Registration
-    description: Complete WebAuthn authenticator registration by verifying the
-      credential response.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_start_authentication
-    name: MFA WebAuthn Start Authentication
-    description: Begin WebAuthn authentication by generating assertion options for
-      an enrolled authenticator.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_verify_authentication
-    name: MFA WebAuthn Verify Authentication
-    description: Complete WebAuthn authentication by verifying the assertion response.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_list
-    name: MFA WebAuthn List Authenticators
-    description: List all WebAuthn authenticators registered for the current user.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_update
-    name: MFA WebAuthn Update Authenticator
-    description: Update metadata (e.g. friendly name) on a registered WebAuthn
-      authenticator.
-    group: mfa-webauthn
-  - id: auth.mfa_webauthn_delete
-    name: MFA WebAuthn Delete Authenticator
-    description: Remove a registered WebAuthn authenticator from the current user's account.
-    group: mfa-webauthn
-  - id: auth.oauth_get_authorization_details
-    name: OAuth Get Authorization Details
-    description: Fetch the details of a pending OAuth authorization request (for
-      consent screens).
-    group: oauth-server
-  - id: auth.oauth_approve_authorization
+  - id: auth.mfa.verify
+    name: MFA Verify
+    description: Verify a code against an active MFA challenge to complete second-factor authentication.
+    group: mfa
+  - id: auth.oauth_admin.create_client
+    name: Admin Create OAuth Client
+    description: Register a new OAuth client application. Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_admin.delete_client
+    name: Admin Delete OAuth Client
+    description: Remove a registered OAuth client. Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_admin.get_client
+    name: Admin Get OAuth Client
+    description: Retrieve details of a specific OAuth client by its client ID. Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_admin.list_clients
+    name: Admin List OAuth Clients
+    description: List all registered OAuth clients for the project. Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_admin.regenerate_client_secret
+    name: Admin Regenerate OAuth Client Secret
+    description: Regenerate the client secret for a registered OAuth client. Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_admin.update_client
+    name: Admin Update OAuth Client
+    description: Update a registered OAuth client's settings (name, redirect URIs, etc.). Requires admin/service role.
+    group: oauth_admin
+  - id: auth.oauth_server.approve_authorization
     name: OAuth Approve Authorization
-    description: Approve a pending OAuth authorization request on behalf of the
-      current user.
-    group: oauth-server
-  - id: auth.oauth_deny_authorization
+    description: Approve a pending OAuth authorization request on behalf of the current user.
+    group: oauth_server
+  - id: auth.oauth_server.deny_authorization
     name: OAuth Deny Authorization
     description: Deny a pending OAuth authorization request on behalf of the current user.
-    group: oauth-server
-  - id: auth.oauth_list_grants
+    group: oauth_server
+  - id: auth.oauth_server.get_authorization_details
+    name: OAuth Get Authorization Details
+    description: Fetch the details of a pending OAuth authorization request.
+    group: oauth_server
+  - id: auth.oauth_server.list_grants
     name: OAuth List Grants
     description: List all active OAuth grants the current user has approved.
-    group: oauth-server
-  - id: auth.oauth_revoke_grant
+    group: oauth_server
+  - id: auth.oauth_server.revoke_grant
     name: OAuth Revoke Grant
     description: Revoke a specific OAuth grant that the current user previously approved.
-    group: oauth-server
-  - id: auth.admin_sign_out
-    name: Admin Sign Out
-    description: Revoke a user's session server-side by their access token (requires
-      service role).
-    group: admin
-  - id: auth.admin_invite_user_by_email
-    name: Admin Invite User by Email
-    description: Send an invite email to a new user (requires service role).
-    group: admin
-  - id: auth.admin_generate_link
-    name: Admin Generate Link
-    description: Generate an email action link (confirmation, magic link, recovery)
-      for a user.
-    group: admin
-  - id: auth.admin_create_user
-    name: Admin Create User
-    description: Create a new user with specified attributes without sending a
-      confirmation email.
-    group: admin
-  - id: auth.admin_list_users
-    name: Admin List Users
-    description: Retrieve a paginated list of all users in the project.
-    group: admin
-  - id: auth.admin_get_user_by_id
-    name: Admin Get User by ID
-    description: Fetch a single user's profile and metadata by their UUID.
-    group: admin
-  - id: auth.admin_update_user_by_id
-    name: Admin Update User by ID
-    description: Update a user's attributes (email, password, metadata, role, etc.)
-      by their UUID.
-    group: admin
-  - id: auth.admin_delete_user
-    name: Admin Delete User
-    description: Permanently delete a user by their UUID (hard or soft delete).
-    group: admin
-  - id: auth.admin_mfa_list_factors
-    name: Admin MFA List Factors
-    description: List all MFA factors enrolled for a specific user (requires service role).
-    group: admin
-  - id: auth.admin_mfa_delete_factor
-    name: Admin MFA Delete Factor
-    description: Delete a specific MFA factor from a user's account (requires service role).
-    group: admin
-  - id: auth.admin_oauth_list_clients
-    name: Admin OAuth List Clients
-    description: List all registered OAuth clients for the project (requires service role).
-    group: admin
-  - id: auth.admin_oauth_create_client
-    name: Admin OAuth Create Client
-    description: Register a new OAuth client application for the project (requires
-      service role).
-    group: admin
-  - id: auth.admin_oauth_get_client
-    name: Admin OAuth Get Client
-    description: Retrieve details of a specific OAuth client by its client ID.
-    group: admin
-  - id: auth.admin_oauth_update_client
-    name: Admin OAuth Update Client
-    description: Update a registered OAuth client's settings (name, redirect URIs, etc.).
-    group: admin
-  - id: auth.admin_oauth_delete_client
-    name: Admin OAuth Delete Client
-    description: Remove a registered OAuth client from the project.
-    group: admin
-  - id: auth.admin_oauth_regenerate_client_secret
-    name: Admin OAuth Regenerate Client Secret
-    description: Regenerate the client secret for a registered OAuth application.
-    group: admin
+    group: oauth_server
+  - id: auth.passkey_admin.delete_passkey
+    name: Admin Delete Passkey
+    description: Delete a specific passkey for a user. Requires admin/service role.
+    group: passkey_admin
+  - id: auth.passkey_admin.list_passkeys
+    name: Admin List Passkeys
+    description: List all passkeys registered for a specific user. Requires admin/service role.
+    group: passkey_admin
+  - id: auth.passkey.register_passkey
+    name: Register Passkey
+    description: Register a new WebAuthn passkey for the currently authenticated user.
+    group: passkey
+  - id: auth.passkey.sign_in_with_passkey
+    name: Sign In with Passkey
+    description: Authenticate using a WebAuthn passkey registered on the device.
+    group: passkey
+  - id: auth.session.auto_refresh
+    name: Auto Refresh Token
+    description: Automatically refresh the access token in the background before it expires. Exposes controls to start and stop the refresh loop and configure whether it is enabled.
+    group: session
+  - id: auth.session.get_claims
+    name: Get Claims
+    description: Verify and return the token claims for the current session using the server's public key set, which is typically cached for performance.
+    group: session
+  - id: auth.session.get_session
+    name: Get Session
+    description: Return the current active session, refreshing the access token if needed.
+    group: session
+  - id: auth.session.get_user
+    name: Get User
+    description: Fetch the authenticated user's profile from the server, verifying the token.
+    group: session
+  - id: auth.session.refresh_session
+    name: Refresh Session
+    description: Force an immediate refresh of the current session using the refresh token.
+    group: session
+  - id: auth.session.set_session
+    name: Set Session
+    description: Manually set the current session from a known access token and refresh token.
+    group: session
+  - id: auth.session.sign_out
+    name: Sign Out
+    description: Revoke the current user session and clear stored credentials.
+    group: session
+  - id: auth.session.subscribe_auth_events
+    name: Subscribe to Auth Events
+    description: Subscribe to authentication state change events (sign-in, sign-out, token refresh, etc.).
+    group: session
+  - id: auth.session.update_user
+    name: Update User
+    description: Update the current user's attributes such as email, password, or metadata.
+    group: session
+  - id: auth.sign_in.exchange_code_for_session
+    name: Exchange Code for Session
+    description: Exchange a PKCE authorization code for a user session.
+    group: sign_in
+  - id: auth.sign_in.reauthenticate
+    name: Reauthenticate
+    description: Send a reauthentication nonce to verify the user before sensitive operations such as a password change.
+    group: sign_in
+  - id: auth.sign_in.resend_confirmation
+    name: Resend Confirmation
+    description: Resend a signup confirmation or OTP email/SMS to a user.
+    group: sign_in
+  - id: auth.sign_in.reset_password
+    name: Reset Password
+    description: Send a password-reset link to a user's email address.
+    group: sign_in
+  - id: auth.sign_in.sign_in_anonymously
+    name: Sign In Anonymously
+    description: Create an anonymous (guest) session without user credentials.
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_id_token
+    name: Sign In with ID Token
+    description: Authenticate using a provider-issued ID token (e.g. from Apple or Google).
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_oauth
+    name: Sign In with OAuth
+    description: Initiate a third-party OAuth sign-in flow (Google, GitHub, etc.).
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_otp
+    name: Sign In with OTP
+    description: Send a one-time password (email or SMS) or magic link and authenticate with it.
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_password
+    name: Sign In with Password
+    description: Authenticate an existing user with email or phone and password.
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_sso
+    name: Sign In with SSO
+    description: Initiate a SAML SSO sign-in by supplying a domain or provider ID. The user is redirected to the identity provider to authenticate.
+    group: sign_in
+  - id: auth.sign_in.sign_in_with_web3
+    name: Sign In with Web3
+    description: Authenticate using a Web3 wallet (Solana or Ethereum) via a signed message.
+    group: sign_in
+  - id: auth.sign_in.sign_up
+    name: Sign Up
+    description: Register a new user with email or phone and password.
+    group: sign_in
+  - id: auth.sign_in.verify_otp
+    name: Verify OTP
+    description: Verify a one-time password or token hash to complete sign-in or email confirmation.
+    group: sign_in

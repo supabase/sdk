@@ -1,12 +1,160 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: realtime
 title: Realtime
-description: Subscribe to Postgres changes, broadcast, and presence over websockets.
+description: "Websocket client and channel subscriptions: Postgres changes, broadcast, and presence."
 groups:
-  - id: channels
-    title: Channels
+  - id: client
+    title: Client
+  - id: channel
+    title: Channel
+  - id: subscriptions
+    title: Subscriptions
+  - id: presence
+    title: Presence
+  - id: configuration
+    title: Client Configuration
 features:
-  - id: realtime.postgres_changes
-    name: Subscribe to Postgres changes
-    description: Receive insert/update/delete events for a table over a channel.
-    group: channels
+  - id: realtime.channel.broadcast_http
+    name: Broadcast via HTTP
+    description: Send a broadcast message to channel subscribers via the REST API instead of the websocket connection.
+    group: channel
+  - id: realtime.channel.channel
+    name: Create or Reuse Channel
+    description: Create a new channel or return an existing one for the given topic.
+    group: channel
+  - id: realtime.channel.send
+    name: Send Message
+    description: Send a message to other subscribers of the channel.
+    group: channel
+  - id: realtime.channel.subscribe
+    name: Subscribe
+    description: Register the channel with the server and start receiving events.
+    group: channel
+  - id: realtime.channel.unsubscribe
+    name: Unsubscribe
+    description: Leave the channel and stop receiving events.
+    group: channel
+  - id: realtime.client.connect
+    name: Connect
+    description: Open the websocket connection to the Realtime server.
+    group: client
+  - id: realtime.client.connection_state
+    name: Connection State
+    description: Return the current state of the websocket connection.
+    group: client
+  - id: realtime.client.disconnect
+    name: Disconnect
+    description: Close the websocket connection to the Realtime server.
+    group: client
+  - id: realtime.client.endpoint_url
+    name: Endpoint URL
+    description: Return the URL of the Realtime websocket endpoint.
+    group: client
+  - id: realtime.client.get_channels
+    name: Get Channels
+    description: Return all active channels for this client.
+    group: client
+  - id: realtime.client.is_connected
+    name: Is Connected
+    description: Return whether the websocket connection is currently open.
+    group: client
+  - id: realtime.client.is_connecting
+    name: Is Connecting
+    description: Return whether the websocket connection is currently being established.
+    group: client
+  - id: realtime.client.is_disconnecting
+    name: Is Disconnecting
+    description: Return whether the websocket connection is currently closing.
+    group: client
+  - id: realtime.client.listen_heartbeats
+    name: Listen to Heartbeats
+    description: Register a callback that receives lifecycle events for internal heartbeat messages.
+    group: client
+  - id: realtime.client.remove_all_channels
+    name: Remove All Channels
+    description: Unsubscribe from and tear down all channels.
+    group: client
+  - id: realtime.client.remove_channel
+    name: Remove Channel
+    description: Unsubscribe from and tear down a single channel.
+    group: client
+  - id: realtime.client.set_auth_token
+    name: Set Auth Token
+    description: Update the access token used for channel subscription authorization and row-level security.
+    group: client
+  - id: realtime.presence.presence_state
+    name: Get Presence State
+    description: Return the current presence state for all tracked clients on this channel.
+    group: presence
+  - id: realtime.presence.track
+    name: Track Presence
+    description: Broadcast a presence payload so other subscribers can see this client as online.
+    group: presence
+  - id: realtime.presence.untrack
+    name: Untrack Presence
+    description: Remove this client's presence state, making it appear offline to other subscribers.
+    group: presence
+  - id: realtime.subscriptions.broadcast
+    name: Subscribe to Broadcast
+    description: Listen for broadcast messages sent by other clients on this channel.
+    group: subscriptions
+  - id: realtime.subscriptions.postgres_changes
+    name: Subscribe to Postgres Changes
+    description: Listen for Postgres database change events (insert, update, delete) streamed over this channel.
+    group: subscriptions
+  - id: realtime.subscriptions.subscribe_presence
+    name: Subscribe to Presence Events
+    description: Listen for presence events on this channel — when peers join, leave, or sync their presence state.
+    group: subscriptions
+  - id: realtime.subscriptions.postgres_changes_filter
+    name: Postgres Changes Row Filter
+    description: Apply a PostgREST-style filter expression (e.g. id=eq.200) to a Postgres changes subscription to receive events only for matching rows.
+    group: subscriptions
+  - id: realtime.subscriptions.private_channel
+    name: Private Channel (RLS)
+    description: Mark a channel as private to enforce Row Level Security on Postgres change events and restrict broadcast and presence access to authorized users.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_self
+    name: Broadcast Self-Delivery
+    description: Opt in to receiving broadcast messages that the current client sends on the same channel via the broadcast.self channel option.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_ack
+    name: Broadcast Acknowledgment
+    description: Require server confirmation of receipt for each broadcast message before the send resolves via the broadcast.ack channel option.
+    group: subscriptions
+  - id: realtime.subscriptions.broadcast_replay
+    name: Broadcast Message Replay
+    description: Replay historical broadcast messages from a point in time on a private channel via the broadcast.replay option (requires a since timestamp; supports an optional message limit).
+    group: subscriptions
+  - id: realtime.presence.presence_key
+    name: Custom Presence Key
+    description: Set a stable identifier for the current client's presence entries so multiple connections from the same user share one logical key via the presence.key channel option.
+    group: presence
+  - id: realtime.configuration.custom_websocket_transport
+    name: Custom WebSocket Transport
+    description: Inject a custom WebSocket constructor at client construction time for runtimes without a native global WebSocket, such as Node.js (<22), Cloudflare Workers, or Deno.
+    group: configuration
+  - id: realtime.configuration.reconnect_backoff
+    name: Configurable Reconnect Backoff
+    description: Provide a custom function mapping reconnect attempt count to delay milliseconds, replacing the default stepped backoff strategy.
+    group: configuration
+  - id: realtime.configuration.heartbeat_interval
+    name: Heartbeat Interval Configuration
+    description: Configure the WebSocket heartbeat interval in milliseconds; used to detect stale connections and trigger reconnection.
+    group: configuration
+  - id: realtime.configuration.access_token_callback
+    name: Dynamic Access Token Callback
+    description: Supply an async callback at construction time that returns the current JWT; called on connect and each heartbeat to keep WebSocket authorization fresh without manual intervention.
+    group: configuration
+  - id: realtime.configuration.deferred_disconnect
+    name: Deferred Socket Disconnect
+    description: Delay WebSocket disconnection after all channels are removed instead of closing immediately, reducing reconnection overhead for short-lived channel patterns.
+    group: configuration
+  - id: realtime.configuration.custom_logger
+    name: Custom Logger
+    description: Provide a custom logging function and log level filter at construction time to route Realtime client diagnostics to an application logger.
+    group: configuration
+  - id: realtime.configuration.binary_protocol
+    name: Binary Message Protocol
+    description: Select protocol version 2.0.0 for binary-serialized messages over the WebSocket connection.
+    group: configuration

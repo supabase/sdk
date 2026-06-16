@@ -1,12 +1,36 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: functions
 title: Edge Functions
-description: Invoke Supabase Edge Functions from the client.
+description: Invoke Supabase Edge Functions from the client with support for streaming, region routing, and flexible request configuration.
 groups:
   - id: invocation
     title: Invocation
 features:
-  - id: functions.invoke
-    name: Invoke function
-    description: Call a deployed Edge Function by name with a request body.
+  - id: functions.invocation.invoke
+    name: Invoke Function
+    description: Call a deployed Edge Function by name with an optional request body.
+    group: invocation
+  - id: functions.invocation.set_auth_token
+    name: Set Auth Token
+    description: Update the authorization token sent with all subsequent function invocations.
+    group: invocation
+  - id: functions.invocation.method_override
+    name: HTTP Method Override
+    description: Invoke a function using a non-default HTTP method (GET, PUT, PATCH, DELETE) for RESTful Edge Function designs.
+    group: invocation
+  - id: functions.invocation.streaming_response
+    name: Streaming Response (SSE)
+    description: Receive a streaming response from a function; when the function returns text/event-stream the raw Response object is passed through for caller-controlled reading.
+    group: invocation
+  - id: functions.invocation.region_selection
+    name: Region Selection
+    description: Route an invocation to a specific geographic deployment region set at client construction time or overridden per individual call.
+    group: invocation
+  - id: functions.invocation.timeout
+    name: Invocation Timeout
+    description: Cancel a function invocation after a specified timeout; composable with a caller-supplied cancellation signal.
+    group: invocation
+  - id: functions.invocation.request_cancellation
+    name: Request Cancellation
+    description: Cancel an in-flight function invocation at any point before a response is received.
     group: invocation

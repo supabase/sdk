@@ -16,7 +16,7 @@
         "additionalProperties": false,
         "required": ["id", "title"],
         "properties": {
-          "id": { "type": "string", "minLength": 1 },
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
           "title": { "type": "string", "minLength": 1 }
         }
       }
@@ -33,7 +33,11 @@
       "additionalProperties": false,
       "required": ["id", "name", "description"],
       "properties": {
-        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+$" },
+        "id": {
+          "type": "string",
+          "description": "Three-segment dotted id: <area>.<group_namespace>.<method_stem>. Example: auth.mfa.challenge",
+          "pattern": "^[a-z][a-z0-9_]*\\.[a-z0-9_]+\\.[a-z0-9_]+$"
+        },
         "name": { "type": "string", "minLength": 1 },
         "description": { "type": "string", "minLength": 1 },
         "group": { "type": "string", "minLength": 1 }
