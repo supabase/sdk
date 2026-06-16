@@ -2,8 +2,6 @@
 
 The canonical, machine-readable record of which features exist across Supabase client SDKs. This repository is a **pure feature registry** — it defines what features exist and what they mean. Each SDK repo is responsible for declaring which features it implements.
 
-A static site rendered from this data is published at **https://shiny-adventure-ww2255r.pages.github.io/**.
-
 ## Repository layout
 
 ```
