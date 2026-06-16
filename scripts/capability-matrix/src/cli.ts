@@ -45,15 +45,17 @@ export async function run(opts: RunOptions): Promise<RunResult> {
     findings.push(...checkSpecs(opts.specsDir, knownIds));
   }
 
+  // Optional codegen contract: absent codegen.yaml / conformance dir = opt-out, not an error.
   if (opts.codegenConfigPath && opts.codegenSchema && existsSync(opts.codegenConfigPath)) {
-    const { config, findings: loadFindings2 } = loadCodegenConfig(opts.codegenConfigPath);
-    findings.push(...loadFindings2);
+    const { config, findings: configFindings } = loadCodegenConfig(opts.codegenConfigPath);
+    findings.push(...configFindings);
     if (config) {
       findings.push(...checkCodegenConfig(config, opts.codegenSchema, opts.codegenConfigPath));
       findings.push(...checkBindings(areas, config));
     }
   }
 
+  // Optional codegen contract: absent codegen.yaml / conformance dir = opt-out, not an error.
   if (opts.conformanceDir && opts.conformanceSchema) {
     findings.push(...checkConformance(opts.conformanceDir, knownIds, opts.conformanceSchema));
   }
@@ -74,6 +76,7 @@ async function main(): Promise<void> {
   const positionals = argv.slice(1).filter((a) => !a.startsWith("--"));
 
   const schema = JSON.parse(readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"));
+  // Schema files are always committed to the repo; the optional inputs they validate (codegen.yaml, conformance/) may be absent.
   const codegenSchema = JSON.parse(readFileSync(join(root, "schema", "codegen.schema.json"), "utf8"));
   const conformanceSchema = JSON.parse(readFileSync(join(root, "schema", "conformance.schema.json"), "utf8"));
   const result = await run({
