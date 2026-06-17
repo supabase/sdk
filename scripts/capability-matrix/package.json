@@ -15,7 +15,7 @@
     "build-site": "tsx src/generate-site.ts",
     "normalize": "tsx src/normalize-cli.ts",
     "generate": "tsx src/generate-cli.ts",
-    "generate:check": "npm run normalize && npm run generate && git -C ../.. diff --exit-code -- codegen/specs/storage.normalized.json codegen/generated/swift-storage"
+    "generate:check": "npm run normalize && npm run generate && git -C ../.. diff --exit-code -- codegen/specs/storage.normalized.json"
   },
   "dependencies": {
     "@octokit/rest": "^21.0.2",
