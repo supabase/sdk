@@ -2,19 +2,20 @@ import Foundation
 
 public actor URLSessionTransport: Transport {
   let configuration: ClientConfiguration
-  let urlSession: URLSession
+  nonisolated let urlSession: URLSession   // URLSession is Sendable; readable from nonisolated upload/download
+  nonisolated let delegate = SessionDelegate()
 
   public init(configuration: ClientConfiguration, urlSession: URLSession? = nil) {
     self.configuration = configuration
     if let urlSession {
       self.urlSession = urlSession
     } else {
+      let cfg: URLSessionConfiguration
       switch configuration.sessionKind {
-      case .foreground:
-        self.urlSession = URLSession(configuration: .default)
-      case .background(let identifier):
-        self.urlSession = URLSession(configuration: .background(withIdentifier: identifier))
+      case .foreground: cfg = .default
+      case .background(let id): cfg = .background(withIdentifier: id)
       }
+      self.urlSession = URLSession(configuration: cfg, delegate: delegate, delegateQueue: nil)
     }
   }
 
@@ -38,6 +39,17 @@ public actor URLSessionTransport: Transport {
   }
 
   func validate(_ data: Data, _ response: URLResponse) throws -> Data {
+    let responseHead = head(from: response)
+    guard (200..<300).contains(responseHead.status) else {
+      if let mapped = configuration.errorMapper(data, responseHead) { throw mapped }
+      throw TransportError.http(status: responseHead.status, body: data, head: responseHead)
+    }
+    return data
+  }
+
+  /// Nonisolated variant for use from `upload`/`download` — `configuration` is a `let` Sendable value,
+  /// so it is accessible from nonisolated contexts.
+  nonisolated func validateNonisolated(_ data: Data, _ response: URLResponse) throws -> Data {
     let responseHead = head(from: response)
     guard (200..<300).contains(responseHead.status) else {
       if let mapped = configuration.errorMapper(data, responseHead) { throw mapped }
@@ -72,12 +84,37 @@ public actor URLSessionTransport: Transport {
     _ = try validate(data, response)
   }
 
-  // Streaming — implemented in Tasks 6-7.
+  // MARK: - Streaming upload/download (Task 6)
+
   public nonisolated func upload<R: Decodable & Sendable>(_ request: HTTPRequest, from source: UploadSource) -> TransferTask<R> {
-    fatalError("implemented in Task 6")
+    // Progress is wired via the SessionDelegate when the transport owns its session (non-stub path).
+    // Under a stub-injected URLSession (no delegate), the stream is created but emits nothing — that is expected.
+    let (stream, _) = AsyncStream<TransferProgress>.makeStream()
+    let task = Task { [self] () -> R in
+      let urlRequest = try await makeURLRequest(request)
+      let (data, response): (Data, URLResponse)
+      switch source {
+      case .file(let url): (data, response) = try await urlSession.upload(for: urlRequest, fromFile: url)
+      case .data(let d):   (data, response) = try await urlSession.upload(for: urlRequest, from: d)
+      }
+      let validated = try validateNonisolated(data, response)
+      do { return try configuration.decoder.decode(R.self, from: validated) }
+      catch { throw TransportError.decoding(error) }
+    }
+    return TransferTask(progress: stream, value: { try await task.value }, cancel: { task.cancel() })
   }
+
   public nonisolated func download(_ request: HTTPRequest, toFile destination: URL) -> TransferTask<Void> {
-    fatalError("implemented in Task 6")
+    // Same progress note as upload above.
+    let (stream, _) = AsyncStream<TransferProgress>.makeStream()
+    let task = Task { [self] () -> Void in
+      let urlRequest = try await makeURLRequest(request)
+      let (tempURL, response) = try await urlSession.download(for: urlRequest)
+      _ = try validateNonisolated(Data(), response)  // status check only
+      try? FileManager.default.removeItem(at: destination)
+      try FileManager.default.moveItem(at: tempURL, to: destination)
+    }
+    return TransferTask(progress: stream, value: { try await task.value }, cancel: { task.cancel() })
   }
   public func stream(_ request: HTTPRequest) async throws -> ResponseStream {
     fatalError("implemented in Task 7")

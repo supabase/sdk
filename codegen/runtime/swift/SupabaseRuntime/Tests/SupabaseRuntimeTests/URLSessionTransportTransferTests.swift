@@ -1,0 +1,32 @@
+import Foundation
+import Testing
+@testable import SupabaseRuntime
+
+private struct UploadResult: Codable, Equatable, Sendable { let key: String }
+
+@Suite(.serialized) struct URLSessionTransportTransferTests {
+  func makeTransport() -> URLSessionTransport {
+    var config = ClientConfiguration(baseURL: URL(string: "https://x.test/storage/v1")!)
+    config.auth = AuthProvider { ["apikey": "k"] }
+    return URLSessionTransport(configuration: config, urlSession: StubURLProtocol.session())
+  }
+
+  @Test func uploadFromDataReturnsDecodedValue() async throws {
+    StubURLProtocol.stub = .init(status: 200, headers: [:], body: #"{"key":"folder/cat.png"}"#.data(using: .utf8)!)
+    let task: TransferTask<UploadResult> = makeTransport()
+      .upload(HTTPRequest(method: .post, path: "/object/avatars/cat.png"), from: .data(Data([0x1, 0x2])))
+    for await _ in task.progress {}   // drain (may be empty under the stub)
+    let result = try await task.value()
+    #expect(result == UploadResult(key: "folder/cat.png"))
+  }
+
+  @Test func downloadWritesToFile() async throws {
+    StubURLProtocol.stub = .init(status: 200, headers: [:], body: Data([0xA, 0xB, 0xC]))
+    let dest = FileManager.default.temporaryDirectory.appendingPathComponent("dl-\(UUID().uuidString).bin")
+    defer { try? FileManager.default.removeItem(at: dest) }
+    let task = makeTransport().download(HTTPRequest(method: .get, path: "/object/avatars/cat.png"), toFile: dest)
+    for await _ in task.progress {}
+    try await task.value()
+    #expect((try? Data(contentsOf: dest)) == Data([0xA, 0xB, 0xC]))
+  }
+}
