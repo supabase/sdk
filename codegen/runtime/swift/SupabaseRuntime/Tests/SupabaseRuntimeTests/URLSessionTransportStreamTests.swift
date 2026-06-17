@@ -19,7 +19,18 @@ import Testing
     var config = ClientConfiguration(baseURL: URL(string: "https://x.test/functions/v1")!)
     let (session, _) = StubURLProtocol.makeSession(stub: .init(status: 500, headers: [:], body: Data([0x65])))
     let transport = URLSessionTransport(configuration: config, urlSession: session)
-    await #expect(throws: (any Error).self) {
+    await #expect(throws: TransportError.self) {
+      _ = try await transport.stream(HTTPRequest(method: .get, path: "/events"))
+    }
+  }
+
+  @Test func streamRunsErrorMapperOnNon2xx() async {
+    struct StreamError: Error, Equatable { let code: Int }
+    var config = ClientConfiguration(baseURL: URL(string: "https://x.test/functions/v1")!)
+    config.errorMapper = { _, head in StreamError(code: head.status) }
+    let (session, _) = StubURLProtocol.makeSession(stub: .init(status: 503, headers: [:], body: Data()))
+    let transport = URLSessionTransport(configuration: config, urlSession: session)
+    await #expect(throws: StreamError(code: 503)) {
       _ = try await transport.stream(HTTPRequest(method: .get, path: "/events"))
     }
   }
