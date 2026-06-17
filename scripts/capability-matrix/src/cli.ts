@@ -5,7 +5,7 @@ import { loadAreas } from "./load";
 import { checkSchema } from "./schema";
 import { checkStructural, checkSpecs } from "./structural";
 import { loadCodegenConfig, checkCodegenConfig } from "./codegen";
-import { checkBindings } from "./bindings";
+import { checkBindings, checkBindingOperations } from "./bindings";
 import { checkConformance } from "./conformance";
 import { computeParity, type ParityReport } from "./report";
 import type { Finding } from "./types";
@@ -52,6 +52,7 @@ export async function run(opts: RunOptions): Promise<RunResult> {
     if (config) {
       findings.push(...checkCodegenConfig(config, opts.codegenSchema, opts.codegenConfigPath));
       findings.push(...checkBindings(areas, config));
+      findings.push(...checkBindingOperations(areas, config, dirname(opts.codegenConfigPath)));
     }
   }
 

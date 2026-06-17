@@ -55,8 +55,8 @@ internal class BucketAPI {
      - parameter apiConfiguration: The configuration for the http request.
      - returns: PostBucketByBucketIdEmpty200Response
      */
-    internal class func deleteBucketByBucketId(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PostBucketByBucketIdEmpty200Response {
-        return try await deleteBucketByBucketIdWithRequestBuilder(bucketId: bucketId, apiConfiguration: apiConfiguration).execute().body
+    internal class func deleteBucket(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PostBucketByBucketIdEmpty200Response {
+        return try await deleteBucketWithRequestBuilder(bucketId: bucketId, apiConfiguration: apiConfiguration).execute().body
     }
 
     /**
@@ -69,7 +69,7 @@ internal class BucketAPI {
      - parameter apiConfiguration: The configuration for the http request.
      - returns: RequestBuilder<PostBucketByBucketIdEmpty200Response> 
      */
-    internal class func deleteBucketByBucketIdWithRequestBuilder(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PostBucketByBucketIdEmpty200Response> {
+    internal class func deleteBucketWithRequestBuilder(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PostBucketByBucketIdEmpty200Response> {
         var localVariablePath = "/bucket/{bucketId}"
         let bucketIdPreEscape = "\(APIHelper.mapValueToPathItem(bucketId))"
         let bucketIdPostEscape = bucketIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -139,8 +139,8 @@ internal class BucketAPI {
      - parameter apiConfiguration: The configuration for the http request.
      - returns: HeadBucket200ResponseInner
      */
-    internal class func getBucketByBucketId(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> HeadBucket200ResponseInner {
-        return try await getBucketByBucketIdWithRequestBuilder(bucketId: bucketId, apiConfiguration: apiConfiguration).execute().body
+    internal class func getBucket(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> HeadBucket200ResponseInner {
+        return try await getBucketWithRequestBuilder(bucketId: bucketId, apiConfiguration: apiConfiguration).execute().body
     }
 
     /**
@@ -153,7 +153,7 @@ internal class BucketAPI {
      - parameter apiConfiguration: The configuration for the http request.
      - returns: RequestBuilder<HeadBucket200ResponseInner> 
      */
-    internal class func getBucketByBucketIdWithRequestBuilder(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<HeadBucket200ResponseInner> {
+    internal class func getBucketWithRequestBuilder(bucketId: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<HeadBucket200ResponseInner> {
         var localVariablePath = "/bucket/{bucketId}"
         let bucketIdPreEscape = "\(APIHelper.mapValueToPathItem(bucketId))"
         let bucketIdPostEscape = bucketIdPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""

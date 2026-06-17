@@ -5,9 +5,9 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**createBucket**](BucketAPI.md#createbucket) | **POST** /bucket/ | Create a bucket
-[**deleteBucketByBucketId**](BucketAPI.md#deletebucketbybucketid) | **DELETE** /bucket/{bucketId} | Delete a bucket
+[**deleteBucket**](BucketAPI.md#deletebucket) | **DELETE** /bucket/{bucketId} | Delete a bucket
 [**deleteIcebergBucketByBucketName**](BucketAPI.md#deleteicebergbucketbybucketname) | **DELETE** /iceberg/bucket/{bucketName} | Delete an analytics bucket
-[**getBucketByBucketId**](BucketAPI.md#getbucketbybucketid) | **GET** /bucket/{bucketId} | Get details of a bucket
+[**getBucket**](BucketAPI.md#getbucket) | **GET** /bucket/{bucketId} | Get details of a bucket
 [**getIcebergBucket**](BucketAPI.md#geticebergbucket) | **GET** /iceberg/bucket | List analytics buckets
 [**headBucket**](BucketAPI.md#headbucket) | **HEAD** /bucket/ | Gets all buckets
 [**headBucket2**](BucketAPI.md#headbucket2) | **HEAD** /bucket | Gets all buckets
@@ -67,9 +67,9 @@ Name | Type | Description  | Notes
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteBucketByBucketId**
+# **deleteBucket**
 ```swift
-    internal class func deleteBucketByBucketId(bucketId: String, completion: @escaping (_ data: PostBucketByBucketIdEmpty200Response?, _ error: Error?) -> Void)
+    internal class func deleteBucket(bucketId: String, completion: @escaping (_ data: PostBucketByBucketIdEmpty200Response?, _ error: Error?) -> Void)
 ```
 
 Delete a bucket
@@ -82,7 +82,7 @@ import SupabaseStorage
 let bucketId = "bucketId_example" // String | 
 
 // Delete a bucket
-BucketAPI.deleteBucketByBucketId(bucketId: bucketId) { (response, error) in
+BucketAPI.deleteBucket(bucketId: bucketId) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -163,9 +163,9 @@ Void (empty response body)
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getBucketByBucketId**
+# **getBucket**
 ```swift
-    internal class func getBucketByBucketId(bucketId: String, completion: @escaping (_ data: HeadBucket200ResponseInner?, _ error: Error?) -> Void)
+    internal class func getBucket(bucketId: String, completion: @escaping (_ data: HeadBucket200ResponseInner?, _ error: Error?) -> Void)
 ```
 
 Get details of a bucket
@@ -178,7 +178,7 @@ import SupabaseStorage
 let bucketId = "bucketId_example" // String | 
 
 // Get details of a bucket
-BucketAPI.getBucketByBucketId(bucketId: bucketId) { (response, error) in
+BucketAPI.getBucket(bucketId: bucketId) { (response, error) in
     guard error == nil else {
         print(error)
         return

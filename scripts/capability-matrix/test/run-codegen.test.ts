@@ -48,9 +48,14 @@ describe("run() with codegen checks", () => {
     const cfgDir = mkdtempSync(join(tmpdir(), "cfg-"));
     tempDirs.push(cfgDir);
     const cfgPath = join(cfgDir, "codegen.yaml");
+    // Write a minimal spec file so checkBindingOperations can verify the operationId exists.
+    writeFileSync(
+      join(cfgDir, "storage.normalized.json"),
+      JSON.stringify({ openapi: "3.0.3", paths: { "/object/{bucketName}/{objectPath}": { post: { operationId: "uploadObject" } } } }),
+    );
     writeFileSync(
       cfgPath,
-      "engine:\n  tool: openapi-generator\n  version: 7.10.0\nspecs:\n  storage:\n    source: x\n    version: v1\nlanguages:\n  swift:\n    generator: swift5\n    templates: templates/swift\n",
+      "engine:\n  tool: openapi-generator\n  version: 7.10.0\nspecs:\n  storage:\n    source: storage.normalized.json\n    version: v1\nlanguages:\n  swift:\n    generator: swift5\n    templates: templates/swift\n",
     );
 
     const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, codegenConfigPath: cfgPath, codegenSchema });

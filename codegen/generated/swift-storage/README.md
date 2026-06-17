@@ -27,9 +27,9 @@ All URIs are relative to *http://localhost*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *BucketAPI* | [**createBucket**](docs/BucketAPI.md#createbucket) | **POST** /bucket/ | Create a bucket
-*BucketAPI* | [**deleteBucketByBucketId**](docs/BucketAPI.md#deletebucketbybucketid) | **DELETE** /bucket/{bucketId} | Delete a bucket
+*BucketAPI* | [**deleteBucket**](docs/BucketAPI.md#deletebucket) | **DELETE** /bucket/{bucketId} | Delete a bucket
 *BucketAPI* | [**deleteIcebergBucketByBucketName**](docs/BucketAPI.md#deleteicebergbucketbybucketname) | **DELETE** /iceberg/bucket/{bucketName} | Delete an analytics bucket
-*BucketAPI* | [**getBucketByBucketId**](docs/BucketAPI.md#getbucketbybucketid) | **GET** /bucket/{bucketId} | Get details of a bucket
+*BucketAPI* | [**getBucket**](docs/BucketAPI.md#getbucket) | **GET** /bucket/{bucketId} | Get details of a bucket
 *BucketAPI* | [**getIcebergBucket**](docs/BucketAPI.md#geticebergbucket) | **GET** /iceberg/bucket | List analytics buckets
 *BucketAPI* | [**headBucket**](docs/BucketAPI.md#headbucket) | **HEAD** /bucket/ | Gets all buckets
 *BucketAPI* | [**headBucket2**](docs/BucketAPI.md#headbucket2) | **HEAD** /bucket | Gets all buckets

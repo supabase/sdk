@@ -6,6 +6,8 @@
   "operationIdOverrides": {
     "POST /object/{bucketName}/{objectPath}": "uploadObject",
     "GET /bucket/": "listBuckets",
-    "POST /bucket/": "createBucket"
+    "POST /bucket/": "createBucket",
+    "DELETE /bucket/{bucketId}": "deleteBucket",
+    "GET /bucket/{bucketId}": "getBucket"
   }
 }

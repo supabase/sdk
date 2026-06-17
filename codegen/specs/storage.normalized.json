@@ -884,7 +884,7 @@
             }
           }
         },
-        "operationId": "getBucketByBucketId"
+        "operationId": "getBucket"
       },
       "head": {
         "summary": "Get details of a bucket",
@@ -1153,7 +1153,7 @@
             }
           }
         },
-        "operationId": "deleteBucketByBucketId"
+        "operationId": "deleteBucket"
       }
     },
     "/object/{bucketName}": {
