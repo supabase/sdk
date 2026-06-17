@@ -156,7 +156,7 @@ features:
     group: vector_buckets
   - id: storage.file_buckets.download_as_stream
     name: Download File as Stream
-    description: Download a file and return its content as a ReadableStream for memory-efficient handling of large files.
+    description: Download a file and return its content as a stream for memory-efficient handling of large files.
     group: file_buckets
   - id: storage.file_buckets.download_with_transform
     name: Download with Image Transform
