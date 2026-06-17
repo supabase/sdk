@@ -14,6 +14,11 @@ export interface LanguageConfig {
   generatorProperties?: Record<string, string>;
 }
 
+/**
+ * A generation target as declared in codegen.yaml. `output` is the YAML-facing
+ * name for the destination directory; the generate CLI maps it to the `outDir`
+ * field of `buildGenerateArgs`'s `GenerateTarget`.
+ */
 export interface GenerateTargetConfig {
   spec: string;
   language: string;

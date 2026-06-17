@@ -45,7 +45,6 @@ describe("buildGenerateArgs", () => {
       languages: { swift: { generator: "swift6" } },
     };
     const args = buildGenerateArgs(stock, { spec: "storage", language: "swift", outDir: "out" });
-    expect(args.includes("--template-dir")).toBe(false);
     expect(args).toEqual([
       "generate",
       "--input-spec", "codegen/specs/storage.normalized.json",

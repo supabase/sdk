@@ -47,6 +47,11 @@ describe("checkCodegenConfig", () => {
     const cfg = { ...valid, targets: [{ spec: "storage", language: "swift" }] };
     expect(checkCodegenConfig(cfg, schema).length).toBeGreaterThan(0);
   });
+
+  it("rejects an empty targets array", () => {
+    const cfg = { ...valid, targets: [] };
+    expect(checkCodegenConfig(cfg, schema).length).toBeGreaterThan(0);
+  });
 });
 
 describe("loadCodegenConfig", () => {
