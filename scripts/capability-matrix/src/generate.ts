@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import type { CodegenConfig } from "./codegen";
 
 export interface GenerateTarget {
@@ -34,4 +35,19 @@ export function buildGenerateArgs(config: CodegenConfig, target: GenerateTarget)
   }
 
   return args;
+}
+
+export interface RunGenerateOptions {
+  cwd: string;
+  bin?: string;
+  stdio?: "inherit" | "pipe";
+}
+
+/** Spawns openapi-generator with the args from buildGenerateArgs. Throws on non-zero exit. */
+export function runGenerate(config: CodegenConfig, target: GenerateTarget, opts: RunGenerateOptions): void {
+  const args = buildGenerateArgs(config, target);
+  const bin = opts.bin ?? "openapi-generator";
+  const res = spawnSync(bin, args, { cwd: opts.cwd, stdio: opts.stdio ?? "inherit" });
+  if (res.error) throw new Error(`failed to spawn ${bin}: ${res.error.message}`);
+  if (res.status !== 0) throw new Error(`${bin} ${args.join(" ")} exited with status ${res.status}`);
 }

@@ -13,7 +13,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build-site": "tsx src/generate-site.ts",
-    "normalize": "tsx src/normalize-cli.ts"
+    "normalize": "tsx src/normalize-cli.ts",
+    "generate": "tsx src/generate-cli.ts"
   },
   "dependencies": {
     "@octokit/rest": "^21.0.2",
