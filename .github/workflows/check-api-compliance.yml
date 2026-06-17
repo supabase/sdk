@@ -38,12 +38,39 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Parse PR branch public API
-        run: npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" > "$GITHUB_WORKSPACE/pr-symbols.json"
+      - name: Detect SDK language
+        id: detect
+        run: |
+          SDK=$(grep '^sdk:' "$GITHUB_WORKSPACE/_sdk-pr/${{ inputs.compliance-file }}" \
+                | head -1 | awk '{print $2}' | tr -d '[:space:]')
+          echo "sdk=$SDK" >> "$GITHUB_OUTPUT"
+
+      - name: Parse PR branch (TypeScript)
+        if: steps.detect.outputs.sdk == 'javascript'
+        run: |
+          npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Parse base branch public API
-        run: npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" > "$GITHUB_WORKSPACE/base-symbols.json"
+      - name: Parse base branch (TypeScript)
+        if: steps.detect.outputs.sdk == 'javascript'
+        run: |
+          npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Parse PR branch (Swift)
+        if: steps.detect.outputs.sdk == 'swift'
+        run: |
+          npm run parse-swift -- "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Parse base branch (Swift)
+        if: steps.detect.outputs.sdk == 'swift'
+        run: |
+          npm run parse-swift -- "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Check new symbols against capability matrix
