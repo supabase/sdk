@@ -124,6 +124,13 @@ export function findUnmatchedOverrides(spec: OpenApiDoc, overrides: Record<strin
  * Generators that map property names to camelCase can produce conflicting Swift/Kotlin
  * declarations when the spec has both. The lowercase variant is canonical; all
  * PascalCase or mixed-case duplicates are dropped.
+ *
+ * LOSSY: when a collision is resolved the non-lowercase key is silently dropped, so
+ * callers only see the lowercase variant in the normalised output.  In particular, the
+ * kept variant may be the nullable one — e.g. the `POST /object/copy` response has both
+ * `Id` (non-nullable) and `id` (nullable); after dedup only `id` (nullable) survives.
+ * Downstream generated types therefore reflect the nullable shape even where the
+ * non-nullable sibling would have been more accurate.
  */
 export function dedupCaseInsensitiveProperties(spec: OpenApiDoc): OpenApiDoc {
   const walk = (node: any): void => {
@@ -217,8 +224,24 @@ export function stripSchemaExamples(spec: OpenApiDoc): OpenApiDoc {
 }
 
 /**
- * Replaces unresolvable external URL `$ref` values with an inline empty schema `{}`.
- * The openapi-generator validator rejects any ref it cannot resolve at generation time.
+ * PILOT STOPGAP — replaces any external (`http(s)://`) `$ref` with a permissive open
+ * object schema `{ type: "object" }`.  This discards the referenced schema's real shape
+ * entirely; the original URL is preserved in `x-inlined-from` for traceability only.
+ *
+ * As of the initial Storage codegen pilot the only affected site is the QueryVectors
+ * request body, whose `$ref` points at an external Hnswlib spec.  That one case does
+ * not yet block generation, but the substitution is semantically wrong.
+ *
+ * Follow-up actions before this leaves pilot status:
+ *   1. Narrow the matcher or vendor the real external schema so the correct shape is
+ *      emitted for known refs (analogous to `schemaRenames` for local refs).
+ *   2. Consider failing loudly — similar to how `findUnmatchedOverrides` surfaces
+ *      unrecognised override keys — for any external ref that is not explicitly
+ *      allow-listed, so new upstream refs do not silently degrade codegen quality.
+ *
+ * The openapi-generator validator rejects any ref it cannot resolve at generation time,
+ * which is why we must substitute something; the open-object fallback is the safest
+ * no-op that keeps generation green while the proper fix is tracked.
  */
 export function inlineExternalRefs(spec: OpenApiDoc): OpenApiDoc {
   const walk = (node: any): void => {
