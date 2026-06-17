@@ -9,3 +9,6 @@ docs/superpowers/
 
 # Swift package build artefacts from generated packages
 codegen/generated/**/.build/
+
+# Stray @openapitools/openapi-generator-cli config (we use the standalone binary, version pinned in codegen.yaml)
+openapitools.json
