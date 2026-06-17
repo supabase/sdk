@@ -41,7 +41,7 @@ function specOperationIds(file: string): Set<string> {
  */
 export function checkBindingOperations(loaded: LoadedArea[], config: CodegenConfig, baseDir: string): Finding[] {
   const findings: Finding[] = [];
-  const cache = new Map<string, Set<string>>();
+  const cache = new Map<string, Set<string> | null>();
   for (const { file, area } of loaded) {
     for (const feature of area?.features ?? []) {
       const binding = feature.binding;
@@ -49,16 +49,16 @@ export function checkBindingOperations(loaded: LoadedArea[], config: CodegenConf
       const spec = config.specs[binding.spec];
       if (!spec) continue; // unknown spec already reported by checkBindings
       const specFile = resolve(baseDir, spec.source);
-      let ids = cache.get(specFile);
-      if (!ids) {
+      if (!cache.has(specFile)) {
         try {
-          ids = specOperationIds(specFile);
+          cache.set(specFile, specOperationIds(specFile));
         } catch (e) {
           findings.push({ level: "error", file, message: `cannot read spec "${spec.source}" for operationId check: ${(e as Error).message}` });
-          ids = new Set();
+          cache.set(specFile, null);
         }
-        cache.set(specFile, ids);
       }
+      const ids = cache.get(specFile);
+      if (!ids) continue; // null = spec unreadable (already reported once); empty Set is truthy and still checked
       if (!ids.has(binding.operationId)) {
         findings.push({ level: "error", file, message: `feature "${feature.id}" binds to operationId "${binding.operationId}" not present in spec "${binding.spec}"` });
       }

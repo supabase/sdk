@@ -75,4 +75,13 @@ describe("checkBindingOperations", () => {
     const a = area([{ id: "storage.x.none", name: "N", description: "d" }]);
     expect(checkBindingOperations([a], cfg, base)).toEqual([]);
   });
+
+  it("reports a single read error when the spec file is missing (no duplicate not-present error)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "spec-")); // empty dir — no spec file written
+    const badCfg: any = { ...cfg, specs: { storage: { source: "does-not-exist.json", version: "v1" } } };
+    const a = area([{ id: "storage.x.u", name: "U", description: "d", binding: { spec: "storage", operationId: "uploadObject" } }]);
+    const findings = checkBindingOperations([a], badCfg, dir);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].message).toContain("cannot read spec");
+  });
 });
