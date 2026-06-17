@@ -19,9 +19,12 @@ function main(): void {
   const spec = JSON.parse(readFileSync(input, "utf8"));
   const options = JSON.parse(readFileSync(configPath, "utf8")) as NormalizeOptions;
   normalizeSpec(spec, options);
-  const unmatched = findUnmatchedOverrides(spec, options.operationIdOverrides ?? {});
+  const unmatched = [
+    ...findUnmatchedOverrides(spec, options.operationIdOverrides ?? {}),
+    ...findUnmatchedOverrides(spec, options.requestBodyInjections ?? {}),
+  ];
   if (unmatched.length > 0) {
-    throw new Error(`operationId override keys match no operation (check method + exact path, incl. trailing slash): ${unmatched.join(", ")}`);
+    throw new Error(`override/injection keys match no operation (check method + exact path, incl. trailing slash): ${unmatched.join(", ")}`);
   }
   writeFileSync(output, JSON.stringify(spec, null, 2) + "\n");
   console.log(`normalized ${input} -> ${output}`);

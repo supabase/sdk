@@ -4908,7 +4908,18 @@
             }
           }
         },
-        "operationId": "putObjectByBucketNameByObjectPath"
+        "operationId": "putObjectByBucketNameByObjectPath",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
       },
       "head": {
         "summary": "Retrieve object info",
@@ -5076,7 +5087,18 @@
             }
           }
         },
-        "operationId": "uploadObject"
+        "operationId": "uploadObject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
       }
     },
     "/object/authenticated/{bucketName}/{objectPath}": {

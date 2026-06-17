@@ -1235,7 +1235,7 @@ Name | Type | Description  | Notes
 
 # **putObjectByBucketNameByObjectPath**
 ```swift
-    internal class func putObjectByBucketNameByObjectPath(bucketName: String, objectPath: String, completion: @escaping (_ data: PutObjectByBucketNameByObjectPath200Response?, _ error: Error?) -> Void)
+    internal class func putObjectByBucketNameByObjectPath(bucketName: String, objectPath: String, body: URL, completion: @escaping (_ data: PutObjectByBucketNameByObjectPath200Response?, _ error: Error?) -> Void)
 ```
 
 Update the object at an existing key
@@ -1247,9 +1247,10 @@ import SupabaseStorage
 
 let bucketName = "bucketName_example" // String | 
 let objectPath = "objectPath_example" // String | 
+let body = URL(string: "https://example.com")! // URL | 
 
 // Update the object at an existing key
-ObjectAPI.putObjectByBucketNameByObjectPath(bucketName: bucketName, objectPath: objectPath) { (response, error) in
+ObjectAPI.putObjectByBucketNameByObjectPath(bucketName: bucketName, objectPath: objectPath, body: body) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -1267,6 +1268,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bucketName** | **String** |  | 
  **objectPath** | **String** |  | 
+ **body** | **URL** |  | 
 
 ### Return type
 
@@ -1278,7 +1280,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/octet-stream
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -1337,7 +1339,7 @@ No authorization required
 
 # **uploadObject**
 ```swift
-    internal class func uploadObject(bucketName: String, objectPath: String, completion: @escaping (_ data: PutObjectByBucketNameByObjectPath200Response?, _ error: Error?) -> Void)
+    internal class func uploadObject(bucketName: String, objectPath: String, body: URL, completion: @escaping (_ data: PutObjectByBucketNameByObjectPath200Response?, _ error: Error?) -> Void)
 ```
 
 Upload a new object
@@ -1349,9 +1351,10 @@ import SupabaseStorage
 
 let bucketName = "bucketName_example" // String | 
 let objectPath = "objectPath_example" // String | 
+let body = URL(string: "https://example.com")! // URL | 
 
 // Upload a new object
-ObjectAPI.uploadObject(bucketName: bucketName, objectPath: objectPath) { (response, error) in
+ObjectAPI.uploadObject(bucketName: bucketName, objectPath: objectPath, body: body) { (response, error) in
     guard error == nil else {
         print(error)
         return
@@ -1369,6 +1372,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bucketName** | **String** |  | 
  **objectPath** | **String** |  | 
+ **body** | **URL** |  | 
 
 ### Return type
 
@@ -1380,7 +1384,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/octet-stream
  - **Accept**: application/json
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

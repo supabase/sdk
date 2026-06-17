@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec, findUnmatchedOverrides, fixArrayTypes, stripDollarComments, stripSchemaExamples, inlineExternalRefs, dedupCaseInsensitiveProperties } from "../src/normalize";
+import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec, findUnmatchedOverrides, injectRequestBodies, fixArrayTypes, stripDollarComments, stripSchemaExamples, inlineExternalRefs, dedupCaseInsensitiveProperties } from "../src/normalize";
 
 describe("renameWildcardParams", () => {
   it("renames {*} path keys and their `*` path params", () => {
@@ -73,6 +73,34 @@ describe("findUnmatchedOverrides", () => {
     const spec: any = { paths: { "/bucket/": { get: {}, post: {} } } };
     const unmatched = findUnmatchedOverrides(spec, { "GET /bucket/": "listBuckets", "GET /bucket": "nope", "POST /nope": "x" });
     expect(unmatched.sort()).toEqual(["GET /bucket", "POST /nope"]);
+  });
+
+  it("findUnmatchedOverrides works with object-valued maps (request body injections)", () => {
+    const spec: any = { paths: { "/object/{bucketName}/{objectPath}": { post: {} } } };
+    expect(findUnmatchedOverrides(spec, { "POST /object/{bucketName}/{objectPath}": { any: "object" }, "POST /nope": {} })).toEqual(["POST /nope"]);
+  });
+});
+
+describe("injectRequestBodies", () => {
+  const octet = { required: true, content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } } };
+
+  it("injects a requestBody when the operation has none", () => {
+    const spec: any = { paths: { "/object/{bucketName}/{objectPath}": { post: { operationId: "uploadObject" } } } };
+    injectRequestBodies(spec, { "POST /object/{bucketName}/{objectPath}": octet });
+    expect(spec.paths["/object/{bucketName}/{objectPath}"].post.requestBody).toEqual(octet);
+  });
+
+  it("does not overwrite an existing requestBody", () => {
+    const existing = { content: { "application/json": {} } };
+    const spec: any = { paths: { "/x": { post: { requestBody: existing } } } };
+    injectRequestBodies(spec, { "POST /x": octet });
+    expect(spec.paths["/x"].post.requestBody).toEqual(existing);
+  });
+
+  it("ignores keys whose operation does not exist", () => {
+    const spec: any = { paths: { "/x": { post: {} } } };
+    injectRequestBodies(spec, { "POST /nope": octet });
+    expect(spec.paths["/x"].post.requestBody).toBeUndefined();
   });
 });
 

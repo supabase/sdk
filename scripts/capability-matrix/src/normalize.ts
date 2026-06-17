@@ -9,6 +9,7 @@ export interface NormalizeOptions {
   wildcardParamName?: string;
   schemaRenames?: Record<string, string>;
   operationIdOverrides?: Record<string, string>;
+  requestBodyInjections?: Record<string, unknown>;
 }
 
 /** Replaces `{*}` path segments (Fastify wildcards) and their `*`-named path params. */
@@ -107,8 +108,22 @@ export function injectOperationIds(spec: OpenApiDoc, overrides: Record<string, s
   return spec;
 }
 
+/** Adds a requestBody to operations that lack one. Keyed "METHOD /path" (normalized path). */
+export function injectRequestBodies(spec: OpenApiDoc, injections: Record<string, unknown>): OpenApiDoc {
+  const paths = spec.paths ?? {};
+  for (const [key, body] of Object.entries(injections)) {
+    const sp = key.indexOf(" ");
+    if (sp < 0) continue;
+    const method = key.slice(0, sp).toLowerCase();
+    const path = key.slice(sp + 1);
+    const op = paths[path]?.[method];
+    if (op && op.requestBody === undefined) op.requestBody = body;
+  }
+  return spec;
+}
+
 /** Returns override keys ("METHOD /path") that match no operation in the spec. */
-export function findUnmatchedOverrides(spec: OpenApiDoc, overrides: Record<string, string>): string[] {
+export function findUnmatchedOverrides(spec: OpenApiDoc, overrides: Record<string, unknown>): string[] {
   const paths = spec.paths ?? {};
   return Object.keys(overrides).filter((key) => {
     const sp = key.indexOf(" ");
@@ -266,6 +281,7 @@ export function normalizeSpec(spec: OpenApiDoc, options: NormalizeOptions = {}):
   renameWildcardParams(spec, options.wildcardParamName ?? "objectPath");
   if (options.schemaRenames) renameSchemas(spec, options.schemaRenames);
   injectOperationIds(spec, options.operationIdOverrides ?? {});
+  if (options.requestBodyInjections) injectRequestBodies(spec, options.requestBodyInjections);
   fixArrayTypes(spec);
   stripDollarComments(spec);
   stripSchemaExamples(spec);

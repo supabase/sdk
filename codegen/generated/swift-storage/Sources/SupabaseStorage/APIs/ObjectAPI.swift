@@ -1319,11 +1319,12 @@ internal class ObjectAPI {
      
      - parameter bucketName: (path)  
      - parameter objectPath: (path)  
+     - parameter body: (body)  
      - parameter apiConfiguration: The configuration for the http request.
      - returns: PutObjectByBucketNameByObjectPath200Response
      */
-    internal class func putObjectByBucketNameByObjectPath(bucketName: String, objectPath: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PutObjectByBucketNameByObjectPath200Response {
-        return try await putObjectByBucketNameByObjectPathWithRequestBuilder(bucketName: bucketName, objectPath: objectPath, apiConfiguration: apiConfiguration).execute().body
+    internal class func putObjectByBucketNameByObjectPath(bucketName: String, objectPath: String, body: URL, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PutObjectByBucketNameByObjectPath200Response {
+        return try await putObjectByBucketNameByObjectPathWithRequestBuilder(bucketName: bucketName, objectPath: objectPath, body: body, apiConfiguration: apiConfiguration).execute().body
     }
 
     /**
@@ -1334,10 +1335,11 @@ internal class ObjectAPI {
        - name: bearerAuth
      - parameter bucketName: (path)  
      - parameter objectPath: (path)  
+     - parameter body: (body)  
      - parameter apiConfiguration: The configuration for the http request.
      - returns: RequestBuilder<PutObjectByBucketNameByObjectPath200Response> 
      */
-    internal class func putObjectByBucketNameByObjectPathWithRequestBuilder(bucketName: String, objectPath: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PutObjectByBucketNameByObjectPath200Response> {
+    internal class func putObjectByBucketNameByObjectPathWithRequestBuilder(bucketName: String, objectPath: String, body: URL, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PutObjectByBucketNameByObjectPath200Response> {
         var localVariablePath = "/object/{bucketName}/{objectPath}"
         let bucketNamePreEscape = "\(APIHelper.mapValueToPathItem(bucketName))"
         let bucketNamePostEscape = bucketNamePreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -1346,12 +1348,12 @@ internal class ObjectAPI {
         let objectPathPostEscape = objectPathPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{objectPath}", with: objectPathPostEscape, options: .literal, range: nil)
         let localVariableURLString = apiConfiguration.basePath + localVariablePath
-        let localVariableParameters: [String: any Sendable]? = nil
+        let localVariableParameters = ["body": body]
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 
         let localVariableNillableHeaders: [String: (any Sendable)?] = [
-            :
+            "Content-Type": "application/octet-stream",
         ]
 
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)
@@ -1415,11 +1417,12 @@ internal class ObjectAPI {
      
      - parameter bucketName: (path)  
      - parameter objectPath: (path)  
+     - parameter body: (body)  
      - parameter apiConfiguration: The configuration for the http request.
      - returns: PutObjectByBucketNameByObjectPath200Response
      */
-    internal class func uploadObject(bucketName: String, objectPath: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PutObjectByBucketNameByObjectPath200Response {
-        return try await uploadObjectWithRequestBuilder(bucketName: bucketName, objectPath: objectPath, apiConfiguration: apiConfiguration).execute().body
+    internal class func uploadObject(bucketName: String, objectPath: String, body: URL, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) async throws(ErrorResponse) -> PutObjectByBucketNameByObjectPath200Response {
+        return try await uploadObjectWithRequestBuilder(bucketName: bucketName, objectPath: objectPath, body: body, apiConfiguration: apiConfiguration).execute().body
     }
 
     /**
@@ -1430,10 +1433,11 @@ internal class ObjectAPI {
        - name: bearerAuth
      - parameter bucketName: (path)  
      - parameter objectPath: (path)  
+     - parameter body: (body)  
      - parameter apiConfiguration: The configuration for the http request.
      - returns: RequestBuilder<PutObjectByBucketNameByObjectPath200Response> 
      */
-    internal class func uploadObjectWithRequestBuilder(bucketName: String, objectPath: String, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PutObjectByBucketNameByObjectPath200Response> {
+    internal class func uploadObjectWithRequestBuilder(bucketName: String, objectPath: String, body: URL, apiConfiguration: SupabaseStorageAPIConfiguration = SupabaseStorageAPIConfiguration.shared) -> RequestBuilder<PutObjectByBucketNameByObjectPath200Response> {
         var localVariablePath = "/object/{bucketName}/{objectPath}"
         let bucketNamePreEscape = "\(APIHelper.mapValueToPathItem(bucketName))"
         let bucketNamePostEscape = bucketNamePreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
@@ -1442,12 +1446,12 @@ internal class ObjectAPI {
         let objectPathPostEscape = objectPathPreEscape.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ""
         localVariablePath = localVariablePath.replacingOccurrences(of: "{objectPath}", with: objectPathPostEscape, options: .literal, range: nil)
         let localVariableURLString = apiConfiguration.basePath + localVariablePath
-        let localVariableParameters: [String: any Sendable]? = nil
+        let localVariableParameters = ["body": body]
 
         let localVariableUrlComponents = URLComponents(string: localVariableURLString)
 
         let localVariableNillableHeaders: [String: (any Sendable)?] = [
-            :
+            "Content-Type": "application/octet-stream",
         ]
 
         let localVariableHeaderParameters = APIHelper.rejectNilHeaders(localVariableNillableHeaders)

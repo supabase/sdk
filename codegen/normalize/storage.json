@@ -9,5 +9,9 @@
     "POST /bucket/": "createBucket",
     "DELETE /bucket/{bucketId}": "deleteBucket",
     "GET /bucket/{bucketId}": "getBucket"
+  },
+  "requestBodyInjections": {
+    "POST /object/{bucketName}/{objectPath}": { "required": true, "content": { "application/octet-stream": { "schema": { "type": "string", "format": "binary" } } } },
+    "PUT /object/{bucketName}/{objectPath}": { "required": true, "content": { "application/octet-stream": { "schema": { "type": "string", "format": "binary" } } } }
   }
 }
