@@ -124,6 +124,30 @@ public actor URLSessionTransport: Transport {
     return TransferTask(progress: stream, value: { try await task.value }, cancel: { task.cancel() })
   }
   public func stream(_ request: HTTPRequest) async throws -> ResponseStream {
-    fatalError("implemented in Task 7")
+    let urlRequest = try await makeURLRequest(request)
+    let (bytes, response) = try await urlSession.bytes(for: urlRequest)
+    let responseHead = head(from: response)
+    guard (200..<300).contains(responseHead.status) else {
+      var collected = Data()
+      for try await byte in bytes { collected.append(byte) }
+      if let mapped = configuration.errorMapper(collected, responseHead) { throw mapped }
+      throw TransportError.http(status: responseHead.status, body: collected, head: responseHead)
+    }
+    let body = AsyncThrowingStream<ArraySlice<UInt8>, any Error> { continuation in
+      let task = Task {
+        do {
+          var chunk = [UInt8]()
+          chunk.reserveCapacity(4096)
+          for try await byte in bytes {
+            chunk.append(byte)
+            if chunk.count >= 4096 { continuation.yield(ArraySlice(chunk)); chunk.removeAll(keepingCapacity: true) }
+          }
+          if !chunk.isEmpty { continuation.yield(ArraySlice(chunk)) }
+          continuation.finish()
+        } catch { continuation.finish(throwing: error) }
+      }
+      continuation.onTermination = { _ in task.cancel() }
+    }
+    return ResponseStream(head: responseHead, body: body)
   }
 }
