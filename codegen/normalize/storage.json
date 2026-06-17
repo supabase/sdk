@@ -1,0 +1,11 @@
+{
+  "schemaRenames": {
+    "def-0": "AuthHeader",
+    "def-1": "ErrorBody"
+  },
+  "operationIdOverrides": {
+    "POST /object/{bucketName}/{objectPath}": "uploadObject",
+    "GET /bucket": "listBuckets",
+    "POST /bucket": "createBucket"
+  }
+}
