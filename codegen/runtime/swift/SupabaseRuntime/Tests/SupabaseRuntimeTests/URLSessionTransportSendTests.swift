@@ -36,4 +36,31 @@ private struct StorageError: Error, Equatable { let message: String }
       let _: Bucket = try await transport.send(HTTPRequest(method: .get, path: "/bucket/x"))
     }
   }
+
+  @Test func sendBodySetsJSONContentTypeAndDecodes() async throws {
+    struct CreateBody: Encodable, Sendable { let name: String }
+    StubURLProtocol.stub = .init(status: 200, headers: [:], body: #"{"id":"made"}"#.data(using: .utf8)!)
+    let bucket: Bucket = try await makeTransport().send(HTTPRequest(method: .post, path: "/bucket/"), body: CreateBody(name: "n"))
+    #expect(bucket == Bucket(id: "made"))
+    let req = try #require(StubURLProtocol.lastRequest)
+    #expect(req.value(forHTTPHeaderField: "Content-Type") == "application/json")
+  }
+
+  @Test func noContentSendSucceedsOn2xxAndThrowsOnError() async throws {
+    StubURLProtocol.stub = .init(status: 204, headers: [:], body: Data())
+    try await makeTransport().send(HTTPRequest(method: .delete, path: "/bucket/x"))  // must not throw
+    StubURLProtocol.stub = .init(status: 500, headers: [:], body: Data())
+    await #expect(throws: (any Error).self) {
+      try await makeTransport().send(HTTPRequest(method: .delete, path: "/bucket/x"))
+    }
+  }
+
+  @Test func trailingSlashBaseURLDoesNotDoubleSlash() async throws {
+    var config = ClientConfiguration(baseURL: URL(string: "https://x.test/storage/v1/")!)
+    config.auth = AuthProvider { [:] }
+    let transport = URLSessionTransport(configuration: config, urlSession: StubURLProtocol.session())
+    StubURLProtocol.stub = .init(status: 200, headers: [:], body: #"{"id":"x"}"#.data(using: .utf8)!)
+    let _: Bucket = try await transport.send(HTTPRequest(method: .get, path: "/bucket/x"))
+    #expect(StubURLProtocol.lastRequest?.url?.absoluteString == "https://x.test/storage/v1/bucket/x")
+  }
 }

@@ -20,6 +20,7 @@ public actor URLSessionTransport: Transport {
 
   func makeURLRequest(_ request: HTTPRequest) async throws -> URLRequest {
     var components = URLComponents(url: configuration.baseURL, resolvingAgainstBaseURL: false)!
+    if components.path.hasSuffix("/") { components.path.removeLast() }
     components.path += request.path
     if !request.query.isEmpty { components.queryItems = request.query }
     var urlRequest = URLRequest(url: components.url!)
