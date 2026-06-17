@@ -24,6 +24,7 @@ import Testing
   @Test func fractionComputesWhenTotalKnown() {
     #expect(TransferProgress(completed: 5, total: 10).fraction == 0.5)
     #expect(TransferProgress(completed: 5, total: nil).fraction == nil)
+    #expect(TransferProgress(completed: 1, total: 0).fraction == nil)
   }
 
   @Test func cancelInvokesClosure() async {

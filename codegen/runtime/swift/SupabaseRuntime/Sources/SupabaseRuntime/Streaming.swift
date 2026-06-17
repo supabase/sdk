@@ -1,5 +1,3 @@
-import Foundation
-
 public struct TransferProgress: Sendable {
   public let completed: Int64
   public let total: Int64?
