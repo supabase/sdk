@@ -1,7 +1,12 @@
 import Foundation
 
 public enum HTTPMethod: String, Sendable {
-  case get, post, put, delete, patch, head
+  case get = "GET"
+  case post = "POST"
+  case put = "PUT"
+  case delete = "DELETE"
+  case patch = "PATCH"
+  case head = "HEAD"
 }
 
 public struct HTTPRequest: Sendable {

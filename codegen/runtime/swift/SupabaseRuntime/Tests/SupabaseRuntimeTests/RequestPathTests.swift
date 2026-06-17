@@ -13,4 +13,14 @@ import Testing
     let path = RequestPath("/bucket/")
     #expect(path.value == "/bucket/")
   }
+
+  @Test func encodesUnicodeParams() {
+    let path = RequestPath("/object/\(param: "café")")
+    #expect(path.value == "/object/caf%C3%A9")
+  }
+
+  @Test func emptyParamYieldsEmptySegment() {
+    let path = RequestPath("/object/\(param: "")/end")
+    #expect(path.value == "/object//end")
+  }
 }
