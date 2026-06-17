@@ -6,3 +6,6 @@ site/
 
 # AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
 docs/superpowers/
+
+# Swift package build artefacts from generated packages
+codegen/generated/**/.build/

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec, findUnmatchedOverrides } from "../src/normalize";
+import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec, findUnmatchedOverrides, fixArrayTypes, stripDollarComments, stripSchemaExamples, inlineExternalRefs, dedupCaseInsensitiveProperties } from "../src/normalize";
 
 describe("renameWildcardParams", () => {
   it("renames {*} path keys and their `*` path params", () => {
@@ -73,6 +73,71 @@ describe("findUnmatchedOverrides", () => {
     const spec: any = { paths: { "/bucket/": { get: {}, post: {} } } };
     const unmatched = findUnmatchedOverrides(spec, { "GET /bucket/": "listBuckets", "GET /bucket": "nope", "POST /nope": "x" });
     expect(unmatched.sort()).toEqual(["GET /bucket", "POST /nope"]);
+  });
+});
+
+describe("fixArrayTypes", () => {
+  it("converts ['null', 'string'] to { type: 'string', nullable: true }", () => {
+    const spec: any = { components: { schemas: { Foo: { type: ["null", "string"] } } } };
+    fixArrayTypes(spec);
+    expect(spec.components.schemas.Foo.type).toBe("string");
+    expect(spec.components.schemas.Foo.nullable).toBe(true);
+  });
+
+  it("flattens single-element type array without adding nullable", () => {
+    const spec: any = { components: { schemas: { Bar: { type: ["integer"] } } } };
+    fixArrayTypes(spec);
+    expect(spec.components.schemas.Bar.type).toBe("integer");
+    expect(spec.components.schemas.Bar.nullable).toBeUndefined();
+  });
+});
+
+describe("stripDollarComments", () => {
+  it("removes $comment keys from schema objects", () => {
+    const spec: any = { components: { schemas: { Foo: { type: "object", $comment: "internal note" } } } };
+    stripDollarComments(spec);
+    expect(spec.components.schemas.Foo.$comment).toBeUndefined();
+    expect(spec.components.schemas.Foo.type).toBe("object");
+  });
+});
+
+describe("stripSchemaExamples", () => {
+  it("removes plural examples array from a schema node", () => {
+    const spec: any = { components: { schemas: { Foo: { type: "integer", examples: [1, 2] } } } };
+    stripSchemaExamples(spec);
+    expect(spec.components.schemas.Foo.examples).toBeUndefined();
+  });
+
+  it("keeps singular example value on schema nodes", () => {
+    const spec: any = { components: { schemas: { Foo: { type: "string", example: "hello" } } } };
+    stripSchemaExamples(spec);
+    expect(spec.components.schemas.Foo.example).toBe("hello");
+  });
+});
+
+describe("inlineExternalRefs", () => {
+  it("replaces HTTP $ref with inline empty object schema", () => {
+    const spec: any = { paths: { "/x": { post: { requestBody: { content: { "application/json": { schema: { $ref: "https://schemas.example.com/body.json" } } } } } } } };
+    inlineExternalRefs(spec);
+    const schema = spec.paths["/x"].post.requestBody.content["application/json"].schema;
+    expect(schema.$ref).toBeUndefined();
+    expect(schema.type).toBe("object");
+  });
+});
+
+describe("dedupCaseInsensitiveProperties", () => {
+  it("drops the PascalCase key when a lowercase duplicate exists", () => {
+    const spec: any = {
+      paths: { "/x": { post: { responses: { 200: { content: { "application/json": { schema: {
+        type: "object",
+        properties: { Id: { type: "string" }, id: { type: "string", nullable: true }, name: { type: "string" } },
+      } } } } } } } },
+    };
+    dedupCaseInsensitiveProperties(spec);
+    const props = spec.paths["/x"].post.responses["200"].content["application/json"].schema.properties;
+    expect(props.Id).toBeUndefined();
+    expect(props.id).toBeTruthy();
+    expect(props.name).toBeTruthy();
   });
 });
 

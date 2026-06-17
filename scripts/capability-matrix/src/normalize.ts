@@ -119,10 +119,134 @@ export function findUnmatchedOverrides(spec: OpenApiDoc, overrides: Record<strin
   });
 }
 
+/**
+ * Removes duplicate property names that differ only in case (e.g. `Id` vs `id`).
+ * Generators that map property names to camelCase can produce conflicting Swift/Kotlin
+ * declarations when the spec has both. The lowercase variant is canonical; all
+ * PascalCase or mixed-case duplicates are dropped.
+ */
+export function dedupCaseInsensitiveProperties(spec: OpenApiDoc): OpenApiDoc {
+  const walk = (node: any): void => {
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === "object") {
+      if (node.properties && typeof node.properties === "object" && !Array.isArray(node.properties)) {
+        const props: Record<string, any> = node.properties;
+        const seen = new Map<string, string>(); // lowercase -> first key seen
+        for (const key of Object.keys(props)) {
+          const lk = key.toLowerCase();
+          if (seen.has(lk)) {
+            // Keep the lowercase variant; drop the non-lowercase one
+            const existing = seen.get(lk)!;
+            if (existing === existing.toLowerCase()) {
+              // existing is already lowercase; drop current key
+              delete props[key];
+            } else {
+              // existing is not lowercase; replace with current (closer to lowercase)
+              delete props[existing];
+              seen.set(lk, key);
+            }
+          } else {
+            seen.set(lk, key);
+          }
+        }
+      }
+      for (const v of Object.values(node)) walk(v);
+    }
+  };
+  walk(spec);
+  return spec;
+}
+
+/**
+ * Converts OAS 3.1-style nullable arrays (`type: ["null", "T"]`) to OAS 3.0 form
+ * (`type: "T", nullable: true`). Also flattens single-element type arrays.
+ * Operates recursively on the whole document.
+ */
+export function fixArrayTypes(spec: OpenApiDoc): OpenApiDoc {
+  const walk = (node: any): void => {
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === "object") {
+      if (Array.isArray(node.type)) {
+        const types: string[] = node.type;
+        const nonNull = types.filter((t) => t !== "null");
+        if (types.includes("null")) node.nullable = true;
+        node.type = nonNull.length === 1 ? nonNull[0] : nonNull.length === 0 ? undefined : nonNull;
+        if (node.type === undefined) delete node.type;
+      }
+      for (const v of Object.values(node)) walk(v);
+    }
+  };
+  walk(spec);
+  return spec;
+}
+
+/**
+ * Removes `$comment` keys from every schema object in the document.
+ * `$comment` is a JSON Schema / OAS 3.1 annotation; OAS 3.0 does not allow it.
+ */
+export function stripDollarComments(spec: OpenApiDoc): OpenApiDoc {
+  const walk = (node: any): void => {
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === "object") {
+      if ("$comment" in node) delete node.$comment;
+      for (const v of Object.values(node)) walk(v);
+    }
+  };
+  walk(spec);
+  return spec;
+}
+
+/**
+ * Removes `examples` (plural array form) from schema objects.
+ * OAS 3.0 uses the singular `example` keyword; the plural `examples` is OAS 3.1.
+ * We only strip it when it sits on a schema node (has `type`, `$ref`, `properties`,
+ * `allOf`, `oneOf`, or `anyOf`) to avoid touching parameter-level `examples` maps.
+ */
+export function stripSchemaExamples(spec: OpenApiDoc): OpenApiDoc {
+  const SCHEMA_SIGNALS = new Set(["type", "$ref", "properties", "allOf", "oneOf", "anyOf", "items", "nullable", "format"]);
+  const walk = (node: any): void => {
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === "object") {
+      const isSchemaNode = Object.keys(node).some((k) => SCHEMA_SIGNALS.has(k));
+      if (isSchemaNode && Array.isArray(node.examples)) delete node.examples;
+      for (const v of Object.values(node)) walk(v);
+    }
+  };
+  walk(spec);
+  return spec;
+}
+
+/**
+ * Replaces unresolvable external URL `$ref` values with an inline empty schema `{}`.
+ * The openapi-generator validator rejects any ref it cannot resolve at generation time.
+ */
+export function inlineExternalRefs(spec: OpenApiDoc): OpenApiDoc {
+  const walk = (node: any): void => {
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node && typeof node === "object") {
+      if (typeof node.$ref === "string" && /^https?:\/\//.test(node.$ref)) {
+        const originalRef = node.$ref;
+        delete node.$ref;
+        // Make it a permissive object schema so the generator still emits something
+        node.type = "object";
+        node["x-inlined-from"] = originalRef;
+      }
+      for (const v of Object.values(node)) walk(v);
+    }
+  };
+  walk(spec);
+  return spec;
+}
+
 /** Full normalization: wildcard params, then schema renames, then operationId injection. */
 export function normalizeSpec(spec: OpenApiDoc, options: NormalizeOptions = {}): OpenApiDoc {
   renameWildcardParams(spec, options.wildcardParamName ?? "objectPath");
   if (options.schemaRenames) renameSchemas(spec, options.schemaRenames);
   injectOperationIds(spec, options.operationIdOverrides ?? {});
+  fixArrayTypes(spec);
+  stripDollarComments(spec);
+  stripSchemaExamples(spec);
+  inlineExternalRefs(spec);
+  dedupCaseInsensitiveProperties(spec);
   return spec;
 }

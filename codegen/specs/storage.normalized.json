@@ -145,17 +145,11 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "examples": [
-                          1000
-                        ],
                         "nullable": true,
                         "minimum": 0
                       },
                       {
                         "type": "string",
-                        "examples": [
-                          "100MB"
-                        ],
                         "nullable": true
                       }
                     ]
@@ -319,19 +313,15 @@
                         ]
                       },
                       "file_size_limit": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": "integer",
+                        "nullable": true
                       },
                       "allowed_mime_types": {
-                        "type": [
-                          "null",
-                          "array"
-                        ],
+                        "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "nullable": true
                       },
                       "created_at": {
                         "type": "string"
@@ -494,19 +484,15 @@
                         ]
                       },
                       "file_size_limit": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": "integer",
+                        "nullable": true
                       },
                       "allowed_mime_types": {
-                        "type": [
-                          "null",
-                          "array"
-                        ],
+                        "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "nullable": true
                       },
                       "created_at": {
                         "type": "string"
@@ -724,19 +710,15 @@
                         ]
                       },
                       "file_size_limit": {
-                        "type": [
-                          "null",
-                          "integer"
-                        ]
+                        "type": "integer",
+                        "nullable": true
                       },
                       "allowed_mime_types": {
-                        "type": [
-                          "null",
-                          "array"
-                        ],
+                        "type": "array",
                         "items": {
                           "type": "string"
-                        }
+                        },
+                        "nullable": true
                       },
                       "created_at": {
                         "type": "string"
@@ -852,19 +834,15 @@
                       ]
                     },
                     "file_size_limit": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": "integer",
+                      "nullable": true
                     },
                     "allowed_mime_types": {
-                      "type": [
-                        "null",
-                        "array"
-                      ],
+                      "type": "array",
                       "items": {
                         "type": "string"
-                      }
+                      },
+                      "nullable": true
                     },
                     "created_at": {
                       "type": "string"
@@ -961,19 +939,15 @@
                       ]
                     },
                     "file_size_limit": {
-                      "type": [
-                        "null",
-                        "integer"
-                      ]
+                      "type": "integer",
+                      "nullable": true
                     },
                     "allowed_mime_types": {
-                      "type": [
-                        "null",
-                        "array"
-                      ],
+                      "type": "array",
                       "items": {
                         "type": "string"
-                      }
+                      },
+                      "nullable": true
                     },
                     "created_at": {
                       "type": "string"
@@ -1038,17 +1012,11 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "examples": [
-                          1000
-                        ],
                         "nullable": true,
                         "minimum": 0
                       },
                       {
                         "type": "string",
-                        "examples": [
-                          "100MB"
-                        ],
                         "nullable": true
                       }
                     ]
@@ -1350,19 +1318,15 @@
                             ]
                           },
                           "file_size_limit": {
-                            "type": [
-                              "null",
-                              "integer"
-                            ]
+                            "type": "integer",
+                            "nullable": true
                           },
                           "allowed_mime_types": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": "array",
                             "items": {
                               "type": "string"
-                            }
+                            },
+                            "nullable": true
                           },
                           "created_at": {
                             "type": "string"
@@ -1493,22 +1457,18 @@
                     "type": "object",
                     "properties": {
                       "error": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
-                        "example": "Either the object does not exist or you do not have access to it"
+                        "type": "string",
+                        "example": "Either the object does not exist or you do not have access to it",
+                        "nullable": true
                       },
                       "path": {
                         "type": "string",
                         "example": "folder/cat.png"
                       },
                       "signedURL": {
-                        "type": [
-                          "null",
-                          "string"
-                        ],
-                        "example": "/object/sign/avatars/folder/cat.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJhdmF0YXJzL2ZvbGRlci9jYXQucG5nIiwiaWF0IjoxNjE3NzI2MjczLCJleHAiOjE2MTc3MjcyNzN9.s7Gt8ME80iREVxPhH01ZNv8oUn4XtaWsmiQ5csiUHn4"
+                        "type": "string",
+                        "example": "/object/sign/avatars/folder/cat.png?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJhdmF0YXJzL2ZvbGRlci9jYXQucG5nIiwiaWF0IjoxNjE3NzI2MjczLCJleHAiOjE2MTc3MjcyNzN9.s7Gt8ME80iREVxPhH01ZNv8oUn4XtaWsmiQ5csiUHn4",
+                        "nullable": true
                       }
                     },
                     "required": [
@@ -1884,19 +1844,15 @@
                             ]
                           },
                           "file_size_limit": {
-                            "type": [
-                              "null",
-                              "integer"
-                            ]
+                            "type": "integer",
+                            "nullable": true
                           },
                           "allowed_mime_types": {
-                            "type": [
-                              "null",
-                              "array"
-                            ],
+                            "type": "array",
                             "items": {
                               "type": "string"
-                            }
+                            },
+                            "nullable": true
                           },
                           "created_at": {
                             "type": "string"
@@ -2028,9 +1984,6 @@
                   "description": "Successful response",
                   "type": "object",
                   "properties": {
-                    "Id": {
-                      "type": "string"
-                    },
                     "Key": {
                       "type": "string",
                       "example": "folder/destination.png"
@@ -2138,19 +2091,15 @@
                           ]
                         },
                         "file_size_limit": {
-                          "type": [
-                            "null",
-                            "integer"
-                          ]
+                          "type": "integer",
+                          "nullable": true
                         },
                         "allowed_mime_types": {
-                          "type": [
-                            "null",
-                            "array"
-                          ],
+                          "type": "array",
                           "items": {
                             "type": "string"
-                          }
+                          },
+                          "nullable": true
                         },
                         "created_at": {
                           "type": "string"
@@ -3105,9 +3054,7 @@
                                         },
                                         "fields": {
                                           "type": "array",
-                                          "items": {
-                                            "$comment": "recurse nested StructField definitions here"
-                                          }
+                                          "items": {}
                                         }
                                       }
                                     },
@@ -3129,9 +3076,7 @@
                                         "element-id": {
                                           "type": "integer"
                                         },
-                                        "element": {
-                                          "$comment": "Type object (recurse)"
-                                        },
+                                        "element": {},
                                         "element-required": {
                                           "type": "boolean"
                                         }
@@ -3157,15 +3102,11 @@
                                         "key-id": {
                                           "type": "integer"
                                         },
-                                        "key": {
-                                          "$comment": "Type object (recurse)"
-                                        },
+                                        "key": {},
                                         "value-id": {
                                           "type": "integer"
                                         },
-                                        "value": {
-                                          "$comment": "Type object (recurse)"
-                                        },
+                                        "value": {},
                                         "value-required": {
                                           "type": "boolean"
                                         }
@@ -4305,7 +4246,8 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "https://schemas.example.com/queryVectorBody.json"
+                "type": "object",
+                "x-inlined-from": "https://schemas.example.com/queryVectorBody.json"
               }
             }
           }
