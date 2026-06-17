@@ -18,10 +18,10 @@ features:
     name: Broadcast via HTTP
     description: Send a broadcast message to channel subscribers via the REST API instead of the websocket connection.
     group: channel
-  - id: realtime.channel.channel
+  - id: realtime.client.channel
     name: Create or Reuse Channel
     description: Create a new channel or return an existing one for the given topic.
-    group: channel
+    group: client
   - id: realtime.channel.send
     name: Send Message
     description: Send a message to other subscribers of the channel.
@@ -46,25 +46,9 @@ features:
     name: Disconnect
     description: Close the websocket connection to the Realtime server.
     group: client
-  - id: realtime.client.endpoint_url
-    name: Endpoint URL
-    description: Return the URL of the Realtime websocket endpoint.
-    group: client
   - id: realtime.client.get_channels
     name: Get Channels
     description: Return all active channels for this client.
-    group: client
-  - id: realtime.client.is_connected
-    name: Is Connected
-    description: Return whether the websocket connection is currently open.
-    group: client
-  - id: realtime.client.is_connecting
-    name: Is Connecting
-    description: Return whether the websocket connection is currently being established.
-    group: client
-  - id: realtime.client.is_disconnecting
-    name: Is Disconnecting
-    description: Return whether the websocket connection is currently closing.
     group: client
   - id: realtime.client.listen_heartbeats
     name: Listen to Heartbeats
