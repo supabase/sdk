@@ -3,7 +3,6 @@ import Foundation
 public actor URLSessionTransport: Transport {
   let configuration: ClientConfiguration
   nonisolated let urlSession: URLSession   // URLSession is Sendable; readable from nonisolated upload/download
-  nonisolated let delegate = SessionDelegate()
 
   public init(configuration: ClientConfiguration, urlSession: URLSession? = nil) {
     self.configuration = configuration
@@ -15,7 +14,8 @@ public actor URLSessionTransport: Transport {
       case .foreground: cfg = .default
       case .background(let id): cfg = .background(withIdentifier: id)
       }
-      self.urlSession = URLSession(configuration: cfg, delegate: delegate, delegateQueue: nil)
+      // No session-level delegate — progress is handled by per-call TaskProgressDelegate.
+      self.urlSession = URLSession(configuration: cfg)
     }
   }
 
@@ -87,15 +87,16 @@ public actor URLSessionTransport: Transport {
   // MARK: - Streaming upload/download (Task 6)
 
   public nonisolated func upload<R: Decodable & Sendable>(_ request: HTTPRequest, from source: UploadSource) -> TransferTask<R> {
-    // Progress is wired via the SessionDelegate when the transport owns its session (non-stub path).
-    // Under a stub-injected URLSession (no delegate), the stream is created but emits nothing — that is expected.
-    let (stream, _) = AsyncStream<TransferProgress>.makeStream()
+    let (stream, cont) = AsyncStream<TransferProgress>.makeStream()
     let task = Task { [self] () -> R in
+      defer { cont.finish() }
       let urlRequest = try await makeURLRequest(request)
-      let (data, response): (Data, URLResponse)
+      let progressDelegate = TaskProgressDelegate(continuation: cont)
+      let data: Data
+      let response: URLResponse
       switch source {
-      case .file(let url): (data, response) = try await urlSession.upload(for: urlRequest, fromFile: url)
-      case .data(let d):   (data, response) = try await urlSession.upload(for: urlRequest, from: d)
+      case .file(let url): (data, response) = try await urlSession.upload(for: urlRequest, fromFile: url, delegate: progressDelegate)
+      case .data(let d):   (data, response) = try await urlSession.upload(for: urlRequest, from: d, delegate: progressDelegate)
       }
       let validated = try validateNonisolated(data, response)
       do { return try configuration.decoder.decode(R.self, from: validated) }
@@ -105,12 +106,18 @@ public actor URLSessionTransport: Transport {
   }
 
   public nonisolated func download(_ request: HTTPRequest, toFile destination: URL) -> TransferTask<Void> {
-    // Same progress note as upload above.
-    let (stream, _) = AsyncStream<TransferProgress>.makeStream()
+    let (stream, cont) = AsyncStream<TransferProgress>.makeStream()
     let task = Task { [self] () -> Void in
+      defer { cont.finish() }
       let urlRequest = try await makeURLRequest(request)
-      let (tempURL, response) = try await urlSession.download(for: urlRequest)
-      _ = try validateNonisolated(Data(), response)  // status check only
+      let progressDelegate = TaskProgressDelegate(continuation: cont)
+      let (tempURL, response) = try await urlSession.download(for: urlRequest, delegate: progressDelegate)
+      let responseHead = head(from: response)
+      guard (200..<300).contains(responseHead.status) else {
+        let body = (try? Data(contentsOf: tempURL)) ?? Data()
+        if let mapped = configuration.errorMapper(body, responseHead) { throw mapped }
+        throw TransportError.http(status: responseHead.status, body: body, head: responseHead)
+      }
       try? FileManager.default.removeItem(at: destination)
       try FileManager.default.moveItem(at: tempURL, to: destination)
     }

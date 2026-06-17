@@ -20,6 +20,15 @@ private struct UploadResult: Codable, Equatable, Sendable { let key: String }
     #expect(result == UploadResult(key: "folder/cat.png"))
   }
 
+  @Test func uploadProgressStreamTerminates() async throws {
+    StubURLProtocol.stub = .init(status: 200, headers: [:], body: #"{"key":"k"}"#.data(using: .utf8)!)
+    let task: TransferTask<UploadResult> = makeTransport().upload(HTTPRequest(method: .post, path: "/object/b/k"), from: .data(Data([1])))
+    var count = 0
+    for await _ in task.progress { count += 1 }   // must terminate (count may be 0 under the stub)
+    _ = try await task.value()
+    #expect(count >= 0)
+  }
+
   @Test func downloadWritesToFile() async throws {
     StubURLProtocol.stub = .init(status: 200, headers: [:], body: Data([0xA, 0xB, 0xC]))
     let dest = FileManager.default.temporaryDirectory.appendingPathComponent("dl-\(UUID().uuidString).bin")
