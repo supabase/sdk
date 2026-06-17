@@ -1,27 +1,32 @@
 import Foundation
 
-/// In-memory `Transport` for tests: `responder` maps a request to a (status, body) pair.
+/// In-memory `Transport` for tests. The `responder` receives the request and the
+/// encoded request body (nil for body-less sends/downloads), so tests can assert both.
 public struct MockTransport: Transport {
-  public typealias Responder = @Sendable (HTTPRequest) async throws -> (Int, Data)
-  let responder: Responder
-  let decoder: JSONDecoder
+  public typealias Responder = @Sendable (HTTPRequest, Data?) async throws -> (Int, Data)
+  public let responder: Responder
+  public let encoder: JSONEncoder
+  public let decoder: JSONDecoder
 
-  public init(decoder: JSONDecoder = JSONDecoder(), _ responder: @escaping Responder) {
+  public init(encoder: JSONEncoder = JSONEncoder(), decoder: JSONDecoder = JSONDecoder(), _ responder: @escaping Responder) {
     self.responder = responder
+    self.encoder = encoder
     self.decoder = decoder
   }
 
   public func send<R: Decodable & Sendable>(_ request: HTTPRequest) async throws -> R {
-    let (_, data) = try await responder(request)
+    let (_, data) = try await responder(request, nil)
     return try decoder.decode(R.self, from: data)
   }
 
   public func send<B: Encodable & Sendable, R: Decodable & Sendable>(_ request: HTTPRequest, body: B) async throws -> R {
-    try await send(request)
+    let bodyData = try encoder.encode(body)
+    let (_, data) = try await responder(request, bodyData)
+    return try decoder.decode(R.self, from: data)
   }
 
   public func send(_ request: HTTPRequest) async throws {
-    _ = try await responder(request)
+    _ = try await responder(request, nil)
   }
 
   public func upload<R: Decodable & Sendable>(_ request: HTTPRequest, from source: UploadSource) -> TransferTask<R> {
@@ -31,7 +36,15 @@ public struct MockTransport: Transport {
     cont.finish()
     return TransferTask(
       progress: stream,
-      value: { let (_, data) = try await responder(request); return try decoder.decode(R.self, from: data) },
+      value: {
+        let bodyData: Data?
+        switch source {
+        case .data(let d): bodyData = d
+        case .file(let url): bodyData = try Data(contentsOf: url)
+        }
+        let (_, data) = try await responder(request, bodyData)
+        return try decoder.decode(R.self, from: data)
+      },
       cancel: {}
     )
   }
@@ -42,13 +55,13 @@ public struct MockTransport: Transport {
     cont.finish()
     return TransferTask(
       progress: stream,
-      value: { let (_, data) = try await responder(request); try data.write(to: destination) },
+      value: { let (_, data) = try await responder(request, nil); try data.write(to: destination) },
       cancel: {}
     )
   }
 
   public func stream(_ request: HTTPRequest) async throws -> ResponseStream {
-    let (status, data) = try await responder(request)
+    let (status, data) = try await responder(request, nil)
     let body = AsyncThrowingStream<ArraySlice<UInt8>, any Error> { cont in
       cont.yield(ArraySlice(data))
       cont.finish()
