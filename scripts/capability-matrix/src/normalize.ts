@@ -36,6 +36,7 @@ export function renameSchemas(spec: OpenApiDoc, renames: Record<string, string>)
   const schemas = spec.components?.schemas ?? {};
   const refMap = new Map<string, string>();
   for (const [oldName, newName] of Object.entries(renames)) {
+    if (oldName === newName) continue;
     if (schemas[oldName] === undefined) continue;
     schemas[newName] = schemas[oldName];
     delete schemas[oldName];

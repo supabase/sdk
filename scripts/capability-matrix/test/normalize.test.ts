@@ -22,6 +22,12 @@ describe("renameWildcardParams", () => {
 });
 
 describe("renameSchemas", () => {
+  it("leaves a schema intact when old and new names are equal", () => {
+    const spec: any = { components: { schemas: { Foo: { type: "object" } } } };
+    renameSchemas(spec, { Foo: "Foo" });
+    expect(spec.components.schemas.Foo).toBeTruthy();
+  });
+
   it("renames component schema keys and rewrites $refs", () => {
     const spec: any = {
       components: { schemas: { "def-1": { type: "object" } } },
