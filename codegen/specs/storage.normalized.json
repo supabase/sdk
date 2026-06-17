@@ -216,7 +216,7 @@
             }
           }
         },
-        "operationId": "postBucket"
+        "operationId": "createBucket"
       },
       "get": {
         "summary": "Gets all buckets",
@@ -391,7 +391,7 @@
             }
           }
         },
-        "operationId": "getBucket"
+        "operationId": "listBuckets"
       },
       "head": {
         "summary": "Gets all buckets",

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { normalizeSpec, type NormalizeOptions } from "./normalize";
+import { normalizeSpec, findUnmatchedOverrides, type NormalizeOptions } from "./normalize";
 
 function repoRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -19,6 +19,10 @@ function main(): void {
   const spec = JSON.parse(readFileSync(input, "utf8"));
   const options = JSON.parse(readFileSync(configPath, "utf8")) as NormalizeOptions;
   normalizeSpec(spec, options);
+  const unmatched = findUnmatchedOverrides(spec, options.operationIdOverrides ?? {});
+  if (unmatched.length > 0) {
+    throw new Error(`operationId override keys match no operation (check method + exact path, incl. trailing slash): ${unmatched.join(", ")}`);
+  }
   writeFileSync(output, JSON.stringify(spec, null, 2) + "\n");
   console.log(`normalized ${input} -> ${output}`);
 }

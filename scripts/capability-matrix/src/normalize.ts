@@ -107,6 +107,18 @@ export function injectOperationIds(spec: OpenApiDoc, overrides: Record<string, s
   return spec;
 }
 
+/** Returns override keys ("METHOD /path") that match no operation in the spec. */
+export function findUnmatchedOverrides(spec: OpenApiDoc, overrides: Record<string, string>): string[] {
+  const paths = spec.paths ?? {};
+  return Object.keys(overrides).filter((key) => {
+    const sp = key.indexOf(" ");
+    if (sp < 0) return true;
+    const method = key.slice(0, sp).toLowerCase();
+    const path = key.slice(sp + 1);
+    return !paths[path]?.[method];
+  });
+}
+
 /** Full normalization: wildcard params, then schema renames, then operationId injection. */
 export function normalizeSpec(spec: OpenApiDoc, options: NormalizeOptions = {}): OpenApiDoc {
   renameWildcardParams(spec, options.wildcardParamName ?? "objectPath");

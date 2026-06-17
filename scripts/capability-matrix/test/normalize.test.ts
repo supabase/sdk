@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec } from "../src/normalize";
+import { renameWildcardParams, renameSchemas, deriveOperationId, injectOperationIds, normalizeSpec, findUnmatchedOverrides } from "../src/normalize";
 
 describe("renameWildcardParams", () => {
   it("renames {*} path keys and their `*` path params", () => {
@@ -65,6 +65,14 @@ describe("injectOperationIds", () => {
     const spec: any = { paths: { "/x": { get: { operationId: "keepMe" } } } };
     injectOperationIds(spec, {});
     expect(spec.paths["/x"].get.operationId).toBe("keepMe");
+  });
+});
+
+describe("findUnmatchedOverrides", () => {
+  it("flags override keys that match no operation", () => {
+    const spec: any = { paths: { "/bucket/": { get: {}, post: {} } } };
+    const unmatched = findUnmatchedOverrides(spec, { "GET /bucket/": "listBuckets", "GET /bucket": "nope", "POST /nope": "x" });
+    expect(unmatched.sort()).toEqual(["GET /bucket", "POST /nope"]);
   });
 });
 
