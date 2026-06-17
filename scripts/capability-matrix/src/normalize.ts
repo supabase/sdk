@@ -11,11 +11,6 @@ export interface NormalizeOptions {
   operationIdOverrides?: Record<string, string>;
 }
 
-function camelCase(input: string): string {
-  const words = input.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-  return words.map((w, i) => (i === 0 ? w : w[0].toUpperCase() + w.slice(1))).join("");
-}
-
 /** Replaces `{*}` path segments (Fastify wildcards) and their `*`-named path params. */
 export function renameWildcardParams(spec: OpenApiDoc, paramName = "objectPath"): OpenApiDoc {
   const paths = spec.paths ?? {};
@@ -64,7 +59,7 @@ export function deriveOperationId(method: string, path: string): string {
     const m = seg.match(/^\{(.+)\}$/);
     if (m) {
       // Preserve the param name casing; prefix with "By" as a separate token so
-      // camelCase capitalises "By" but leaves the param name intact.
+      // the loop capitalises "By" but leaves the param name intact.
       const name = m[1];
       tokens.push("By");
       tokens.push(name);
@@ -72,8 +67,8 @@ export function deriveOperationId(method: string, path: string): string {
       tokens.push(seg);
     }
   }
-  // camelCase the plain tokens (method + plain segments + "By") but keep param
-  // names verbatim so `bucketId` stays `bucketId` rather than `bucketid`.
+  // Capitalise first letter of each token (except the first, which is lowercased),
+  // keeping param names verbatim so `bucketId` stays `bucketId` rather than `bucketid`.
   const result: string[] = [];
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
