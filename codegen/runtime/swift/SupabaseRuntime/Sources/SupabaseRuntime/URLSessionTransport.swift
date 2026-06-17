@@ -87,9 +87,11 @@ public actor URLSessionTransport: Transport {
   // MARK: - Streaming upload/download (Task 6)
 
   public nonisolated func upload<R: Decodable & Sendable>(_ request: HTTPRequest, from source: UploadSource) -> TransferTask<R> {
+    let isBackground: Bool = { if case .background = configuration.sessionKind { return true } else { return false } }()
     let (stream, cont) = AsyncStream<TransferProgress>.makeStream()
     let task = Task { [self] () -> R in
       defer { cont.finish() }
+      if isBackground, case .data = source { throw TransportError.backgroundRequiresFile }
       let urlRequest = try await makeURLRequest(request)
       let progressDelegate = TaskProgressDelegate(continuation: cont)
       let data: Data
@@ -149,5 +151,20 @@ public actor URLSessionTransport: Transport {
       continuation.onTermination = { _ in task.cancel() }
     }
     return ResponseStream(head: responseHead, body: body)
+  }
+
+  // MARK: - Background relaunch hook (Task 8)
+
+  private var backgroundCompletions: [String: @Sendable () -> Void] = [:]
+
+  /// Call from the app's `handleEventsForBackgroundURLSession` / SwiftUI `backgroundTask`.
+  public func handleBackgroundEvents(identifier: String, completionHandler: @escaping @Sendable () -> Void) {
+    backgroundCompletions[identifier] = completionHandler
+  }
+
+  /// Returns and clears the stored completion for `identifier` (call once the session finishes delivering events).
+  public func consumeBackgroundCompletion(identifier: String) -> (@Sendable () -> Void)? {
+    defer { backgroundCompletions[identifier] = nil }
+    return backgroundCompletions[identifier]
   }
 }
