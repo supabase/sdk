@@ -32,6 +32,21 @@ describe("checkCodegenConfig", () => {
     const bad = { ...valid, languages: { swift: { templates: "templates/swift" } } };
     expect(checkCodegenConfig(bad, schema).length).toBeGreaterThan(0);
   });
+
+  it("accepts a language without templates (stock generator)", () => {
+    const cfg = { ...valid, languages: { swift: { generator: "swift6" } } };
+    expect(checkCodegenConfig(cfg, schema)).toEqual([]);
+  });
+
+  it("accepts an optional targets array", () => {
+    const cfg = { ...valid, targets: [{ spec: "storage", language: "swift", output: "codegen/generated/swift-storage" }] };
+    expect(checkCodegenConfig(cfg, schema)).toEqual([]);
+  });
+
+  it("rejects a target missing output", () => {
+    const cfg = { ...valid, targets: [{ spec: "storage", language: "swift" }] };
+    expect(checkCodegenConfig(cfg, schema).length).toBeGreaterThan(0);
+  });
 });
 
 describe("loadCodegenConfig", () => {

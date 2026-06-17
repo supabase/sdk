@@ -22,8 +22,10 @@ export function buildGenerateArgs(config: CodegenConfig, target: GenerateTarget)
     "--input-spec", spec.source,
     "--generator-name", lang.generator,
     "--output", target.outDir,
-    "--template-dir", lang.templates,
   ];
+  if (lang.templates) {
+    args.push("--template-dir", lang.templates);
+  }
 
   const extra = lang.generatorProperties;
   if (extra && Object.keys(extra).length > 0) {

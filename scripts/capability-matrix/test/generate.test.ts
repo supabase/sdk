@@ -37,4 +37,20 @@ describe("buildGenerateArgs", () => {
   it("throws on an unknown language", () => {
     expect(() => buildGenerateArgs(config, { spec: "storage", language: "cobol", outDir: "out" })).toThrow(/unknown language/);
   });
+
+  it("omits --template-dir when the language has no templates", () => {
+    const stock: CodegenConfig = {
+      engine: { tool: "openapi-generator", version: "7.23.0" },
+      specs: { storage: { source: "codegen/specs/storage.normalized.json", version: "v1" } },
+      languages: { swift: { generator: "swift6" } },
+    };
+    const args = buildGenerateArgs(stock, { spec: "storage", language: "swift", outDir: "out" });
+    expect(args.includes("--template-dir")).toBe(false);
+    expect(args).toEqual([
+      "generate",
+      "--input-spec", "codegen/specs/storage.normalized.json",
+      "--generator-name", "swift6",
+      "--output", "out",
+    ]);
+  });
 });

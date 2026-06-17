@@ -34,7 +34,7 @@
       "additionalProperties": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["generator", "templates"],
+        "required": ["generator"],
         "properties": {
           "generator": { "type": "string", "minLength": 1 },
           "templates": { "type": "string", "minLength": 1 },
@@ -42,6 +42,19 @@
             "type": "object",
             "additionalProperties": { "type": "string" }
           }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["spec", "language", "output"],
+        "properties": {
+          "spec": { "type": "string", "minLength": 1 },
+          "language": { "type": "string", "minLength": 1 },
+          "output": { "type": "string", "minLength": 1 }
         }
       }
     }

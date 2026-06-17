@@ -10,14 +10,21 @@ export interface SpecSource {
 
 export interface LanguageConfig {
   generator: string;
-  templates: string;
+  templates?: string;
   generatorProperties?: Record<string, string>;
+}
+
+export interface GenerateTargetConfig {
+  spec: string;
+  language: string;
+  output: string;
 }
 
 export interface CodegenConfig {
   engine: { tool: string; version: string };
   specs: Record<string, SpecSource>;
   languages: Record<string, LanguageConfig>;
+  targets?: GenerateTargetConfig[];
 }
 
 export function loadCodegenConfig(file: string): { config?: CodegenConfig; findings: Finding[] } {
