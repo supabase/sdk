@@ -180,11 +180,9 @@ describe("parseSwiftProject — sdk-parse-ignore", () => {
 
   it("excludes entire directories matched by sdk-parse-ignore", () => {
     const dir = join(tmpdir(), `swift-parser-dir-ignore-test-${process.pid}`);
-    const srcDir = join(dir, "Sources", "MyLib");
     const testDir = join(dir, "Tests");
-    mkdirSync(srcDir, { recursive: true });
     mkdirSync(testDir, { recursive: true });
-    writeFileSync(join(srcDir, "Client.swift"), "public class SupabaseClient {}\n");
+    writeFileSync(join(dir, "Client.swift"), "public class SupabaseClient {}\n");
     writeFileSync(join(testDir, "ClientTests.swift"), "public class SupabaseClientTests {}\n");
     writeFileSync(join(dir, "sdk-parse-ignore"), "Tests/\n");
     const result = parseSwiftProject(dir);
