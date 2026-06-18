@@ -1,11 +1,12 @@
 import ts from "typescript";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, relative } from "node:path";
+import { loadIgnore, type Ignore } from "./parse-ignore.js";
 
 export interface ParsedSymbol {
-  name: string;  // e.g. "GoTrueClient.signUp" or "createClient"
+  name: string;
   kind: "class" | "method" | "property" | "function" | "variable";
-  file: string;  // path relative to project root
+  file: string;
 }
 
 export interface ParseResult {
@@ -16,22 +17,18 @@ export interface ParseResult {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const SKIP_DIRS = new Set(["node_modules", "dist", "build", "out", ".git"]);
-const SKIP_SUFFIXES = [".d.ts", ".test.ts", ".spec.ts", ".config.ts"];
-
-function findSourceFiles(dir: string): string[] {
+function findSourceFiles(dir: string, root: string, ig: Ignore): string[] {
   const results: string[] = [];
   try {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith(".") || SKIP_DIRS.has(entry.name)) continue;
+      if (entry.name.startsWith(".")) continue;
       const full = join(dir, entry.name);
+      const rel = relative(root, full);
       if (entry.isDirectory()) {
-        results.push(...findSourceFiles(full));
-      } else if (
-        entry.isFile() &&
-        entry.name.endsWith(".ts") &&
-        !SKIP_SUFFIXES.some((s) => entry.name.endsWith(s))
-      ) {
+        if (ig.ignores(rel + "/")) continue;
+        results.push(...findSourceFiles(full, root, ig));
+      } else if (entry.isFile() && entry.name.endsWith(".ts")) {
+        if (ig.ignores(rel)) continue;
         results.push(full);
       }
     }
@@ -123,10 +120,11 @@ export function extractFromSource(
 
 export function parseTypeScriptProject(projectRoot: string): ParseResult {
   const root = resolve(projectRoot);
+  const ig = loadIgnore(root);
   const srcDir = join(root, "src");
   const scanRoot = existsSync(srcDir) ? srcDir : root;
 
-  const files = findSourceFiles(scanRoot);
+  const files = findSourceFiles(scanRoot, root, ig);
   const symbols: ParsedSymbol[] = [];
 
   for (const file of files) {
