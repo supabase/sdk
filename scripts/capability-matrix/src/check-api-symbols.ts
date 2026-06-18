@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
-import { checkNewSymbols, formatErrorMessage } from "./api-check.js";
+import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "./api-check.js";
 import type { RawCompliance } from "./compliance.js";
 import type { ParseResult } from "./ts-parser.js";
 
@@ -44,18 +44,24 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { uncoveredSymbols } = checkNewSymbols(
+  const { uncoveredSymbols, removedRegisteredSymbols } = checkNewSymbols(
     baseResult.symbols,
     prResult.symbols,
     compliance,
   );
 
-  if (uncoveredSymbols.length === 0) {
+  if (uncoveredSymbols.length === 0 && removedRegisteredSymbols.length === 0) {
     console.log("✅ All new public API symbols are covered in the capability matrix.");
     return;
   }
 
-  console.error(formatErrorMessage(uncoveredSymbols, compliance.sdk));
+  if (uncoveredSymbols.length > 0) {
+    console.error(formatErrorMessage(uncoveredSymbols, compliance.sdk));
+  }
+  if (removedRegisteredSymbols.length > 0) {
+    if (uncoveredSymbols.length > 0) console.error("");
+    console.error(formatRemovedMessage(removedRegisteredSymbols, compliance.sdk));
+  }
   process.exit(1);
 }
 
