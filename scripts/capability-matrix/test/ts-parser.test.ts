@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
-import { writeFileSync, mkdirSync, cpSync } from "node:fs";
+import { writeFileSync, cpSync } from "node:fs";
 import { extractFromSource, parseTypeScriptProject } from "../src/ts-parser";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
