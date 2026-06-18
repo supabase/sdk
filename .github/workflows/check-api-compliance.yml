@@ -47,15 +47,24 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
+      - name: Resolve parse command
+        id: resolve
+        run: |
+          case "${{ inputs.language }}" in
+            swift)      echo "cmd=parse-swift" >> "$GITHUB_OUTPUT" ;;
+            javascript) echo "cmd=parse-ts"    >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript"; exit 1 ;;
+          esac
+
       - name: Parse PR branch
         run: |
-          npm run --silent parse-${{ inputs.language }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
+          npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse base branch
         run: |
-          npm run --silent parse-${{ inputs.language }} -- "$GITHUB_WORKSPACE/_sdk-base" \
+          npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
