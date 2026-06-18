@@ -7,6 +7,10 @@ on:
         description: Path to sdk-compliance.yaml in the calling repo
         type: string
         default: sdk-compliance.yaml
+      language:
+        description: SDK language — must match a parse-<language> script (e.g. swift, javascript)
+        type: string
+        required: true
       sdk-ref:
         description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
         type: string
@@ -43,38 +47,15 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Detect SDK language
-        id: detect
+      - name: Parse PR branch
         run: |
-          SDK=$(grep '^sdk:' "$GITHUB_WORKSPACE/_sdk-pr/${{ inputs.compliance-file }}" \
-                | head -1 | awk '{print $2}' | tr -d '[:space:]')
-          echo "sdk=$SDK" >> "$GITHUB_OUTPUT"
-
-      - name: Parse PR branch (TypeScript)
-        if: steps.detect.outputs.sdk == 'javascript'
-        run: |
-          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" \
+          npm run --silent parse-${{ inputs.language }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Parse base branch (TypeScript)
-        if: steps.detect.outputs.sdk == 'javascript'
+      - name: Parse base branch
         run: |
-          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" \
-            > "$GITHUB_WORKSPACE/base-symbols.json"
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Parse PR branch (Swift)
-        if: steps.detect.outputs.sdk == 'swift'
-        run: |
-          npm run --silent parse-swift -- "$GITHUB_WORKSPACE/_sdk-pr" \
-            > "$GITHUB_WORKSPACE/pr-symbols.json"
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Parse base branch (Swift)
-        if: steps.detect.outputs.sdk == 'swift'
-        run: |
-          npm run --silent parse-swift -- "$GITHUB_WORKSPACE/_sdk-base" \
+          npm run --silent parse-${{ inputs.language }} -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
