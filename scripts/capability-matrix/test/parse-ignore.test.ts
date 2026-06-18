@@ -33,12 +33,11 @@ describe("loadIgnore", () => {
     expect(ig.ignores("Tests/Foo.swift")).toBe(true);
   });
 
-  it("supports negation to un-ignore a specific file", () => {
+  it("supports negation to un-ignore a subdirectory", () => {
     const dir = makeTempDir("negation");
-    writeFileSync(join(dir, "sdk-parse-ignore"), "**/*.test.ts\n!src/important.test.ts\n");
+    writeFileSync(join(dir, "sdk-parse-ignore"), "Tests/*\n!Tests/Helpers/\n");
     const ig = loadIgnore(dir);
-    expect(ig.ignores("src/auth.test.ts")).toBe(true);
-    expect(ig.ignores("src/important.test.ts")).toBe(false);
-    expect(ig.ignores("src/auth.ts")).toBe(false);
+    expect(ig.ignores("Tests/AuthTests.swift")).toBe(true);
+    expect(ig.ignores("Tests/Helpers/Mock.swift")).toBe(false);
   });
 });
