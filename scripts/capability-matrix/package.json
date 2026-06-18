@@ -21,6 +21,7 @@
     "@octokit/rest": "^21.0.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "ignore": "^6.0.0",
     "yaml": "^2.6.1"
   },
   "devDependencies": {
