@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateCompliance, normalizeCompliance, collectFeatureIds } from "../src/compliance";
+import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex } from "../src/compliance";
 import type { LoadedArea } from "../src/types";
 
 function areas(ids: string[]): LoadedArea[] {
@@ -95,6 +95,77 @@ describe("normalizeCompliance", () => {
     };
     const map = normalizeCompliance(raw);
     expect(map["auth.mfa_enroll"]).toEqual({ status: "partially_implemented", note: "TOTP only" });
+  });
+});
+
+describe("symbols field", () => {
+  it("accepts an entry with a symbols array", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+      },
+    };
+    expect(validateCompliance(raw, knownIds)).toEqual([]);
+  });
+
+  it("errors when symbols is not an array", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "auth.sign_up": { status: "implemented", symbols: "GoTrueClient.signUp" } as any,
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(findings.some((f) => f.message.includes("symbols must be an array"))).toBe(true);
+  });
+
+  it("errors when symbols contains non-strings", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "auth.sign_up": { status: "implemented", symbols: [42] } as any,
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(findings.some((f) => f.message.includes("symbols must be an array of strings"))).toBe(true);
+  });
+
+  it("normalizeCompliance preserves symbols", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+      },
+    };
+    const map = normalizeCompliance(raw);
+    expect(map["auth.sign_up"].symbols).toEqual(["GoTrueClient.signUp"]);
+  });
+});
+
+describe("buildSymbolIndex", () => {
+  it("builds a symbol → feature-id map", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.sign_in_with_password": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signInWithPassword"],
+        },
+      },
+    };
+    const index = buildSymbolIndex(raw);
+    expect(index.get("GoTrueClient.signUp")).toBe("auth.sign_up");
+    expect(index.get("GoTrueClient.signInWithPassword")).toBe("auth.sign_in_with_password");
+  });
+
+  it("returns empty map when no symbols are declared", () => {
+    const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
+    const index = buildSymbolIndex(raw);
+    expect(index.size).toBe(0);
   });
 });
 

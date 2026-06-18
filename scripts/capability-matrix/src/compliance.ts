@@ -6,7 +6,7 @@ export interface ComplianceFinding {
   message: string;
 }
 
-type RawValue = string | { status?: string; note?: string };
+type RawValue = string | { status?: string; note?: string; symbols?: string[] };
 
 export interface RawCompliance {
   sdk: string;
@@ -52,6 +52,14 @@ export function validateCompliance(
     if (status === "partially_implemented" && !note) {
       findings.push({ level: "error", message: `"${id}": partially_implemented requires a note` });
     }
+
+    if (typeof value === "object" && value !== null && "symbols" in value && value.symbols !== undefined) {
+      if (!Array.isArray(value.symbols)) {
+        findings.push({ level: "error", message: `"${id}": symbols must be an array of strings` });
+      } else if (value.symbols.some((s) => typeof s !== "string")) {
+        findings.push({ level: "error", message: `"${id}": symbols must be an array of strings` });
+      }
+    }
   }
 
   return findings;
@@ -66,6 +74,7 @@ export function normalizeCompliance(raw: RawCompliance): ComplianceMap {
       map[id] = {
         status: (value.status ?? "not_implemented") as Status,
         ...(value.note !== undefined ? { note: value.note } : {}),
+        ...(value.symbols !== undefined ? { symbols: value.symbols } : {}),
       };
     }
   }
@@ -80,4 +89,18 @@ export function collectFeatureIds(areas: LoadedArea[]): Set<string> {
     }
   }
   return ids;
+}
+
+// Returns a map from SDK symbol name → capability matrix feature ID.
+// Built from the symbols arrays declared in sdk-compliance.yaml.
+export function buildSymbolIndex(raw: RawCompliance): Map<string, string> {
+  const index = new Map<string, string>();
+  for (const [featureId, value] of Object.entries(raw.features ?? {})) {
+    if (typeof value === "object" && value !== null && Array.isArray(value.symbols)) {
+      for (const sym of value.symbols) {
+        if (typeof sym === "string") index.set(sym, featureId);
+      }
+    }
+  }
+  return index;
 }

@@ -51,6 +51,7 @@ export interface Finding {
 export interface ComplianceEntry {
   status: Status;
   note?: string;
+  symbols?: string[];
 }
 
 // Feature ID → ComplianceEntry (sparse; unlisted features default to not_implemented)

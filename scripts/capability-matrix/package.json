@@ -8,6 +8,9 @@
     "validate": "tsx src/cli.ts validate",
     "validate:online": "tsx src/cli.ts validate --online",
     "validate-compliance": "tsx src/compliance-cli.ts",
+    "parse-ts": "tsx src/parse-ts.ts",
+    "parse-swift": "tsx src/parse-swift.ts",
+    "check-api-symbols": "tsx src/check-api-symbols.ts",
     "aggregate": "tsx src/aggregate.ts",
     "report": "tsx src/cli.ts report",
     "test": "vitest run",
@@ -18,6 +21,7 @@
     "@octokit/rest": "^21.0.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "ignore": "^6.0.0",
     "yaml": "^2.6.1"
   },
   "devDependencies": {
