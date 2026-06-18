@@ -53,28 +53,28 @@ jobs:
       - name: Parse PR branch (TypeScript)
         if: steps.detect.outputs.sdk == 'javascript'
         run: |
-          npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" \
+          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse base branch (TypeScript)
         if: steps.detect.outputs.sdk == 'javascript'
         run: |
-          npm run parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" \
+          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse PR branch (Swift)
         if: steps.detect.outputs.sdk == 'swift'
         run: |
-          npm run parse-swift -- "$GITHUB_WORKSPACE/_sdk-pr" \
+          npm run --silent parse-swift -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse base branch (Swift)
         if: steps.detect.outputs.sdk == 'swift'
         run: |
-          npm run parse-swift -- "$GITHUB_WORKSPACE/_sdk-base" \
+          npm run --silent parse-swift -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
