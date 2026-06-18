@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, resolve, relative } from "node:path";
 import type { ParsedSymbol, ParseResult } from "./ts-parser.js";
+import { loadIgnore, type Ignore } from "./parse-ignore.js";
 
 export type { ParsedSymbol, ParseResult };
 
@@ -8,27 +9,18 @@ export type { ParsedSymbol, ParseResult };
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const SKIP_DIRS = new Set([
-  ".build", "DerivedData", ".git", "Examples", "example", "docs",
-]);
-// Directories whose content is test code — skip entirely
-const TEST_DIRS = new Set(["Tests", "TestHelpers", "XCTestCase"]);
-
-function findSwiftFiles(dir: string): string[] {
+function findSwiftFiles(dir: string, root: string, ig: Ignore): string[] {
   const results: string[] = [];
   try {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name.startsWith(".") || SKIP_DIRS.has(entry.name)) continue;
-      if (TEST_DIRS.has(entry.name)) continue;
+      if (entry.name.startsWith(".")) continue;
       const full = join(dir, entry.name);
+      const rel = relative(root, full);
       if (entry.isDirectory()) {
-        results.push(...findSwiftFiles(full));
-      } else if (
-        entry.isFile() &&
-        entry.name.endsWith(".swift") &&
-        !entry.name.endsWith("Tests.swift") &&
-        !entry.name.includes("Test.")
-      ) {
+        if (ig.ignores(rel + "/")) continue;
+        results.push(...findSwiftFiles(full, root, ig));
+      } else if (entry.isFile() && entry.name.endsWith(".swift")) {
+        if (ig.ignores(rel)) continue;
         results.push(full);
       }
     }
@@ -149,11 +141,12 @@ export function extractFromSource(source: string, relPath: string): ParsedSymbol
 
 export function parseSwiftProject(projectRoot: string): ParseResult {
   const root = resolve(projectRoot);
+  const ig = loadIgnore(root);
   // SPM convention: Sources/ holds all public library targets
   const srcDir = join(root, "Sources");
   const scanRoot = existsSync(srcDir) ? srcDir : root;
 
-  const files = findSwiftFiles(scanRoot);
+  const files = findSwiftFiles(scanRoot, root, ig);
   const symbols: ParsedSymbol[] = [];
 
   for (const file of files) {
