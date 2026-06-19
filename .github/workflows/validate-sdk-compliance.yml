@@ -88,14 +88,19 @@ jobs:
             -not -path "*/.*" -not -path "*/build/*" \
             | while read -r pubspec; do
                 pkg=$(dirname "$pubspec")
+                [ -d "$pkg/lib" ] || continue
+                dart_files=$(find "$pkg/lib" -name "*.dart" \
+                  -not -name "*.g.dart" -not -name "*.freezed.dart" -not -name "*.gr.dart")
+                [ -n "$dart_files" ] || continue
                 dart pub get --directory "$pkg"
-                dartdoc_json $(find "$pkg/lib" -name "*.dart" -not -name "*.g.dart" \
-                  -not -name "*.freezed.dart" -not -name "*.gr.dart") \
-                  --root "$pkg" --output "$pkg/api.json"
+                dartdoc_json $dart_files --root "$pkg" --output "$pkg/api.json"
               done
-          jq -s '[.[][]]' \
-            $(find "$GITHUB_WORKSPACE/_sdk-pr" -name api.json | sort) \
-            > "$GITHUB_WORKSPACE/pr-raw.json"
+          api_files=$(find "$GITHUB_WORKSPACE/_sdk-pr" -name api.json | sort)
+          if [ -n "$api_files" ]; then
+            jq -s '[.[][]]' $api_files > "$GITHUB_WORKSPACE/pr-raw.json"
+          else
+            echo "[]" > "$GITHUB_WORKSPACE/pr-raw.json"
+          fi
         env:
           PUB_CACHE: /tmp/pub-cache
 
@@ -106,14 +111,19 @@ jobs:
             -not -path "*/.*" -not -path "*/build/*" \
             | while read -r pubspec; do
                 pkg=$(dirname "$pubspec")
+                [ -d "$pkg/lib" ] || continue
+                dart_files=$(find "$pkg/lib" -name "*.dart" \
+                  -not -name "*.g.dart" -not -name "*.freezed.dart" -not -name "*.gr.dart")
+                [ -n "$dart_files" ] || continue
                 dart pub get --directory "$pkg"
-                dartdoc_json $(find "$pkg/lib" -name "*.dart" -not -name "*.g.dart" \
-                  -not -name "*.freezed.dart" -not -name "*.gr.dart") \
-                  --root "$pkg" --output "$pkg/api.json"
+                dartdoc_json $dart_files --root "$pkg" --output "$pkg/api.json"
               done
-          jq -s '[.[][]]' \
-            $(find "$GITHUB_WORKSPACE/_sdk-base" -name api.json | sort) \
-            > "$GITHUB_WORKSPACE/base-raw.json"
+          api_files=$(find "$GITHUB_WORKSPACE/_sdk-base" -name api.json | sort)
+          if [ -n "$api_files" ]; then
+            jq -s '[.[][]]' $api_files > "$GITHUB_WORKSPACE/base-raw.json"
+          else
+            echo "[]" > "$GITHUB_WORKSPACE/base-raw.json"
+          fi
         env:
           PUB_CACHE: /tmp/pub-cache
 
