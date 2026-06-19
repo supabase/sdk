@@ -55,7 +55,13 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `load.ts` — Loads capability YAML files
 - `schema.ts` — AJV-based schema validation
 - `structural.ts` — Cross-file checks: spec orphan detection, duplicate feature IDs, ID format enforcement
-- `compliance.ts` — Parses and validates SDK `sdk-compliance.yaml` files
+- `compliance.ts` — Parses and validates SDK `sdk-compliance.yaml` files; `buildSymbolIndex` maps registered symbols to feature IDs
+- `api-check.ts` — `checkNewSymbols`: diff PR vs base symbols, find uncovered new symbols or removed registered symbols
+- `check-api-symbols.ts` — CLI entry point for `npm run check-api-symbols`
+- `normalize-dartdoc.ts` — Normalizes `dartdoc_json` 0.5.0 output (`DartdocUnit[]`) to `ParseResult`
+- `normalize-dartdoc-cli.ts` — CLI entry point for `npm run normalize-dartdoc`
+- `ts-parser.ts` / `parse-ts.ts` — TypeScript/JavaScript public API surface parser
+- `swift-parser.ts` / `parse-swift.ts` — Swift public API surface parser
 - `aggregate.ts` — Fetches compliance files from all SDK repos via Octokit
 - `generate-site.ts` — Builds the static HTML matrix site
 - `report.ts` — Calculates parity percentages per feature/area/language

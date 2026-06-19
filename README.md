@@ -56,6 +56,19 @@ features:
 
 The file is **sparse** — only list features that differ from `not_implemented`. Unknown feature IDs and invalid status values fail CI.
 
+Features that have corresponding public API symbols can list them for surface tracking:
+
+```yaml
+sdk: javascript
+
+features:
+  auth.sign_in.email:
+    status: implemented
+    symbols:
+      - GoTrueClient.signInWithPassword
+      - GoTrueClient.signUp
+```
+
 ### Opt-in to validation
 
 Add `.github/workflows/validate-capabilities.yml` to your SDK repo:
@@ -65,9 +78,11 @@ on: [pull_request]
 jobs:
   validate:
     uses: supabase/sdk/.github/workflows/validate-sdk-compliance.yml@main
+    with:
+      language: dart   # one of: dart, swift, javascript
 ```
 
-This checks out the canonical feature list from this repo and validates your compliance file against it on every PR.
+The `language` input is required. The workflow validates your `sdk-compliance.yaml` against the canonical feature list and, for supported languages, checks that every new public API symbol added in the PR is declared in the compliance file.
 
 ## Local development
 
@@ -90,5 +105,5 @@ npm run build-site compliance.json # render the site with compliance data
 | Workflow | Trigger | What it does |
 |---|---|---|
 | `validate-capabilities.yml` | push to `main`, PRs touching matrix files | Schema + structural checks including spec file validation. |
-| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list. |
+| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; for supported languages (`dart`, `swift`, `javascript`) also checks that new public API symbols are declared. |
 | `aggregate-capabilities.yml` | hourly cron + `workflow_dispatch` | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages. |
