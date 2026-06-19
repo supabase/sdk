@@ -33,6 +33,9 @@
 *.p12 @supabase/sdk @supabase/security
 *.pfx @supabase/sdk @supabase/security
 
+# SSH private keys have no extension - id_* covers all ssh-keygen defaults (id_rsa, id_ed25519, the _sk variants and future types).
+id_* @supabase/sdk @supabase/security
+
 # Local databases or accidental data dumps
 *.sqlite @supabase/sdk @supabase/security
 *.sqlite3 @supabase/sdk @supabase/security
