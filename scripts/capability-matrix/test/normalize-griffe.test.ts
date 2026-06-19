@@ -100,6 +100,17 @@ describe("normalizeGriffe — methods and functions", () => {
     const { symbols } = normalizeGriffe(input, "/repo");
     expect(symbols).toContainEqual({ name: "MyClient.from_url", kind: "method", file: "src/client.py" });
   });
+
+  it("skips dunder method (__init__)", () => {
+    const input = pkg("/repo/src/client.py", {
+      MyClient: {
+        kind: "class",
+        members: { __init__: { kind: "function", labels: null } },
+      },
+    });
+    const { symbols } = normalizeGriffe(input, "/repo");
+    expect(symbols.find((s) => s.name.includes("__init__"))).toBeUndefined();
+  });
 });
 
 describe("normalizeGriffe — properties", () => {

@@ -94,13 +94,18 @@ jobs:
       - name: Run griffe on PR branch
         if: inputs.language == 'python'
         run: |
+          if [ -z "${{ inputs.griffe-packages }}" ]; then
+            echo "::error::griffe-packages input is required when language is python"
+            exit 1
+          fi
           SEARCH_FLAGS=""
           if [ -n "${{ inputs.griffe-search-paths }}" ]; then
             SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
               | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-pr/$p"; done \
               | tr '\n' ' ')
           fi
-          python -m griffe dump ${{ inputs.griffe-packages }} $SEARCH_FLAGS \
+          PKGS=$(echo "${{ inputs.griffe-packages }}" | tr ',' ' ' | tr -s ' ')
+          python -m griffe dump $PKGS $SEARCH_FLAGS \
             -o "$GITHUB_WORKSPACE/api-raw-pr.json"
 
       - name: Normalize griffe output (PR branch)
@@ -114,13 +119,18 @@ jobs:
       - name: Run griffe on base branch
         if: inputs.language == 'python'
         run: |
+          if [ -z "${{ inputs.griffe-packages }}" ]; then
+            echo "::error::griffe-packages input is required when language is python"
+            exit 1
+          fi
           SEARCH_FLAGS=""
           if [ -n "${{ inputs.griffe-search-paths }}" ]; then
             SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
               | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-base/$p"; done \
               | tr '\n' ' ')
           fi
-          python -m griffe dump ${{ inputs.griffe-packages }} $SEARCH_FLAGS \
+          PKGS=$(echo "${{ inputs.griffe-packages }}" | tr ',' ' ' | tr -s ' ')
+          python -m griffe dump $PKGS $SEARCH_FLAGS \
             -o "$GITHUB_WORKSPACE/api-raw-base.json"
 
       - name: Normalize griffe output (base branch)
