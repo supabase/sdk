@@ -36,6 +36,36 @@ export function normalizeSymbolGraph(
   symbols: SymbolGraphSymbol[],
   sdkRoot: string,
 ): ParseResult {
-  // TODO: implement in Task 2
-  return { symbols: [] };
+  const result: ParsedSymbol[] = [];
+
+  for (const sym of symbols) {
+    if (sym.accessLevel !== "public" && sym.accessLevel !== "open") continue;
+
+    const kind = KIND_MAP[sym.kind.identifier];
+    if (kind === undefined) continue;
+
+    result.push({
+      name: qualifiedName(sym.pathComponents),
+      kind,
+      file: resolveFile(sym.location?.uri, sdkRoot),
+    });
+  }
+
+  return { symbols: result };
+}
+
+function qualifiedName(pathComponents: string[]): string {
+  if (pathComponents.length === 0) return "";
+  const parts = pathComponents.map((part, i) => {
+    if (i < pathComponents.length - 1) return part;
+    const parenIdx = part.indexOf("(");
+    return parenIdx >= 0 ? part.slice(0, parenIdx) : part;
+  });
+  return parts.join(".");
+}
+
+function resolveFile(uri: string | undefined, sdkRoot: string): string {
+  if (!uri) return "";
+  const path = uri.startsWith("file://") ? uri.slice(7) : uri;
+  return sdkRoot ? relative(sdkRoot, path) : path;
 }
