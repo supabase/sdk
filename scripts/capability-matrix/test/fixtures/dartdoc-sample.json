@@ -1,0 +1,149 @@
+[
+  {
+    "declarations": [
+      {
+        "kind": "class",
+        "name": "SupabaseClient",
+        "members": [
+          {
+            "kind": "constructor",
+            "name": "SupabaseClient",
+            "parameters": {
+              "all": [
+                { "name": "supabaseUrl", "type": "String" },
+                { "name": "supabaseKey", "type": "String" }
+              ]
+            }
+          },
+          {
+            "kind": "getter",
+            "name": "auth",
+            "returns": "GoTrueClient"
+          },
+          {
+            "kind": "getter",
+            "name": "storage",
+            "returns": "StorageClient"
+          },
+          {
+            "kind": "setter",
+            "name": "accessToken",
+            "parameters": {
+              "all": [{ "name": "value", "type": "String" }]
+            }
+          },
+          {
+            "kind": "method",
+            "name": "initialize",
+            "returns": "Future<void>"
+          },
+          {
+            "kind": "method",
+            "name": "from",
+            "parameters": {
+              "all": [{ "name": "table", "type": "String" }]
+            },
+            "returns": "PostgrestQueryBuilder"
+          },
+          {
+            "kind": "method",
+            "name": "create",
+            "parameters": {
+              "all": [
+                { "name": "url", "type": "String" },
+                { "name": "key", "type": "String" }
+              ]
+            },
+            "returns": "SupabaseClient",
+            "static": true
+          },
+          {
+            "kind": "constructor",
+            "name": "SupabaseClient.withConfig",
+            "parameters": {
+              "all": [
+                { "name": "url", "type": "String" },
+                { "name": "key", "type": "String" },
+                { "name": "debug", "type": "bool", "default": "false" }
+              ],
+              "named": 1
+            }
+          },
+          {
+            "kind": "method",
+            "name": "dispose",
+            "returns": "void"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "StorageClient",
+        "members": [
+          {
+            "kind": "method",
+            "name": "upload",
+            "parameters": {
+              "all": [
+                { "name": "path", "type": "String" },
+                { "name": "data", "type": "dynamic" }
+              ]
+            },
+            "returns": "Future<void>"
+          }
+        ]
+      },
+      {
+        "kind": "mixin",
+        "name": "LoggingMixin",
+        "members": [
+          {
+            "kind": "method",
+            "name": "log",
+            "parameters": {
+              "all": [{ "name": "message", "type": "String" }]
+            },
+            "returns": "void"
+          }
+        ]
+      },
+      {
+        "kind": "enum",
+        "name": "AuthChangeEvent",
+        "values": [
+          { "name": "signedIn" },
+          { "name": "signedOut" },
+          { "name": "tokenRefreshed" }
+        ]
+      },
+      {
+        "kind": "extension",
+        "name": "SupabaseClientExtension",
+        "on": "on SupabaseClient",
+        "members": [
+          {
+            "kind": "method",
+            "name": "debug",
+            "returns": "void"
+          }
+        ]
+      },
+      {
+        "kind": "typedef",
+        "name": "AuthCallback"
+      },
+      {
+        "kind": "function",
+        "name": "resolveUrl",
+        "parameters": {
+          "all": [
+            { "name": "base", "type": "String" },
+            { "name": "path", "type": "String" }
+          ]
+        },
+        "returns": "String"
+      }
+    ],
+    "source": "lib/client.dart"
+  }
+]
