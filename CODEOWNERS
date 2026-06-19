@@ -31,7 +31,6 @@
 # Certificates and private keys
 *.pem @supabase/sdk @supabase/security
 *.key @supabase/sdk @supabase/security
-*.pkcs12 @supabase/sdk @supabase/security
 *.p12 @supabase/sdk @supabase/security
 *.pfx @supabase/sdk @supabase/security
 
