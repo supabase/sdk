@@ -264,7 +264,7 @@ describe("normalizeGriffe — sdk-parse-ignore", () => {
     const input: GriffeOutput = {
       mypkg: {
         kind: "module",
-        filepath: join(root, "src/tests/test_client.py"),
+        filepath: join(root, "tests/test_client.py"),
         members: {
           TestHelper: { kind: "class", members: {} },
         },
