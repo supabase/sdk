@@ -167,31 +167,31 @@ public class Storage {
   });
 });
 
-describe("parseSwiftProject — sdk-parse-ignore", () => {
-  it("excludes files matched by sdk-parse-ignore", () => {
+describe("parseSwiftProject — .sdk-parse-ignore", () => {
+  it("excludes files matched by .sdk-parse-ignore", () => {
     const dir = join(tmpdir(), `swift-parser-ignore-test-${process.pid}`);
     const srcDir = join(dir, "Sources", "MyLib");
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "Auth.swift"), "public class AuthClient {\n  public func signUp() {}\n}\n");
-    writeFileSync(join(dir, "sdk-parse-ignore"), "Sources/MyLib/Auth.swift\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "Sources/MyLib/Auth.swift\n");
     const result = parseSwiftProject(dir);
     expect(result.symbols.map((s) => s.name)).not.toContain("AuthClient");
   });
 
-  it("excludes entire directories matched by sdk-parse-ignore", () => {
+  it("excludes entire directories matched by .sdk-parse-ignore", () => {
     const dir = join(tmpdir(), `swift-parser-dir-ignore-test-${process.pid}`);
     const testDir = join(dir, "Tests");
     mkdirSync(testDir, { recursive: true });
     writeFileSync(join(dir, "Client.swift"), "public class SupabaseClient {}\n");
     writeFileSync(join(testDir, "ClientTests.swift"), "public class SupabaseClientTests {}\n");
-    writeFileSync(join(dir, "sdk-parse-ignore"), "Tests/\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "Tests/\n");
     const result = parseSwiftProject(dir);
     const names = result.symbols.map((s) => s.name);
     expect(names).toContain("SupabaseClient");
     expect(names).not.toContain("SupabaseClientTests");
   });
 
-  it("does not filter when sdk-parse-ignore is absent", () => {
+  it("does not filter when .sdk-parse-ignore is absent", () => {
     const dir = join(tmpdir(), `swift-parser-no-ignore-test-${process.pid}`);
     const srcDir = join(dir, "Sources", "MyLib");
     mkdirSync(srcDir, { recursive: true });
