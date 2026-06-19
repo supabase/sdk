@@ -49,6 +49,6 @@ id_* @supabase/sdk @supabase/security
 *.sqlite3 @supabase/sdk @supabase/security
 *.db @supabase/sdk @supabase/security
 
-# Common accidental config/secret dumps
-*secret*.json @supabase/sdk @supabase/security
-*credential*.json @supabase/sdk @supabase/security
+# Common accidental config/secret dumps (typically JSON or YAML but catch anything likely).
+*secret*.* @supabase/sdk @supabase/security
+*credential*.* @supabase/sdk @supabase/security
