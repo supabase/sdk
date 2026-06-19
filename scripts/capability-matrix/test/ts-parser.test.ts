@@ -114,21 +114,21 @@ describe("parseTypeScriptProject (fixture)", () => {
   });
 });
 
-describe("parseTypeScriptProject — sdk-parse-ignore", () => {
-  it("excludes files matched by sdk-parse-ignore", () => {
+describe("parseTypeScriptProject — .sdk-parse-ignore", () => {
+  it("excludes files matched by .sdk-parse-ignore", () => {
     // Copy fixture to a temp dir so we can add an ignore file without
     // polluting the committed fixture.
     const dir = join(tmpdir(), `ts-parser-ignore-test-${process.pid}`);
     cpSync(FIXTURE, dir, { recursive: true });
     // The fixture has src/index.ts which exports AuthClient.
     // Ignore the entire src/ directory.
-    writeFileSync(join(dir, "sdk-parse-ignore"), "src/\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "src/\n");
     const result = parseTypeScriptProject(dir);
     expect(result.symbols).toHaveLength(0);
   });
 
-  it("does not exclude files when sdk-parse-ignore is absent", () => {
-    // FIXTURE has no sdk-parse-ignore — should parse normally.
+  it("does not exclude files when .sdk-parse-ignore is absent", () => {
+    // FIXTURE has no .sdk-parse-ignore — should parse normally.
     const result = parseTypeScriptProject(FIXTURE);
     expect(result.symbols.map((s) => s.name)).toContain("AuthClient");
   });
