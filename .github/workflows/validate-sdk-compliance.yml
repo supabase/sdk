@@ -45,7 +45,7 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.language == 'swift' && 'macos-latest' || 'ubuntu-latest' }}
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -69,6 +69,17 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Cache SPM dependencies
+        if: inputs.language == 'swift'
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/org.swift.swiftpm
+            _sdk-pr/.build/repositories
+            _sdk-base/.build/repositories
+          key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
       - name: Install dependencies
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
@@ -85,21 +96,83 @@ jobs:
         run: dart pub get
         working-directory: _sdk-spec/scripts/dart_symbol_extractor
 
+      - name: Build PR branch (Swift)
+        if: inputs.language == 'swift'
+        run: swift build
+        working-directory: _sdk-pr
+
+      - name: Build base branch (Swift)
+        if: inputs.language == 'swift'
+        run: swift build
+        working-directory: _sdk-base
+
+      - name: Extract symbol graphs — PR
+        if: inputs.language == 'swift'
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/_sg-pr"
+          TRIPLE=$(swift -print-target-info | jq -r '.target.triple')
+          SDK=$(xcrun --sdk macosx --show-sdk-path)
+          for MODULE in $(swift package dump-package | jq -r '[.products[] | select(.type.library != null) | .targets[]] | unique[]'); do
+            swift-symbolgraph-extract -module-name "$MODULE" \
+              -target "$TRIPLE" -sdk "$SDK" \
+              -I .build/debug \
+              -output-dir "$GITHUB_WORKSPACE/_sg-pr"
+          done
+          jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-pr"/*.symbols.json \
+            > "$GITHUB_WORKSPACE/pr-raw.json"
+        working-directory: _sdk-pr
+
+      - name: Extract symbol graphs — base
+        if: inputs.language == 'swift'
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/_sg-base"
+          TRIPLE=$(swift -print-target-info | jq -r '.target.triple')
+          SDK=$(xcrun --sdk macosx --show-sdk-path)
+          for MODULE in $(swift package dump-package | jq -r '[.products[] | select(.type.library != null) | .targets[]] | unique[]'); do
+            swift-symbolgraph-extract -module-name "$MODULE" \
+              -target "$TRIPLE" -sdk "$SDK" \
+              -I .build/debug \
+              -output-dir "$GITHUB_WORKSPACE/_sg-base"
+          done
+          jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-base"/*.symbols.json \
+            > "$GITHUB_WORKSPACE/base-raw.json"
+        working-directory: _sdk-base
+
+      - name: Normalize symbol graphs — PR
+        if: inputs.language == 'swift'
+        run: |
+          npm run --silent normalize-symbolgraph -- \
+            "$GITHUB_WORKSPACE/pr-raw.json" "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Normalize symbol graphs — base
+        if: inputs.language == 'swift'
+        run: |
+          npm run --silent normalize-symbolgraph -- \
+            "$GITHUB_WORKSPACE/base-raw.json" "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
       - name: Resolve parse command
-        if: inputs.language != 'dart'
+        if: inputs.language != 'swift' && inputs.language != 'dart'
         id: resolve
         run: |
           case "${{ inputs.language }}" in
-            swift)      echo "cmd=parse-swift" >> "$GITHUB_OUTPUT" ;;
-            javascript) echo "cmd=parse-ts"    >> "$GITHUB_OUTPUT" ;;
+            javascript) echo "cmd=parse-ts" >> "$GITHUB_OUTPUT" ;;
             *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, dart"; exit 1 ;;
           esac
 
-      - name: Parse PR and base branch
-        if: inputs.language != 'dart'
+      - name: Parse PR branch
+        if: inputs.language != 'swift' && inputs.language != 'dart'
         run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Parse base branch
+        if: inputs.language != 'swift' && inputs.language != 'dart'
+        run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
