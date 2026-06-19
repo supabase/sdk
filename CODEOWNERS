@@ -24,10 +24,10 @@
 #    Acts as a fail-safe for Git-related mishaps (for example, subverted .gitignore rule).
 #    Explicitly flags common secret patterns so the Security team is made aware.
 
-# Environment variables
+# Environment variables.
 *.env* @supabase/sdk @supabase/security
 
-# Certificates and private keys
+# Certificates and private keys.
 *.pem @supabase/sdk @supabase/security
 *.key @supabase/sdk @supabase/security
 *.p12 @supabase/sdk @supabase/security
@@ -44,7 +44,7 @@ id_* @supabase/sdk @supabase/security
 *.tfstate @supabase/sdk @supabase/security
 *.tfvars @supabase/sdk @supabase/security
 
-# Local databases or accidental data dumps
+# Local databases or accidental data dumps.
 *.sqlite @supabase/sdk @supabase/security
 *.sqlite3 @supabase/sdk @supabase/security
 *.db @supabase/sdk @supabase/security
