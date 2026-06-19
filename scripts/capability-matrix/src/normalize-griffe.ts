@@ -1,4 +1,4 @@
-import { relative } from "node:path";
+import { basename, relative } from "node:path";
 import type { ParsedSymbol, ParseResult } from "./ts-parser.js";
 import { loadIgnore, type Ignore } from "./parse-ignore.js";
 
@@ -34,7 +34,7 @@ function walkNode(
   projectRoot: string,
 ): void {
   const file = node.filepath
-    ? (projectRoot ? relative(projectRoot, node.filepath) : node.filepath)
+    ? (projectRoot ? relative(projectRoot, node.filepath) : basename(node.filepath))
     : inheritedFile;
 
   if (node.kind === "module") {
