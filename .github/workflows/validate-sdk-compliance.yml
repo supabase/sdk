@@ -79,7 +79,8 @@ jobs:
           case "${{ inputs.language }}" in
             swift)      echo "cmd=parse-swift" >> "$GITHUB_OUTPUT" ;;
             javascript) echo "cmd=parse-ts"    >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript"; exit 1 ;;
+            dart)       echo "cmd=parse-dart"  >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, dart"; exit 1 ;;
           esac
 
       - name: Parse PR branch
