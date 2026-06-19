@@ -55,15 +55,22 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `load.ts` — Loads capability YAML files
 - `schema.ts` — AJV-based schema validation
 - `structural.ts` — Cross-file checks: spec orphan detection, duplicate feature IDs, ID format enforcement
-- `compliance.ts` — Parses and validates SDK `sdk-compliance.yaml` files
+- `compliance.ts` — Parses and validates SDK `sdk-compliance.yaml` files; includes `buildSymbolIndex` helper
 - `aggregate.ts` — Fetches compliance files from all SDK repos via Octokit
 - `generate-site.ts` — Builds the static HTML matrix site
 - `report.ts` — Calculates parity percentages per feature/area/language
+- `ts-parser.ts` — Syntactic TypeScript AST walker; extracts public symbols without requiring `node_modules`
+- `swift-parser.ts` — Line-by-line Swift scanner; extracts public/open symbols from classes, structs, actors, enums, extensions
+- `parse-ts.ts` — CLI wrapper for `ts-parser.ts`; takes an SDK root path and emits `ParseResult` JSON
+- `parse-swift.ts` — CLI wrapper for `swift-parser.ts`; same contract as `parse-ts.ts`
+- `parse-ignore.ts` — Loads `.sdk-parse-ignore` (gitignore syntax) to exclude paths from symbol parsing
+- `api-check.ts` — Diff logic: `checkNewSymbols(base, pr, compliance)` returns symbols added in PR not in the compliance file
+- `check-api-symbols.ts` — CLI; compares two `ParseResult` files against `sdk-compliance.yaml`, exits 1 with a clear error on uncovered symbols
 
 ### CI Workflows
 
-- `validate-capabilities.yml` — Runs on push to main and PRs; validates schema, types, tests, structure
-- `validate-sdk-compliance.yml` — **Reusable workflow** called by SDK repos to validate their compliance files against this repo's canonical feature list
+- `validate-capabilities.yml` — Runs on push to main, PRs, and nightly; Tier 1: schema/tests/typecheck/structural; Tier 2 (PRs + nightly): reference checks against GitHub
+- `validate-sdk-compliance.yml` — **Reusable workflow** called by SDK repos; validates `sdk-compliance.yaml` and blocks PRs that add public symbols not registered in the compliance file (requires `language` input: `swift` or `javascript`)
 - `aggregate-capabilities.yml` — Hourly cron that fetches all SDK compliance data and rebuilds the site
 - `deploy-pages.yml` — Deploys to GitHub Pages on main push
 
@@ -78,11 +85,17 @@ Each SDK repo hosts a `sdk-compliance.yaml` at a known path. Format:
 sdk: javascript
 features:
   auth.sign_in.email: implemented
-  auth.mfa.enroll: partially_implemented
+  auth.mfa.enroll:
+    status: partially_implemented
+    note: "TOTP only"
+    symbols:
+      - GoTrueClient.mfaEnroll   # optional: public symbol names implementing this feature
   storage.objects.upload: not_implemented
 ```
 
 Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
+
+The `symbols` field is optional but enables the public API check in CI: when a PR adds a new public symbol not listed under any `symbols` entry, the check fails and prompts the author to register it.
 
 ## Commit Style
 
