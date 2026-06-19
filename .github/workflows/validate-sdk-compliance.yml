@@ -73,9 +73,11 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Setup Dart SDK
+      - name: Setup Flutter SDK
         if: inputs.language == 'dart'
-        uses: dart-lang/setup-dart@v1
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
       - name: Activate dartdoc_json
         if: inputs.language == 'dart'
@@ -92,7 +94,7 @@ jobs:
                 dart_files=$(find "$pkg/lib" -name "*.dart" \
                   -not -name "*.g.dart" -not -name "*.freezed.dart" -not -name "*.gr.dart")
                 [ -n "$dart_files" ] || continue
-                dart pub get --directory "$pkg"
+                flutter pub get --directory "$pkg"
                 dartdoc_json $dart_files --root "$pkg" --output "$pkg/api.json"
               done
           api_files=$(find "$GITHUB_WORKSPACE/_sdk-pr" -name api.json | sort)
@@ -115,7 +117,7 @@ jobs:
                 dart_files=$(find "$pkg/lib" -name "*.dart" \
                   -not -name "*.g.dart" -not -name "*.freezed.dart" -not -name "*.gr.dart")
                 [ -n "$dart_files" ] || continue
-                dart pub get --directory "$pkg"
+                flutter pub get --directory "$pkg"
                 dartdoc_json $dart_files --root "$pkg" --output "$pkg/api.json"
               done
           api_files=$(find "$GITHUB_WORKSPACE/_sdk-base" -name api.json | sort)
