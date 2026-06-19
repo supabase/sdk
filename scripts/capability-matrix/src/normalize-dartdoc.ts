@@ -16,7 +16,7 @@ export interface DartdocDeclaration {
 
 export interface DartdocUnit {
   source: string;
-  declarations: DartdocDeclaration[];
+  declarations?: DartdocDeclaration[];
 }
 
 // Class-like top-level kinds that also have processable members.
@@ -30,7 +30,7 @@ export function normalizeDartdoc(units: DartdocUnit[]): ParseResult {
   const symbols: ParsedSymbol[] = [];
 
   for (const unit of units) {
-    for (const decl of unit.declarations) {
+    for (const decl of (unit.declarations ?? [])) {
       if (decl.name.startsWith("_")) continue;
 
       const topKind = resolveTopKind(decl.kind);
