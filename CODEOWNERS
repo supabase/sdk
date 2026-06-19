@@ -36,6 +36,14 @@
 # SSH private keys have no extension - id_* covers all ssh-keygen defaults (id_rsa, id_ed25519, the _sk variants and future types).
 id_* @supabase/sdk @supabase/security
 
+# Java keystores, PGP keys, Terraform state (holds plaintext secrets).
+*.jks @supabase/sdk @supabase/security
+*.keystore @supabase/sdk @supabase/security
+*.gpg @supabase/sdk @supabase/security
+*.asc @supabase/sdk @supabase/security
+*.tfstate @supabase/sdk @supabase/security
+*.tfvars @supabase/sdk @supabase/security
+
 # Local databases or accidental data dumps
 *.sqlite @supabase/sdk @supabase/security
 *.sqlite3 @supabase/sdk @supabase/security
