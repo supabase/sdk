@@ -259,7 +259,7 @@ describe("normalizeGriffe — file inheritance", () => {
 describe("normalizeGriffe — sdk-parse-ignore", () => {
   it("filters out symbols whose file matches sdk-parse-ignore", () => {
     const root = mkdtempSync(join(tmpdir(), "griffe-test-"));
-    writeFileSync(join(root, "sdk-parse-ignore"), "src/tests/\n");
+    writeFileSync(join(root, "sdk-parse-ignore"), "tests/\n");
 
     const input: GriffeOutput = {
       mypkg: {
