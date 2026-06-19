@@ -15,6 +15,14 @@ on:
         description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
         type: string
         default: main
+      griffe-packages:
+        description: Space-separated griffe package names to dump (python only)
+        type: string
+        default: ""
+      griffe-search-paths:
+        description: Comma-separated search paths for griffe relative to repo root (python only)
+        type: string
+        default: ""
 
 jobs:
   validate:
@@ -73,23 +81,75 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
+      - name: Set up Python
+        if: inputs.language == 'python'
+        uses: actions/setup-python@39cd14951b08e74b54015ebf0246ef4cc7b4ce8 # v5.5.0
+        with:
+          python-version: "3.x"
+
+      - name: Install griffe
+        if: inputs.language == 'python'
+        run: pip install griffe
+
+      - name: Run griffe on PR branch
+        if: inputs.language == 'python'
+        run: |
+          SEARCH_FLAGS=""
+          if [ -n "${{ inputs.griffe-search-paths }}" ]; then
+            SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
+              | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-pr/$p"; done \
+              | tr '\n' ' ')
+          fi
+          python -m griffe dump ${{ inputs.griffe-packages }} $SEARCH_FLAGS \
+            -o "$GITHUB_WORKSPACE/api-raw-pr.json"
+
+      - name: Normalize griffe output (PR branch)
+        if: inputs.language == 'python'
+        run: |
+          npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-pr.json" \
+            --project-root "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Run griffe on base branch
+        if: inputs.language == 'python'
+        run: |
+          SEARCH_FLAGS=""
+          if [ -n "${{ inputs.griffe-search-paths }}" ]; then
+            SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
+              | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-base/$p"; done \
+              | tr '\n' ' ')
+          fi
+          python -m griffe dump ${{ inputs.griffe-packages }} $SEARCH_FLAGS \
+            -o "$GITHUB_WORKSPACE/api-raw-base.json"
+
+      - name: Normalize griffe output (base branch)
+        if: inputs.language == 'python'
+        run: |
+          npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-base.json" \
+            --project-root "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
       - name: Resolve parse command
+        if: inputs.language != 'python'
         id: resolve
         run: |
           case "${{ inputs.language }}" in
             swift)      echo "cmd=parse-swift"  >> "$GITHUB_OUTPUT" ;;
             javascript) echo "cmd=parse-ts"     >> "$GITHUB_OUTPUT" ;;
-            python)     echo "cmd=parse-python" >> "$GITHUB_OUTPUT" ;;
             *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, python"; exit 1 ;;
           esac
 
       - name: Parse PR branch
+        if: inputs.language != 'python'
         run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse base branch
+        if: inputs.language != 'python'
         run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
