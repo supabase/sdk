@@ -1,6 +1,6 @@
 import { buildSymbolIndex } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
-import type { ParsedSymbol } from "./ts-parser.js";
+import type { ParsedSymbol } from "./normalize-typedoc.js";
 
 export interface CheckResult {
   newSymbols: string[];

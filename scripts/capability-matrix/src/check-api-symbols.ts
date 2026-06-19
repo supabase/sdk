@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { parse } from "yaml";
 import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "./api-check.js";
 import type { RawCompliance } from "./compliance.js";
-import type { ParseResult } from "./ts-parser.js";
+import type { ParseResult } from "./normalize-typedoc.js";
 
 async function main(): Promise<void> {
   const [prFile, baseFile, compliancePath] = process.argv.slice(2);

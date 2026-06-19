@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "../src/api-check";
-import type { ParsedSymbol } from "../src/ts-parser";
+import type { ParsedSymbol } from "../src/normalize-typedoc";
 
 function sym(name: string, line?: number): ParsedSymbol {
   const s: ParsedSymbol = { name, kind: "method", file: "src/index.ts" };
