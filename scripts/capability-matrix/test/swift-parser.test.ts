@@ -173,7 +173,7 @@ describe("parseSwiftProject — sdk-parse-ignore", () => {
     const srcDir = join(dir, "Sources", "MyLib");
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "Auth.swift"), "public class AuthClient {\n  public func signUp() {}\n}\n");
-    writeFileSync(join(dir, "sdk-parse-ignore"), "Sources/MyLib/Auth.swift\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "Sources/MyLib/Auth.swift\n");
     const result = parseSwiftProject(dir);
     expect(result.symbols.map((s) => s.name)).not.toContain("AuthClient");
   });
@@ -184,7 +184,7 @@ describe("parseSwiftProject — sdk-parse-ignore", () => {
     mkdirSync(testDir, { recursive: true });
     writeFileSync(join(dir, "Client.swift"), "public class SupabaseClient {}\n");
     writeFileSync(join(testDir, "ClientTests.swift"), "public class SupabaseClientTests {}\n");
-    writeFileSync(join(dir, "sdk-parse-ignore"), "Tests/\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "Tests/\n");
     const result = parseSwiftProject(dir);
     const names = result.symbols.map((s) => s.name);
     expect(names).toContain("SupabaseClient");

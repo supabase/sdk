@@ -122,7 +122,7 @@ describe("parseTypeScriptProject — sdk-parse-ignore", () => {
     cpSync(FIXTURE, dir, { recursive: true });
     // The fixture has src/index.ts which exports AuthClient.
     // Ignore the entire src/ directory.
-    writeFileSync(join(dir, "sdk-parse-ignore"), "src/\n");
+    writeFileSync(join(dir, ".sdk-parse-ignore"), "src/\n");
     const result = parseTypeScriptProject(dir);
     expect(result.symbols).toHaveLength(0);
   });
