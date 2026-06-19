@@ -59,12 +59,11 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `aggregate.ts` — Fetches compliance files from all SDK repos via Octokit
 - `generate-site.ts` — Builds the static HTML matrix site
 - `report.ts` — Calculates parity percentages per feature/area/language
-- `ts-parser.ts` — Syntactic TypeScript AST walker; extracts public symbols without requiring `node_modules`
 - `swift-parser.ts` — Line-by-line Swift scanner; extracts public/open symbols from classes, structs, actors, enums, extensions
-- `parse-ts.ts` — CLI wrapper for `ts-parser.ts`; takes an SDK root path and emits `ParseResult` JSON
-- `parse-swift.ts` — CLI wrapper for `swift-parser.ts`; same contract as `parse-ts.ts`
+- `normalize-typedoc.ts` — TypeDoc JSON normalizer; maps TypeDoc reflection kinds to `ParseResult`; defines `ParsedSymbol` and `ParseResult` types
+- `normalize-typedoc-cli.ts` — CLI wrapper; reads TypeDoc JSON, calls normalizer, writes `ParseResult` JSON
 - `scripts/dart_symbol_extractor/` (sibling Dart package) — Small `package:analyzer` tool that walks `lib/**.dart` syntactically and emits the same `ParseResult` JSON; run directly with `dart run bin/extract.dart <sdk-root>`. Parses without `pub get`; supports extension types and enhanced enums
-- `parse-ignore.ts` — Loads `.sdk-parse-ignore` (gitignore syntax) to exclude paths from symbol parsing
+- `parse-ignore.ts` — Loads `.sdk-parse-ignore` (gitignore syntax) to exclude paths from Swift symbol parsing (TypeScript uses TypeDoc entrypoint resolution instead)
 - `api-check.ts` — Diff logic: `checkNewSymbols(base, pr, compliance)` returns symbols added in PR not in the compliance file
 - `check-api-symbols.ts` — CLI; compares two `ParseResult` files against `sdk-compliance.yaml`, exits 1 with a clear error on uncovered symbols
 

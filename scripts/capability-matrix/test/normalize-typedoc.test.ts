@@ -138,6 +138,12 @@ describe("normalize — traversal", () => {
     expect(result.symbols).toContainEqual({ name: "AuthClient", kind: "class", file: "src/auth.ts" });
   });
 
+  it("walks into Namespace wrapper (kind 4)", () => {
+    const ns = { kind: 4, name: "Utils", flags: {}, children: [fn("helper", "src/utils.ts")] };
+    const result = normalize(project(ns));
+    expect(result.symbols).toContainEqual({ name: "helper", kind: "function", file: "src/utils.ts" });
+  });
+
   it("captures file path from sources[0].fileName", () => {
     const result = normalize(project(fn("foo", "packages/core/src/index.ts")));
     expect(result.symbols[0]?.file).toBe("packages/core/src/index.ts");
@@ -210,8 +216,8 @@ describe("normalize (fixture — real TypeDoc 0.27 output)", () => {
     expect(names).not.toContain("AuthClient.constructor");
   });
 
-  it("does not emit private _cache field", () => {
-    const names = normalize(fixture).symbols.map(s => s.name);
-    expect(names).not.toContain("AuthClient._cache");
+  it("emits AuthClient.session accessor as method kind from fixture", () => {
+    const sym = normalize(fixture).symbols.find(s => s.name === "AuthClient.session");
+    expect(sym?.kind).toBe("method");
   });
 });

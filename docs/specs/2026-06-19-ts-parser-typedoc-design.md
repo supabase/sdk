@@ -106,6 +106,12 @@ TypeDoc is pinned at `0.27` and invoked via `npx --yes typedoc@0.27` — no chan
 
 The `language: javascript` input value is unchanged; SDK repos that already call this workflow need no modifications.
 
+## Behavioral Notes
+
+### `.sdk-parse-ignore` no longer applies to TypeScript
+
+The old `ts-parser.ts` honored `.sdk-parse-ignore` (gitignore-syntax file) to suppress specific file paths from its output. The TypeDoc path does not use `.sdk-parse-ignore`. TypeDoc naturally limits its output to symbols reachable from the configured entrypoint — internal files and test paths that are not re-exported through the package's `exports` field are not included in the TypeDoc JSON and therefore are not emitted by the normalizer. `.sdk-parse-ignore` continues to apply to Swift parsing via `swift-parser.ts` and `parse-ignore.ts`.
+
 ## Testing
 
 The fixture (`typedoc-sample.json`) is generated from a minimal TypeScript project that exercises all mapped cases. It is committed to the repo so tests are hermetic and do not require a TypeScript build at test time.
