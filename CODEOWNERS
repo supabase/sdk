@@ -26,7 +26,6 @@
 
 # Environment variables
 *.env* @supabase/sdk @supabase/security
-.env @supabase/sdk @supabase/security
 
 # Certificates and private keys
 *.pem @supabase/sdk @supabase/security
