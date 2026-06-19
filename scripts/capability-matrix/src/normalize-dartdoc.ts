@@ -19,8 +19,12 @@ export interface DartdocUnit {
   declarations: DartdocDeclaration[];
 }
 
-// Class-like top-level kinds that also have processable members
-const CLASS_LIKE = new Set(["class", "mixin", "extension", "extension_type"]);
+// Class-like top-level kinds that also have processable members.
+// Note: "extension_type" is intentionally absent — dartdoc_json 0.5.0 throws
+// AssertionError("Unknown declaration type: ExtensionTypeDeclarationImpl") when
+// it encounters an extension type declaration, so that kind never appears in output.
+// supabase-flutter does not use extension types in its public API surface.
+const CLASS_LIKE = new Set(["class", "mixin", "enum", "extension"]);
 
 export function normalizeDartdoc(units: DartdocUnit[]): ParseResult {
   const symbols: ParsedSymbol[] = [];
@@ -57,7 +61,8 @@ function resolveTopKind(kind: string): ParsedSymbol["kind"] | null {
     case "mixin":
     case "enum":
     case "extension":
-    case "extension_type":
+      // "extension_type" is not handled: dartdoc_json 0.5.0 cannot parse extension types
+      // (throws AssertionError) so that kind never appears in its output.
       return "class";
     case "function":
       return "function";

@@ -84,6 +84,40 @@ describe("normalizeDartdoc — class members", () => {
   });
 });
 
+describe("normalizeDartdoc — enum members (Dart 3+ enhanced enums)", () => {
+  it("emits method-kind symbols for methods declared on enums", () => {
+    const units: DartdocUnit[] = [
+      {
+        source: "lib/events.dart",
+        declarations: [
+          {
+            kind: "enum",
+            name: "AuthChangeEvent",
+            members: [{ kind: "method", name: "describe" }],
+          },
+        ],
+      },
+    ];
+    expect(kind(units, "AuthChangeEvent.describe")).toBe("method");
+  });
+
+  it("emits property-kind symbols for getters declared on enums", () => {
+    const units: DartdocUnit[] = [
+      {
+        source: "lib/events.dart",
+        declarations: [
+          {
+            kind: "enum",
+            name: "AuthChangeEvent",
+            members: [{ kind: "getter", name: "label" }],
+          },
+        ],
+      },
+    ];
+    expect(kind(units, "AuthChangeEvent.label")).toBe("property");
+  });
+});
+
 describe("normalizeDartdoc — privacy filter", () => {
   it("skips top-level symbols whose name starts with _", () => {
     const units: DartdocUnit[] = [
