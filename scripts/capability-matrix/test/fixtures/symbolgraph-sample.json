@@ -1,0 +1,4120 @@
+[
+  {
+    "kind": {
+      "identifier": "swift.class",
+      "displayName": "Class"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass"
+    ],
+    "names": {
+      "title": "SimpleClass",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleClass"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "class"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleClass"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "class"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleClass"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 0,
+        "character": 13
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.property",
+      "displayName": "Instance Property"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC16instancePropertySSvp",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "instanceProperty"
+    ],
+    "names": {
+      "title": "instanceProperty",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "instanceProperty"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "instanceProperty"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 1,
+        "character": 15
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.type.property",
+      "displayName": "Type Property"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC14staticPropertySivpZ",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "staticProperty"
+    ],
+    "names": {
+      "title": "staticProperty",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "staticProperty"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "static"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "staticProperty"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Int",
+        "preciseIdentifier": "s:Si"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 2,
+        "character": 22
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC14instanceMethodyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "instanceMethod()"
+    ],
+    "names": {
+      "title": "instanceMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "instanceMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "instanceMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 3,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.type.method",
+      "displayName": "Type Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12staticMethodACyFZ",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "staticMethod()"
+    ],
+    "names": {
+      "title": "staticMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "staticMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SimpleClass",
+          "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SimpleClass",
+          "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "static"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "staticMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "SimpleClass",
+        "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 4,
+        "character": 23
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC5valueACSS_tcfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "init(value:)"
+    ],
+    "names": {
+      "title": "init(value:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "value"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "value",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "value"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "String",
+              "preciseIdentifier": "s:SS"
+            }
+          ]
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "value"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      },
+      {
+        "kind": "text",
+        "spelling": ")"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 5,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.typealias",
+      "displayName": "Type Alias"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC8Callbacka",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "Callback"
+    ],
+    "names": {
+      "title": "SimpleClass.Callback",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "Callback"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "typealias"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Callback"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "typealias"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "Callback"
+      },
+      {
+        "kind": "text",
+        "spelling": " = () -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Void",
+        "preciseIdentifier": "s:s4Voida"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 7,
+        "character": 21
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.struct",
+      "displayName": "Structure"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12NestedStructV",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "NestedStruct"
+    ],
+    "names": {
+      "title": "SimpleClass.NestedStruct",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "NestedStruct"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "NestedStruct"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "struct"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "NestedStruct"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 8,
+        "character": 18
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.property",
+      "displayName": "Instance Property"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12NestedStructV14nestedPropertySivp",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "NestedStruct",
+      "nestedProperty"
+    ],
+    "names": {
+      "title": "nestedProperty",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "nestedProperty"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "nestedProperty"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Int",
+        "preciseIdentifier": "s:Si"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 9,
+        "character": 19
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.class",
+      "displayName": "Class"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass"
+    ],
+    "names": {
+      "title": "OpenClass",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "OpenClass"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "class"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "OpenClass"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "class"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "OpenClass"
+      }
+    ],
+    "accessLevel": "open",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 12,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassCACycfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass",
+      "init()"
+    ],
+    "names": {
+      "title": "init()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {},
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 13,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassC10openMethodyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass",
+      "openMethod()"
+    ],
+    "names": {
+      "title": "openMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "openMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "openMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "open",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 14,
+        "character": 14
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.struct",
+      "displayName": "Structure"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib12SimpleStructV",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleStruct"
+    ],
+    "names": {
+      "title": "SimpleStruct",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleStruct"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleStruct"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "struct"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleStruct"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 16,
+        "character": 14
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.property",
+      "displayName": "Instance Property"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib12SimpleStructV5fieldSSvp",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleStruct",
+      "field"
+    ],
+    "names": {
+      "title": "field",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "field"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "field"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 17,
+        "character": 15
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib12SimpleStructV5fieldACSS_tcfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleStruct",
+      "init(field:)"
+    ],
+    "names": {
+      "title": "init(field:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "field"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "field",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "field"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "String",
+              "preciseIdentifier": "s:SS"
+            }
+          ]
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "field"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      },
+      {
+        "kind": "text",
+        "spelling": ")"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 18,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum",
+      "displayName": "Enumeration"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum"
+    ],
+    "names": {
+      "title": "SimpleEnum",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleEnum"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "enum"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleEnum"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "enum"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleEnum"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 20,
+        "character": 12
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.func.op",
+      "displayName": "Operator"
+    },
+    "identifier": {
+      "precise": "s:SQsE2neoiySbx_xtFZ::SYNTHESIZED::s:9SampleLib10SimpleEnumO",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "!=(_:_:)"
+    ],
+    "names": {
+      "title": "!=(_:_:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "!="
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Self"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Self"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Bool",
+          "preciseIdentifier": "s:Sb"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "Swift",
+      "lines": [
+        {
+          "text": "Returns a Boolean value indicating whether two values are not equal."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "Inequality is the inverse of equality. For any values `a` and `b`, `a != b`"
+        },
+        {
+          "text": "implies that `a == b` is `false`."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This is the default implementation of the not-equal-to operator (`!=`)"
+        },
+        {
+          "text": "for any type that conforms to `Equatable`."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Parameters:"
+        },
+        {
+          "text": "  - lhs: A value to compare."
+        },
+        {
+          "text": "  - rhs: Another value to compare."
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "lhs",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "lhs"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "Self"
+            }
+          ]
+        },
+        {
+          "name": "rhs",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "rhs"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "Self"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Bool",
+          "preciseIdentifier": "s:Sb"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "Swift",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "static"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "!="
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "lhs"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Self"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "rhs"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Self"
+      },
+      {
+        "kind": "text",
+        "spelling": ") -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Bool",
+        "preciseIdentifier": "s:Sb"
+      }
+    ],
+    "accessLevel": "public"
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum.case",
+      "displayName": "Case"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO5alphayA2CmF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "alpha"
+    ],
+    "names": {
+      "title": "SimpleEnum.alpha",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "case"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "alpha"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "case"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "alpha"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 21,
+        "character": 9
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum.case",
+      "displayName": "Case"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO4betayA2CmF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "beta"
+    ],
+    "names": {
+      "title": "SimpleEnum.beta",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "case"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "beta"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "case"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "beta"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 22,
+        "character": 9
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO10enumMethodSSyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "enumMethod()"
+    ],
+    "names": {
+      "title": "enumMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "enumMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "enumMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 23,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.protocol",
+      "displayName": "Protocol"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14SimpleProtocolP",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleProtocol"
+    ],
+    "names": {
+      "title": "SimpleProtocol",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleProtocol"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "protocol"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleProtocol"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "protocol"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleProtocol"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 25,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14SimpleProtocolP14protocolMethodyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleProtocol",
+      "protocolMethod()"
+    ],
+    "names": {
+      "title": "protocolMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "protocolMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "protocolMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 26,
+        "character": 9
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.associatedtype",
+      "displayName": "Associated Type"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14SimpleProtocolP4ItemQa",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleProtocol",
+      "Item"
+    ],
+    "names": {
+      "title": "Item",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "associatedtype"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Item"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "associatedtype"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "Item"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 27,
+        "character": 19
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.class",
+      "displayName": "Class"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor"
+    ],
+    "names": {
+      "title": "SimpleActor",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleActor"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "actor"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleActor"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "actor"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleActor"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 29,
+        "character": 13
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:ScA12_ConcurrencyE18withSerialExecutoryqd__qd__Scf_pqd_0_YKXEqd_0_YKs5ErrorRd_0_Ri_d__r0_lF::SYNTHESIZED::s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "withSerialExecutor(_:)"
+    ],
+    "names": {
+      "title": "withSerialExecutor(_:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "withSerialExecutor"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ">((any "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SerialExecutor",
+          "preciseIdentifier": "s:Scf"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "_Concurrency",
+      "lines": [
+        {
+          "text": "Perform an operation with the actor's ``SerialExecutor``."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This converts the actor's ``Actor/unownedExecutor`` to a ``SerialExecutor`` while"
+        },
+        {
+          "text": "retaining the actor for the duration of the operation. This is to ensure the lifetime"
+        },
+        {
+          "text": "of the executor while performing the operation."
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "operation",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "operation"
+            },
+            {
+              "kind": "text",
+              "spelling": ": (any "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "SerialExecutor",
+              "preciseIdentifier": "s:Scf"
+            },
+            {
+              "kind": "text",
+              "spelling": ") "
+            },
+            {
+              "kind": "keyword",
+              "spelling": "throws"
+            },
+            {
+              "kind": "text",
+              "spelling": "("
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "E"
+            },
+            {
+              "kind": "text",
+              "spelling": ") -> "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "T"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "swiftGenerics": {
+      "parameters": [
+        {
+          "name": "T",
+          "index": 0,
+          "depth": 1
+        },
+        {
+          "name": "E",
+          "index": 1,
+          "depth": 1
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "conformance",
+          "lhs": "E",
+          "rhs": "Error",
+          "rhsPrecise": "s:s5ErrorP"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "_Concurrency",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "attribute",
+        "spelling": "nonisolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "withSerialExecutor"
+      },
+      {
+        "kind": "text",
+        "spelling": "<"
+      },
+      {
+        "kind": "genericParameter",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "genericParameter",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ">("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "_"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "operation"
+      },
+      {
+        "kind": "text",
+        "spelling": ": (any "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "SerialExecutor",
+        "preciseIdentifier": "s:Scf"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "throws"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ") -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "throws"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ") -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "where"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": " : "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Error",
+        "preciseIdentifier": "s:s5ErrorP"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " : ~Copyable"
+      }
+    ],
+    "accessLevel": "public",
+    "availability": [
+      {
+        "domain": "macOS",
+        "introduced": {
+          "major": 10,
+          "minor": 15
+        }
+      },
+      {
+        "domain": "watchOS",
+        "introduced": {
+          "major": 6,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "iOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "tvOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      }
+    ]
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:ScA12_ConcurrencyE18withSerialExecutoryqd__qd__Scf_pYaqd_0_YKYCXEYaqd_0_YKs5ErrorRd_0_Ri_d__r0_lF::SYNTHESIZED::s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "withSerialExecutor(_:)"
+    ],
+    "names": {
+      "title": "withSerialExecutor(_:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "withSerialExecutor"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ">("
+        },
+        {
+          "kind": "keyword",
+          "spelling": "nonisolated(nonsending)"
+        },
+        {
+          "kind": "text",
+          "spelling": " (any "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SerialExecutor",
+          "preciseIdentifier": "s:Scf"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "E"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "_Concurrency",
+      "lines": [
+        {
+          "text": "Perform an operation with the actor's ``SerialExecutor``."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This converts the actor's ``Actor/unownedExecutor`` to a ``SerialExecutor`` while"
+        },
+        {
+          "text": "retaining the actor for the duration of the operation. This is to ensure the lifetime"
+        },
+        {
+          "text": "of the executor while performing the operation."
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "operation",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "operation"
+            },
+            {
+              "kind": "text",
+              "spelling": ": (any "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "SerialExecutor",
+              "preciseIdentifier": "s:Scf"
+            },
+            {
+              "kind": "text",
+              "spelling": ") "
+            },
+            {
+              "kind": "keyword",
+              "spelling": "async"
+            },
+            {
+              "kind": "text",
+              "spelling": " "
+            },
+            {
+              "kind": "keyword",
+              "spelling": "throws"
+            },
+            {
+              "kind": "text",
+              "spelling": "("
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "E"
+            },
+            {
+              "kind": "text",
+              "spelling": ") -> "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "T"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "swiftGenerics": {
+      "parameters": [
+        {
+          "name": "T",
+          "index": 0,
+          "depth": 1
+        },
+        {
+          "name": "E",
+          "index": 1,
+          "depth": 1
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "conformance",
+          "lhs": "E",
+          "rhs": "Error",
+          "rhsPrecise": "s:s5ErrorP"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "_Concurrency",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "attribute",
+        "spelling": "nonisolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "withSerialExecutor"
+      },
+      {
+        "kind": "text",
+        "spelling": "<"
+      },
+      {
+        "kind": "genericParameter",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "genericParameter",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ">("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "_"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "operation"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "nonisolated(nonsending)"
+      },
+      {
+        "kind": "text",
+        "spelling": " (any "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "SerialExecutor",
+        "preciseIdentifier": "s:Scf"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "async"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "throws"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ") -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "async"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "throws"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": ") -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "where"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "E"
+      },
+      {
+        "kind": "text",
+        "spelling": " : "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Error",
+        "preciseIdentifier": "s:s5ErrorP"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " : ~Copyable"
+      }
+    ],
+    "accessLevel": "public",
+    "availability": [
+      {
+        "domain": "macOS",
+        "introduced": {
+          "major": 10,
+          "minor": 15
+        }
+      },
+      {
+        "domain": "watchOS",
+        "introduced": {
+          "major": 6,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "iOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "tvOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      }
+    ]
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:ScA12_ConcurrencyE20preconditionIsolated_4file4lineySSyXK_s12StaticStringVSutF::SYNTHESIZED::s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "preconditionIsolated(_:file:line:)"
+    ],
+    "names": {
+      "title": "preconditionIsolated(_:file:line:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "preconditionIsolated"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "attribute",
+          "spelling": "@autoclosure "
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "file"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "StaticString",
+          "preciseIdentifier": "s:s12StaticStringV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "line"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UInt",
+          "preciseIdentifier": "s:Su"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "_Concurrency",
+      "lines": [
+        {
+          "text": "Stops program execution if the current task is not executing on this"
+        },
+        {
+          "text": "actor's serial executor."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This function's effect varies depending on the build flag used:"
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "* In playgrounds and `-Onone` builds (the default for Xcode's Debug"
+        },
+        {
+          "text": "  configuration), stops program execution in a debuggable state after"
+        },
+        {
+          "text": "  printing `message`."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "* In `-O` builds (the default for Xcode's Release configuration), stops"
+        },
+        {
+          "text": "  program execution."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Note: Because this check is performed against the actor's serial executor,"
+        },
+        {
+          "text": "  if another actor uses the same serial executor--by using"
+        },
+        {
+          "text": "  that actor's serial executor as its own ``Actor/unownedExecutor``--this"
+        },
+        {
+          "text": "  check will succeed.  From a concurrency safety perspective, the"
+        },
+        {
+          "text": "  serial executor guarantees mutual exclusion of those two actors."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Parameters:"
+        },
+        {
+          "text": "  - message: The message to print if the assertion fails."
+        },
+        {
+          "text": "  - file: The file name to print if the assertion fails. The default is"
+        },
+        {
+          "text": "          where this method was called."
+        },
+        {
+          "text": "  - line: The line number to print if the assertion fails The default is"
+        },
+        {
+          "text": "          where this method was called."
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "message",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "message"
+            },
+            {
+              "kind": "text",
+              "spelling": ": () -> "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "String",
+              "preciseIdentifier": "s:SS"
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "file"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "StaticString",
+              "preciseIdentifier": "s:s12StaticStringV"
+            }
+          ]
+        },
+        {
+          "name": "line",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "line"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "UInt",
+              "preciseIdentifier": "s:Su"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "_Concurrency",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "text",
+        "spelling": "@backDeployed(before: macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0)\n"
+      },
+      {
+        "kind": "attribute",
+        "spelling": "nonisolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "preconditionIsolated"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "_"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "message"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "attribute",
+        "spelling": "@autoclosure "
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      },
+      {
+        "kind": "text",
+        "spelling": " = String(), "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "file"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "StaticString",
+        "preciseIdentifier": "s:s12StaticStringV"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#fileID"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "line"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "UInt",
+        "preciseIdentifier": "s:Su"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#line"
+      },
+      {
+        "kind": "text",
+        "spelling": ")"
+      }
+    ],
+    "accessLevel": "public",
+    "availability": [
+      {
+        "domain": "macOS",
+        "introduced": {
+          "major": 10,
+          "minor": 15
+        }
+      },
+      {
+        "domain": "watchOS",
+        "introduced": {
+          "major": 6,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "iOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "tvOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      }
+    ]
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:ScA12_ConcurrencyE14assertIsolated_4file4lineySSyXK_s12StaticStringVSutF::SYNTHESIZED::s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "assertIsolated(_:file:line:)"
+    ],
+    "names": {
+      "title": "assertIsolated(_:file:line:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "assertIsolated"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "attribute",
+          "spelling": "@autoclosure "
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "file"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "StaticString",
+          "preciseIdentifier": "s:s12StaticStringV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "line"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UInt",
+          "preciseIdentifier": "s:Su"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "_Concurrency",
+      "lines": [
+        {
+          "text": "Stops program execution if the current task is not executing on this"
+        },
+        {
+          "text": "actor's serial executor."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This function's effect varies depending on the build flag used:"
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "* In playgrounds and `-Onone` builds (the default for Xcode's Debug"
+        },
+        {
+          "text": "  configuration), stops program execution in a debuggable state after"
+        },
+        {
+          "text": "  printing `message`."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "* In `-O` builds (the default for Xcode's Release configuration),"
+        },
+        {
+          "text": "  the isolation check is not performed and there are no effects."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Note: This check is performed against the actor's serial executor,"
+        },
+        {
+          "text": "  meaning that / if another actor uses the same serial executor--by using"
+        },
+        {
+          "text": "  that actor's serial executor as its own ``Actor/unownedExecutor``--this"
+        },
+        {
+          "text": "  check will succeed , as from a concurrency safety perspective, the"
+        },
+        {
+          "text": "  serial executor guarantees mutual exclusion of those two actors."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Parameters:"
+        },
+        {
+          "text": "  - message: The message to print if the assertion fails."
+        },
+        {
+          "text": "  - file: The file name to print if the assertion fails. The default is"
+        },
+        {
+          "text": "          where this method was called."
+        },
+        {
+          "text": "  - line: The line number to print if the assertion fails The default is"
+        },
+        {
+          "text": "          where this method was called."
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "message",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "message"
+            },
+            {
+              "kind": "text",
+              "spelling": ": () -> "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "String",
+              "preciseIdentifier": "s:SS"
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "file"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "StaticString",
+              "preciseIdentifier": "s:s12StaticStringV"
+            }
+          ]
+        },
+        {
+          "name": "line",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "line"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "UInt",
+              "preciseIdentifier": "s:Su"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "_Concurrency",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "text",
+        "spelling": "@backDeployed(before: macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0)\n"
+      },
+      {
+        "kind": "attribute",
+        "spelling": "nonisolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "assertIsolated"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "_"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "message"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "attribute",
+        "spelling": "@autoclosure "
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      },
+      {
+        "kind": "text",
+        "spelling": " = String(), "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "file"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "StaticString",
+        "preciseIdentifier": "s:s12StaticStringV"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#fileID"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "line"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "UInt",
+        "preciseIdentifier": "s:Su"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#line"
+      },
+      {
+        "kind": "text",
+        "spelling": ")"
+      }
+    ],
+    "accessLevel": "public",
+    "availability": [
+      {
+        "domain": "macOS",
+        "introduced": {
+          "major": 10,
+          "minor": 15
+        }
+      },
+      {
+        "domain": "watchOS",
+        "introduced": {
+          "major": 6,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "iOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "tvOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      }
+    ]
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:ScA12_ConcurrencyE14assumeIsolated_4file4lineqd__qd__xYiKXE_s12StaticStringVSutKs8SendableRd__lF::SYNTHESIZED::s:9SampleLib11SimpleActorC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "assumeIsolated(_:file:line:)"
+    ],
+    "names": {
+      "title": "assumeIsolated(_:file:line:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "assumeIsolated"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ">(("
+        },
+        {
+          "kind": "keyword",
+          "spelling": "isolated"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Self"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "file"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "StaticString",
+          "preciseIdentifier": "s:s12StaticStringV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "line"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UInt",
+          "preciseIdentifier": "s:Su"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "rethrows"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "docComment": {
+      "module": "_Concurrency",
+      "lines": [
+        {
+          "text": "Assume that the current task is executing on this actor's serial executor,"
+        },
+        {
+          "text": "or stop program execution otherwise."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "You call this method to *assume and verify* that the currently"
+        },
+        {
+          "text": "executing synchronous function is actually executing on the serial"
+        },
+        {
+          "text": "executor of this actor."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "If that is the case, the operation is invoked with an `isolated` version"
+        },
+        {
+          "text": "of the actor, allowing synchronous access to actor local state without"
+        },
+        {
+          "text": "hopping through asynchronous boundaries."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "If the current context is not running on the actor's serial executor, or"
+        },
+        {
+          "text": "if the actor is a reference to a remote actor, this method will crash"
+        },
+        {
+          "text": "with a fatal error (similar to ``preconditionIsolated()``)."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "Note that this check is performed against the passed in actor's serial"
+        },
+        {
+          "text": "executor, meaning that if another actor uses the same serial executor--by"
+        },
+        {
+          "text": "using that actor's ``Actor/unownedExecutor`` as its own"
+        },
+        {
+          "text": "``Actor/unownedExecutor``--this check will succeed, as from a concurrency"
+        },
+        {
+          "text": "safety perspective, the serial executor guarantees mutual exclusion of"
+        },
+        {
+          "text": "those two actors."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "This method can only be used from synchronous functions, as asynchronous"
+        },
+        {
+          "text": "functions should instead perform a normal method call to the actor, which"
+        },
+        {
+          "text": "will hop task execution to the target actor if necessary."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Note: This check is performed against the actor's serial executor,"
+        },
+        {
+          "text": "  meaning that / if another actor uses the same serial executor--by using"
+        },
+        {
+          "text": "  another actor's executor as its own ``Actor/unownedExecutor``"
+        },
+        {
+          "text": "  --this check will succeed , as from a concurrency safety perspective,"
+        },
+        {
+          "text": "  the serial executor guarantees mutual exclusion of those two actors."
+        },
+        {
+          "text": ""
+        },
+        {
+          "text": "- Parameters:"
+        },
+        {
+          "text": "  - operation: the operation that will be executed if the current context"
+        },
+        {
+          "text": "               is executing on the actors serial executor."
+        },
+        {
+          "text": "  - file: The file name to print if the assertion fails. The default is"
+        },
+        {
+          "text": "          where this method was called."
+        },
+        {
+          "text": "  - line: The line number to print if the assertion fails The default is"
+        },
+        {
+          "text": "          where this method was called."
+        },
+        {
+          "text": "- Returns: the return value of the `operation`"
+        },
+        {
+          "text": "- Throws: rethrows the `Error` thrown by the operation if it threw"
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "operation",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "operation"
+            },
+            {
+              "kind": "text",
+              "spelling": ": ("
+            },
+            {
+              "kind": "keyword",
+              "spelling": "isolated"
+            },
+            {
+              "kind": "text",
+              "spelling": " "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "Self"
+            },
+            {
+              "kind": "text",
+              "spelling": ") "
+            },
+            {
+              "kind": "keyword",
+              "spelling": "throws"
+            },
+            {
+              "kind": "text",
+              "spelling": " -> "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "T"
+            }
+          ]
+        },
+        {
+          "name": "file",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "file"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "StaticString",
+              "preciseIdentifier": "s:s12StaticStringV"
+            }
+          ]
+        },
+        {
+          "name": "line",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "line"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "UInt",
+              "preciseIdentifier": "s:Su"
+            }
+          ]
+        }
+      ],
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        }
+      ]
+    },
+    "swiftGenerics": {
+      "parameters": [
+        {
+          "name": "T",
+          "index": 0,
+          "depth": 1
+        }
+      ],
+      "constraints": [
+        {
+          "kind": "conformance",
+          "lhs": "T",
+          "rhs": "Sendable",
+          "rhsPrecise": "s:s8SendableP"
+        }
+      ]
+    },
+    "swiftExtension": {
+      "extendedModule": "_Concurrency",
+      "typeKind": "swift.protocol"
+    },
+    "declarationFragments": [
+      {
+        "kind": "attribute",
+        "spelling": "nonisolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "assumeIsolated"
+      },
+      {
+        "kind": "text",
+        "spelling": "<"
+      },
+      {
+        "kind": "genericParameter",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ">("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "_"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "internalParam",
+        "spelling": "operation"
+      },
+      {
+        "kind": "text",
+        "spelling": ": ("
+      },
+      {
+        "kind": "keyword",
+        "spelling": "isolated"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Self"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "throws"
+      },
+      {
+        "kind": "text",
+        "spelling": " -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "file"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "StaticString",
+        "preciseIdentifier": "s:s12StaticStringV"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#fileID"
+      },
+      {
+        "kind": "text",
+        "spelling": ", "
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "line"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "UInt",
+        "preciseIdentifier": "s:Su"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "#line"
+      },
+      {
+        "kind": "text",
+        "spelling": ") "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "rethrows"
+      },
+      {
+        "kind": "text",
+        "spelling": " -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "where"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "T"
+      },
+      {
+        "kind": "text",
+        "spelling": " : "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Sendable",
+        "preciseIdentifier": "s:s8SendableP"
+      }
+    ],
+    "accessLevel": "public",
+    "availability": [
+      {
+        "domain": "macOS",
+        "introduced": {
+          "major": 10,
+          "minor": 15
+        }
+      },
+      {
+        "domain": "watchOS",
+        "introduced": {
+          "major": 6,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "iOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      },
+      {
+        "domain": "tvOS",
+        "introduced": {
+          "major": 13,
+          "minor": 0
+        }
+      }
+    ]
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleActorC11actorMethodyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleActor",
+      "actorMethod()"
+    ],
+    "names": {
+      "title": "actorMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "actorMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "actorMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 30,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.typealias",
+      "displayName": "Type Alias"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11GlobalAliasa",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "GlobalAlias"
+    ],
+    "names": {
+      "title": "GlobalAlias",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "GlobalAlias"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "typealias"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "GlobalAlias"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "typealias"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "GlobalAlias"
+      },
+      {
+        "kind": "text",
+        "spelling": " = "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 32,
+        "character": 17
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.func",
+      "displayName": "Function"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14globalFunctionyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "globalFunction()"
+    ],
+    "names": {
+      "title": "globalFunction()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "globalFunction"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "globalFunction"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 33,
+        "character": 12
+      }
+    }
+  }
+]
