@@ -36,43 +36,39 @@ void _visitTopLevel(
   String relPath,
   List<ParsedSymbol> out,
 ) {
-  if (declaration is ClassDeclaration) {
-    _emitContainer(declaration.name.lexeme, declaration.members, relPath, out);
-  } else if (declaration is MixinDeclaration) {
-    _emitContainer(declaration.name.lexeme, declaration.members, relPath, out);
-  } else if (declaration is EnumDeclaration) {
-    _emitContainer(declaration.name.lexeme, declaration.members, relPath, out);
-  } else if (declaration is ExtensionTypeDeclaration) {
-    _emitContainer(declaration.name.lexeme, declaration.members, relPath, out);
-  } else if (declaration is ExtensionDeclaration) {
-    final name = declaration.name?.lexeme;
-    if (name == null) return; // Unnamed extensions have no qualifiable surface.
-    _emitContainer(name, declaration.members, relPath, out);
-  } else if (declaration is FunctionDeclaration) {
-    final name = declaration.name.lexeme;
-    if (_isPrivate(name)) return;
-    if (declaration.isGetter || declaration.isSetter) return;
-    out.add(ParsedSymbol(name: name, kind: SymbolKind.function, file: relPath));
-  } else if (declaration is TopLevelVariableDeclaration) {
-    for (final variable in declaration.variables.variables) {
-      final name = variable.name.lexeme;
-      if (_isPrivate(name)) continue;
-      out.add(
-        ParsedSymbol(name: name, kind: SymbolKind.variable, file: relPath),
-      );
-    }
-  } else if (declaration is ClassTypeAlias) {
-    // `class C = A with M;` is a class, not a typedef.
-    final name = declaration.name.lexeme;
-    if (_isPrivate(name)) return;
-    out.add(
-      ParsedSymbol(name: name, kind: SymbolKind.classKind, file: relPath),
-    );
-  } else if (declaration is TypeAlias) {
-    final name = declaration.name.lexeme;
-    if (_isPrivate(name)) return;
-    out.add(ParsedSymbol(name: name, kind: SymbolKind.variable, file: relPath));
+  switch (declaration) {
+    // Class-like containers expose their name and members identically. Unnamed
+    // extensions (name == null) fall through, as they have no qualifiable
+    // surface.
+    case ClassDeclaration(:final name, :final members):
+    case MixinDeclaration(:final name, :final members):
+    case EnumDeclaration(:final name, :final members):
+    case ExtensionTypeDeclaration(:final name, :final members):
+    case ExtensionDeclaration(name: final name?, :final members):
+      _emitContainer(name.lexeme, members, relPath, out);
+
+    case FunctionDeclaration(:final name, :final isGetter, :final isSetter)
+        when !isGetter && !isSetter:
+      _emit(name.lexeme, SymbolKind.function, relPath, out);
+
+    // `class C = A with M;` is a class, not a typedef, so it precedes TypeAlias.
+    case ClassTypeAlias(:final name):
+      _emit(name.lexeme, SymbolKind.classKind, relPath, out);
+
+    case TypeAlias(:final name):
+      _emit(name.lexeme, SymbolKind.variable, relPath, out);
+
+    case TopLevelVariableDeclaration(:final variables):
+      for (final variable in variables.variables) {
+        _emit(variable.name.lexeme, SymbolKind.variable, relPath, out);
+      }
   }
+}
+
+void _emit(
+    String name, SymbolKind kind, String relPath, List<ParsedSymbol> out) {
+  if (_isPrivate(name)) return;
+  out.add(ParsedSymbol(name: name, kind: kind, file: relPath));
 }
 
 void _emitContainer(
