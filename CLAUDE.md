@@ -63,7 +63,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `swift-parser.ts` — Line-by-line Swift scanner; extracts public/open symbols from classes, structs, actors, enums, extensions
 - `parse-ts.ts` — CLI wrapper for `ts-parser.ts`; takes an SDK root path and emits `ParseResult` JSON
 - `parse-swift.ts` — CLI wrapper for `swift-parser.ts`; same contract as `parse-ts.ts`
-- `dart_symbol_extractor/` — Small Dart tool (`package:analyzer`) that walks `lib/**.dart` syntactically and emits the same `ParseResult` JSON; invoked via the `parse-dart` npm script. Parses without `pub get`; supports extension types and enhanced enums
+- `scripts/dart_symbol_extractor/` (sibling Dart package) — Small `package:analyzer` tool that walks `lib/**.dart` syntactically and emits the same `ParseResult` JSON; invoked via the `parse-dart` npm script. Parses without `pub get`; supports extension types and enhanced enums
 - `parse-ignore.ts` — Loads `.sdk-parse-ignore` (gitignore syntax) to exclude paths from symbol parsing
 - `api-check.ts` — Diff logic: `checkNewSymbols(base, pr, compliance)` returns symbols added in PR not in the compliance file
 - `check-api-symbols.ts` — CLI; compares two `ParseResult` files against `sdk-compliance.yaml`, exits 1 with a clear error on uncovered symbols

@@ -83,7 +83,7 @@ jobs:
       - name: Get Dart extractor dependencies
         if: inputs.language == 'dart'
         run: dart pub get
-        working-directory: _sdk-spec/scripts/capability-matrix/dart_symbol_extractor
+        working-directory: _sdk-spec/scripts/dart_symbol_extractor
 
       - name: Resolve parse command
         id: resolve
