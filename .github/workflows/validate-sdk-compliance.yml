@@ -8,7 +8,7 @@ on:
         type: string
         default: sdk-compliance.yaml
       language:
-        description: SDK language for public API check — must match a parse-<language> script (e.g. swift, javascript)
+        description: SDK language for public API check — must match a parse-<language> script (e.g. swift, javascript, dart)
         type: string
         required: true
       sdk-ref:
@@ -73,13 +73,26 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
+      # The Dart parser is a small package:analyzer tool invoked via `npm run
+      # parse-dart`. It parses syntactically, so the target packages need no
+      # `pub get` — only the Dart SDK and the tool's own dependencies.
+      - name: Setup Dart SDK
+        if: inputs.language == 'dart'
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+
+      - name: Get Dart extractor dependencies
+        if: inputs.language == 'dart'
+        run: dart pub get
+        working-directory: _sdk-spec/scripts/capability-matrix/dart_symbol_extractor
+
       - name: Resolve parse command
         id: resolve
         run: |
           case "${{ inputs.language }}" in
             swift)      echo "cmd=parse-swift" >> "$GITHUB_OUTPUT" ;;
             javascript) echo "cmd=parse-ts"    >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript"; exit 1 ;;
+            dart)       echo "cmd=parse-dart"   >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, dart"; exit 1 ;;
           esac
 
       - name: Parse PR branch

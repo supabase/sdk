@@ -10,6 +10,7 @@
     "validate-compliance": "tsx src/compliance-cli.ts",
     "parse-ts": "tsx src/parse-ts.ts",
     "parse-swift": "tsx src/parse-swift.ts",
+    "parse-dart": "dart run dart_symbol_extractor/bin/extract.dart",
     "check-api-symbols": "tsx src/check-api-symbols.ts",
     "aggregate": "tsx src/aggregate.ts",
     "report": "tsx src/cli.ts report",

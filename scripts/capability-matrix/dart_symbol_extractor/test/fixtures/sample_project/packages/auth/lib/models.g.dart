@@ -1,0 +1,3 @@
+class GeneratedModel {
+  void shouldBeIgnored() {}
+}
