@@ -1,23 +1,9 @@
 /// A single public API symbol, matching the `ParsedSymbol` shape emitted by the
 /// TypeScript and Swift parsers in the capability matrix.
+///
+/// The wire value is the constant's `name`, except for [SymbolKind.classKind],
+/// whose constant cannot be named `class` because it is a reserved word.
 enum SymbolKind { classKind, method, property, function, variable }
-
-extension SymbolKindJson on SymbolKind {
-  String get jsonValue {
-    switch (this) {
-      case SymbolKind.classKind:
-        return 'class';
-      case SymbolKind.method:
-        return 'method';
-      case SymbolKind.property:
-        return 'property';
-      case SymbolKind.function:
-        return 'function';
-      case SymbolKind.variable:
-        return 'variable';
-    }
-  }
-}
 
 class ParsedSymbol {
   ParsedSymbol({required this.name, required this.kind, required this.file});
@@ -28,7 +14,7 @@ class ParsedSymbol {
 
   Map<String, Object?> toJson() => {
         'name': name,
-        'kind': kind.jsonValue,
+        'kind': kind == SymbolKind.classKind ? 'class' : kind.name,
         'file': file,
       };
 }

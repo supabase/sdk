@@ -37,7 +37,7 @@ It is invoked exactly like the other parsers, via an npm script, so the reusable
 ```
 supabase-flutter PR
   → validate-sdk-compliance.yml
-      [dart-only] install Dart SDK (direct download, no marketplace action)
+      [dart-only] dart-lang/setup-dart
       [dart-only] dart pub get   (in dart_symbol_extractor/)
       → npm run parse-dart -- <sdk-root>     # PR branch  → pr-symbols.json
       → npm run parse-dart -- <sdk-root>     # base branch → base-symbols.json
@@ -55,7 +55,7 @@ Compared with the `dartdoc_json` pipeline this drops: the global tool activation
   - `bin/extract.dart` — CLI entry point; prints `{ "symbols": [...] }`
   - `test/` — unit tests plus a fixture package exercising discovery and ignores
 - `scripts/capability-matrix/package.json` — adds the `parse-dart` script
-- `.github/workflows/validate-sdk-compliance.yml` — adds the `dart` case plus two dart-only setup steps. The Dart SDK is installed by a plain download rather than a marketplace action, so the reusable workflow does not depend on each calling repo's allowed-actions policy
+- `.github/workflows/validate-sdk-compliance.yml` — adds the `dart` case plus two dart-only setup steps (`dart-lang/setup-dart`, `dart pub get`)
 
 ---
 
