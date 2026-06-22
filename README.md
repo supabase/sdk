@@ -70,7 +70,7 @@ jobs:
   validate:
     uses: supabase/sdk/.github/workflows/validate-sdk-compliance.yml@main
     with:
-      language: swift   # one of: swift, javascript
+      language: swift   # one of: swift, javascript, dart
 ```
 
 This checks out the canonical feature list from this repo and runs two checks on every PR:
