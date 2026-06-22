@@ -75,10 +75,15 @@ jobs:
 
       # The Dart parser is a small package:analyzer tool invoked via `npm run
       # parse-dart`. It parses syntactically, so the target packages need no
-      # `pub get` — only the Dart SDK and the tool's own dependencies.
-      - name: Setup Dart SDK
+      # `pub get` — only the Dart SDK and the tool's own dependencies. The SDK
+      # is installed via a plain download so the workflow does not depend on a
+      # calling repo's allowed-actions policy.
+      - name: Install Dart SDK
         if: inputs.language == 'dart'
-        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+        run: |
+          curl -fsSL https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-x64-release.zip -o "$RUNNER_TEMP/dart-sdk.zip"
+          unzip -q "$RUNNER_TEMP/dart-sdk.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/dart-sdk/bin" >> "$GITHUB_PATH"
 
       - name: Get Dart extractor dependencies
         if: inputs.language == 'dart'
