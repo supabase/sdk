@@ -61,6 +61,13 @@ void _visitTopLevel(
         ParsedSymbol(name: name, kind: SymbolKind.variable, file: relPath),
       );
     }
+  } else if (declaration is ClassTypeAlias) {
+    // `class C = A with M;` is a class, not a typedef.
+    final name = declaration.name.lexeme;
+    if (_isPrivate(name)) return;
+    out.add(
+      ParsedSymbol(name: name, kind: SymbolKind.classKind, file: relPath),
+    );
   } else if (declaration is TypeAlias) {
     final name = declaration.name.lexeme;
     if (_isPrivate(name)) return;
@@ -142,9 +149,13 @@ List<ParsedSymbol> parseDartProject(String projectRoot) {
       final relPath = p.relative(entity.path, from: root);
       if (ignore.ignores(p.split(relPath).join('/'))) continue;
 
-      symbols.addAll(
-        extractFromSource(entity.readAsStringSync(), relPath),
-      );
+      try {
+        symbols.addAll(extractFromSource(entity.readAsStringSync(), relPath));
+      } catch (error) {
+        // A single unreadable or unparseable file must not fail the whole
+        // check; skip it and surface a warning on stderr.
+        stderr.writeln('warning: skipped $relPath: $error');
+      }
     }
   }
 

@@ -130,6 +130,19 @@ String get topLevelGetter => '';
       expect(_byName(symbols, 'Handler').kind, SymbolKind.variable);
       expect(names, isNot(contains('topLevelGetter')));
     });
+
+    test('treats a class-type alias as a class, not a typedef', () {
+      const source = '''
+class Base {}
+mixin Helper {}
+class Combined = Base with Helper;
+typedef Json = Map<String, dynamic>;
+''';
+      final symbols = extractFromSource(source, 'lib/alias.dart');
+
+      expect(_byName(symbols, 'Combined').kind, SymbolKind.classKind);
+      expect(_byName(symbols, 'Json').kind, SymbolKind.variable);
+    });
   });
 
   group('parseDartProject', () {
@@ -176,6 +189,17 @@ build/
       expect(matcher.ignores('packages/auth/lib/models.g.dart'), isTrue);
       expect(matcher.ignores('build', isDirectory: true), isTrue);
       expect(matcher.ignores('packages/auth/lib/client.dart'), isFalse);
+    });
+
+    test('directory patterns exclude their contents, not just the directory',
+        () {
+      final matcher = IgnoreMatcher.parse('build/\nexamples/\n');
+
+      expect(matcher.ignores('build/app.dart'), isTrue);
+      expect(matcher.ignores('packages/a/build/gen.dart'), isTrue);
+      expect(matcher.ignores('examples/p/lib/main.dart'), isTrue);
+      // A file whose name merely starts with the pattern is not excluded.
+      expect(matcher.ignores('lib/build_helper.dart'), isFalse);
     });
   });
 }

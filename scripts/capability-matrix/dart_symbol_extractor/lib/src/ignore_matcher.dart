@@ -47,23 +47,27 @@ class IgnoreMatcher {
   }
 
   /// Whether [relativePath] (POSIX-style, relative to root) is ignored.
-  /// [isDirectory] toggles directory-only patterns.
+  /// [isDirectory] toggles directory-only patterns. A directory pattern also
+  /// excludes everything nested beneath the matched directory.
   bool ignores(String relativePath, {bool isDirectory = false}) {
     final path = relativePath.replaceAll('\\', '/');
     var ignored = false;
     for (final rule in _rules) {
-      if (rule.directoryOnly && !isDirectory) continue;
-      if (rule.pattern.hasMatch(path)) {
-        ignored = !rule.negated;
-      }
+      final matched = rule.directoryOnly && !isDirectory
+          ? rule.below.hasMatch(path) // a file inside a matched directory
+          : rule.selfOrBelow.hasMatch(path);
+      if (matched) ignored = !rule.negated;
     }
     return ignored;
   }
 
-  static RegExp _compile(String glob) {
+  // Translates a gitignore glob into an anchored regex body. Anchored patterns
+  // (leading `/`) match from the root; unanchored ones match at any path
+  // segment boundary.
+  static String _compile(String glob) {
     final anchored = glob.startsWith('/');
     final body = anchored ? glob.substring(1) : glob;
-    final buffer = StringBuffer();
+    final buffer = StringBuffer(anchored ? '^' : r'(^|/)');
 
     for (var i = 0; i < body.length; i++) {
       final char = body[i];
@@ -82,20 +86,22 @@ class IgnoreMatcher {
         buffer.write(char);
       }
     }
-
-    // Anchored patterns match from the root; unanchored patterns match against
-    // any path segment boundary. Both also match anything nested beneath a
-    // matched directory.
-    final core = buffer.toString();
-    final prefix = anchored ? '^' : r'(^|/)';
-    return RegExp('$prefix$core(/.*)?\$');
+    return buffer.toString();
   }
 }
 
 class _Rule {
-  _Rule(this.pattern, this.negated, this.directoryOnly);
+  _Rule(String pattern, this.negated, this.directoryOnly)
+      : selfOrBelow = RegExp('$pattern(/.*)?\$'),
+        below = RegExp('$pattern/');
 
-  final RegExp pattern;
+  /// Matches the pattern itself and anything nested beneath it.
+  final RegExp selfOrBelow;
+
+  /// Matches only paths nested beneath the pattern (used to exclude files
+  /// inside a directory pattern).
+  final RegExp below;
+
   final bool negated;
   final bool directoryOnly;
 }
