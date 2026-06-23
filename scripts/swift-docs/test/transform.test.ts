@@ -171,6 +171,20 @@ describe("transformSymbolGraph", () => {
     expect(cls.extendedTypes).toEqual([{ type: "reference", name: "BaseAuthClient" }]);
   });
 
+  it("maps signOut (no returns field) to Void return type with no parameters", () => {
+    const cls = result.children.find(c => c.name === "AuthClient")!;
+    const sig = cls.children?.find(c => c.name === "signOut")!.signatures![0]!;
+    expect(sig.type).toEqual({ type: "intrinsic", name: "Void" });
+    expect(sig.parameters).toBeUndefined();
+  });
+
+  it("maps refresh (no parameters field) to no parameters on signature", () => {
+    const cls = result.children.find(c => c.name === "AuthClient")!;
+    const sig = cls.children?.find(c => c.name === "refresh")!.signatures![0]!;
+    expect(sig.parameters).toBeUndefined();
+    expect(sig.type).toEqual({ type: "reference", name: "AuthSession" });
+  });
+
   it("assigns unique integer ids to every node", () => {
     const allIds: number[] = [];
     function collect(decl: TypeDocDeclaration) {

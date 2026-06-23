@@ -86,6 +86,26 @@
       "names": { "title": "BaseAuthClient" },
       "accessLevel": "public",
       "location": { "uri": "file:///Sources/Auth/BaseAuthClient.swift", "position": { "line": 1, "character": 0 } }
+    },
+    {
+      "identifier": { "precise": "s:4Auth10AuthClientC7signOutyyF", "interfaceLanguage": "swift" },
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "names": { "title": "signOut()" },
+      "functionSignature": {
+        "parameters": []
+      },
+      "accessLevel": "public",
+      "location": { "uri": "file:///Sources/Auth/AuthClient.swift", "position": { "line": 30, "character": 4 } }
+    },
+    {
+      "identifier": { "precise": "s:4Auth10AuthClientC8refreshySSSSF", "interfaceLanguage": "swift" },
+      "kind": { "identifier": "swift.method", "displayName": "Instance Method" },
+      "names": { "title": "refresh(token:)" },
+      "functionSignature": {
+        "returns": [{ "kind": "typeIdentifier", "spelling": "AuthSession" }]
+      },
+      "accessLevel": "public",
+      "location": { "uri": "file:///Sources/Auth/AuthClient.swift", "position": { "line": 35, "character": 4 } }
     }
   ],
   "relationships": [
@@ -94,6 +114,8 @@
     { "kind": "memberOf", "source": "s:4Auth9AuthErrorO12invalidEmailyA2CmF", "target": "s:4Auth9AuthErrorO" },
     { "kind": "memberOf", "source": "s:4Auth9AuthErrorO12networkErroryA2CmF", "target": "s:4Auth9AuthErrorO" },
     { "kind": "conformsTo", "source": "s:4Auth10AuthClientC", "target": "s:4Auth15AuthProviderableP" },
-    { "kind": "inheritsFrom", "source": "s:4Auth10AuthClientC", "target": "s:4Auth14BaseAuthClientC" }
+    { "kind": "inheritsFrom", "source": "s:4Auth10AuthClientC", "target": "s:4Auth14BaseAuthClientC" },
+    { "kind": "memberOf", "source": "s:4Auth10AuthClientC7signOutyyF",     "target": "s:4Auth10AuthClientC" },
+    { "kind": "memberOf", "source": "s:4Auth10AuthClientC8refreshySSSSF",  "target": "s:4Auth10AuthClientC" }
   ]
 }

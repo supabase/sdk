@@ -26,7 +26,9 @@ console.error(`Extracting symbol graphs from ${root}...`);
 const graphs = extractSymbolGraphs(root);
 console.error(`Found ${graphs.length} symbol graph(s).`);
 
-const moduleName = graphs[0]?.module.name ?? "Module";
+// Use the umbrella module name if present; otherwise the first graph's name.
+const umbrella = graphs.find(g => g.module.name === "Supabase") ?? graphs[0];
+const moduleName = umbrella?.module.name ?? "Module";
 const project = transformSymbolGraph(graphs, moduleName, categoryMap);
 
 writeFileSync(out, JSON.stringify(project, null, 2), "utf8");

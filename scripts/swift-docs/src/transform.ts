@@ -68,7 +68,8 @@ function findTopLevelColon(s: string): number {
   return -1;
 }
 
-function parseFragments(frags: DeclarationFragment[], gp: Set<string>): TypeDocType {
+function parseFragments(frags: DeclarationFragment[] | undefined, gp: Set<string>): TypeDocType {
+  if (!frags?.length) return { type: "intrinsic", name: "Void" };
   return parseTypeString(frags.map(f => f.spelling).join("").trim(), gp);
 }
 
@@ -94,7 +95,7 @@ function buildSignature(
     }
   }
 
-  const parameters: TypeDocParameter[] = fs.parameters.map(p => {
+  const parameters: TypeDocParameter[] = (fs.parameters ?? []).map(p => {
     const docText = paramDocs.get(p.name);
     return {
       id: getId(),
