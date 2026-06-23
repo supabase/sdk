@@ -4,7 +4,6 @@ export type { ParsedSymbol, ParseResult };
 
 export interface SymbolGraphSymbol {
   kind: { identifier: string };
-  accessLevel: string;
   pathComponents: string[];
   location?: { uri: string };
 }
@@ -39,8 +38,6 @@ export function normalizeSymbolGraph(
   const result: ParsedSymbol[] = [];
 
   for (const sym of symbols) {
-    if (sym.accessLevel !== "public" && sym.accessLevel !== "open") continue;
-
     const kind = KIND_MAP[sym.kind.identifier];
     if (kind === undefined) continue;
 

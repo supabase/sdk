@@ -9,13 +9,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // Helper to build a minimal SymbolGraphSymbol for inline tests.
 function sym(
   identifier: string,
-  accessLevel: string,
   pathComponents: string[],
   uri?: string,
 ): SymbolGraphSymbol {
   return {
     kind: { identifier },
-    accessLevel,
     pathComponents,
     ...(uri ? { location: { uri } } : {}),
   };
@@ -27,77 +25,77 @@ function sym(
 
 describe("kind mapping — types", () => {
   it("maps swift.class to 'class'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "public", ["MyClass"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["MyClass"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass", kind: "class" });
   });
   it("maps swift.struct to 'class'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.struct", "public", ["MyStruct"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.struct", ["MyStruct"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyStruct", kind: "class" });
   });
   it("maps swift.enum to 'class'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.enum", "public", ["MyEnum"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.enum", ["MyEnum"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyEnum", kind: "class" });
   });
   it("maps swift.protocol to 'class'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.protocol", "public", ["MyProto"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.protocol", ["MyProto"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyProto", kind: "class" });
   });
   it("maps swift.actor to 'class'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.actor", "public", ["MyActor"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.actor", ["MyActor"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyActor", kind: "class" });
   });
 });
 
 describe("kind mapping — callables", () => {
   it("maps swift.func (top-level) to 'function'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.func", "public", ["globalFn()"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.func", ["globalFn()"])], "");
     expect(symbols[0]).toMatchObject({ name: "globalFn", kind: "function" });
   });
   it("maps swift.func.op to 'function'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.func.op", "public", ["==(_:_:)"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.func.op", ["==(_:_:)"])], "");
     expect(symbols[0]).toMatchObject({ name: "==", kind: "function" });
   });
   it("maps swift.method to 'method'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.method", "public", ["MyClass", "doThing()"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.method", ["MyClass", "doThing()"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.doThing", kind: "method" });
   });
   it("maps swift.type.method (static) to 'method'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.type.method", "public", ["MyClass", "create()"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.type.method", ["MyClass", "create()"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.create", kind: "method" });
   });
   it("maps swift.init to 'method' and strips signature", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.init", "public", ["MyClass", "init(url:key:)"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.init", ["MyClass", "init(url:key:)"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.init", kind: "method" });
   });
   it("maps swift.subscript to 'method'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.subscript", "public", ["MyClass", "subscript(_:)"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.subscript", ["MyClass", "subscript(_:)"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.subscript", kind: "method" });
   });
 });
 
 describe("kind mapping — properties and variables", () => {
   it("maps swift.property to 'property'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.property", "public", ["MyClass", "value"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.property", ["MyClass", "value"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.value", kind: "property" });
   });
   it("maps swift.type.property (static) to 'property'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.type.property", "public", ["MyClass", "shared"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.type.property", ["MyClass", "shared"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.shared", kind: "property" });
   });
   it("maps swift.enum.case to 'property'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.enum.case", "public", ["MyEnum", "alpha"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.enum.case", ["MyEnum", "alpha"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyEnum.alpha", kind: "property" });
   });
   it("maps swift.typealias to 'variable'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.typealias", "public", ["MyClass", "Callback"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.typealias", ["MyClass", "Callback"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyClass.Callback", kind: "variable" });
   });
   it("maps swift.associatedtype to 'variable'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.associatedtype", "public", ["MyProto", "Item"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.associatedtype", ["MyProto", "Item"])], "");
     expect(symbols[0]).toMatchObject({ name: "MyProto.Item", kind: "variable" });
   });
   it("maps swift.var (global) to 'variable'", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.var", "public", ["globalVar"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.var", ["globalVar"])], "");
     expect(symbols[0]).toMatchObject({ name: "globalVar", kind: "variable" });
   });
 });
@@ -108,11 +106,11 @@ describe("kind mapping — properties and variables", () => {
 
 describe("skipped kinds", () => {
   it("skips swift.deinit", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.deinit", "public", ["MyClass", "deinit"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.deinit", ["MyClass", "deinit"])], "");
     expect(symbols).toHaveLength(0);
   });
   it("skips unrecognised kind identifiers", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.unknown.thing", "public", ["Something"])], "");
+    const { symbols } = normalizeSymbolGraph([sym("swift.unknown.thing", ["Something"])], "");
     expect(symbols).toHaveLength(0);
   });
 });
@@ -124,25 +122,25 @@ describe("skipped kinds", () => {
 describe("name construction", () => {
   it("joins pathComponents with '.'", () => {
     const { symbols } = normalizeSymbolGraph(
-      [sym("swift.method", "public", ["SupabaseClient", "signIn(email:password:)"])], ""
+      [sym("swift.method", ["SupabaseClient", "signIn(email:password:)"])], ""
     );
     expect(symbols[0].name).toBe("SupabaseClient.signIn");
   });
   it("handles deeply nested types", () => {
     const { symbols } = normalizeSymbolGraph(
-      [sym("swift.property", "public", ["Outer", "Inner", "value"])], ""
+      [sym("swift.property", ["Outer", "Inner", "value"])], ""
     );
     expect(symbols[0].name).toBe("Outer.Inner.value");
   });
   it("strips trailing function signature from last pathComponent", () => {
     const { symbols } = normalizeSymbolGraph(
-      [sym("swift.method", "public", ["Auth", "signUp(email:password:captchaToken:)"])], ""
+      [sym("swift.method", ["Auth", "signUp(email:password:captchaToken:)"])], ""
     );
     expect(symbols[0].name).toBe("Auth.signUp");
   });
   it("leaves non-function pathComponents unchanged", () => {
     const { symbols } = normalizeSymbolGraph(
-      [sym("swift.property", "public", ["Auth", "session"])], ""
+      [sym("swift.property", ["Auth", "session"])], ""
     );
     expect(symbols[0].name).toBe("Auth.session");
   });
@@ -156,11 +154,11 @@ describe("file path resolution", () => {
   it("strips 'file://' prefix and makes path relative to sdkRoot", () => {
     const sdkRoot = "/home/runner/work/supabase-swift";
     const uri = `file://${sdkRoot}/Sources/Auth/AuthClient.swift`;
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "public", ["Auth"], uri)], sdkRoot);
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"], uri)], sdkRoot);
     expect(symbols[0].file).toBe("Sources/Auth/AuthClient.swift");
   });
   it("returns empty string when location is absent", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "public", ["Auth"])], "/any/root");
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"])], "/any/root");
     expect(symbols[0].file).toBe("");
   });
 });
@@ -172,8 +170,8 @@ describe("file path resolution", () => {
 describe("multi-symbol input", () => {
   it("handles symbols from multiple modules in merged flat array", () => {
     const input: SymbolGraphSymbol[] = [
-      sym("swift.class",  "public", ["ClassFromAuth"]),
-      sym("swift.struct", "public", ["StructFromStorage"]),
+      sym("swift.class",  ["ClassFromAuth"]),
+      sym("swift.struct", ["StructFromStorage"]),
     ];
     const { symbols } = normalizeSymbolGraph(input, "");
     const names = symbols.map(s => s.name);
