@@ -51,10 +51,6 @@ jobs:
         run: npm run validate-compliance -- "${{ github.workspace }}/${{ inputs.compliance-file }}"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-  # Each language extracts its public API into pr-symbols.json / base-symbols.json
-  # in its OWN job, gated by a job-level `if`. A job whose condition is false is
-  # skipped entirely and never resolves the actions it references, so one
-  # language's toolchain (e.g. setup-python) can never break another's run.
   extract-javascript:
     name: Extract symbols (JavaScript)
     if: inputs.language == 'javascript'
@@ -344,9 +340,6 @@ jobs:
       - extract-python
       - extract-dart
       - extract-swift
-    # Run once the matching language's extract job has produced symbols. The
-    # three skipped extract jobs report "skipped"; `!failure() && !cancelled()`
-    # lets this job proceed as long as the one that ran succeeded.
     if: ${{ !failure() && !cancelled() }}
     steps:
       - name: Validate language input
