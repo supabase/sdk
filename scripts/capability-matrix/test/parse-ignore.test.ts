@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { loadIgnore } from "../src/parse-ignore";
 
 function makeTempDir(suffix: string): string {
-  const dir = join(tmpdir(), `sdk-parse-ignore-test-${suffix}-${process.pid}`);
+  const dir = join(tmpdir(), `.sdk-parse-ignore-test-${suffix}-${process.pid}`);
   mkdirSync(dir, { recursive: true });
   return dir;
 }

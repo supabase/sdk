@@ -8,13 +8,21 @@ on:
         type: string
         default: sdk-compliance.yaml
       language:
-        description: SDK language for public API check — "swift", "javascript", or "dart"
+        description: SDK language for public API check — "swift", "javascript", "python", or "dart"
         type: string
         required: true
       sdk-ref:
         description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
         type: string
         default: main
+      griffe-packages:
+        description: Space-separated griffe package names to dump (python only)
+        type: string
+        default: ""
+      griffe-search-paths:
+        description: Comma-separated search paths for griffe relative to repo root (python only)
+        type: string
+        default: ""
 
 jobs:
   validate:
@@ -84,6 +92,66 @@ jobs:
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
+      - name: Set up Python
+        if: inputs.language == 'python'
+        uses: actions/setup-python@39cd14951b08e74b54015ebf0246ef4cc7b4ce8 # v5.5.0
+        with:
+          python-version: "3.x"
+
+      - name: Install griffe
+        if: inputs.language == 'python'
+        run: pip install griffe
+
+      - name: Run griffe on PR branch
+        if: inputs.language == 'python'
+        run: |
+          if [ -z "${{ inputs.griffe-packages }}" ]; then
+            echo "::error::griffe-packages input is required when language is python"
+            exit 1
+          fi
+          SEARCH_FLAGS=""
+          if [ -n "${{ inputs.griffe-search-paths }}" ]; then
+            SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
+              | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-pr/$p"; done \
+              | tr '\n' ' ')
+          fi
+          PKGS=$(echo "${{ inputs.griffe-packages }}" | tr ',' ' ' | tr -s ' ')
+          python -m griffe dump $PKGS $SEARCH_FLAGS \
+            -o "$GITHUB_WORKSPACE/api-raw-pr.json"
+
+      - name: Normalize griffe output (PR branch)
+        if: inputs.language == 'python'
+        run: |
+          npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-pr.json" \
+            --project-root "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Run griffe on base branch
+        if: inputs.language == 'python'
+        run: |
+          if [ -z "${{ inputs.griffe-packages }}" ]; then
+            echo "::error::griffe-packages input is required when language is python"
+            exit 1
+          fi
+          SEARCH_FLAGS=""
+          if [ -n "${{ inputs.griffe-search-paths }}" ]; then
+            SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
+              | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-base/$p"; done \
+              | tr '\n' ' ')
+          fi
+          PKGS=$(echo "${{ inputs.griffe-packages }}" | tr ',' ' ' | tr -s ' ')
+          python -m griffe dump $PKGS $SEARCH_FLAGS \
+            -o "$GITHUB_WORKSPACE/api-raw-base.json"
+
+      - name: Normalize griffe output (base branch)
+        if: inputs.language == 'python'
+        run: |
+          npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-base.json" \
+            --project-root "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
       # The Dart parser is a small package:analyzer tool run directly with
       # `dart run`. It parses syntactically, so the target packages need no
       # `pub get` — only the Dart SDK and the tool's own dependencies.
@@ -140,23 +208,23 @@ jobs:
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Resolve parse command
-        if: inputs.language != 'swift' && inputs.language != 'dart'
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
         id: resolve
         run: |
           case "${{ inputs.language }}" in
             javascript) echo "cmd=parse-ts" >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, dart"; exit 1 ;;
+            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, dart, python, javascript"; exit 1 ;;
           esac
 
       - name: Parse PR branch
-        if: inputs.language != 'swift' && inputs.language != 'dart'
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
         run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
             > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Parse base branch
-        if: inputs.language != 'swift' && inputs.language != 'dart'
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
         run: |
           npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
