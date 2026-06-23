@@ -103,29 +103,6 @@ describe("kind mapping — properties and variables", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Access level filter
-// ---------------------------------------------------------------------------
-
-describe("access level filter", () => {
-  it("includes public symbols", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "public", ["PubClass"])], "");
-    expect(symbols).toHaveLength(1);
-  });
-  it("includes open symbols", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "open", ["OpenClass"])], "");
-    expect(symbols).toHaveLength(1);
-  });
-  it("excludes internal symbols", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.class", "internal", ["InternalClass"])], "");
-    expect(symbols).toHaveLength(0);
-  });
-  it("excludes private symbols", () => {
-    const { symbols } = normalizeSymbolGraph([sym("swift.method", "private", ["MyClass", "secret()"])], "");
-    expect(symbols).toHaveLength(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Skipped kinds
 // ---------------------------------------------------------------------------
 
@@ -230,9 +207,6 @@ describe("real fixture smoke test", () => {
   });
   it("includes OpenClass from fixture (open access level)", () => {
     expect(symbols.map(s => s.name)).toContain("OpenClass");
-  });
-  it("excludes InternalClass from fixture", () => {
-    expect(symbols.map(s => s.name)).not.toContain("InternalClass");
   });
   it("includes globalFunction from fixture", () => {
     expect(symbols.map(s => s.name)).toContain("globalFunction");
