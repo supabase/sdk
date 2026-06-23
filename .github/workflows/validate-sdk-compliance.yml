@@ -101,9 +101,9 @@ jobs:
         run: |
           swift package dump-symbol-graph \
             --minimum-access-level public \
-            --skip-synthesized-members \
-            --output-directory "$GITHUB_WORKSPACE/_sg-pr"
-          jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-pr"/*.symbols.json \
+            --skip-synthesized-members
+          SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
+          jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
             > "$GITHUB_WORKSPACE/pr-raw.json"
         working-directory: _sdk-pr
 
@@ -112,9 +112,9 @@ jobs:
         run: |
           swift package dump-symbol-graph \
             --minimum-access-level public \
-            --skip-synthesized-members \
-            --output-directory "$GITHUB_WORKSPACE/_sg-base"
-          jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-base"/*.symbols.json \
+            --skip-synthesized-members
+          SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
+          jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
             > "$GITHUB_WORKSPACE/base-raw.json"
         working-directory: _sdk-base
 
