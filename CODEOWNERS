@@ -1,2 +1,54 @@
-# Global owners for the entire repository
-* @supabase/sdk @supabase/security
+# This file is structured to minimize alert fatigue for other teams (for example, security), while maintaining supply chain safety and compliance requirements.
+
+# GitHub does not accumulate owners: the last matching rule replaces the owner set, it does not add to it.
+# The SDK team must therefore be repeated on every rule by design, so they retain ownership alongside other teams.
+# Also, order matters. GitHub applies the LAST matching rule. This means:
+# - Broad directory fallbacks must remain at the top
+# - Specific high-risk overrides and tripwires must stay at the bottom
+
+# 1. GLOBAL FALLBACK LAYER
+#    Assigns general code to core maintainers (SDK Team).
+#    Other teams are explicitly omitted here to prevent noise on routine PRs.
+
+* @supabase/sdk
+
+# 2. GENERAL SECURITY & SUPPLY CHAIN LAYER (High Risk)
+#    Security review is strictly mandated for supply chain vectors and repository governance.
+#    Git client configuration files (.gitignore, .gitattributes) are intentionally excluded to avoid unnecessary friction and false positives.
+
+/.github/ @supabase/sdk @supabase/security
+/SECURITY.md @supabase/sdk @supabase/security
+/CODEOWNERS @supabase/sdk @supabase/security
+
+# 3. THE TRIPWIRE LAYER (Accidental Commits / Secrets Leakage)
+#    Acts as a fail-safe for Git-related mishaps (for example, subverted .gitignore rule).
+#    Explicitly flags common secret patterns so the Security team is made aware.
+
+# Environment variables.
+*.env* @supabase/sdk @supabase/security
+
+# Certificates and private keys.
+*.pem @supabase/sdk @supabase/security
+*.key @supabase/sdk @supabase/security
+*.p12 @supabase/sdk @supabase/security
+*.pfx @supabase/sdk @supabase/security
+
+# SSH private keys have no extension - id_* covers all ssh-keygen defaults (id_rsa, id_ed25519, the _sk variants and future types).
+id_* @supabase/sdk @supabase/security
+
+# Java keystores, PGP keys, Terraform state (holds plaintext secrets).
+*.jks @supabase/sdk @supabase/security
+*.keystore @supabase/sdk @supabase/security
+*.gpg @supabase/sdk @supabase/security
+*.asc @supabase/sdk @supabase/security
+*.tfstate @supabase/sdk @supabase/security
+*.tfvars @supabase/sdk @supabase/security
+
+# Local databases or accidental data dumps.
+*.sqlite @supabase/sdk @supabase/security
+*.sqlite3 @supabase/sdk @supabase/security
+*.db @supabase/sdk @supabase/security
+
+# Common accidental config/secret dumps (typically JSON or YAML but catch anything likely).
+*secret*.* @supabase/sdk @supabase/security
+*credential*.* @supabase/sdk @supabase/security

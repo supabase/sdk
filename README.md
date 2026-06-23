@@ -50,11 +50,15 @@ features:
   auth.mfa_enroll:
     status: partially_implemented
     note: "TOTP only — phone factor not yet supported"
+    symbols:
+      - GoTrueClient.mfaEnroll   # public symbol names that implement this feature
 
   # Unlisted features default to not_implemented
 ```
 
 The file is **sparse** — only list features that differ from `not_implemented`. Unknown feature IDs and invalid status values fail CI.
+
+The optional `symbols` field maps a compliance entry to the public API symbols in your SDK. CI uses this to detect when a PR adds a new public symbol that is not yet registered — see [Opt-in to validation](#opt-in-to-validation) below.
 
 ### Opt-in to validation
 
@@ -65,9 +69,14 @@ on: [pull_request]
 jobs:
   validate:
     uses: supabase/sdk/.github/workflows/validate-sdk-compliance.yml@main
+    with:
+      language: swift   # one of: swift, javascript, dart
 ```
 
-This checks out the canonical feature list from this repo and validates your compliance file against it on every PR.
+This checks out the canonical feature list from this repo and runs two checks on every PR:
+
+1. **Compliance validation** — verifies your `sdk-compliance.yaml` against the canonical feature list.
+2. **Public API check** — parses the SDK's public symbols, diffs against the base branch, and fails if any new symbol is not registered in `sdk-compliance.yaml`.
 
 ## Local development
 
@@ -78,6 +87,7 @@ npm ci
 npm test                           # vitest suite for the validator
 npm run typecheck                  # tsc --noEmit
 npm run validate                   # schema + structural checks (no network)
+npm run validate:online            # + reference checks against GitHub (needs GITHUB_TOKEN)
 npm run report                     # parity report as JSON (overall, per-area, per-language)
 npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
 npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
@@ -89,6 +99,6 @@ npm run build-site compliance.json # render the site with compliance data
 
 | Workflow | Trigger | What it does |
 |---|---|---|
-| `validate-capabilities.yml` | push to `main`, PRs touching matrix files | Schema + structural checks including spec file validation. |
-| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list. |
+| `validate-capabilities.yml` | push to `main`, PRs touching matrix files, nightly | Tier 1: schema, tests, typecheck, structural checks. Tier 2 (PRs + nightly): reference checks against GitHub. |
+| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; blocks PRs that add public symbols not registered in the compliance file. |
 | `aggregate-capabilities.yml` | hourly cron + `workflow_dispatch` | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages. |
