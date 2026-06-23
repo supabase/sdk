@@ -186,3 +186,34 @@ describe("transformSymbolGraph", () => {
     expect(new Set(allIds).size).toBe(allIds.length);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Category injection via categoryMap
+// ---------------------------------------------------------------------------
+
+describe("transformSymbolGraph with categoryMap", () => {
+  const mapped = transformSymbolGraph([fixture], "Auth", { Auth: "Authentication" });
+
+  it("injects @category on a top-level class with an existing doc comment", () => {
+    const cls = mapped.children.find(c => c.name === "AuthClient")!;
+    const tag = cls.comment?.blockTags?.find(t => t.tag === "@category");
+    expect(tag).toBeDefined();
+    expect(tag!.content[0].text).toBe("Authentication");
+    expect(cls.comment?.summary).toEqual([{ kind: "text", text: "Manages authentication state." }]);
+  });
+
+  it("injects @category on a callable member with no prior comment", () => {
+    const cls = mapped.children.find(c => c.name === "AuthClient")!;
+    const method = cls.children?.find(c => c.name === "signIn")!;
+    const tag = method.comment?.blockTags?.find(t => t.tag === "@category");
+    expect(tag).toBeDefined();
+    expect(tag!.content[0].text).toBe("Authentication");
+    expect(method.comment?.summary).toEqual([]);
+  });
+
+  it("does not inject @category when module is absent from map", () => {
+    const none = transformSymbolGraph([fixture], "Auth", {});
+    const cls = none.children.find(c => c.name === "AuthClient")!;
+    expect(cls.comment?.blockTags?.find(t => t.tag === "@category")).toBeUndefined();
+  });
+});

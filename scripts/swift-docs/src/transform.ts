@@ -3,7 +3,7 @@ import type {
 } from "./symbol-graph.js";
 import type {
   TypeDocProject, TypeDocDeclaration, TypeDocSignature,
-  TypeDocParameter, TypeDocType, TypeDocKind,
+  TypeDocParameter, TypeDocType, TypeDocKind, CommentBlockTag,
 } from "./typedoc-types.js";
 import { KIND_STRING } from "./typedoc-types.js";
 import { parseDocComment } from "./doc-comment.js";
@@ -121,14 +121,22 @@ function buildSignature(
   };
 }
 
-export function transformSymbolGraph(graphs: SymbolGraph[], moduleName: string): TypeDocProject {
+export function transformSymbolGraph(
+  graphs: SymbolGraph[],
+  moduleName: string,
+  categoryMap: Record<string, string> = {},
+): TypeDocProject {
   let nextId = 1;
   const getId = () => nextId++;
 
   const allSymbols = new Map<string, SymbolGraphSymbol>();
   const allRelationships: SymbolGraph["relationships"] = [];
+  const symbolModule = new Map<string, string>();
   for (const g of graphs) {
-    for (const s of g.symbols) allSymbols.set(s.identifier.precise, s);
+    for (const s of g.symbols) {
+      allSymbols.set(s.identifier.precise, s);
+      symbolModule.set(s.identifier.precise, g.module.name);
+    }
     allRelationships.push(...g.relationships);
   }
 
@@ -208,6 +216,17 @@ export function transformSymbolGraph(graphs: SymbolGraph[], moduleName: string):
         type: "reference",
         name: allSymbols.get(superclass)?.names.title ?? superclass,
       }];
+    }
+
+    const modName = symbolModule.get(precise);
+    const category = modName ? categoryMap[modName] : undefined;
+    if (category) {
+      const tag: CommentBlockTag = { tag: "@category", content: [{ kind: "text", text: category }] };
+      if (decl.comment) {
+        decl.comment = { ...decl.comment, blockTags: [...(decl.comment.blockTags ?? []), tag] };
+      } else {
+        decl.comment = { summary: [], blockTags: [tag] };
+      }
     }
 
     declarations.set(precise, decl);
