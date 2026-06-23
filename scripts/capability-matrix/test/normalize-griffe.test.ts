@@ -256,10 +256,10 @@ describe("normalizeGriffe — file inheritance", () => {
   });
 });
 
-describe("normalizeGriffe — sdk-parse-ignore", () => {
-  it("filters out symbols whose file matches sdk-parse-ignore", () => {
+describe("normalizeGriffe — .sdk-parse-ignore", () => {
+  it("filters out symbols whose file matches .sdk-parse-ignore", () => {
     const root = mkdtempSync(join(tmpdir(), "griffe-test-"));
-    writeFileSync(join(root, "sdk-parse-ignore"), "tests/\n");
+    writeFileSync(join(root, ".sdk-parse-ignore"), "tests/\n");
 
     const input: GriffeOutput = {
       mypkg: {
@@ -274,9 +274,9 @@ describe("normalizeGriffe — sdk-parse-ignore", () => {
     expect(symbols).toHaveLength(0);
   });
 
-  it("does not filter symbols whose file does not match sdk-parse-ignore", () => {
+  it("does not filter symbols whose file does not match .sdk-parse-ignore", () => {
     const root = mkdtempSync(join(tmpdir(), "griffe-test-"));
-    writeFileSync(join(root, "sdk-parse-ignore"), "src/tests/\n");
+    writeFileSync(join(root, ".sdk-parse-ignore"), "src/tests/\n");
 
     const input: GriffeOutput = {
       mypkg: {
@@ -291,9 +291,9 @@ describe("normalizeGriffe — sdk-parse-ignore", () => {
     expect(symbols).toHaveLength(1);
   });
 
-  it("works with no sdk-parse-ignore file present", () => {
+  it("works with no .sdk-parse-ignore file present", () => {
     const root = mkdtempSync(join(tmpdir(), "griffe-test-no-ignore-"));
-    // no sdk-parse-ignore file written
+    // no .sdk-parse-ignore file written
 
     const input = pkg(join(root, "src/client.py"), {
       MyClient: { kind: "class", members: {} },
