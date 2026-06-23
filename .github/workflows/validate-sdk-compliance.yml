@@ -96,29 +96,13 @@ jobs:
         run: dart pub get
         working-directory: _sdk-spec/scripts/dart_symbol_extractor
 
-      - name: Build PR branch (Swift)
-        if: inputs.language == 'swift'
-        run: swift build
-        working-directory: _sdk-pr
-
-      - name: Build base branch (Swift)
-        if: inputs.language == 'swift'
-        run: swift build
-        working-directory: _sdk-base
-
       - name: Extract symbol graphs — PR
         if: inputs.language == 'swift'
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/_sg-pr"
-          TRIPLE=$(swift -print-target-info | jq -r '.target.triple')
-          SDK=$(xcrun --sdk macosx --show-sdk-path)
-          for MODULE in $(swift package dump-package | jq -r '[.products[] | select(.type.library != null) | .targets[]] | unique[]'); do
-            swift-symbolgraph-extract -module-name "$MODULE" \
-              -target "$TRIPLE" -sdk "$SDK" \
-              -skip-synthesized-members \
-              -I .build/debug \
-              -output-dir "$GITHUB_WORKSPACE/_sg-pr"
-          done
+          swift package dump-symbol-graph \
+            --minimum-access-level public \
+            --skip-synthesized-members \
+            --output-directory "$GITHUB_WORKSPACE/_sg-pr"
           jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-pr"/*.symbols.json \
             > "$GITHUB_WORKSPACE/pr-raw.json"
         working-directory: _sdk-pr
@@ -126,16 +110,10 @@ jobs:
       - name: Extract symbol graphs — base
         if: inputs.language == 'swift'
         run: |
-          mkdir -p "$GITHUB_WORKSPACE/_sg-base"
-          TRIPLE=$(swift -print-target-info | jq -r '.target.triple')
-          SDK=$(xcrun --sdk macosx --show-sdk-path)
-          for MODULE in $(swift package dump-package | jq -r '[.products[] | select(.type.library != null) | .targets[]] | unique[]'); do
-            swift-symbolgraph-extract -module-name "$MODULE" \
-              -target "$TRIPLE" -sdk "$SDK" \
-              -skip-synthesized-members \
-              -I .build/debug \
-              -output-dir "$GITHUB_WORKSPACE/_sg-base"
-          done
+          swift package dump-symbol-graph \
+            --minimum-access-level public \
+            --skip-synthesized-members \
+            --output-directory "$GITHUB_WORKSPACE/_sg-base"
           jq -s '[.[] | .symbols[]]' "$GITHUB_WORKSPACE/_sg-base"/*.symbols.json \
             > "$GITHUB_WORKSPACE/base-raw.json"
         working-directory: _sdk-base
