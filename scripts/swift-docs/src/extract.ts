@@ -14,6 +14,9 @@ export function extractSymbolGraphs(sdkRoot: string): SymbolGraph[] {
       { cwd: sdkRoot, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
     );
 
+    if (result.error) {
+      throw new Error(`Failed to spawn swift: ${result.error.message}`);
+    }
     if (result.status !== 0) {
       throw new Error(`swift build failed:\n${result.stderr}`);
     }

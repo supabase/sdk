@@ -47,11 +47,11 @@ export function parseDocComment(lines: Array<{ text: string }>): TypeDocComment 
     const t = raw.trim();
 
     if (!inTags && !isTagLine(t)) {
-      if (t) summary.push({ kind: "text", text: raw });
+      if (t) summary.push({ kind: "text", text: t });
       continue;
     }
 
-    if (!isTagLine(t)) continue;
+    if (!isTagLine(t)) continue; // non-tag lines after first tag are inter-tag content, not summary
 
     inTags = true;
     const tag = parseTagLine(t);

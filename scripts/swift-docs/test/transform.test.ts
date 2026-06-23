@@ -166,6 +166,11 @@ describe("transformSymbolGraph", () => {
     expect(cls.sources?.[0].line).toBe(10);
   });
 
+  it("populates extendedTypes on AuthClient from inheritsFrom relationship", () => {
+    const cls = result.children.find(c => c.name === "AuthClient")!;
+    expect(cls.extendedTypes).toEqual([{ type: "reference", name: "BaseAuthClient" }]);
+  });
+
   it("assigns unique integer ids to every node", () => {
     const allIds: number[] = [];
     function collect(decl: TypeDocDeclaration) {
