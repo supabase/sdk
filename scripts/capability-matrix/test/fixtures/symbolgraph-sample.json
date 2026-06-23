@@ -1,0 +1,1116 @@
+[
+  {
+    "kind": {
+      "identifier": "swift.class",
+      "displayName": "Class"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass"
+    ],
+    "names": {
+      "title": "SimpleClass",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleClass"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "class"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleClass"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "class"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleClass"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 0,
+        "character": 13
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.property",
+      "displayName": "Instance Property"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC5valueSSvp",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "value"
+    ],
+    "names": {
+      "title": "value",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "value"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "value"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 1,
+        "character": 15
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC5valueACSS_tcfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "init(value:)"
+    ],
+    "names": {
+      "title": "init(value:)",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "value"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ]
+    },
+    "functionSignature": {
+      "parameters": [
+        {
+          "name": "value",
+          "declarationFragments": [
+            {
+              "kind": "identifier",
+              "spelling": "value"
+            },
+            {
+              "kind": "text",
+              "spelling": ": "
+            },
+            {
+              "kind": "typeIdentifier",
+              "spelling": "String",
+              "preciseIdentifier": "s:SS"
+            }
+          ]
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "("
+      },
+      {
+        "kind": "externalParam",
+        "spelling": "value"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      },
+      {
+        "kind": "text",
+        "spelling": ")"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 2,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC14instanceMethodSSyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "instanceMethod()"
+    ],
+    "names": {
+      "title": "instanceMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "instanceMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "instanceMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "String",
+        "preciseIdentifier": "s:SS"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 3,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.type.method",
+      "displayName": "Type Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12staticMethodACyFZ",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "staticMethod()"
+    ],
+    "names": {
+      "title": "staticMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "staticMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SimpleClass",
+          "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "typeIdentifier",
+          "spelling": "SimpleClass",
+          "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "static"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "staticMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "() -> "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "SimpleClass",
+        "preciseIdentifier": "s:9SampleLib11SimpleClassC"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 4,
+        "character": 23
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.struct",
+      "displayName": "Structure"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12NestedStructV",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "NestedStruct"
+    ],
+    "names": {
+      "title": "SimpleClass.NestedStruct",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "NestedStruct"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "NestedStruct"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "struct"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "NestedStruct"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 5,
+        "character": 18
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib11SimpleClassC12NestedStructVAEycfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleClass",
+      "NestedStruct",
+      "init()"
+    ],
+    "names": {
+      "title": "init()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {},
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 5,
+        "character": 40
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.class",
+      "displayName": "Class"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassC",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass"
+    ],
+    "names": {
+      "title": "OpenClass",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "OpenClass"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "class"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "OpenClass"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "class"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "OpenClass"
+      }
+    ],
+    "accessLevel": "open",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 7,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.init",
+      "displayName": "Initializer"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassCACycfc",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass",
+      "init()"
+    ],
+    "names": {
+      "title": "init()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {},
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "init"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 8,
+        "character": 11
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9OpenClassC10openMethodyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "OpenClass",
+      "openMethod()"
+    ],
+    "names": {
+      "title": "openMethod()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "openMethod"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "openMethod"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "open",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 9,
+        "character": 14
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum",
+      "displayName": "Enumeration"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum"
+    ],
+    "names": {
+      "title": "SimpleEnum",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleEnum"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "enum"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleEnum"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "enum"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleEnum"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 12,
+        "character": 12
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum.case",
+      "displayName": "Case"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO5alphayA2CmF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "alpha"
+    ],
+    "names": {
+      "title": "SimpleEnum.alpha",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "case"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "alpha"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "case"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "alpha"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 12,
+        "character": 30
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.enum.case",
+      "displayName": "Case"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib10SimpleEnumO4betayA2CmF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleEnum",
+      "beta"
+    ],
+    "names": {
+      "title": "SimpleEnum.beta",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "case"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "beta"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "case"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "beta"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 12,
+        "character": 37
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.protocol",
+      "displayName": "Protocol"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14SimpleProtocolP",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleProtocol"
+    ],
+    "names": {
+      "title": "SimpleProtocol",
+      "navigator": [
+        {
+          "kind": "identifier",
+          "spelling": "SimpleProtocol"
+        }
+      ],
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "protocol"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "SimpleProtocol"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "protocol"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "SimpleProtocol"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 13,
+        "character": 16
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.method",
+      "displayName": "Instance Method"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14SimpleProtocolP11requirementyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "SimpleProtocol",
+      "requirement()"
+    ],
+    "names": {
+      "title": "requirement()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "requirement"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "requirement"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 13,
+        "character": 38
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.func",
+      "displayName": "Function"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib14globalFunctionyyF",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "globalFunction()"
+    ],
+    "names": {
+      "title": "globalFunction()",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "globalFunction"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "functionSignature": {
+      "returns": [
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "func"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "globalFunction"
+      },
+      {
+        "kind": "text",
+        "spelling": "()"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 14,
+        "character": 12
+      }
+    }
+  },
+  {
+    "kind": {
+      "identifier": "swift.var",
+      "displayName": "Global Variable"
+    },
+    "identifier": {
+      "precise": "s:9SampleLib9globalVarSivp",
+      "interfaceLanguage": "swift"
+    },
+    "pathComponents": [
+      "globalVar"
+    ],
+    "names": {
+      "title": "globalVar",
+      "subHeading": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "globalVar"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ]
+    },
+    "declarationFragments": [
+      {
+        "kind": "keyword",
+        "spelling": "var"
+      },
+      {
+        "kind": "text",
+        "spelling": " "
+      },
+      {
+        "kind": "identifier",
+        "spelling": "globalVar"
+      },
+      {
+        "kind": "text",
+        "spelling": ": "
+      },
+      {
+        "kind": "typeIdentifier",
+        "spelling": "Int",
+        "preciseIdentifier": "s:Si"
+      }
+    ],
+    "accessLevel": "public",
+    "location": {
+      "uri": "file:///sdk-root/Sources/SampleLib/SampleLib.swift",
+      "position": {
+        "line": 15,
+        "character": 11
+      }
+    }
+  }
+]

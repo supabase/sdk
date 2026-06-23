@@ -9,7 +9,7 @@
     "validate:online": "tsx src/cli.ts validate --online",
     "validate-compliance": "tsx src/compliance-cli.ts",
     "parse-ts": "tsx src/parse-ts.ts",
-    "parse-swift": "tsx src/parse-swift.ts",
+    "normalize-symbolgraph": "tsx src/normalize-symbolgraph-cli.ts",
     "check-api-symbols": "tsx src/check-api-symbols.ts",
     "aggregate": "tsx src/aggregate.ts",
     "report": "tsx src/cli.ts report",
