@@ -99,10 +99,13 @@ jobs:
       - name: Extract symbol graphs — PR
         if: inputs.language == 'swift'
         run: |
+          # || true: test targets may fail to extract on CI runners; library targets land first
           swift package dump-symbol-graph \
             --minimum-access-level public \
-            --skip-synthesized-members
+            --skip-synthesized-members || true
           SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
+          NFILES=$(ls "$SGDIR"/*.symbols.json 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$NFILES" -eq 0 ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
           jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
             > "$GITHUB_WORKSPACE/pr-raw.json"
         working-directory: _sdk-pr
@@ -112,8 +115,10 @@ jobs:
         run: |
           swift package dump-symbol-graph \
             --minimum-access-level public \
-            --skip-synthesized-members
+            --skip-synthesized-members || true
           SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
+          NFILES=$(ls "$SGDIR"/*.symbols.json 2>/dev/null | wc -l | tr -d ' ')
+          if [ "$NFILES" -eq 0 ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
           jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
             > "$GITHUB_WORKSPACE/base-raw.json"
         working-directory: _sdk-base
