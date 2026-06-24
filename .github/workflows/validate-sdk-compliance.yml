@@ -51,10 +51,9 @@ jobs:
         run: npm run validate-compliance -- "${{ github.workspace }}/${{ inputs.compliance-file }}"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-  extract-javascript:
-    name: Extract symbols (JavaScript)
-    if: inputs.language == 'javascript'
-    runs-on: ubuntu-latest
+  check:
+    name: Check public API against capability matrix
+    runs-on: ${{ inputs.language == 'swift' && 'macos-latest' || 'ubuntu-latest' }}
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -78,70 +77,33 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install dependencies
-        run: npm ci
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Parse PR branch
-        run: |
-          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-pr" \
-            > "$GITHUB_WORKSPACE/pr-symbols.json"
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Parse base branch
-        run: |
-          npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-base" \
-            > "$GITHUB_WORKSPACE/base-symbols.json"
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Upload symbols
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Cache SPM dependencies
+        if: inputs.language == 'swift'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          name: symbols
           path: |
-            pr-symbols.json
-            base-symbols.json
-
-  extract-python:
-    name: Extract symbols (Python)
-    if: inputs.language == 'python'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          path: _sdk-pr
-
-      - name: Checkout base branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: _sdk-base
-
-      - name: Checkout capability spec
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          repository: supabase/sdk
-          ref: ${{ inputs.sdk-ref }}
-          path: _sdk-spec
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "22"
+            ~/.cache/org.swift.swiftpm
+            _sdk-pr/.build/repositories
+            _sdk-base/.build/repositories
+          key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Set up Python
+        if: inputs.language == 'python'
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.13"
 
       - name: Install griffe
+        if: inputs.language == 'python'
         run: pip install griffe
 
       - name: Run griffe on PR branch
+        if: inputs.language == 'python'
         run: |
           if [ -z "${{ inputs.griffe-packages }}" ]; then
             echo "::error::griffe-packages input is required when language is python"
@@ -158,6 +120,7 @@ jobs:
             -o "$GITHUB_WORKSPACE/api-raw-pr.json"
 
       - name: Normalize griffe output (PR branch)
+        if: inputs.language == 'python'
         run: |
           npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-pr.json" \
             --project-root "$GITHUB_WORKSPACE/_sdk-pr" \
@@ -165,6 +128,7 @@ jobs:
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Run griffe on base branch
+        if: inputs.language == 'python'
         run: |
           if [ -z "${{ inputs.griffe-packages }}" ]; then
             echo "::error::griffe-packages input is required when language is python"
@@ -181,111 +145,27 @@ jobs:
             -o "$GITHUB_WORKSPACE/api-raw-base.json"
 
       - name: Normalize griffe output (base branch)
+        if: inputs.language == 'python'
         run: |
           npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-base.json" \
             --project-root "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Upload symbols
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: symbols
-          path: |
-            pr-symbols.json
-            base-symbols.json
-
-  # The Dart parser is a small package:analyzer tool run directly with
-  # `dart run`. It parses syntactically, so the target packages need no
-  # `pub get` — only the Dart SDK and the tool's own dependencies.
-  extract-dart:
-    name: Extract symbols (Dart)
-    if: inputs.language == 'dart'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          path: _sdk-pr
-
-      - name: Checkout base branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: _sdk-base
-
-      - name: Checkout capability spec
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          repository: supabase/sdk
-          ref: ${{ inputs.sdk-ref }}
-          path: _sdk-spec
-
+      # The Dart parser is a small package:analyzer tool run directly with
+      # `dart run`. It parses syntactically, so the target packages need no
+      # `pub get` — only the Dart SDK and the tool's own dependencies.
       - name: Setup Dart SDK
+        if: inputs.language == 'dart'
         uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
 
       - name: Get Dart extractor dependencies
+        if: inputs.language == 'dart'
         run: dart pub get
         working-directory: _sdk-spec/scripts/dart_symbol_extractor
 
-      - name: Parse PR and base branch (Dart)
-        run: |
-          dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-pr" \
-            > "$GITHUB_WORKSPACE/pr-symbols.json"
-          dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-base" \
-            > "$GITHUB_WORKSPACE/base-symbols.json"
-        working-directory: _sdk-spec/scripts/dart_symbol_extractor
-
-      - name: Upload symbols
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: symbols
-          path: |
-            pr-symbols.json
-            base-symbols.json
-
-  extract-swift:
-    name: Extract symbols (Swift)
-    if: inputs.language == 'swift'
-    runs-on: macos-latest
-    steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          path: _sdk-pr
-
-      - name: Checkout base branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: _sdk-base
-
-      - name: Checkout capability spec
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          repository: supabase/sdk
-          ref: ${{ inputs.sdk-ref }}
-          path: _sdk-spec
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "22"
-
-      - name: Install dependencies
-        run: npm ci
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Cache SPM dependencies
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-        with:
-          path: |
-            ~/.cache/org.swift.swiftpm
-            _sdk-pr/.build/repositories
-            _sdk-base/.build/repositories
-          key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
-          restore-keys: spm-${{ runner.os }}-
-
       - name: Extract symbol graphs — PR
+        if: inputs.language == 'swift'
         run: |
           # || true: test targets may fail to extract on CI runners; library targets land first
           swift package dump-symbol-graph \
@@ -299,6 +179,7 @@ jobs:
         working-directory: _sdk-pr
 
       - name: Extract symbol graphs — base
+        if: inputs.language == 'swift'
         run: |
           swift package dump-symbol-graph \
             --minimum-access-level public \
@@ -311,6 +192,7 @@ jobs:
         working-directory: _sdk-base
 
       - name: Normalize symbol graphs — PR
+        if: inputs.language == 'swift'
         run: |
           npm run --silent normalize-symbolgraph -- \
             "$GITHUB_WORKSPACE/pr-raw.json" "$GITHUB_WORKSPACE/_sdk-pr" \
@@ -318,62 +200,44 @@ jobs:
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - name: Normalize symbol graphs — base
+        if: inputs.language == 'swift'
         run: |
           npm run --silent normalize-symbolgraph -- \
             "$GITHUB_WORKSPACE/base-raw.json" "$GITHUB_WORKSPACE/_sdk-base" \
             > "$GITHUB_WORKSPACE/base-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Upload symbols
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: symbols
-          path: |
-            pr-symbols.json
-            base-symbols.json
-
-  check:
-    name: Check public API against capability matrix
-    runs-on: ubuntu-latest
-    needs:
-      - extract-javascript
-      - extract-python
-      - extract-dart
-      - extract-swift
-    if: ${{ !failure() && !cancelled() }}
-    steps:
-      - name: Validate language input
+      - name: Resolve parse command
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
+        id: resolve
         run: |
           case "${{ inputs.language }}" in
-            swift|javascript|python|dart) ;;
-            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, javascript, python, dart"; exit 1 ;;
+            javascript) echo "cmd=parse-ts" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Unsupported language '${{ inputs.language }}'. Supported values: swift, dart, python, javascript"; exit 1 ;;
           esac
 
-      - name: Checkout PR branch
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          path: _sdk-pr
-
-      - name: Checkout capability spec
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          repository: supabase/sdk
-          ref: ${{ inputs.sdk-ref }}
-          path: _sdk-spec
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "22"
-
-      - name: Install dependencies
-        run: npm ci
+      - name: Parse PR branch
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
+        run: |
+          npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - name: Download symbols
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: symbols
-          path: ${{ github.workspace }}
+      - name: Parse base branch
+        if: inputs.language != 'python' && inputs.language != 'swift' && inputs.language != 'dart'
+        run: |
+          npm run --silent ${{ steps.resolve.outputs.cmd }} -- "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Parse PR and base branch (Dart)
+        if: inputs.language == 'dart'
+        run: |
+          dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-pr" \
+            > "$GITHUB_WORKSPACE/pr-symbols.json"
+          dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-base" \
+            > "$GITHUB_WORKSPACE/base-symbols.json"
+        working-directory: _sdk-spec/scripts/dart_symbol_extractor
 
       - name: Check new symbols against capability matrix
         run: |
