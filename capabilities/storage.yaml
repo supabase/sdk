@@ -178,6 +178,14 @@ features:
     name: URL Cache Invalidation Nonce
     description: Append a cache-busting nonce to public and signed URLs to bypass CDN caching for a specific file version.
     group: file_buckets
+  - id: storage.file_buckets.purge_cache
+    name: Purge File CDN Cache
+    description: Invalidate the CDN cache for a specific object in a bucket. Requires service_role JWT and the purgeCache tenant feature to be enabled.
+    group: file_buckets
+  - id: storage.file_buckets.purge_bucket_cache
+    name: Purge Bucket CDN Cache
+    description: Invalidate the CDN cache for all objects in a bucket. Requires service_role JWT and the purgeCache tenant feature to be enabled.
+    group: file_buckets
   - id: storage.analytics.create_analytics_bucket
     name: Create Analytics Bucket
     description: Create a bucket backed by Apache Iceberg table format for structured analytical data storage.
