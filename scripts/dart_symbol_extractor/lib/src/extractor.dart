@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/source/line_info.dart';
 import 'package:path/path.dart' as p;
 
 import 'ignore_matcher.dart';
@@ -19,14 +20,16 @@ const _generatedSuffixes = ['.g.dart', '.freezed.dart', '.gr.dart'];
 /// per file without following exports.
 List<ParsedSymbol> extractFromSource(String source, String relPath) {
   final symbols = <ParsedSymbol>[];
-  final unit = parseString(
+  final result = parseString(
     content: source,
     path: relPath,
     throwIfDiagnostics: false,
-  ).unit;
+  );
+  final unit = result.unit;
+  final lineInfo = unit.lineInfo;
 
   for (final declaration in unit.declarations) {
-    _visitTopLevel(declaration, relPath, symbols);
+    _visitTopLevel(declaration, relPath, lineInfo, symbols);
   }
   return symbols;
 }
@@ -34,8 +37,12 @@ List<ParsedSymbol> extractFromSource(String source, String relPath) {
 void _visitTopLevel(
   CompilationUnitMember declaration,
   String relPath,
+  LineInfo lineInfo,
   List<ParsedSymbol> out,
 ) {
+  final line = lineInfo
+      .getLocation(declaration.firstTokenAfterCommentAndMetadata.offset)
+      .lineNumber;
   switch (declaration) {
     // Class-like containers expose their name and members identically. Unnamed
     // extensions (name == null) fall through, as they have no qualifiable
@@ -45,36 +52,39 @@ void _visitTopLevel(
     case EnumDeclaration(:final name, :final members):
     case ExtensionTypeDeclaration(:final name, :final members):
     case ExtensionDeclaration(name: final name?, :final members):
-      _emitContainer(name.lexeme, members, relPath, out);
+      _emitContainer(name.lexeme, members, relPath, lineInfo, line, out);
 
     case FunctionDeclaration(:final name, :final isGetter, :final isSetter)
         when !isGetter && !isSetter:
-      _emit(name.lexeme, SymbolKind.function, relPath, out);
+      _emit(name.lexeme, SymbolKind.function, relPath, line, out);
 
     // `class C = A with M;` is a class, not a typedef, so it precedes TypeAlias.
     case ClassTypeAlias(:final name):
-      _emit(name.lexeme, SymbolKind.classKind, relPath, out);
+      _emit(name.lexeme, SymbolKind.classKind, relPath, line, out);
 
     case TypeAlias(:final name):
-      _emit(name.lexeme, SymbolKind.variable, relPath, out);
+      _emit(name.lexeme, SymbolKind.variable, relPath, line, out);
 
     case TopLevelVariableDeclaration(:final variables):
       for (final variable in variables.variables) {
-        _emit(variable.name.lexeme, SymbolKind.variable, relPath, out);
+        final varLine = lineInfo.getLocation(variable.offset).lineNumber;
+        _emit(variable.name.lexeme, SymbolKind.variable, relPath, varLine, out);
       }
   }
 }
 
-void _emit(
-    String name, SymbolKind kind, String relPath, List<ParsedSymbol> out) {
+void _emit(String name, SymbolKind kind, String relPath, int line,
+    List<ParsedSymbol> out) {
   if (_isPrivate(name)) return;
-  out.add(ParsedSymbol(name: name, kind: kind, file: relPath));
+  out.add(ParsedSymbol(name: name, kind: kind, file: relPath, line: line));
 }
 
 void _emitContainer(
   String containerName,
   List<ClassMember> members,
   String relPath,
+  LineInfo lineInfo,
+  int containerLine,
   List<ParsedSymbol> out,
 ) {
   if (_isPrivate(containerName)) return;
@@ -83,10 +93,14 @@ void _emitContainer(
       name: containerName,
       kind: SymbolKind.classKind,
       file: relPath,
+      line: containerLine,
     ),
   );
 
   for (final member in members) {
+    final memberLine = lineInfo
+        .getLocation(member.firstTokenAfterCommentAndMetadata.offset)
+        .lineNumber;
     if (member is MethodDeclaration) {
       final name = member.name.lexeme;
       if (_isPrivate(name)) continue;
@@ -94,17 +108,23 @@ void _emitContainer(
           ? SymbolKind.property
           : SymbolKind.method;
       out.add(
-        ParsedSymbol(name: '$containerName.$name', kind: kind, file: relPath),
+        ParsedSymbol(
+            name: '$containerName.$name',
+            kind: kind,
+            file: relPath,
+            line: memberLine),
       );
     } else if (member is FieldDeclaration) {
       for (final field in member.fields.variables) {
         final name = field.name.lexeme;
         if (_isPrivate(name)) continue;
+        final fieldLine = lineInfo.getLocation(field.offset).lineNumber;
         out.add(
           ParsedSymbol(
             name: '$containerName.$name',
             kind: SymbolKind.property,
             file: relPath,
+            line: fieldLine,
           ),
         );
       }
@@ -118,6 +138,7 @@ void _emitContainer(
           name: '$containerName.$ctorName',
           kind: SymbolKind.method,
           file: relPath,
+          line: memberLine,
         ),
       );
     }

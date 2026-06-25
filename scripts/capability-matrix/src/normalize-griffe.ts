@@ -9,6 +9,7 @@ export interface GriffeNode {
   filepath?: string;
   labels?: string[] | null;
   members?: Record<string, GriffeNode>;
+  lineno?: number;
 }
 
 export type GriffeOutput = Record<string, GriffeNode>;
@@ -47,7 +48,7 @@ function walkNode(
   if (name.startsWith("_")) return;
 
   if (node.kind === "class") {
-    emit(symbols, ig, { name: qual(classStack, name), kind: "class", file });
+    emit(symbols, ig, { name: qual(classStack, name), kind: "class", file }, node.lineno);
     for (const [childName, child] of Object.entries(node.members ?? {})) {
       walkNode(childName, child, file, [...classStack, name], symbols, ig, projectRoot);
     }
@@ -56,12 +57,12 @@ function walkNode(
 
   if (node.kind === "function") {
     const kind = classStack.length > 0 ? ("method" as const) : ("function" as const);
-    emit(symbols, ig, { name: qual(classStack, name), kind, file });
+    emit(symbols, ig, { name: qual(classStack, name), kind, file }, node.lineno);
     return;
   }
 
   if (node.kind === "attribute" && node.labels?.includes("property")) {
-    emit(symbols, ig, { name: qual(classStack, name), kind: "property", file });
+    emit(symbols, ig, { name: qual(classStack, name), kind: "property", file }, node.lineno);
   }
 }
 
@@ -69,7 +70,8 @@ function qual(classStack: string[], name: string): string {
   return classStack.length > 0 ? `${classStack.join(".")}.${name}` : name;
 }
 
-function emit(symbols: ParsedSymbol[], ig: Ignore | null, sym: ParsedSymbol): void {
+function emit(symbols: ParsedSymbol[], ig: Ignore | null, sym: ParsedSymbol, lineno?: number): void {
   if (ig && sym.file && ig.ignores(sym.file)) return;
-  symbols.push(sym);
+  // Griffe inherits Python ast.lineno which is already 1-based — no +1 needed (unlike TS/Swift).
+  symbols.push(lineno !== undefined ? { ...sym, line: lineno } : sym);
 }

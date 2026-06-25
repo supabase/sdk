@@ -53,13 +53,27 @@ describe("extractFromSource", () => {
   it("extracts exported functions", () => {
     const source = `export function createClient(url: string): void {}`;
     const symbols = extractFromSource(source, "src/index.ts");
-    expect(symbols).toEqual([{ name: "createClient", kind: "function", file: "src/index.ts" }]);
+    expect(symbols).toEqual([{ name: "createClient", kind: "function", file: "src/index.ts", line: 1 }]);
   });
 
   it("extracts exported variables", () => {
     const source = `export const version = "1.0.0";`;
     const symbols = extractFromSource(source, "src/index.ts");
-    expect(symbols).toEqual([{ name: "version", kind: "variable", file: "src/index.ts" }]);
+    expect(symbols).toEqual([{ name: "version", kind: "variable", file: "src/index.ts", line: 1 }]);
+  });
+
+  it("records line numbers for class and its members", () => {
+    const source = [
+      "export class AuthClient {",
+      "  public signUp(email: string): void {}",
+      "  public signIn(): void {}",
+      "}",
+    ].join("\n");
+    const symbols = extractFromSource(source, "src/index.ts");
+    const byName = Object.fromEntries(symbols.map((s) => [s.name, s]));
+    expect(byName["AuthClient"].line).toBe(1);
+    expect(byName["AuthClient.signUp"].line).toBe(2);
+    expect(byName["AuthClient.signIn"].line).toBe(3);
   });
 
   it("skips constructor", () => {

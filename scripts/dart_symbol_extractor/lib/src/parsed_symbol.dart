@@ -6,15 +6,18 @@
 enum SymbolKind { classKind, method, property, function, variable }
 
 class ParsedSymbol {
-  ParsedSymbol({required this.name, required this.kind, required this.file});
+  ParsedSymbol(
+      {required this.name, required this.kind, required this.file, this.line});
 
   final String name;
   final SymbolKind kind;
   final String file;
+  final int? line;
 
   Map<String, Object?> toJson() => {
         'name': name,
         'kind': kind == SymbolKind.classKind ? 'class' : kind.name,
         'file': file,
+        if (line != null) 'line': line,
       };
 }

@@ -256,6 +256,36 @@ describe("normalizeGriffe — file inheritance", () => {
   });
 });
 
+describe("normalizeGriffe — line numbers", () => {
+  it("includes line number when node has lineno", () => {
+    const input = pkg("/repo/src/client.py", {
+      MyClient: { kind: "class", members: {}, lineno: 10 },
+    });
+    const { symbols } = normalizeGriffe(input, "/repo");
+    expect(symbols[0].line).toBe(10);
+  });
+
+  it("omits line when node has no lineno", () => {
+    const input = pkg("/repo/src/client.py", {
+      MyClient: { kind: "class", members: {} },
+    });
+    const { symbols } = normalizeGriffe(input, "/repo");
+    expect(symbols[0].line).toBeUndefined();
+  });
+
+  it("passes lineno through for methods", () => {
+    const input = pkg("/repo/src/client.py", {
+      MyClient: {
+        kind: "class",
+        members: { sign_up: { kind: "function", labels: null, lineno: 25 } },
+      },
+    });
+    const { symbols } = normalizeGriffe(input, "/repo");
+    const method = symbols.find((s) => s.name === "MyClient.sign_up");
+    expect(method?.line).toBe(25);
+  });
+});
+
 describe("normalizeGriffe — .sdk-parse-ignore", () => {
   it("filters out symbols whose file matches .sdk-parse-ignore", () => {
     const root = mkdtempSync(join(tmpdir(), "griffe-test-"));

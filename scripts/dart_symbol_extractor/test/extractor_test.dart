@@ -43,6 +43,17 @@ class SupabaseClient {
         _byName(symbols, 'SupabaseClient.SupabaseClient').kind,
         SymbolKind.method,
       );
+      // All symbols should have a non-null, positive line number.
+      for (final sym in symbols) {
+        expect(sym.line, isNotNull,
+            reason: '${sym.name} should have a line number');
+        expect(sym.line, greaterThan(0),
+            reason: '${sym.name} line should be > 0');
+      }
+      // Spot-check that SupabaseClient is on line 1 (first non-empty line) and
+      // signIn follows the setter on line 7.
+      expect(_byName(symbols, 'SupabaseClient').line, 1);
+      expect(_byName(symbols, 'SupabaseClient.signIn').line, 7);
     });
 
     test('skips private declarations and private members', () {
@@ -114,6 +125,31 @@ extension type UserId(String value) {
       expect(names, containsAll(['UserId', 'UserId.isValid']));
     });
 
+    test(
+        'reports line of declaration keyword, not annotation, for annotated members',
+        () {
+      const source = '''
+class MyClient {
+  @override
+  void signIn() {}
+  @Deprecated('use signOut2')
+  void signOut() {}
+}
+''';
+      final symbols = extractFromSource(source, 'lib/client.dart');
+      // `void signIn()` is on the line after @override (not on @override's line).
+      final signInLine = _byName(symbols, 'MyClient.signIn').line!;
+      final signOutLine = _byName(symbols, 'MyClient.signOut').line!;
+      // signOut's declaration line must be strictly after signIn's annotation line,
+      // confirming firstTokenAfterCommentAndMetadata skips metadata.
+      expect(signOutLine, greaterThan(signInLine + 1),
+          reason:
+              'signOut should start after signIn and its @Deprecated annotation');
+      // Neither should land on line 1 (the class keyword line) or line 2 (@override).
+      expect(signInLine, greaterThan(2));
+      expect(signOutLine, greaterThan(signInLine));
+    });
+
     test('captures top-level functions, variables and typedefs', () {
       const source = '''
 String greet(String name) => 'hi';
@@ -172,6 +208,15 @@ typedef Json = Map<String, dynamic>;
         _byName(symbols, 'AuthClient').file,
         'packages/auth/lib/auth.dart',
       );
+    });
+
+    test('includes non-null line numbers for all symbols', () {
+      final symbols = parseDartProject('test/fixtures/sample_project');
+      for (final sym in symbols) {
+        expect(sym.line, isNotNull,
+            reason: '${sym.name} should have a line number');
+        expect(sym.line, greaterThan(0));
+      }
     });
   });
 
