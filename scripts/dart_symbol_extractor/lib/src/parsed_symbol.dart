@@ -6,7 +6,8 @@
 enum SymbolKind { classKind, method, property, function, variable }
 
 class ParsedSymbol {
-  ParsedSymbol({required this.name, required this.kind, required this.file, this.line});
+  ParsedSymbol(
+      {required this.name, required this.kind, required this.file, this.line});
 
   final String name;
   final SymbolKind kind;

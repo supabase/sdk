@@ -40,7 +40,9 @@ void _visitTopLevel(
   LineInfo lineInfo,
   List<ParsedSymbol> out,
 ) {
-  final line = lineInfo.getLocation(declaration.firstTokenAfterCommentAndMetadata.offset).lineNumber;
+  final line = lineInfo
+      .getLocation(declaration.firstTokenAfterCommentAndMetadata.offset)
+      .lineNumber;
   switch (declaration) {
     // Class-like containers expose their name and members identically. Unnamed
     // extensions (name == null) fall through, as they have no qualifiable
@@ -71,8 +73,8 @@ void _visitTopLevel(
   }
 }
 
-void _emit(
-    String name, SymbolKind kind, String relPath, int line, List<ParsedSymbol> out) {
+void _emit(String name, SymbolKind kind, String relPath, int line,
+    List<ParsedSymbol> out) {
   if (_isPrivate(name)) return;
   out.add(ParsedSymbol(name: name, kind: kind, file: relPath, line: line));
 }
@@ -96,7 +98,9 @@ void _emitContainer(
   );
 
   for (final member in members) {
-    final memberLine = lineInfo.getLocation(member.firstTokenAfterCommentAndMetadata.offset).lineNumber;
+    final memberLine = lineInfo
+        .getLocation(member.firstTokenAfterCommentAndMetadata.offset)
+        .lineNumber;
     if (member is MethodDeclaration) {
       final name = member.name.lexeme;
       if (_isPrivate(name)) continue;
@@ -104,7 +108,11 @@ void _emitContainer(
           ? SymbolKind.property
           : SymbolKind.method;
       out.add(
-        ParsedSymbol(name: '$containerName.$name', kind: kind, file: relPath, line: memberLine),
+        ParsedSymbol(
+            name: '$containerName.$name',
+            kind: kind,
+            file: relPath,
+            line: memberLine),
       );
     } else if (member is FieldDeclaration) {
       for (final field in member.fields.variables) {

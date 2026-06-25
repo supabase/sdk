@@ -45,8 +45,10 @@ class SupabaseClient {
       );
       // All symbols should have a non-null, positive line number.
       for (final sym in symbols) {
-        expect(sym.line, isNotNull, reason: '${sym.name} should have a line number');
-        expect(sym.line, greaterThan(0), reason: '${sym.name} line should be > 0');
+        expect(sym.line, isNotNull,
+            reason: '${sym.name} should have a line number');
+        expect(sym.line, greaterThan(0),
+            reason: '${sym.name} line should be > 0');
       }
       // Spot-check that SupabaseClient is on line 1 (first non-empty line) and
       // signIn follows the setter on line 7.
@@ -123,7 +125,9 @@ extension type UserId(String value) {
       expect(names, containsAll(['UserId', 'UserId.isValid']));
     });
 
-    test('reports line of declaration keyword, not annotation, for annotated members', () {
+    test(
+        'reports line of declaration keyword, not annotation, for annotated members',
+        () {
       const source = '''
 class MyClient {
   @override
@@ -139,7 +143,8 @@ class MyClient {
       // signOut's declaration line must be strictly after signIn's annotation line,
       // confirming firstTokenAfterCommentAndMetadata skips metadata.
       expect(signOutLine, greaterThan(signInLine + 1),
-          reason: 'signOut should start after signIn and its @Deprecated annotation');
+          reason:
+              'signOut should start after signIn and its @Deprecated annotation');
       // Neither should land on line 1 (the class keyword line) or line 2 (@override).
       expect(signInLine, greaterThan(2));
       expect(signOutLine, greaterThan(signInLine));
@@ -208,7 +213,8 @@ typedef Json = Map<String, dynamic>;
     test('includes non-null line numbers for all symbols', () {
       final symbols = parseDartProject('test/fixtures/sample_project');
       for (final sym in symbols) {
-        expect(sym.line, isNotNull, reason: '${sym.name} should have a line number');
+        expect(sym.line, isNotNull,
+            reason: '${sym.name} should have a line number');
         expect(sym.line, greaterThan(0));
       }
     });
