@@ -8,7 +8,9 @@ on:
       - "schema/**"
       - "scripts/capability-matrix/**"
       - ".github/workflows/deploy-pages.yml"
-  workflow_dispatch: # allow manual trigger
+  schedule:
+    - cron: "0 2 * * *" # daily refresh to pick up SDK compliance updates
+  workflow_dispatch:
 
 # Required for GitHub Pages OIDC deployment
 permissions:
