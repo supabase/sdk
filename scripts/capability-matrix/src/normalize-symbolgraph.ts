@@ -41,15 +41,15 @@ export function normalizeSymbolGraph(
     const kind = KIND_MAP[sym.kind.identifier];
     if (kind === undefined) continue;
 
-    const sym_: ParsedSymbol = {
+    const parsed: ParsedSymbol = {
       name: qualifiedName(sym.pathComponents),
       kind,
       file: resolveFile(sym.location?.uri, sdkRoot),
     };
     if (sym.location?.position !== undefined) {
-      sym_.line = sym.location.position.line + 1;
+      parsed.line = sym.location.position.line + 1;
     }
-    result.push(sym_);
+    result.push(parsed);
   }
 
   return { symbols: result };

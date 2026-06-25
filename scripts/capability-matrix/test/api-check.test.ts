@@ -61,6 +61,14 @@ describe("checkNewSymbols", () => {
     const result = checkNewSymbols(base, pr, compliance);
     expect(result.uncoveredSymbols).toEqual([sym("AuthClient.foo"), sym("AuthClient.bar")]);
   });
+
+  it("preserves file and line through to uncoveredSymbols", () => {
+    const withLocation: ParsedSymbol = { name: "AuthClient.signInWithPasskey", kind: "method", file: "src/auth.ts", line: 42 };
+    const result = checkNewSymbols([], [withLocation], compliance);
+    expect(result.uncoveredSymbols).toHaveLength(1);
+    expect(result.uncoveredSymbols[0].file).toBe("src/auth.ts");
+    expect(result.uncoveredSymbols[0].line).toBe(42);
+  });
 });
 
 describe("checkNewSymbols — removed registered symbols", () => {

@@ -40,7 +40,7 @@ void _visitTopLevel(
   LineInfo lineInfo,
   List<ParsedSymbol> out,
 ) {
-  final line = lineInfo.getLocation(declaration.offset).lineNumber;
+  final line = lineInfo.getLocation(declaration.firstTokenAfterCommentAndMetadata.offset).lineNumber;
   switch (declaration) {
     // Class-like containers expose their name and members identically. Unnamed
     // extensions (name == null) fall through, as they have no qualifiable
@@ -96,7 +96,7 @@ void _emitContainer(
   );
 
   for (final member in members) {
-    final memberLine = lineInfo.getLocation(member.offset).lineNumber;
+    final memberLine = lineInfo.getLocation(member.firstTokenAfterCommentAndMetadata.offset).lineNumber;
     if (member is MethodDeclaration) {
       final name = member.name.lexeme;
       if (_isPrivate(name)) continue;

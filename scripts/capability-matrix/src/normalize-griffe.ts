@@ -72,6 +72,6 @@ function qual(classStack: string[], name: string): string {
 
 function emit(symbols: ParsedSymbol[], ig: Ignore | null, sym: ParsedSymbol, lineno?: number): void {
   if (ig && sym.file && ig.ignores(sym.file)) return;
-  if (lineno !== undefined) sym.line = lineno;
-  symbols.push(sym);
+  // Griffe inherits Python ast.lineno which is already 1-based — no +1 needed (unlike TS/Swift).
+  symbols.push(lineno !== undefined ? { ...sym, line: lineno } : sym);
 }
