@@ -11,12 +11,12 @@ function sym(
   identifier: string,
   pathComponents: string[],
   uri?: string,
+  position?: { line: number; character: number },
 ): SymbolGraphSymbol {
-  return {
-    kind: { identifier },
-    pathComponents,
-    ...(uri ? { location: { uri } } : {}),
-  };
+  if (uri) {
+    return { kind: { identifier }, pathComponents, location: { uri, ...(position ? { position } : {}) } };
+  }
+  return { kind: { identifier }, pathComponents };
 }
 
 // ---------------------------------------------------------------------------
@@ -160,6 +160,30 @@ describe("file path resolution", () => {
   it("returns empty string when location is absent", () => {
     const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"])], "/any/root");
     expect(symbols[0].file).toBe("");
+  });
+});
+
+describe("line number extraction", () => {
+  it("extracts 1-based line from 0-based position.line", () => {
+    const sdkRoot = "/sdk";
+    const uri = `file://${sdkRoot}/Sources/Auth/AuthClient.swift`;
+    const { symbols } = normalizeSymbolGraph(
+      [sym("swift.class", ["AuthClient"], uri, { line: 141, character: 0 })],
+      sdkRoot,
+    );
+    expect(symbols[0].line).toBe(142);
+  });
+
+  it("omits line when position is absent", () => {
+    const sdkRoot = "/sdk";
+    const uri = `file://${sdkRoot}/Sources/Auth/AuthClient.swift`;
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["AuthClient"], uri)], sdkRoot);
+    expect(symbols[0].line).toBeUndefined();
+  });
+
+  it("omits line when location is absent", () => {
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["AuthClient"])], "/sdk");
+    expect(symbols[0].line).toBeUndefined();
   });
 });
 

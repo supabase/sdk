@@ -43,6 +43,15 @@ class SupabaseClient {
         _byName(symbols, 'SupabaseClient.SupabaseClient').kind,
         SymbolKind.method,
       );
+      // All symbols should have a non-null, positive line number.
+      for (final sym in symbols) {
+        expect(sym.line, isNotNull, reason: '${sym.name} should have a line number');
+        expect(sym.line, greaterThan(0), reason: '${sym.name} line should be > 0');
+      }
+      // Spot-check that SupabaseClient is on line 1 (first non-empty line) and
+      // signIn follows the setter on line 7.
+      expect(_byName(symbols, 'SupabaseClient').line, 1);
+      expect(_byName(symbols, 'SupabaseClient.signIn').line, 7);
     });
 
     test('skips private declarations and private members', () {
@@ -172,6 +181,14 @@ typedef Json = Map<String, dynamic>;
         _byName(symbols, 'AuthClient').file,
         'packages/auth/lib/auth.dart',
       );
+    });
+
+    test('includes non-null line numbers for all symbols', () {
+      final symbols = parseDartProject('test/fixtures/sample_project');
+      for (final sym in symbols) {
+        expect(sym.line, isNotNull, reason: '${sym.name} should have a line number');
+        expect(sym.line, greaterThan(0));
+      }
     });
   });
 

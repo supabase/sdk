@@ -7,6 +7,7 @@ export interface ParsedSymbol {
   name: string;
   kind: "class" | "method" | "property" | "function" | "variable";
   file: string;
+  line?: number;
 }
 
 export interface ParseResult {
@@ -65,6 +66,7 @@ function extractClassMembers(
   className: string,
   node: ts.ClassDeclaration,
   relPath: string,
+  sf: ts.SourceFile,
   out: ParsedSymbol[],
 ): void {
   for (const member of node.members) {
@@ -81,7 +83,8 @@ function extractClassMembers(
         ? "method"
         : "property";
 
-    out.push({ name: `${className}.${name}`, kind, file: relPath });
+    const line = sf.getLineAndCharacterOfPosition(member.getStart(sf)).line + 1;
+    out.push({ name: `${className}.${name}`, kind, file: relPath, line });
   }
 }
 
@@ -100,16 +103,21 @@ export function extractFromSource(
     if (ts.isClassDeclaration(stmt) && isExported(stmt)) {
       const className = stmt.name?.text;
       if (className) {
-        symbols.push({ name: className, kind: "class", file: relPath });
-        extractClassMembers(className, stmt, relPath, symbols);
+        const line = sf.getLineAndCharacterOfPosition(stmt.getStart(sf)).line + 1;
+        symbols.push({ name: className, kind: "class", file: relPath, line });
+        extractClassMembers(className, stmt, relPath, sf, symbols);
       }
     } else if (ts.isFunctionDeclaration(stmt) && isExported(stmt)) {
       const name = stmt.name?.text;
-      if (name) symbols.push({ name, kind: "function", file: relPath });
+      if (name) {
+        const line = sf.getLineAndCharacterOfPosition(stmt.getStart(sf)).line + 1;
+        symbols.push({ name, kind: "function", file: relPath, line });
+      }
     } else if (ts.isVariableStatement(stmt) && isExported(stmt)) {
       for (const decl of stmt.declarationList.declarations) {
         if (ts.isIdentifier(decl.name)) {
-          symbols.push({ name: decl.name.text, kind: "variable", file: relPath });
+          const line = sf.getLineAndCharacterOfPosition(decl.getStart(sf)).line + 1;
+          symbols.push({ name: decl.name.text, kind: "variable", file: relPath, line });
         }
       }
     }

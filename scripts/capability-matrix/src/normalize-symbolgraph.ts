@@ -5,7 +5,7 @@ export type { ParsedSymbol, ParseResult };
 export interface SymbolGraphSymbol {
   kind: { identifier: string };
   pathComponents: string[];
-  location?: { uri: string };
+  location?: { uri: string; position?: { line: number; character: number } };
 }
 
 // Kind identifiers that map to ParsedSymbol kinds.
@@ -41,11 +41,15 @@ export function normalizeSymbolGraph(
     const kind = KIND_MAP[sym.kind.identifier];
     if (kind === undefined) continue;
 
-    result.push({
+    const sym_: ParsedSymbol = {
       name: qualifiedName(sym.pathComponents),
       kind,
       file: resolveFile(sym.location?.uri, sdkRoot),
-    });
+    };
+    if (sym.location?.position !== undefined) {
+      sym_.line = sym.location.position.line + 1;
+    }
+    result.push(sym_);
   }
 
   return { symbols: result };
