@@ -1,11 +1,7 @@
 import { LANGUAGES } from "./types.js";
-import type { ComplianceMap, Language, LoadedArea } from "./types.js";
+import type { ComplianceMap, Language, LoadedArea, ParityReport } from "./types.js";
 
-export interface ParityReport {
-  overall: number;
-  perArea: Record<string, number>;
-  perLanguage: Record<Language, number>;
-}
+export type { ParityReport };
 
 const mean = (xs: number[]): number =>
   xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -16,6 +12,7 @@ export function computeParity(
 ): ParityReport {
   const featureParities: number[] = [];
   const perAreaParities: Record<string, number[]> = {};
+  const perFeature: Record<string, number> = {};
   const langImplemented = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
   const langApplicable = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
 
@@ -37,6 +34,7 @@ export function computeParity(
       const parity = applicable === 0 ? 1 : implemented / applicable;
       featureParities.push(parity);
       perAreaParities[area.area].push(parity);
+      perFeature[feature.id] = parity;
     }
   }
 
@@ -47,5 +45,5 @@ export function computeParity(
     LANGUAGES.map((l) => [l, langApplicable[l] === 0 ? 0 : langImplemented[l] / langApplicable[l]])
   ) as Record<Language, number>;
 
-  return { overall: mean(featureParities), perArea, perLanguage };
+  return { overall: mean(featureParities), perArea, perLanguage, perFeature };
 }

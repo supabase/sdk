@@ -54,6 +54,8 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
+          # Uploads site/index.html (the matrix UI) and site/compliance.json
+          # (machine-readable compliance data, publicly queryable by external tools).
           path: site/
 
   deploy:
