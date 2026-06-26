@@ -5,7 +5,8 @@ import { parse } from "yaml";
 import { loadAreas } from "./load.js";
 import { validateCompliance, normalizeCompliance, collectFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
-import type { ComplianceMap, Language } from "./types.js";
+import { computeParity } from "./report.js";
+import type { ComplianceFile, ComplianceMap, Language } from "./types.js";
 
 interface Repo {
   slug: string;
@@ -94,10 +95,13 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const parity = computeParity(areas, result);
+
   const outDir = join(root, "site");
   mkdirSync(outDir, { recursive: true });
   const outPath = join(outDir, "compliance.json");
-  writeFileSync(outPath, JSON.stringify(result, null, 2), "utf8");
+  const file: ComplianceFile = { compliance: result, parity };
+  writeFileSync(outPath, JSON.stringify(file, null, 2), "utf8");
   console.log(`Compliance data written to site/compliance.json`);
 }
 

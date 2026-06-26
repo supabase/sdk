@@ -1,10 +1,10 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAreas } from "./load.js";
 import { computeParity } from "./report.js";
 import { LANGUAGES } from "./types.js";
-import type { ComplianceMap, Feature, Language, LoadedArea } from "./types.js";
+import type { ComplianceFile, ComplianceMap, Feature, Language, LoadedArea, ParityReport } from "./types.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -44,18 +44,6 @@ function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
 }
 
-function featureParity(feature: Feature, compliance: Partial<Record<Language, ComplianceMap>>): number {
-  let impl = 0;
-  let applicable = 0;
-  for (const lang of LANGUAGES) {
-    const status = compliance[lang]?.[feature.id]?.status ?? "not_implemented";
-    if (status === "not_applicable") continue;
-    applicable++;
-    if (status === "implemented" || status === "partially_implemented") impl++;
-  }
-  return applicable === 0 ? 1 : impl / applicable;
-}
-
 function parityClass(n: number): string {
   if (n >= 0.8) return "parity-high";
   if (n >= 0.4) return "parity-mid";
@@ -89,7 +77,7 @@ function statusCell(feature: Feature, lang: Language, compliance: Partial<Record
 
 // ── Area table ───────────────────────────────────────────────────────────────
 
-function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, specs: Set<string>): string {
+function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, parity: ParityReport, specs: Set<string>): string {
   const { area } = loaded;
 
   // Group features preserving insertion order
@@ -104,7 +92,7 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
   for (const [group, features] of groups) {
     rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 2}">${esc(group)}</td></tr>\n`;
     for (const f of features) {
-      const fp = featureParity(f, compliance);
+      const fp = parity.perFeature[f.id] ?? 0;
       const nameHtml = specs.has(f.id)
         ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
@@ -146,10 +134,10 @@ ${rows}        </tbody>
 export function renderHtml(
   areas: LoadedArea[],
   compliance: Partial<Record<Language, ComplianceMap>>,
+  parity: ParityReport,
   specs: Set<string>,
   buildDate: string
 ): string {
-  const parity = computeParity(areas, compliance);
 
   const navLinks = areas
     .map(
@@ -182,7 +170,7 @@ export function renderHtml(
     })
     .join("");
 
-  const areaSections = areas.map((a) => renderArea(a, compliance, specs)).join("\n");
+  const areaSections = areas.map((a) => renderArea(a, compliance, parity, specs)).join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -230,6 +218,8 @@ export function renderHtml(
       color: #888;
       margin-top: 0.25rem;
     }
+    .build-info a { color: #3ECF8E; text-decoration: none; }
+    .build-info a:hover { text-decoration: underline; }
     .overall-badge {
       display: flex;
       align-items: center;
@@ -465,7 +455,7 @@ export function renderHtml(
   <div class="header-top">
     <div>
       <h1 class="site-title"><span>Supabase</span> SDK Capability Matrix</h1>
-      <p class="build-info">Updated ${esc(buildDate)}</p>
+      <p class="build-info">Updated ${esc(buildDate)} · <a href="compliance.json">compliance.json</a></p>
     </div>
     <div class="overall-badge">
       <span class="label">Overall parity</span>
@@ -535,23 +525,39 @@ function main() {
   const outDir = join(root, "site");
   const compliancePath = process.argv[2];
 
-  const compliance: Partial<Record<Language, ComplianceMap>> = compliancePath
-    ? JSON.parse(readFileSync(compliancePath, "utf8"))
-    : {};
-
   const { areas, findings } = loadAreas(capDir);
   if (findings.length > 0) {
     for (const f of findings) console.error(`${f.level.toUpperCase()} ${f.file}: ${f.message}`);
     if (findings.some((f) => f.level === "error")) process.exit(1);
   }
 
+  let compliance: Partial<Record<Language, ComplianceMap>> = {};
+  let parity = computeParity(areas, compliance);
+
+  if (compliancePath) {
+    const fileData = JSON.parse(readFileSync(compliancePath, "utf8")) as ComplianceFile;
+    compliance = fileData.compliance;
+    parity = fileData.parity;
+  }
+
   const specs = buildSpecSet(root);
   const buildDate = new Date().toISOString().slice(0, 10);
-  const html = renderHtml(areas, compliance, specs, buildDate);
+  const html = renderHtml(areas, compliance, parity, specs, buildDate);
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), html, "utf8");
   console.log(`Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`);
+
+  // Ensure compliance.json is in the output directory so it is served by
+  // GitHub Pages alongside index.html and is queryable by external sources.
+  if (compliancePath) {
+    const dataOut = join(outDir, "compliance.json");
+    const resolvedSrc = resolve(compliancePath);
+    if (resolvedSrc !== dataOut) {
+      copyFileSync(resolvedSrc, dataOut);
+    }
+    console.log(`Compliance data published → site/compliance.json`);
+  }
 }
 
 main();

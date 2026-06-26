@@ -56,3 +56,17 @@ export interface ComplianceEntry {
 
 // Feature ID → ComplianceEntry (sparse; unlisted features default to not_implemented)
 export type ComplianceMap = Record<string, ComplianceEntry>;
+
+export interface ParityReport {
+  overall: number;
+  perArea: Record<string, number>;
+  perLanguage: Record<Language, number>;
+  /** Cross-language parity score per feature ID (0–1). */
+  perFeature: Record<string, number>;
+}
+
+/** Shape of site/compliance.json — raw compliance data plus precomputed parity. */
+export interface ComplianceFile {
+  compliance: Partial<Record<Language, ComplianceMap>>;
+  parity: ParityReport;
+}
