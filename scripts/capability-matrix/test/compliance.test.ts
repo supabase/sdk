@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex } from "../src/compliance";
+import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex, findMissingFeatureIds } from "../src/compliance";
 import type { LoadedArea } from "../src/types";
 
 function areas(ids: string[]): LoadedArea[] {
@@ -166,6 +166,40 @@ describe("buildSymbolIndex", () => {
     const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
     const index = buildSymbolIndex(raw);
     expect(index.size).toBe(0);
+  });
+});
+
+describe("findMissingFeatureIds", () => {
+  it("returns ids present in knownIds but absent from raw.features", () => {
+    const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
+    const missing = findMissingFeatureIds(raw, knownIds);
+    expect(missing).toContain("auth.sign_in_with_password");
+    expect(missing).toContain("auth.mfa_enroll");
+    expect(missing).not.toContain("auth.sign_up");
+  });
+
+  it("returns empty array when all known ids are declared", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": "implemented",
+        "auth.sign_in_with_password": "implemented",
+        "auth.mfa_enroll": "not_implemented",
+      },
+    };
+    expect(findMissingFeatureIds(raw, knownIds)).toEqual([]);
+  });
+
+  it("returns all ids when features is empty", () => {
+    const raw = { sdk: "javascript", features: {} };
+    const missing = findMissingFeatureIds(raw, knownIds);
+    expect(missing).toEqual([...knownIds].sort());
+  });
+
+  it("returns ids in sorted order", () => {
+    const raw = { sdk: "javascript", features: {} };
+    const missing = findMissingFeatureIds(raw, knownIds);
+    expect(missing).toEqual([...missing].sort());
   });
 });
 

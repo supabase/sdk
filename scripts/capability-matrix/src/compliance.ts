@@ -91,6 +91,11 @@ export function collectFeatureIds(areas: LoadedArea[]): Set<string> {
   return ids;
 }
 
+export function findMissingFeatureIds(raw: RawCompliance, knownIds: Set<string>): string[] {
+  const declared = new Set(Object.keys(raw.features ?? {}));
+  return [...knownIds].filter((id) => !declared.has(id)).sort();
+}
+
 // Returns a map from SDK symbol name → capability matrix feature ID.
 // Built from the symbols arrays declared in sdk-compliance.yaml.
 export function buildSymbolIndex(raw: RawCompliance): Map<string, string> {
