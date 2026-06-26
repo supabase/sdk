@@ -210,6 +210,10 @@ features:
     name: Sign Out
     description: Revoke the current user session and clear stored credentials.
     group: session
+  - id: auth.session.sign_out_reason
+    name: Sign-Out Reason
+    description: Surface why the user was signed out (an explicit user action, an expired or rejected session, or a stored session that could not be recovered) on the sign-out auth event, so listeners can distinguish a voluntary sign-out from an involuntary one.
+    group: session
   - id: auth.session.subscribe_auth_events
     name: Subscribe to Auth Events
     description: Subscribe to authentication state change events (sign-in, sign-out, token refresh, etc.).
