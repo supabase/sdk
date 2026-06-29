@@ -1,0 +1,112 @@
+name: SDK Compliance — Swift (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      sdk-ref:
+        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        type: string
+        default: main
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SDK repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Checkout capability spec
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref }}
+          path: _sdk-spec
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Validate compliance file
+        run: npm run validate-compliance -- "${{ github.workspace }}/${{ inputs.compliance-file }}"
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+  check:
+    name: Check public API against capability matrix
+    runs-on: macos-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          path: _sdk-pr
+
+      - name: Checkout base branch
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: _sdk-base
+
+      - name: Checkout capability spec
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref }}
+          path: _sdk-spec
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+
+      - name: Cache SPM dependencies
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cache/org.swift.swiftpm
+            _sdk-pr/.build/repositories
+            _sdk-base/.build/repositories
+          key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Extract Swift symbol graphs
+        run: |
+          for b in pr base; do
+            cd "$GITHUB_WORKSPACE/_sdk-$b"
+            # || true: test targets may fail to extract on CI runners; library targets land first
+            swift package dump-symbol-graph \
+              --minimum-access-level public \
+              --skip-synthesized-members || true
+            SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
+            NFILES=$(ls "$SGDIR"/*.symbols.json 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$NFILES" -eq 0 ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
+            jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
+              > "$GITHUB_WORKSPACE/$b-raw.json"
+          done
+
+      - name: Normalize Swift symbol graphs
+        run: |
+          for b in pr base; do
+            npm run --silent normalize-symbolgraph -- \
+              "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
+              > "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - name: Check new symbols against capability matrix
+        run: |
+          npm run check-api-symbols -- \
+            "$GITHUB_WORKSPACE/pr-symbols.json" \
+            "$GITHUB_WORKSPACE/base-symbols.json" \
+            "$GITHUB_WORKSPACE/_sdk-pr/${{ inputs.compliance-file }}"
+        working-directory: _sdk-spec/scripts/capability-matrix
