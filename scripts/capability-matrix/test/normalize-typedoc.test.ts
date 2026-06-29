@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { normalize } from "../src/normalize-typedoc.js";
+import { normalize, mergeProjects } from "../src/normalize-typedoc.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -219,5 +219,40 @@ describe("normalize (fixture — real TypeDoc 0.27 output)", () => {
   it("emits AuthClient.session accessor as method kind from fixture", () => {
     const sym = normalize(fixture).symbols.find(s => s.name === "AuthClient.session");
     expect(sym?.kind).toBe("method");
+  });
+});
+
+describe("mergeProjects", () => {
+  it("behaves like normalize for a single project (back-compat)", () => {
+    const json = project(cls("AuthClient", "src/auth.ts", method("signUp", "src/auth.ts")));
+    expect(mergeProjects([json])).toEqual(normalize(json));
+  });
+
+  it("concatenates symbols from multiple projects", () => {
+    const a = project(cls("AuthClient", "packages/core/auth-js/src/index.ts"));
+    const b = project(cls("StorageClient", "packages/core/storage-js/src/index.ts"));
+    const names = mergeProjects([a, b]).symbols.map(s => s.name);
+    expect(names).toContain("AuthClient");
+    expect(names).toContain("StorageClient");
+  });
+
+  it("preserves each project's (repo-relative) file paths", () => {
+    const a = project(cls("AuthClient", "packages/core/auth-js/src/index.ts"));
+    const b = project(cls("StorageClient", "packages/core/storage-js/src/index.ts"));
+    const merged = mergeProjects([a, b]);
+    expect(merged.symbols.find(s => s.name === "AuthClient")?.file)
+      .toBe("packages/core/auth-js/src/index.ts");
+    expect(merged.symbols.find(s => s.name === "StorageClient")?.file)
+      .toBe("packages/core/storage-js/src/index.ts");
+  });
+
+  it("keeps duplicate re-exported names (deduped by name downstream)", () => {
+    // supabase-js re-exports FunctionsClient from functions-js, so the same
+    // name legitimately appears in two projects. mergeProjects keeps both;
+    // checkNewSymbols collapses them by name.
+    const fns = project(cls("FunctionsClient", "packages/core/functions-js/src/index.ts"));
+    const sb = project(cls("FunctionsClient", "packages/core/functions-js/dist/types.d.ts"));
+    const names = mergeProjects([fns, sb]).symbols.map(s => s.name).filter(n => n === "FunctionsClient");
+    expect(names).toHaveLength(2);
   });
 });

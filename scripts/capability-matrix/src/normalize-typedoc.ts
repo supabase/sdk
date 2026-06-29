@@ -97,3 +97,17 @@ export function normalize(json: unknown): ParseResult {
   if (project.children) extractDeclarations(project.children, symbols);
   return { symbols };
 }
+
+/**
+ * Normalize one or more TypeDoc project JSONs into a single `ParseResult` by
+ * concatenating their symbols. Used for monorepos where each package is
+ * documented separately. TypeDoc already emits repo-root-relative `fileName`s,
+ * so no path rewriting is needed. Symbol names are kept as-is (the API-check
+ * diff is name-based), so this is a plain concatenation — no cross-package
+ * deduping; duplicate re-exports are collapsed by name downstream.
+ */
+export function mergeProjects(projects: unknown[]): ParseResult {
+  const symbols: ParsedSymbol[] = [];
+  for (const json of projects) symbols.push(...normalize(json).symbols);
+  return { symbols };
+}
