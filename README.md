@@ -71,6 +71,17 @@ jobs:
     uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@main
 ```
 
+JavaScript / TypeScript SDKs use the `validate-sdk-compliance-javascript.yml` workflow, which requires a `typedoc-packages` input:
+
+```yaml
+on: [pull_request]
+jobs:
+  validate:
+    uses: supabase/sdk/.github/workflows/validate-sdk-compliance-javascript.yml@main
+    with:
+      typedoc-packages: packages/core/auth-js,packages/core/storage-js
+```
+
 There is one reusable workflow per language — pick the one matching your SDK:
 
 | Language                | Workflow                                 |
