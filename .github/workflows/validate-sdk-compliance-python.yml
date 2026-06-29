@@ -12,7 +12,7 @@ on:
         type: string
         default: main
       griffe-packages:
-        description: Space-separated griffe package names to dump
+        description: Space- or comma-separated griffe package names to dump
         type: string
         required: true
       griffe-search-paths:
@@ -32,6 +32,7 @@ jobs:
 
   check:
     name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
@@ -47,12 +48,19 @@ jobs:
         run: pip install griffe
 
       - name: Dump griffe symbols
+        env:
+          GRIFFE_PACKAGES: ${{ inputs.griffe-packages }}
+          GRIFFE_SEARCH_PATHS: ${{ inputs.griffe-search-paths }}
         run: |
-          PKGS=$(echo "${{ inputs.griffe-packages }}" | tr ',' ' ' | tr -s ' ')
+          PKGS=$(echo "$GRIFFE_PACKAGES" | tr ',' ' ' | xargs)
+          if [ -z "$PKGS" ]; then
+            echo "::error::griffe-packages is required and must be non-empty"
+            exit 1
+          fi
           for b in pr base; do
             SEARCH_FLAGS=""
-            if [ -n "${{ inputs.griffe-search-paths }}" ]; then
-              SEARCH_FLAGS=$(echo "${{ inputs.griffe-search-paths }}" | tr ',' '\n' \
+            if [ -n "$GRIFFE_SEARCH_PATHS" ]; then
+              SEARCH_FLAGS=$(echo "$GRIFFE_SEARCH_PATHS" | tr ',' '\n' \
                 | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-$b/$p"; done \
                 | tr '\n' ' ')
             fi

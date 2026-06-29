@@ -28,6 +28,7 @@ jobs:
 
   check:
     name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
@@ -35,6 +36,8 @@ jobs:
           sdk-ref: ${{ inputs.sdk-ref }}
 
       - name: Generate TypeDoc JSON
+        env:
+          ENTRYPOINT: ${{ inputs.entrypoint }}
         run: |
           for b in pr base; do
             cd "$GITHUB_WORKSPACE/_sdk-$b"
@@ -42,7 +45,7 @@ jobs:
             npx --yes typedoc@0.27 \
               --json "$GITHUB_WORKSPACE/$b-raw.json" \
               --excludePrivate --excludeProtected \
-              "${{ inputs.entrypoint }}"
+              "$ENTRYPOINT"
           done
 
       - name: Normalize TypeDoc output

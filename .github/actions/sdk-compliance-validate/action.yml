@@ -33,5 +33,7 @@ runs:
 
     - name: Validate compliance file
       shell: bash
-      run: npm run validate-compliance -- "${{ github.workspace }}/${{ inputs.compliance-file }}"
+      env:
+        COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+      run: npm run validate-compliance -- "$GITHUB_WORKSPACE/$COMPLIANCE_FILE"
       working-directory: _sdk-spec/scripts/capability-matrix

@@ -24,6 +24,7 @@ jobs:
 
   check:
     name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
     runs-on: macos-latest
     steps:
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
@@ -48,10 +49,11 @@ jobs:
             swift package dump-symbol-graph \
               --minimum-access-level public \
               --skip-synthesized-members || true
-            SGDIR=$(find .build -maxdepth 3 -type d -name "symbolgraph")
-            NFILES=$(ls "$SGDIR"/*.symbols.json 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$NFILES" -eq 0 ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
-            jq -s '[.[] | .symbols[]]' "$SGDIR"/*.symbols.json \
+            # Multi-target packages emit several symbolgraph dirs; collect every
+            # symbols file across all of them (paths from .build never contain spaces).
+            SGFILES=$(find .build -maxdepth 4 -name "*.symbols.json")
+            if [ -z "$SGFILES" ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
+            jq -s '[.[] | .symbols[]]' $SGFILES \
               > "$GITHUB_WORKSPACE/$b-raw.json"
           done
 
