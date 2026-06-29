@@ -2,6 +2,7 @@ export interface ParsedSymbol {
   name: string;
   kind: "class" | "method" | "property" | "function" | "variable";
   file: string;
+  line?: number;
 }
 
 export interface ParseResult {
@@ -29,12 +30,13 @@ interface TdReflection {
   name: string;
   kind: number;
   flags?: { isPrivate?: boolean; isProtected?: boolean };
-  sources?: Array<{ fileName: string }>;
+  sources?: Array<{ fileName: string; line?: number }>;
   children?: TdReflection[];
 }
 
-function fileOf(r: TdReflection): string {
-  return r.sources?.[0]?.fileName ?? "";
+function sourceOf(r: TdReflection): { file: string; line?: number } {
+  const src = r.sources?.[0];
+  return { file: src?.fileName ?? "", line: src?.line };
 }
 
 function isExcluded(r: TdReflection): boolean {
@@ -50,15 +52,15 @@ function extractMembers(
     if (isExcluded(child)) continue;
     if (child.kind === Kind.Constructor) continue;
     const qualName = `${parent}.${child.name}`;
-    const file = fileOf(child);
+    const { file, line } = sourceOf(child);
     if (child.kind === Kind.Method) {
-      out.push({ name: qualName, kind: "method", file });
+      out.push({ name: qualName, kind: "method", file, line });
     } else if (child.kind === Kind.Property) {
-      out.push({ name: qualName, kind: "property", file });
+      out.push({ name: qualName, kind: "property", file, line });
     } else if (child.kind === Kind.Accessor) {
-      out.push({ name: qualName, kind: "method", file });
+      out.push({ name: qualName, kind: "method", file, line });
     } else if (child.kind === Kind.EnumMember) {
-      out.push({ name: qualName, kind: "property", file });
+      out.push({ name: qualName, kind: "property", file, line });
     }
   }
 }
@@ -69,7 +71,7 @@ function extractDeclarations(
 ): void {
   for (const child of children) {
     if (isExcluded(child)) continue;
-    const file = fileOf(child);
+    const { file, line } = sourceOf(child);
     if (child.kind === Kind.Module || child.kind === Kind.Namespace) {
       if (child.children) extractDeclarations(child.children, out);
     } else if (child.kind === Kind.Reference) {
@@ -79,12 +81,12 @@ function extractDeclarations(
       child.kind === Kind.Interface ||
       child.kind === Kind.Enum
     ) {
-      out.push({ name: child.name, kind: "class", file });
+      out.push({ name: child.name, kind: "class", file, line });
       if (child.children) extractMembers(child.name, child.children, out);
     } else if (child.kind === Kind.Function) {
-      out.push({ name: child.name, kind: "function", file });
+      out.push({ name: child.name, kind: "function", file, line });
     } else if (child.kind === Kind.Variable || child.kind === Kind.TypeAlias) {
-      out.push({ name: child.name, kind: "variable", file });
+      out.push({ name: child.name, kind: "variable", file, line });
     }
   }
 }
