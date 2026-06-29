@@ -1,5 +1,5 @@
 import { relative } from "node:path";
-import type { ParsedSymbol, ParseResult } from "./ts-parser.js";
+import type { ParsedSymbol, ParseResult } from "./normalize-typedoc.js";
 export type { ParsedSymbol, ParseResult };
 
 export interface SymbolGraphSymbol {
