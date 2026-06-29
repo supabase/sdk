@@ -23,6 +23,10 @@ on:
         description: Comma-separated search paths for griffe relative to repo root (python only)
         type: string
         default: ""
+      typedoc-packages:
+        description: Comma-separated package dirs (relative to SDK root), each defining a `docs:json` script. Required when language is javascript.
+        type: string
+        default: ""
 
 jobs:
   validate:
@@ -98,6 +102,42 @@ jobs:
       - name: Install dependencies
         run: npm ci
         working-directory: _sdk-spec/scripts/capability-matrix
+
+      # TypeScript (pnpm): the only TS SDK is the supabase-js pnpm monorepo.
+      # Install it, run each package's `docs:json` to emit TypeDoc JSON (each
+      # package owns its own entrypoints there), then normalize + merge all
+      # packages into one ParseResult per branch. The package list comes from
+      # the caller via `typedoc-packages`.
+      - name: Enable corepack (TypeScript)
+        if: inputs.language == 'javascript'
+        run: corepack enable
+
+      - name: Generate and normalize TypeScript symbols
+        if: inputs.language == 'javascript'
+        env:
+          TYPEDOC_PACKAGES: ${{ inputs.typedoc-packages }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TYPEDOC_PACKAGES:-}" ]; then
+            echo "::error::typedoc-packages input is required when language is javascript"
+            exit 1
+          fi
+          IFS=',' read -ra PKGS <<< "$(echo "$TYPEDOC_PACKAGES" | tr -d '[:space:]')"
+          for b in pr base; do
+            ROOT="$GITHUB_WORKSPACE/_sdk-$b"
+            ( cd "$ROOT" && pnpm install --frozen-lockfile )
+            INPUTS=()
+            for pkg in "${PKGS[@]}"; do
+              [ -z "$pkg" ] && continue
+              ( cd "$ROOT" && pnpm -C "$pkg" run docs:json )
+              # TypeDoc emits repo-root-relative file paths, so the merged
+              # output stays unambiguous without any prefixing.
+              INPUTS+=("$ROOT/$pkg/docs/v2/spec.json")
+            done
+            ( cd "$GITHUB_WORKSPACE/_sdk-spec/scripts/capability-matrix" \
+              && npm run --silent normalize-typedoc -- \
+                   --out "$GITHUB_WORKSPACE/$b-symbols.json" "${INPUTS[@]}" )
+          done
 
       - name: Set up Python
         if: inputs.language == 'python'
@@ -180,15 +220,6 @@ jobs:
           for b in pr base; do
             npm run --silent normalize-symbolgraph -- \
               "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
-              > "$GITHUB_WORKSPACE/$b-symbols.json"
-          done
-        working-directory: _sdk-spec/scripts/capability-matrix
-
-      - name: Parse JavaScript symbols
-        if: inputs.language == 'javascript'
-        run: |
-          for b in pr base; do
-            npm run --silent parse-ts -- "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
         working-directory: _sdk-spec/scripts/capability-matrix

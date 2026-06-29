@@ -8,7 +8,7 @@
     "validate": "tsx src/cli.ts validate",
     "validate:online": "tsx src/cli.ts validate --online",
     "validate-compliance": "tsx src/compliance-cli.ts",
-    "parse-ts": "tsx src/parse-ts.ts",
+    "normalize-typedoc": "tsx src/normalize-typedoc-cli.ts",
     "normalize-symbolgraph": "tsx src/normalize-symbolgraph-cli.ts",
     "normalize-griffe": "tsx src/normalize-griffe-cli.ts",
     "check-api-symbols": "tsx src/check-api-symbols.ts",
