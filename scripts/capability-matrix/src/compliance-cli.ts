@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { parse } from "yaml";
 import { loadAreas } from "./load.js";
-import { validateCompliance, collectFeatureIds } from "./compliance.js";
+import { validateCompliance, collectFeatureIds, findMissingFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
 
 function repoRoot(): string {
@@ -45,6 +45,14 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   console.log("OK — compliance file is valid.");
+
+  const missing = findMissingFeatureIds(raw, knownIds);
+  if (missing.length > 0) {
+    console.log(`\n${missing.length} feature(s) not declared (treated as not_implemented):`);
+    for (const id of missing) {
+      console.log(`  - ${id}`);
+    }
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
