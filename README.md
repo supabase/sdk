@@ -80,7 +80,7 @@ There is one reusable workflow per language — pick the one matching your SDK:
 | Python                  | `validate-sdk-compliance-python.yml`     |
 | Dart                    | `validate-sdk-compliance-dart.yml`       |
 
-The JavaScript workflow accepts an optional `entrypoint` input (default `src/index.ts`). The Python workflow requires a `griffe-packages` input and accepts an optional `griffe-search-paths` input.
+The JavaScript workflow requires a `typedoc-packages` input — comma-separated package dirs (relative to the SDK root), each defining a `docs:json` script that owns its TypeDoc entrypoints; the JS path installs with pnpm and merges all packages. The Python workflow requires a `griffe-packages` input and accepts an optional `griffe-search-paths` input.
 
 This checks out the canonical feature list from this repo and runs two checks on every PR:
 

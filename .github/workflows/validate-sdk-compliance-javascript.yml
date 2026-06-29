@@ -11,10 +11,10 @@ on:
         description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
         type: string
         default: main
-      entrypoint:
-        description: TypeScript entrypoint file relative to SDK root
+      typedoc-packages:
+        description: Comma-separated package dirs (relative to SDK root), each defining a `docs:json` script
         type: string
-        default: src/index.ts
+        required: true
 
 jobs:
   validate:
@@ -35,26 +35,39 @@ jobs:
         with:
           sdk-ref: ${{ inputs.sdk-ref }}
 
-      - name: Generate TypeDoc JSON
-        env:
-          ENTRYPOINT: ${{ inputs.entrypoint }}
-        run: |
-          for b in pr base; do
-            cd "$GITHUB_WORKSPACE/_sdk-$b"
-            npm ci
-            npx --yes typedoc@0.27 \
-              --json "$GITHUB_WORKSPACE/$b-raw.json" \
-              --excludePrivate --excludeProtected \
-              "$ENTRYPOINT"
-          done
+      # The only TS SDK is the supabase-js pnpm monorepo. Install it, run each
+      # package's `docs:json` to emit TypeDoc JSON (each package owns its own
+      # entrypoints there), then normalize + merge all packages into one
+      # ParseResult per branch. The package list comes from the caller via
+      # `typedoc-packages`.
+      - name: Enable corepack
+        run: corepack enable
 
-      - name: Normalize TypeDoc output
+      - name: Generate and normalize TypeScript symbols
+        env:
+          TYPEDOC_PACKAGES: ${{ inputs.typedoc-packages }}
         run: |
+          set -euo pipefail
+          if [ -z "${TYPEDOC_PACKAGES:-}" ]; then
+            echo "::error::typedoc-packages input is required and must be non-empty"
+            exit 1
+          fi
+          IFS=',' read -ra PKGS <<< "$(echo "$TYPEDOC_PACKAGES" | tr -d '[:space:]')"
           for b in pr base; do
-            npm run --silent normalize-typedoc -- \
-              "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/$b-symbols.json"
+            ROOT="$GITHUB_WORKSPACE/_sdk-$b"
+            ( cd "$ROOT" && pnpm install --frozen-lockfile )
+            INPUTS=()
+            for pkg in "${PKGS[@]}"; do
+              [ -z "$pkg" ] && continue
+              ( cd "$ROOT" && pnpm -C "$pkg" run docs:json )
+              # TypeDoc emits repo-root-relative file paths, so the merged
+              # output stays unambiguous without any prefixing.
+              INPUTS+=("$ROOT/$pkg/docs/v2/spec.json")
+            done
+            ( cd "$GITHUB_WORKSPACE/_sdk-spec/scripts/capability-matrix" \
+              && npm run --silent normalize-typedoc -- \
+                   --out "$GITHUB_WORKSPACE/$b-symbols.json" "${INPUTS[@]}" )
           done
-        working-directory: _sdk-spec/scripts/capability-matrix
 
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
         with:
