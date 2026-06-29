@@ -180,11 +180,11 @@ features:
     group: file_buckets
   - id: storage.file_buckets.purge_cache
     name: Purge File CDN Cache
-    description: Invalidate the CDN cache for a specific object in a bucket. Requires service_role JWT and the purgeCache tenant capability to be enabled.
+    description: Invalidate the CDN cache for a specific object in a bucket. Supports an optional transformations flag to purge only resized/formatted variants while leaving the original cached file intact.
     group: file_buckets
   - id: storage.file_buckets.purge_bucket_cache
     name: Purge Bucket CDN Cache
-    description: Invalidate the CDN cache for all objects in a bucket. Requires service_role JWT and the purgeCache tenant capability to be enabled.
+    description: Invalidate the CDN cache for all objects in a bucket. Supports an optional transformations flag to purge only resized/formatted variants while leaving original cached files intact.
     group: file_buckets
   - id: storage.analytics.create_analytics_bucket
     name: Create Analytics Bucket
