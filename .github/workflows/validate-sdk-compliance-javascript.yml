@@ -34,36 +34,23 @@ jobs:
         with:
           sdk-ref: ${{ inputs.sdk-ref }}
 
-      - name: Install PR SDK dependencies
-        run: npm ci
-        working-directory: _sdk-pr
-
-      - name: Generate TypeDoc JSON — PR branch
+      - name: Generate TypeDoc JSON
         run: |
-          npx --yes typedoc@0.27 \
-            --json "$GITHUB_WORKSPACE/pr-raw.json" \
-            --excludePrivate --excludeProtected \
-            "${{ inputs.entrypoint }}"
-        working-directory: _sdk-pr
-
-      - name: Install base SDK dependencies
-        run: npm ci
-        working-directory: _sdk-base
-
-      - name: Generate TypeDoc JSON — base branch
-        run: |
-          npx --yes typedoc@0.27 \
-            --json "$GITHUB_WORKSPACE/base-raw.json" \
-            --excludePrivate --excludeProtected \
-            "${{ inputs.entrypoint }}"
-        working-directory: _sdk-base
+          for b in pr base; do
+            cd "$GITHUB_WORKSPACE/_sdk-$b"
+            npm ci
+            npx --yes typedoc@0.27 \
+              --json "$GITHUB_WORKSPACE/$b-raw.json" \
+              --excludePrivate --excludeProtected \
+              "${{ inputs.entrypoint }}"
+          done
 
       - name: Normalize TypeDoc output
         run: |
-          npm run --silent normalize-typedoc -- \
-            "$GITHUB_WORKSPACE/pr-raw.json" "$GITHUB_WORKSPACE/pr-symbols.json"
-          npm run --silent normalize-typedoc -- \
-            "$GITHUB_WORKSPACE/base-raw.json" "$GITHUB_WORKSPACE/base-symbols.json"
+          for b in pr base; do
+            npm run --silent normalize-typedoc -- \
+              "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
         working-directory: _sdk-spec/scripts/capability-matrix
 
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
