@@ -1,0 +1,81 @@
+name: SDK Compliance — Python (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      sdk-ref:
+        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        type: string
+        default: main
+      griffe-packages:
+        description: Space- or comma-separated griffe package names to dump
+        type: string
+        required: true
+      griffe-search-paths:
+        description: Comma-separated search paths for griffe relative to repo root
+        type: string
+        default: ""
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+  check:
+    name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+        with:
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13"
+
+      - name: Install griffe
+        run: pip install griffe
+
+      - name: Dump griffe symbols
+        env:
+          GRIFFE_PACKAGES: ${{ inputs.griffe-packages }}
+          GRIFFE_SEARCH_PATHS: ${{ inputs.griffe-search-paths }}
+        run: |
+          PKGS=$(echo "$GRIFFE_PACKAGES" | tr ',' ' ' | xargs)
+          if [ -z "$PKGS" ]; then
+            echo "::error::griffe-packages is required and must be non-empty"
+            exit 1
+          fi
+          for b in pr base; do
+            SEARCH_FLAGS=""
+            if [ -n "$GRIFFE_SEARCH_PATHS" ]; then
+              SEARCH_FLAGS=$(echo "$GRIFFE_SEARCH_PATHS" | tr ',' '\n' \
+                | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-$b/$p"; done \
+                | tr '\n' ' ')
+            fi
+            python -m griffe dump $PKGS $SEARCH_FLAGS -o "$GITHUB_WORKSPACE/api-raw-$b.json"
+          done
+
+      - name: Normalize griffe symbols
+        run: |
+          for b in pr base; do
+            npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-$b.json" \
+              --project-root "$GITHUB_WORKSPACE/_sdk-$b" \
+              > "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}

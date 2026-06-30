@@ -1,0 +1,71 @@
+name: SDK Compliance — Swift (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      sdk-ref:
+        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        type: string
+        default: main
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+  check:
+    name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
+    runs-on: macos-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+        with:
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+      - name: Cache SPM dependencies
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: |
+            ~/.cache/org.swift.swiftpm
+            _sdk-pr/.build/repositories
+            _sdk-base/.build/repositories
+          key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Extract Swift symbol graphs
+        run: |
+          for b in pr base; do
+            cd "$GITHUB_WORKSPACE/_sdk-$b"
+            # || true: test targets may fail to extract on CI runners; library targets land first
+            swift package dump-symbol-graph \
+              --minimum-access-level public \
+              --skip-synthesized-members || true
+            # Multi-target packages emit several symbolgraph dirs; collect every
+            # symbols file across all of them (paths from .build never contain spaces).
+            SGFILES=$(find .build -maxdepth 4 -name "*.symbols.json")
+            if [ -z "$SGFILES" ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
+            jq -s '[.[] | .symbols[]]' $SGFILES \
+              > "$GITHUB_WORKSPACE/$b-raw.json"
+          done
+
+      - name: Normalize Swift symbol graphs
+        run: |
+          for b in pr base; do
+            npm run --silent normalize-symbolgraph -- \
+              "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
+              > "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
+        working-directory: _sdk-spec/scripts/capability-matrix
+
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}

@@ -1,0 +1,54 @@
+name: SDK Compliance — Dart (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      sdk-ref:
+        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        type: string
+        default: main
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+  check:
+    name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+        with:
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+      # The Dart parser is a small package:analyzer tool run directly with
+      # `dart run`. It parses syntactically, so the target packages need no
+      # `pub get` — only the Dart SDK and the tool's own dependencies.
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
+
+      - name: Get Dart extractor dependencies
+        run: dart pub get
+        working-directory: _sdk-spec/scripts/dart_symbol_extractor
+
+      - name: Extract Dart symbols
+        run: |
+          for b in pr base; do
+            dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-$b" \
+              > "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
+        working-directory: _sdk-spec/scripts/dart_symbol_extractor
+
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}

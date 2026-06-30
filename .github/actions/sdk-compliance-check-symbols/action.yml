@@ -1,0 +1,21 @@
+name: Check new public symbols against capability matrix
+description: Diffs the PR and base symbol dumps and fails on public symbols not registered in the compliance file.
+
+inputs:
+  compliance-file:
+    description: Path to sdk-compliance.yaml in the calling repo
+    default: sdk-compliance.yaml
+
+runs:
+  using: composite
+  steps:
+    - name: Check new symbols against capability matrix
+      shell: bash
+      env:
+        COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+      run: |
+        npm run check-api-symbols -- \
+          "$GITHUB_WORKSPACE/pr-symbols.json" \
+          "$GITHUB_WORKSPACE/base-symbols.json" \
+          "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE"
+      working-directory: _sdk-spec/scripts/capability-matrix

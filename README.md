@@ -20,12 +20,12 @@ scripts/        # TypeScript validator + site generator (scripts/capability-matr
 
 ## Status values
 
-| Status | Meaning |
-|---|---|
-| `implemented` | Feature is fully implemented in the SDK. |
+| Status                  | Meaning                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| `implemented`           | Feature is fully implemented in the SDK.                                           |
 | `partially_implemented` | Feature is partially implemented. A `note` explaining what is missing is required. |
-| `not_implemented` | Feature is in scope but not yet shipped (default for unlisted features). |
-| `not_applicable` | Feature does not apply to this SDK (e.g. browser-only APIs in a server SDK). |
+| `not_implemented`       | Feature is in scope but not yet shipped (default for unlisted features).           |
+| `not_applicable`        | Feature does not apply to this SDK (e.g. browser-only APIs in a server SDK).       |
 
 ## Adding or updating a capability
 
@@ -68,10 +68,30 @@ Add `.github/workflows/validate-capabilities.yml` to your SDK repo:
 on: [pull_request]
 jobs:
   validate:
-    uses: supabase/sdk/.github/workflows/validate-sdk-compliance.yml@main
-    with:
-      language: swift   # one of: swift, javascript, dart
+    uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@main
 ```
+
+JavaScript / TypeScript SDKs use the `validate-sdk-compliance-javascript.yml` workflow, which requires a `typedoc-packages` input:
+
+```yaml
+on: [pull_request]
+jobs:
+  validate:
+    uses: supabase/sdk/.github/workflows/validate-sdk-compliance-javascript.yml@main
+    with:
+      typedoc-packages: packages/core/auth-js,packages/core/storage-js
+```
+
+There is one reusable workflow per language — pick the one matching your SDK:
+
+| Language                | Workflow                                 |
+| ----------------------- | ---------------------------------------- |
+| Swift                   | `validate-sdk-compliance-swift.yml`      |
+| JavaScript / TypeScript | `validate-sdk-compliance-javascript.yml` |
+| Python                  | `validate-sdk-compliance-python.yml`     |
+| Dart                    | `validate-sdk-compliance-dart.yml`       |
+
+The JavaScript workflow requires a `typedoc-packages` input — comma-separated package dirs (relative to the SDK root), each defining a `docs:json` script that owns its TypeDoc entrypoints; the JS path installs with pnpm and merges all packages. The Python workflow requires a `griffe-packages` input and accepts an optional `griffe-search-paths` input.
 
 This checks out the canonical feature list from this repo and runs two checks on every PR:
 
@@ -97,8 +117,8 @@ npm run build-site compliance.json # render the site with compliance data
 
 ## CI
 
-| Workflow | Trigger | What it does |
-|---|---|---|
-| `validate-capabilities.yml` | push to `main`, PRs touching matrix files, nightly | Tier 1: schema, tests, typecheck, structural checks. Tier 2 (PRs + nightly): reference checks against GitHub. |
-| `validate-sdk-compliance.yml` | `workflow_call` from SDK repos | Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; blocks PRs that add public symbols not registered in the compliance file. |
-| `aggregate-capabilities.yml` | hourly cron + `workflow_dispatch` | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages. |
+| Workflow                                 | Trigger                                            | What it does                                                                                                                                                                                                                         |
+| ---------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `validate-capabilities.yml`              | push to `main`, PRs touching matrix files, nightly | Tier 1: schema, tests, typecheck, structural checks. Tier 2 (PRs + nightly): reference checks against GitHub.                                                                                                                        |
+| `validate-sdk-compliance-<language>.yml` | `workflow_call` from SDK repos                     | One reusable workflow per language (`swift`, `javascript`, `python`, `dart`). Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; blocks PRs that add public symbols not registered in the compliance file. |
+| `aggregate-capabilities.yml`             | hourly cron + `workflow_dispatch`                  | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages.                                                                                                                                                          |
