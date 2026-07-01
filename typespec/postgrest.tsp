@@ -73,20 +73,24 @@ enum FilterOperator {
 }
 
 // Common response returned by SELECT, UPDATE, UPSERT, DELETE.
-// body: unknown maps to {} in JSON Schema — any JSON value (object or array of rows).
+// bytes + explicit application/octet-stream content-type emits format:binary in OpenAPI,
+// which swift-openapi-generator maps to HTTPBody — letting the SDK layer decode the
+// raw JSON into whatever Decodable type the caller requested.
 model RowsResponse {
   @statusCode statusCode: 200;
+  @header contentType: "application/octet-stream";
   @header("Content-Range") contentRange?: string;
   @header("Preference-Applied") preferenceApplied?: string;
-  @body body: unknown;
+  @body body: bytes;
 }
 
 // INSERT returns 201 Created.
 model InsertResponse {
   @statusCode statusCode: 201;
+  @header contentType: "application/octet-stream";
   @header("Content-Range") contentRange?: string;
   @header("Preference-Applied") preferenceApplied?: string;
-  @body body: unknown;
+  @body body: bytes;
 }
 
 // ─── Operations ────────────────────────────────────────────────────────────
@@ -133,7 +137,8 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @body body: unknown,
+    @header contentType: "application/octet-stream",
+    @body body: bytes,
   ): InsertResponse | PostgRESTError;
 
   /** UPSERT rows (PUT). */
@@ -148,7 +153,8 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @body body: unknown,
+    @header contentType: "application/octet-stream",
+    @body body: bytes,
   ): RowsResponse | PostgRESTError;
 
   /** UPDATE rows matching the filter. */
@@ -161,7 +167,8 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @body body: unknown,
+    @header contentType: "application/octet-stream",
+    @body body: bytes,
   ): RowsResponse | PostgRESTError;
 
   /** DELETE rows matching the filter. */
@@ -188,7 +195,8 @@ interface RpcOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @body body: unknown,
+    @header contentType: "application/octet-stream",
+    @body body: bytes,
   ): RowsResponse | PostgRESTError;
 
   /** Call a read-only RPC function via GET.
