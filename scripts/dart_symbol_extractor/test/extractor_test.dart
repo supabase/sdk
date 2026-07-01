@@ -77,6 +77,36 @@ void _privateTopLevel() {}
       expect(names, containsAll(['Visible', 'Visible.publicMethod']));
     });
 
+    test('skips declarations and members annotated with @internal', () {
+      const source = '''
+import 'package:meta/meta.dart';
+
+@internal
+class InternalHelper {
+  void run() {}
+}
+
+class PublicClient {
+  void publicMethod() {}
+  @internal
+  void internalMethod() {}
+  @meta.internal
+  int internalField = 0;
+}
+
+@internal
+void internalTopLevel() {}
+''';
+      final names = _names(extractFromSource(source, 'lib/a.dart'));
+
+      expect(names, isNot(contains('InternalHelper')));
+      expect(names, isNot(contains('InternalHelper.run')));
+      expect(names, isNot(contains('PublicClient.internalMethod')));
+      expect(names, isNot(contains('PublicClient.internalField')));
+      expect(names, isNot(contains('internalTopLevel')));
+      expect(names, containsAll(['PublicClient', 'PublicClient.publicMethod']));
+    });
+
     test('captures enhanced enum members but not constants', () {
       const source = '''
 enum Provider {
