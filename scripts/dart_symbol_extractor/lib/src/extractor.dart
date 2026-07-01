@@ -18,6 +18,10 @@ const _generatedSuffixes = ['.g.dart', '.freezed.dart', '.gr.dart'];
 /// declaration is public when its name does not start with `_`. This matches
 /// the altitude of the TypeScript and Swift parsers, which collect declarations
 /// per file without following exports.
+///
+/// Declarations annotated with `@internal` (from `package:meta`) are excluded:
+/// the annotation is the canonical marker that a name is public by Dart's
+/// underscore rule but is not part of the package's public API.
 List<ParsedSymbol> extractFromSource(String source, String relPath) {
   final symbols = <ParsedSymbol>[];
   final result = parseString(
@@ -40,6 +44,8 @@ void _visitTopLevel(
   LineInfo lineInfo,
   List<ParsedSymbol> out,
 ) {
+  if (_isInternal(declaration.metadata)) return;
+
   final line = lineInfo
       .getLocation(declaration.firstTokenAfterCommentAndMetadata.offset)
       .lineNumber;
@@ -98,6 +104,8 @@ void _emitContainer(
   );
 
   for (final member in members) {
+    if (_isInternal(member.metadata)) continue;
+
     final memberLine = lineInfo
         .getLocation(member.firstTokenAfterCommentAndMetadata.offset)
         .lineNumber;
@@ -146,6 +154,18 @@ void _emitContainer(
 }
 
 bool _isPrivate(String name) => name.startsWith('_');
+
+/// Whether [metadata] carries `@internal` (from `package:meta`), either bare
+/// (`@internal`) or through an import prefix (`@meta.internal`). Matched
+/// syntactically by name, since parsing does not resolve elements.
+bool _isInternal(NodeList<Annotation> metadata) {
+  return metadata.any((annotation) {
+    final name = annotation.name;
+    final identifier =
+        name is PrefixedIdentifier ? name.identifier.name : name.name;
+    return identifier == 'internal';
+  });
+}
 
 /// Discovers every package under [projectRoot] (a directory containing a
 /// `pubspec.yaml` with a `lib/` directory) and extracts the public API surface
