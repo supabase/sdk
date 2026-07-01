@@ -7,15 +7,17 @@ using TypeSpec.OpenAPI;
 // ─── PostgREST Service ─────────────────────────────────────────────────────
 //
 // Models the PostgREST HTTP API boundary — paths, HTTP methods, standard
-// headers, and the response envelope. The query builder layer (select,
-// filters, order, limit, offset) stays hand-written in each SDK because
-// PostgREST's filter syntax (id=eq.5, name=like.*foo*) is generated
-// dynamically at runtime and cannot be expressed as fixed TypeSpec shapes.
+// headers, query params, and response headers.
 //
-// The @query Record<string> captures those dynamic params at the HTTP
-// boundary — the generator emits a Map<String, String> (or equivalent)
-// parameter that the query builder populates. This is the TypeSpec
-// equivalent of Smithy's @httpQueryParams map.
+// Fixed query params (select, order, limit, offset) are named members so
+// generators emit them as typed, documented parameters. Dynamic column
+// filters (e.g. ?id=eq.5&name=like.*foo*) cannot be enumerated statically;
+// they are expressed via a `filters: Record<string>` member with `explode: true`,
+// which expands each key-value pair into its own query parameter.
+//
+// The query builder layer (.eq(), .like(), .order(), etc.) stays hand-written
+// in each SDK — it populates the filters map at runtime. The model only
+// describes the HTTP boundary contract.
 
 @service
 @info({
@@ -27,7 +29,7 @@ using TypeSpec.OpenAPI;
 })
 namespace Supabase.PostgREST;
 
-// ─── Shared ────────────────────────────────────────────────────────────────
+// ─── Shared types ─────────────────────────────────────────────────────────
 
 @error
 model PostgRESTError {
@@ -37,8 +39,41 @@ model PostgRESTError {
   hint?: string;
 }
 
-// Common response headers returned by PostgREST.
-// body: unknown maps to {} in JSON Schema — any JSON value (object or array of row objects).
+/** PostgREST column filter operators.
+ *  Format a filter value as "{operator}.{value}", e.g. "eq.5".
+ *  Prefix with "not." to negate: "not.eq.5".
+ *  For logical grouping use keys "or" / "and" in the filters map.
+ */
+enum FilterOperator {
+  eq,
+  neq,
+  lt,
+  lte,
+  gt,
+  gte,
+  like,
+  ilike,
+  match,
+  imatch,
+  `is`,
+  isdistinct,
+  `in`,
+  cs,
+  cd,
+  ov,
+  sl,
+  sr,
+  nxl,
+  nxr,
+  adj,
+  fts,
+  plfts,
+  phfts,
+  wfts,
+}
+
+// Common response returned by SELECT, UPDATE, UPSERT, DELETE.
+// body: unknown maps to {} in JSON Schema — any JSON value (object or array of rows).
 model RowsResponse {
   @statusCode statusCode: 200;
   @header("Content-Range") contentRange?: string;
@@ -46,7 +81,7 @@ model RowsResponse {
   @body body: unknown;
 }
 
-// INSERT returns 201.
+// INSERT returns 201 Created.
 model InsertResponse {
   @statusCode statusCode: 201;
   @header("Content-Range") contentRange?: string;
@@ -56,76 +91,114 @@ model InsertResponse {
 
 // ─── Operations ────────────────────────────────────────────────────────────
 
-// TypeSpec advantage: interface groups all table-level operations cleanly.
-// Smithy lists them flat under the service.
-
 @route("/{table}")
 interface TableOperations {
-  // SELECT — dynamic query params carry the filter expression built by the SDK
-  // query builder: ?select=id,name&status=eq.active&order=created_at.desc
+  /** SELECT rows from a table.
+   *
+   * Fixed params (select, order, limit, offset) are named so generators emit
+   * typed, documented parameters. Column filters are passed via `filters`:
+   * each map entry becomes its own query parameter when serialized
+   * (explode: true), e.g. {"id": "eq.5"} → ?id=eq.5.
+   */
   @get
   from(
     @path table: string,
-    @query(#{explode: true}) params?: Record<string>,
+    /** Column selection — comma-separated list, supports aliasing, casting,
+     *  embedded resources, and JSON operators. e.g. "id,name,orders(total)". */
+    @query select?: string,
+    /** Ordering — e.g. "name.asc,age.desc.nullslast" */
+    @query order?: string,
+    /** Maximum number of rows to return. */
+    @query limit?: integer,
+    /** Row offset for pagination. */
+    @query offset?: integer,
+    /** Horizontal filters — each entry becomes a separate query parameter.
+     *  Key: column name (or "or"/"and" for logical groups).
+     *  Value: "{operator}.{value}" e.g. {"id": "eq.5", "name": "like.foo*"}.
+     *  See FilterOperator for the full operator list. */
+    @query(#{explode: true}) filters?: Record<string>,
     @header("Range") range?: string,
     @header("Prefer") prefer?: string,
     @header("Accept-Profile") acceptProfile?: string,
   ): RowsResponse | PostgRESTError;
 
-  // INSERT
+  /** INSERT rows into a table. */
   @post
   insert(
     @path table: string,
-    @query(#{explode: true}) params?: Record<string>,
+    /** Column selection for the returned representation (requires Prefer: return=representation). */
+    @query select?: string,
+    /** Columns hint for bulk insert. */
+    @query columns?: string,
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
     @body body: unknown,
   ): InsertResponse | PostgRESTError;
 
-  // UPSERT
+  /** UPSERT rows (PUT). */
   @put
   upsert(
     @path table: string,
-    @query(#{explode: true}) params?: Record<string>,
+    @query select?: string,
+    /** Comma-separated columns to use as the conflict target for upsert. */
+    @query on_conflict?: string,
+    /** Horizontal filters — each entry becomes a separate query parameter. */
+    @query(#{explode: true}) filters?: Record<string>,
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
     @body body: unknown,
   ): RowsResponse | PostgRESTError;
 
-  // UPDATE
+  /** UPDATE rows matching the filter. */
   @patch
   update(
     @path table: string,
-    @query(#{explode: true}) params?: Record<string>,
+    @query select?: string,
+    /** Horizontal filters — each entry becomes a separate query parameter. */
+    @query(#{explode: true}) filters?: Record<string>,
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
     @body body: unknown,
   ): RowsResponse | PostgRESTError;
 
-  // DELETE
+  /** DELETE rows matching the filter. */
   @delete
   deleteRows(
     @path table: string,
-    @query(#{explode: true}) params?: Record<string>,
+    @query select?: string,
+    /** Horizontal filters — each entry becomes a separate query parameter. */
+    @query(#{explode: true}) filters?: Record<string>,
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
   ): RowsResponse | PostgRESTError;
 }
 
-// RPC — call a Postgres function via PostgREST.
+/** RPC — call a Postgres function via PostgREST. */
 @route("/rpc/{functionName}")
 interface RpcOperations {
+  /** Call an RPC function via POST with a JSON body. */
   @post
   rpc(
     @path functionName: string,
-    @query(#{explode: true}) params?: Record<string>,
+    @query select?: string,
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
     @body body: unknown,
-  ): unknown | PostgRESTError;
+  ): RowsResponse | PostgRESTError;
+
+  /** Call a read-only RPC function via GET.
+   *  Function arguments are passed as query params (each arg is its own param). */
+  @get
+  rpcGet(
+    @path functionName: string,
+    @query select?: string,
+    /** Function arguments — each entry becomes its own query parameter. */
+    @query(#{explode: true}) args?: Record<string>,
+    @header("Accept-Profile") acceptProfile?: string,
+  ): RowsResponse | PostgRESTError;
 }
