@@ -3,6 +3,7 @@ $version: "2"
 namespace io.supabase.functions
 
 use aws.protocols#restJson1
+use io.supabase#StringMap
 
 @restJson1
 @title("Supabase Functions API")
@@ -31,6 +32,11 @@ structure InvokeFunctionInput {
 
   @httpPayload
   body: Blob
+
+  /// Arbitrary query parameters appended to the function URL.
+  /// Corresponds to FunctionInvokeOptions.query.
+  @httpQueryParams
+  query: StringMap
 }
 
 /// Input for GET — no body, which GET does not support.
@@ -41,6 +47,11 @@ structure InvokeFunctionGetInput {
 
   @httpHeader("x-region")
   region: String
+
+  /// Arbitrary query parameters appended to the function URL.
+  /// Corresponds to FunctionInvokeOptions.query.
+  @httpQueryParams
+  query: StringMap
 }
 
 structure InvokeFunctionOutput {
