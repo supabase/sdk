@@ -224,6 +224,40 @@ interface Objects {
     @path wildcardPath: string,
     @header("x-upsert") upsert?: string,
   ): CreateSignedUploadUrlOutput | StorageError;
+
+  // Upload a new object via multipart/form-data.
+  // TypeSpec's @multipartBody emits correct multipart/form-data OpenAPI natively —
+  // no post-generation patching needed (unlike the Smithy pipeline).
+  @post
+  @route("/{bucketId}/{+wildcardPath}")
+  upload(
+    @path bucketId: string,
+    @path wildcardPath: string,
+    @header("x-upsert") upsert?: string,
+    @header contentType: "multipart/form-data",
+    @multipartBody body: {
+      /** Cache-Control header value to store with the object. */
+      cacheControl?: HttpPart<string>;
+      /** The file content. */
+      file: HttpPart<bytes>;
+    },
+  ): FileObject | StorageError;
+
+  // Replace an existing object via multipart/form-data.
+  @put
+  @route("/{bucketId}/{+wildcardPath}")
+  update(
+    @path bucketId: string,
+    @path wildcardPath: string,
+    @header("x-upsert") upsert?: string,
+    @header contentType: "multipart/form-data",
+    @multipartBody body: {
+      /** Cache-Control header value to store with the object. */
+      cacheControl?: HttpPart<string>;
+      /** The file content. */
+      file: HttpPart<bytes>;
+    },
+  ): FileObject | StorageError;
 }
 
 // ─── TUS Resumable Upload Operations ───────────────────────────────────────
