@@ -39,6 +39,22 @@
           "protocol": "aws.protocols#restJson1"
         }
       }
+    },
+    "database-openapi": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": ["io.supabase.database#DatabaseService"]
+          }
+        }
+      ],
+      "plugins": {
+        "openapi": {
+          "service": "io.supabase.database#DatabaseService",
+          "protocol": "aws.protocols#restJson1"
+        }
+      }
     }
   }
 }
