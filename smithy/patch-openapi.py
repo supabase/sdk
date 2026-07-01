@@ -4,11 +4,12 @@ Post-process the Smithy-generated OpenAPI JSON with patches that Smithy
 cannot express natively.
 
 Storage patches:
-  1. UploadChunk body: format: byte → format: binary
+  1. UploadObject / UpdateObject requestBody: inject multipart/form-data schema.
+     Smithy has no native multipart/form-data support. The @httpMultipartForm
+     trait in the model documents intent; this script performs the actual injection.
+  2. UploadChunk body: format: byte → format: binary.
      (@streaming blob translates to format:byte but swift-openapi-generator
       needs format:binary to emit HTTPBody instead of Base64EncodedData)
-  2. UploadObject (POST) and UpdateObject (PUT) with multipart/form-data
-     (Smithy has no native multipart/form-data trait; these are authored here)
 
 Database patches:
   3. FilterOperator enum — defined in Smithy but not referenced as a member
@@ -49,77 +50,36 @@ if service_title == "Supabase Database API":
     print(f"Patched (database): {path}")
     sys.exit(0)
 
-# ── Patch 1: streaming blob → binary ─────────────────────────────────────
+# ── Patch 1: multipart/form-data for UploadObject and UpdateObject ────────
+MULTIPART_BODY = {
+    "required": True,
+    "content": {
+        "multipart/form-data": {
+            "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": {
+                    "file": {"type": "string", "format": "binary"},
+                    "cacheControl": {"type": "string"},
+                    "metadata": {"type": "object"},
+                },
+            }
+        }
+    },
+}
+
+upload_path = "/object/{bucketId}/{wildcardPath+}"
+if upload_path in d.get("paths", {}):
+    for method in ("post", "put"):
+        if method in d["paths"][upload_path]:
+            d["paths"][upload_path][method]["requestBody"] = MULTIPART_BODY
+
+# ── Patch 2: streaming blob → binary ──────────────────────────────────────
 schema = d["components"]["schemas"].get("UploadChunkInputPayload", {})
 if schema.get("format") == "byte":
     schema["format"] = "binary"
 
-# ── Patch 2: multipart upload/update operations ───────────────────────────
-d["components"]["schemas"]["FileUploadedResponse"] = {
-    "type": "object",
-    "properties": {
-        "Key": {"type": "string"},
-        "Id": {"type": "string", "format": "uuid"},
-    },
-    "required": ["Key", "Id"],
-}
-
-upload_form_schema = {
-    "type": "object",
-    "properties": {
-        "cacheControl": {"type": "string"},
-        "metadata": {"type": "object", "additionalProperties": True},
-        "file": {"type": "string", "format": "binary"},
-    },
-    "required": ["file"],
-}
-
-upload_responses = {
-    "200": {
-        "description": "Upload successful",
-        "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/FileUploadedResponse"}
-            }
-        },
-    },
-    "400": {
-        "description": "StorageError 400 response",
-        "content": {
-            "application/json": {
-                "schema": {"$ref": "#/components/schemas/StorageErrorResponseContent"}
-            }
-        },
-    },
-}
-
-wildcard_path = "/object/{bucketId}/{wildcardPath+}"
-d["paths"][wildcard_path]["post"] = {
-    "operationId": "UploadObject",
-    "parameters": [
-        {"name": "bucketId", "in": "path", "schema": {"type": "string"}, "required": True},
-        {"name": "wildcardPath+", "in": "path", "schema": {"type": "string"}, "required": True},
-        {"name": "x-upsert", "in": "header", "schema": {"type": "string"}, "required": False},
-    ],
-    "requestBody": {
-        "required": True,
-        "content": {"multipart/form-data": {"schema": upload_form_schema}},
-    },
-    "responses": upload_responses,
-}
-
-d["paths"][wildcard_path]["put"] = {
-    "operationId": "UpdateObject",
-    "parameters": [
-        {"name": "bucketId", "in": "path", "schema": {"type": "string"}, "required": True},
-        {"name": "wildcardPath+", "in": "path", "schema": {"type": "string"}, "required": True},
-    ],
-    "requestBody": {
-        "required": True,
-        "content": {"multipart/form-data": {"schema": upload_form_schema}},
-    },
-    "responses": upload_responses,
-}
-
 with open(path, "w") as f:
     json.dump(d, f, indent=2)
+
+print(f"Patched (storage): {path}")

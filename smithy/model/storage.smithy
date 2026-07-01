@@ -4,6 +4,7 @@ namespace io.supabase.storage
 
 use aws.protocols#restJson1
 use io.supabase#StringList
+use io.supabase.traits#httpMultipartForm
 
 @restJson1
 @title("Supabase Storage API")
@@ -25,6 +26,8 @@ service StorageService {
     CreateSignedUrl
     CreateSignedUrls
     CreateSignedUploadUrl
+    UploadObject
+    UpdateObject
     CreateTusUpload
     UploadChunk
     GetUploadOffset
@@ -230,6 +233,51 @@ operation HeadObject {
 structure HeadObjectInput {
   @required @httpLabel bucketId: String
   @required @httpLabel wildcardPath: String
+}
+
+/// Upload a new object. Body is multipart/form-data with a required file part.
+/// Smithy has no native multipart/form-data support; the @httpMultipartForm trait
+/// documents intent and patch-openapi.py injects the correct requestBody schema.
+@http(method: "POST", uri: "/object/{bucketId}/{wildcardPath+}", code: 200)
+operation UploadObject {
+  input: UploadObjectInput
+  output: FileUploadedResponse
+  errors: [StorageError]
+}
+
+@httpMultipartForm(fields: [
+  {name: "file",         fieldType: "binary", required: true},
+  {name: "cacheControl", fieldType: "string", required: false},
+  {name: "metadata",     fieldType: "object", required: false}
+])
+structure UploadObjectInput {
+  @required @httpLabel bucketId: String
+  @required @httpLabel wildcardPath: String
+  @httpHeader("x-upsert") upsert: String
+}
+
+/// Replace an existing object. Body is multipart/form-data (see UploadObject).
+@http(method: "PUT", uri: "/object/{bucketId}/{wildcardPath+}", code: 200)
+@idempotent
+operation UpdateObject {
+  input: UpdateObjectInput
+  output: FileUploadedResponse
+  errors: [StorageError]
+}
+
+@httpMultipartForm(fields: [
+  {name: "file",         fieldType: "binary", required: true},
+  {name: "cacheControl", fieldType: "string", required: false},
+  {name: "metadata",     fieldType: "object", required: false}
+])
+structure UpdateObjectInput {
+  @required @httpLabel bucketId: String
+  @required @httpLabel wildcardPath: String
+}
+
+structure FileUploadedResponse {
+  @required @jsonName("Key") key: String
+  @required @jsonName("Id") id: String
 }
 
 @http(method: "POST", uri: "/object/sign/{bucketId}/{wildcardPath+}", code: 200)

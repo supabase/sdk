@@ -591,6 +591,7 @@
         }
       },
       "post": {
+        "description": "Upload a new object. Body is multipart/form-data with a required file part.\nSmithy has no native multipart/form-data support; the @httpMultipartForm trait\ndocuments intent and patch-openapi.py injects the correct requestBody schema.",
         "operationId": "UploadObject",
         "parameters": [
           {
@@ -614,43 +615,16 @@
             "in": "header",
             "schema": {
               "type": "string"
-            },
-            "required": false
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "cacheControl": {
-                    "type": "string"
-                  },
-                  "metadata": {
-                    "type": "object",
-                    "additionalProperties": true
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                },
-                "required": [
-                  "file"
-                ]
-              }
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Upload successful",
+            "description": "UploadObject 200 response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FileUploadedResponse"
+                  "$ref": "#/components/schemas/UploadObjectResponseContent"
                 }
               }
             }
@@ -665,9 +639,35 @@
               }
             }
           }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "cacheControl": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "put": {
+        "description": "Replace an existing object. Body is multipart/form-data (see UploadObject).",
         "operationId": "UpdateObject",
         "parameters": [
           {
@@ -687,39 +687,13 @@
             "required": true
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "cacheControl": {
-                    "type": "string"
-                  },
-                  "metadata": {
-                    "type": "object",
-                    "additionalProperties": true
-                  },
-                  "file": {
-                    "type": "string",
-                    "format": "binary"
-                  }
-                },
-                "required": [
-                  "file"
-                ]
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Upload successful",
+            "description": "UpdateObject 200 response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FileUploadedResponse"
+                  "$ref": "#/components/schemas/UpdateObjectResponseContent"
                 }
               }
             }
@@ -730,6 +704,31 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StorageErrorResponseContent"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "cacheControl": {
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "type": "object"
+                  }
                 }
               }
             }
@@ -1362,25 +1361,39 @@
           "public"
         ]
       },
-      "UploadChunkInputPayload": {
-        "type": "string",
-        "description": "Raw chunk bytes, streamed directly \u2014 never buffered.",
-        "format": "binary"
-      },
-      "FileUploadedResponse": {
+      "UpdateObjectResponseContent": {
         "type": "object",
         "properties": {
           "Key": {
             "type": "string"
           },
           "Id": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           }
         },
         "required": [
-          "Key",
-          "Id"
+          "Id",
+          "Key"
+        ]
+      },
+      "UploadChunkInputPayload": {
+        "type": "string",
+        "description": "Raw chunk bytes, streamed directly \u2014 never buffered.",
+        "format": "binary"
+      },
+      "UploadObjectResponseContent": {
+        "type": "object",
+        "properties": {
+          "Key": {
+            "type": "string"
+          },
+          "Id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "Id",
+          "Key"
         ]
       }
     }

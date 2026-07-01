@@ -3,7 +3,11 @@
   "maven": {
     "dependencies": [
       "software.amazon.smithy:smithy-openapi:1.52.1",
-      "software.amazon.smithy:smithy-aws-traits:1.52.1"
+      "software.amazon.smithy:smithy-aws-traits:1.52.1",
+      "io.supabase:smithy-supabase-extensions:1.0.0-SNAPSHOT"
+    ],
+    "repositories": [
+      {"url": "file://${HOME}/.m2/repository"}
     ]
   },
   "sources": ["model"],
