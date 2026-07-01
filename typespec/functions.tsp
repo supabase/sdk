@@ -21,12 +21,25 @@ model FunctionsError {
   message?: string;
 }
 
-// Explicit content-type on both body and response forces application/octet-stream
-// in OpenAPI (TypeSpec defaults bytes to application/json without it).
+// Three response models cover the content types a function can return.
+// Each @sharedRoute variant is paired with one response model; TypeSpec merges
+// them into a single OpenAPI operation with multiple response content entries,
+// which swift-openapi-generator maps to a Body enum with one case per type.
+model JsonResponse {
+  @statusCode statusCode: 200;
+  @body body: unknown;
+}
+
 model OctetStreamResponse {
   @statusCode statusCode: 200;
   @header contentType: "application/octet-stream";
   @body body: bytes;
+}
+
+model TextResponse {
+  @statusCode statusCode: 200;
+  @header contentType: "text/plain";
+  @body body: string;
 }
 
 // ─── Operations ────────────────────────────────────────────────────────────
@@ -65,29 +78,29 @@ interface FunctionInvocations {
 
   // POST — one @sharedRoute variant per supported content type.
   @sharedRoute @post @route("/{functionName}") @operationId("FunctionInvocations_invokePost")
-  invokePostJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): OctetStreamResponse | FunctionsError;
+  invokePostJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): JsonResponse | FunctionsError;
   @sharedRoute @post @route("/{functionName}") invokePostBinary(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/octet-stream", @body body?: bytes): OctetStreamResponse | FunctionsError;
-  @sharedRoute @post @route("/{functionName}") invokePostText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): OctetStreamResponse | FunctionsError;
-  @sharedRoute @post @route("/{functionName}") invokePostForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): OctetStreamResponse | FunctionsError;
+  @sharedRoute @post @route("/{functionName}") invokePostText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): TextResponse | FunctionsError;
+  @sharedRoute @post @route("/{functionName}") invokePostForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): JsonResponse | FunctionsError;
 
   // PUT
   @sharedRoute @put @route("/{functionName}") @operationId("FunctionInvocations_invokePut")
-  invokePutJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): OctetStreamResponse | FunctionsError;
+  invokePutJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): JsonResponse | FunctionsError;
   @sharedRoute @put @route("/{functionName}") invokePutBinary(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/octet-stream", @body body?: bytes): OctetStreamResponse | FunctionsError;
-  @sharedRoute @put @route("/{functionName}") invokePutText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): OctetStreamResponse | FunctionsError;
-  @sharedRoute @put @route("/{functionName}") invokePutForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): OctetStreamResponse | FunctionsError;
+  @sharedRoute @put @route("/{functionName}") invokePutText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): TextResponse | FunctionsError;
+  @sharedRoute @put @route("/{functionName}") invokePutForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): JsonResponse | FunctionsError;
 
   // PATCH
   @sharedRoute @patch @route("/{functionName}") @operationId("FunctionInvocations_invokePatch")
-  invokePatchJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): OctetStreamResponse | FunctionsError;
+  invokePatchJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): JsonResponse | FunctionsError;
   @sharedRoute @patch @route("/{functionName}") invokePatchBinary(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/octet-stream", @body body?: bytes): OctetStreamResponse | FunctionsError;
-  @sharedRoute @patch @route("/{functionName}") invokePatchText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): OctetStreamResponse | FunctionsError;
-  @sharedRoute @patch @route("/{functionName}") invokePatchForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): OctetStreamResponse | FunctionsError;
+  @sharedRoute @patch @route("/{functionName}") invokePatchText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): TextResponse | FunctionsError;
+  @sharedRoute @patch @route("/{functionName}") invokePatchForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): JsonResponse | FunctionsError;
 
   // DELETE
   @sharedRoute @delete @route("/{functionName}") @operationId("FunctionInvocations_invokeDelete")
-  invokeDeleteJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): OctetStreamResponse | FunctionsError;
+  invokeDeleteJson(@path functionName: string, @header("x-region") region?: string, @body body?: unknown): JsonResponse | FunctionsError;
   @sharedRoute @delete @route("/{functionName}") invokeDeleteBinary(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/octet-stream", @body body?: bytes): OctetStreamResponse | FunctionsError;
-  @sharedRoute @delete @route("/{functionName}") invokeDeleteText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): OctetStreamResponse | FunctionsError;
-  @sharedRoute @delete @route("/{functionName}") invokeDeleteForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): OctetStreamResponse | FunctionsError;
+  @sharedRoute @delete @route("/{functionName}") invokeDeleteText(@path functionName: string, @header("x-region") region?: string, @header contentType: "text/plain", @body body?: string): TextResponse | FunctionsError;
+  @sharedRoute @delete @route("/{functionName}") invokeDeleteForm(@path functionName: string, @header("x-region") region?: string, @header contentType: "application/x-www-form-urlencoded", @body body?: string): JsonResponse | FunctionsError;
 }
