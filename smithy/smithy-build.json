@@ -39,6 +39,22 @@
           "protocol": "aws.protocols#restJson1"
         }
       }
+    },
+    "postgrest-openapi": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": ["io.supabase.postgrest#PostgRESTService"]
+          }
+        }
+      ],
+      "plugins": {
+        "openapi": {
+          "service": "io.supabase.postgrest#PostgRESTService",
+          "protocol": "aws.protocols#restJson1"
+        }
+      }
     }
   }
 }

@@ -1,0 +1,617 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Supabase PostgREST API",
+        "version": "1.0"
+    },
+    "paths": {
+        "/rpc/{fn}": {
+            "post": {
+                "description": "Call a Postgres function via PostgREST.",
+                "operationId": "Rpc",
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RpcInputPayload"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "fn",
+                        "in": "path",
+                        "description": "Postgres function name.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Postgres function name."
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Dynamically-built query params for GET-style RPC calls.",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Content-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Rpc 200 response",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RpcOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/{table}": {
+            "delete": {
+                "description": "Delete rows matching the query-param filters.",
+                "operationId": "Delete",
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Filter params that identify which rows to delete.",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Content-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Delete 200 response",
+                        "headers": {
+                            "Content-Range": {
+                                "description": "Content-Range response header, e.g. \"0-9/42\".",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Content-Range response header, e.g. \"0-9/42\"."
+                                }
+                            },
+                            "Preference-Applied": {
+                                "description": "Preference-Applied response header.",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Preference-Applied response header."
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeleteOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "Fetch rows from a table or view.\nQuery params carry the filter expression built by the SDK query builder:\n?select=id,name&status=eq.active&order=created_at.desc",
+                "operationId": "From",
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Dynamically-built query params: select, filters, order, limit, offset.",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "description": "Schema to target (multi-schema support).",
+                        "schema": {
+                            "type": "string",
+                            "description": "Schema to target (multi-schema support)."
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "description": "Prefer header: return=minimal|representation|count, etc.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Prefer header: return=minimal|representation|count, etc."
+                        }
+                    },
+                    {
+                        "name": "Range",
+                        "in": "header",
+                        "description": "Byte range for pagination, e.g. \"0-9\".",
+                        "schema": {
+                            "type": "string",
+                            "description": "Byte range for pagination, e.g. \"0-9\"."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "From 200 response",
+                        "headers": {
+                            "Content-Range": {
+                                "description": "Content-Range response header, e.g. \"0-9/42\".",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Content-Range response header, e.g. \"0-9/42\"."
+                                }
+                            },
+                            "Preference-Applied": {
+                                "description": "Preference-Applied response header.",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Preference-Applied response header."
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FromOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update rows matching the query-param filters.",
+                "operationId": "Update",
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateInputPayload"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Dynamically-built query params (filters, select, on_conflict, etc.).",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Content-Profile",
+                        "in": "header",
+                        "description": "Schema to target.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Schema to target."
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "description": "Prefer header: return=minimal|representation|count, resolution=..., etc.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Prefer header: return=minimal|representation|count, resolution=..., etc."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Update 200 response",
+                        "headers": {
+                            "Content-Range": {
+                                "description": "Content-Range response header, e.g. \"0-9/42\".",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Content-Range response header, e.g. \"0-9/42\"."
+                                }
+                            },
+                            "Preference-Applied": {
+                                "description": "Preference-Applied response header.",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Preference-Applied response header."
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpdateOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Insert one or more rows into a table.",
+                "operationId": "Insert",
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InsertInputPayload"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Dynamically-built query params (filters, select, on_conflict, etc.).",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Content-Profile",
+                        "in": "header",
+                        "description": "Schema to target.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Schema to target."
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "description": "Prefer header: return=minimal|representation|count, resolution=..., etc.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Prefer header: return=minimal|representation|count, resolution=..., etc."
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Insert 201 response",
+                        "headers": {
+                            "Content-Range": {
+                                "description": "Content-Range response header, e.g. \"0-9/42\".",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Content-Range response header, e.g. \"0-9/42\"."
+                                }
+                            },
+                            "Preference-Applied": {
+                                "description": "Preference-Applied response header.",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Preference-Applied response header."
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InsertOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Upsert (insert or update on conflict) one or more rows.",
+                "operationId": "Upsert",
+                "requestBody": {
+                    "content": {
+                        "application/octet-stream": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpsertInputPayload"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "table",
+                        "in": "path",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true
+                    },
+                    {
+                        "name": "params",
+                        "in": "query",
+                        "description": "Dynamically-built query params (filters, select, on_conflict, etc.).",
+                        "style": "form",
+                        "schema": {
+                            "$ref": "#/components/schemas/QueryParams"
+                        }
+                    },
+                    {
+                        "name": "Accept-Profile",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Content-Profile",
+                        "in": "header",
+                        "description": "Schema to target.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Schema to target."
+                        }
+                    },
+                    {
+                        "name": "Prefer",
+                        "in": "header",
+                        "description": "Prefer header: return=minimal|representation|count, resolution=..., etc.",
+                        "schema": {
+                            "type": "string",
+                            "description": "Prefer header: return=minimal|representation|count, resolution=..., etc."
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Upsert 200 response",
+                        "headers": {
+                            "Content-Range": {
+                                "description": "Content-Range response header, e.g. \"0-9/42\".",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Content-Range response header, e.g. \"0-9/42\"."
+                                }
+                            },
+                            "Preference-Applied": {
+                                "description": "Preference-Applied response header.",
+                                "schema": {
+                                    "type": "string",
+                                    "description": "Preference-Applied response header."
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UpsertOutputPayload"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "PostgRESTError 400 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/PostgRESTErrorResponseContent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "DeleteOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            },
+            "FromOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            },
+            "InsertInputPayload": {
+                "type": "string",
+                "description": "JSON body: a single row object or an array of row objects.",
+                "format": "byte"
+            },
+            "InsertOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            },
+            "PostgRESTErrorResponseContent": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "type": "string"
+                    },
+                    "hint": {
+                        "type": "string"
+                    }
+                }
+            },
+            "QueryParams": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "string"
+                },
+                "description": "Dynamic PostgREST query parameters generated by the query builder at\nruntime (select columns, row filters, order, limit, offset, etc.).\nThese cannot be expressed as fixed Smithy members."
+            },
+            "RpcInputPayload": {
+                "type": "string",
+                "description": "JSON body: function arguments as a key-value object.",
+                "format": "byte"
+            },
+            "RpcOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            },
+            "UpdateInputPayload": {
+                "type": "string",
+                "description": "JSON body: a single row object or an array of row objects.",
+                "format": "byte"
+            },
+            "UpdateOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            },
+            "UpsertInputPayload": {
+                "type": "string",
+                "description": "JSON body: a single row object or an array of row objects.",
+                "format": "byte"
+            },
+            "UpsertOutputPayload": {
+                "type": "string",
+                "format": "byte"
+            }
+        }
+    }
+}
