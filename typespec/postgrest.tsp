@@ -137,8 +137,7 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @header contentType: "application/octet-stream",
-    @body body: bytes,
+    @body body: unknown,
   ): InsertResponse | PostgRESTError;
 
   /** UPSERT rows (PUT). */
@@ -153,8 +152,7 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @header contentType: "application/octet-stream",
-    @body body: bytes,
+    @body body: unknown,
   ): RowsResponse | PostgRESTError;
 
   /** UPDATE rows matching the filter. */
@@ -167,8 +165,7 @@ interface TableOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @header contentType: "application/octet-stream",
-    @body body: bytes,
+    @body body: unknown,
   ): RowsResponse | PostgRESTError;
 
   /** DELETE rows matching the filter. */
@@ -195,8 +192,7 @@ interface RpcOperations {
     @header("Prefer") prefer?: string,
     @header("Content-Profile") contentProfile?: string,
     @header("Accept-Profile") acceptProfile?: string,
-    @header contentType: "application/octet-stream",
-    @body body: bytes,
+    @body body: unknown,
   ): RowsResponse | PostgRESTError;
 
   /** Call a read-only RPC function via GET.
