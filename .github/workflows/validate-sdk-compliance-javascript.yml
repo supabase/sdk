@@ -11,8 +11,12 @@ on:
         description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
         type: string
         default: main
-      typedoc-packages:
-        description: Comma-separated package dirs (relative to SDK root), each defining a `docs:json` script
+      build-command:
+        description: Shell command run in each checked-out SDK root to emit TypeDoc spec.json files (the SDK owns how it builds)
+        type: string
+        required: true
+      spec-glob:
+        description: Glob (relative to the SDK root) matching the spec.json files produced by build-command
         type: string
         required: true
 
@@ -35,35 +39,30 @@ jobs:
         with:
           sdk-ref: ${{ inputs.sdk-ref }}
 
-      # The only TS SDK is the supabase-js pnpm monorepo. Use nx to run each
-      # package's `docs:json` so that nx's dependency graph builds any required
-      # workspace packages first. The package list comes from the caller via
-      # `typedoc-packages` and determines which spec.json files to collect.
-      - name: Enable corepack
-        run: corepack enable
-
+      # This workflow is build-agnostic: the SDK declares how to produce its
+      # TypeDoc spec.json files via `build-command`, and where they land via
+      # `spec-glob`. We run the command in each branch's checkout, collect the
+      # emitted spec.json files, then normalize + merge them into one
+      # ParseResult. TypeDoc emits repo-root-relative paths, so the merged
+      # output stays unambiguous without any prefixing.
       - name: Generate and normalize TypeScript symbols
         env:
-          TYPEDOC_PACKAGES: ${{ inputs.typedoc-packages }}
+          BUILD_COMMAND: ${{ inputs.build-command }}
+          SPEC_GLOB: ${{ inputs.spec-glob }}
         run: |
           set -euo pipefail
-          if [ -z "${TYPEDOC_PACKAGES:-}" ]; then
-            echo "::error::typedoc-packages input is required and must be non-empty"
-            exit 1
-          fi
-          IFS=',' read -ra PKGS <<< "$(echo "$TYPEDOC_PACKAGES" | tr -d '[:space:]')"
+          [ -n "${BUILD_COMMAND:-}" ] || { echo "::error::build-command is required"; exit 1; }
+          [ -n "${SPEC_GLOB:-}" ]     || { echo "::error::spec-glob is required"; exit 1; }
           for b in pr base; do
             ROOT="$GITHUB_WORKSPACE/_sdk-$b"
-            ( cd "$ROOT" && pnpm install --frozen-lockfile )
-            # Run all docs:json targets via nx so dependency builds happen first.
-            ( cd "$ROOT" && pnpm nx run-many --target=docs:json --output-style=stream )
+            # The SDK owns how it builds; we just run it and collect what it emits.
+            ( cd "$ROOT" && eval "$BUILD_COMMAND" )
             INPUTS=()
-            for pkg in "${PKGS[@]}"; do
-              [ -z "$pkg" ] && continue
-              # TypeDoc emits repo-root-relative file paths, so the merged
-              # output stays unambiguous without any prefixing.
-              INPUTS+=("$ROOT/$pkg/docs/v2/spec.json")
+            for f in "$ROOT"/$SPEC_GLOB; do
+              [ -e "$f" ] || continue
+              INPUTS+=("$f")
             done
+            [ ${#INPUTS[@]} -gt 0 ] || { echo "::error::spec-glob '$SPEC_GLOB' matched no files under $ROOT"; exit 1; }
             ( cd "$GITHUB_WORKSPACE/_sdk-spec/scripts/capability-matrix" \
               && npm run --silent normalize-typedoc -- \
                    --out "$GITHUB_WORKSPACE/$b-symbols.json" "${INPUTS[@]}" )
