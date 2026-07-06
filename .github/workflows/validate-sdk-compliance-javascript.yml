@@ -35,11 +35,10 @@ jobs:
         with:
           sdk-ref: ${{ inputs.sdk-ref }}
 
-      # The only TS SDK is the supabase-js pnpm monorepo. Install it, run each
-      # package's `docs:json` to emit TypeDoc JSON (each package owns its own
-      # entrypoints there), then normalize + merge all packages into one
-      # ParseResult per branch. The package list comes from the caller via
-      # `typedoc-packages`.
+      # The only TS SDK is the supabase-js pnpm monorepo. Use nx to run each
+      # package's `docs:json` so that nx's dependency graph builds any required
+      # workspace packages first. The package list comes from the caller via
+      # `typedoc-packages` and determines which spec.json files to collect.
       - name: Enable corepack
         run: corepack enable
 
@@ -56,10 +55,11 @@ jobs:
           for b in pr base; do
             ROOT="$GITHUB_WORKSPACE/_sdk-$b"
             ( cd "$ROOT" && pnpm install --frozen-lockfile )
+            # Run all docs:json targets via nx so dependency builds happen first.
+            ( cd "$ROOT" && pnpm nx run-many --target=docs:json --output-style=stream )
             INPUTS=()
             for pkg in "${PKGS[@]}"; do
               [ -z "$pkg" ] && continue
-              ( cd "$ROOT" && pnpm -C "$pkg" run docs:json )
               # TypeDoc emits repo-root-relative file paths, so the merged
               # output stays unambiguous without any prefixing.
               INPUTS+=("$ROOT/$pkg/docs/v2/spec.json")
