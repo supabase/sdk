@@ -2,3 +2,7 @@ output-dir: "{project-root}/openapi"
 
 emit:
   - "@typespec/openapi3"
+
+options:
+  "@typespec/openapi3":
+    file-type: "json"
