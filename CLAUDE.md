@@ -49,23 +49,13 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `scripts/capability-matrix/src/` — TypeScript source for validation, aggregation, and site generation.
 - `scripts/capability-matrix/test/` — Vitest test suite with fixtures in `test/fixtures/`.
 
-### Source Files
+### Key Source Files
 
-- `types.ts` — Core types: `Language` (7 SDKs), `Status` (4 values), `Feature`, `AreaFile`, `ComplianceMap`
-- `load.ts` — Loads capability YAML files
-- `schema.ts` — AJV-based schema validation
-- `structural.ts` — Cross-file checks: spec orphan detection, duplicate feature IDs, ID format enforcement
-- `compliance.ts` — Parses and validates SDK `sdk-compliance.yaml` files; includes `buildSymbolIndex` helper
-- `aggregate.ts` — Fetches compliance files from all SDK repos via Octokit
-- `generate-site.ts` — Builds the static HTML matrix site
-- `report.ts` — Calculates parity percentages per feature/area/language
-- `swift-parser.ts` — Line-by-line Swift scanner; extracts public/open symbols from classes, structs, actors, enums, extensions
-- `normalize-typedoc.ts` — TypeDoc JSON normalizer; maps TypeDoc reflection kinds to `ParseResult`; defines `ParsedSymbol` and `ParseResult` types
-- `normalize-typedoc-cli.ts` — CLI wrapper. Legacy form `<in.json> <out.json>` normalizes one project; merge form `--out <out.json> <in.json>…` normalizes and concatenates several TypeDoc JSONs into one `ParseResult` (for monorepos; TypeDoc emits repo-relative paths so no rewriting is needed)
-- `scripts/dart_symbol_extractor/` (sibling Dart package) — Small `package:analyzer` tool that walks `lib/**.dart` syntactically and emits the same `ParseResult` JSON; run directly with `dart run bin/extract.dart <sdk-root>`. Parses without `pub get`; supports extension types and enhanced enums
-- `parse-ignore.ts` — Loads `.sdk-parse-ignore` (gitignore syntax) to exclude paths from Swift symbol parsing (TypeScript uses TypeDoc entrypoint resolution instead)
-- `api-check.ts` — Diff logic: `checkNewSymbols(base, pr, compliance)` returns symbols added in PR not in the compliance file
-- `check-api-symbols.ts` — CLI; compares two `ParseResult` files against `sdk-compliance.yaml`, exits 1 with a clear error on uncovered symbols
+- `normalize-typedoc-cli.ts` — merge form: `--out <out.json> <in.json>…` concatenates several TypeDoc JSONs (for monorepos)
+- `swift-parser.ts` — line-by-line scanner (not AST); extracts `public`/`open` symbols from classes, structs, actors, enums, extensions
+- `scripts/dart_symbol_extractor/` — sibling Dart package; `dart run bin/extract.dart <sdk-root>`; parses without `pub get`
+- `parse-ignore.ts` — `.sdk-parse-ignore` (gitignore syntax) excludes paths from Swift parsing; TypeScript uses TypeDoc entrypoints instead
+- `api-check.ts` / `check-api-symbols.ts` — diff logic + CLI for blocking PRs that add unregistered public symbols
 
 ### CI Workflows
 
@@ -96,6 +86,13 @@ features:
 Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
 
 The `symbols` field is optional but enables the public API check in CI: when a PR adds a new public symbol not listed under any `symbols` entry, the check fails and prompts the author to register it.
+
+## Adding a Feature
+
+1. Pick or create a YAML file in `capabilities/` for the relevant area.
+2. Add the feature entry; ID must be `{area}.{group}.{method}` and globally unique.
+3. Run `npm run validate` — catches schema errors and duplicate IDs.
+4. Optionally add a spec at `specs/{area}.{group_namespace}/{method}.md`.
 
 ## Commit Style
 
