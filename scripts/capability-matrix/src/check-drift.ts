@@ -6,6 +6,12 @@ import { buildSourceMap } from "./compliance-source-map.js";
 import type { RawCompliance } from "./compliance.js";
 import type { ParseResult } from "./normalize-typedoc.js";
 
+// ponytail: workflow-command annotations are single-line; strip newlines so a
+// crafted featureId/symbol in committed YAML can't inject extra `::` commands.
+function sanitize(s: string): string {
+  return s.replace(/[\r\n]+/g, " ");
+}
+
 async function main(): Promise<void> {
   const [compliancePath, prFile, annotationPath] = process.argv.slice(2);
 
@@ -47,9 +53,10 @@ async function main(): Promise<void> {
     const line = finding.symbol
       ? sourceMap.symbolLines.get(finding.symbol)
       : sourceMap.featureLines.get(finding.featureId);
+    const featureId = sanitize(finding.featureId);
     const message = finding.symbol
-      ? `${finding.featureId}: expected symbol ${finding.symbol} not found in ${compliance.sdk}`
-      : `${finding.featureId}: marked implemented but has no registered symbols to verify`;
+      ? `${featureId}: expected symbol ${sanitize(finding.symbol)} not found in ${compliance.sdk}`
+      : `${featureId}: marked implemented but has no registered symbols to verify`;
     console.log(
       line !== undefined
         ? `::warning file=${annotationFile},line=${line}::${message}`

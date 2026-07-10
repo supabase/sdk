@@ -27,6 +27,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: macos-latest
     permissions:
+      contents: read
       pull-requests: write
     steps:
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main

@@ -28,34 +28,41 @@ runs:
           const marker = '<!-- capability-matrix-drift -->';
           const summaryPath = '_sdk-spec/scripts/capability-matrix/drift-summary.md';
 
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          });
-          const existing = comments.find((c) => c.body && c.body.includes(marker));
+          try {
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
 
-          if (fs.existsSync(summaryPath)) {
-            const body = fs.readFileSync(summaryPath, 'utf8');
-            if (existing) {
-              await github.rest.issues.updateComment({
+            if (fs.existsSync(summaryPath)) {
+              const body = fs.readFileSync(summaryPath, 'utf8');
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body,
+                });
+              }
+            } else if (existing) {
+              await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
               });
             }
-          } else if (existing) {
-            await github.rest.issues.deleteComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: existing.id,
-            });
+          } catch (error) {
+            // Fork PRs get a read-only GITHUB_TOKEN, so writes here 403. This
+            // comment is a best-effort enhancement — the ::warning:: annotations
+            // from the CLI step already carry the signal, so never fail the job.
+            console.error('Could not upsert/clear drift comment:', error);
           }
