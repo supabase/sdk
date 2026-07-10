@@ -34,6 +34,8 @@ jobs:
     name: Check public API against capability matrix
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
         with:
@@ -69,5 +71,9 @@ jobs:
           done
 
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
+
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-drift@main
         with:
           compliance-file: ${{ inputs.compliance-file }}
