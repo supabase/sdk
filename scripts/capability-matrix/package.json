@@ -12,6 +12,7 @@
     "normalize-symbolgraph": "tsx src/normalize-symbolgraph-cli.ts",
     "normalize-griffe": "tsx src/normalize-griffe-cli.ts",
     "check-api-symbols": "tsx src/check-api-symbols.ts",
+    "check-drift": "tsx src/check-drift.ts",
     "aggregate": "tsx src/aggregate.ts",
     "report": "tsx src/cli.ts report",
     "test": "vitest run",
