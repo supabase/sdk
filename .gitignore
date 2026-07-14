@@ -6,3 +6,10 @@ site/
 
 # AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
 docs/superpowers/
+
+# Generated SDK output is a build product (regenerated from the committed normalized specs).
+# Not committed for now — Plan B will settle the committed-vs-buildtime model for the lean templates.
+codegen/generated/
+
+# Stray @openapitools/openapi-generator-cli config (we use the standalone binary, version pinned in codegen.yaml)
+openapitools.json

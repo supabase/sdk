@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=./schema/codegen.schema.json
+engine:
+  tool: openapi-generator
+  version: "7.23.0"
+
+specs:
+  storage:
+    source: codegen/specs/storage.normalized.json
+    version: "gh-pages@53e6a743d5b02e7e7e7b7549f7490517773be016"
+
+languages:
+  swift:
+    generator: swift6
+    generatorProperties:
+      projectName: SupabaseStorage
+      responseAs: AsyncAwait
+      library: urlsession
+      useSPMFileStructure: "true"
+      nonPublicApi: "true"
+
+targets:
+  - spec: storage
+    language: swift
+    output: codegen/generated/swift-storage
