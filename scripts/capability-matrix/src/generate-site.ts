@@ -217,19 +217,23 @@ export function renderHtml(
     }
     .build-info a { color: #3ECF8E; text-decoration: none; }
     .build-info a:hover { text-decoration: underline; }
-    .overall-badge {
+    .metrics-row {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #2d2d2d;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: help;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
-    .overall-badge .label { color: #888; }
-    .overall-badge .value { font-weight: 700; color: #3ECF8E; font-size: 1.1rem; }
-    .badge-note { font-size: 0.72rem; color: #888; margin-top: 0.6rem; }
+    .metric-card {
+      background: #2d2d2d;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      min-width: 220px;
+      max-width: 320px;
+    }
+    .metric-card .metric-top { display: flex; align-items: baseline; gap: 0.5rem; }
+    .metric-card .label { color: #888; font-size: 0.85rem; }
+    .metric-card .value { font-weight: 700; color: #3ECF8E; font-size: 1.1rem; }
+    .metric-card .metric-desc { font-size: 0.72rem; color: #999; margin-top: 0.25rem; line-height: 1.4; }
 
     /* ── SDK score cards ───────────────────────────────────── */
     .sdk-grid {
@@ -444,16 +448,23 @@ export function renderHtml(
       <h1 class="site-title"><span>Supabase</span> SDK Capability Matrix</h1>
       <p class="build-info">Updated ${esc(buildDate)} · <a href="compliance.json">compliance.json</a></p>
     </div>
-    <div class="overall-badge" title="% of tracked features that are fully implemented in every core SDK (JavaScript, Flutter, Python, Swift). A feature only counts if none of them are missing or partial.">
-      <span class="label">Overall parity</span>
-      <span class="value">${pct(clamp01(parity.overall))}</span>
+  </div>
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="label">Overall parity</span>
+        <span class="value">${pct(clamp01(parity.overall))}</span>
+      </div>
+      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift) — a feature only counts if none of them are missing or partial.</p>
     </div>
-    <div class="overall-badge" title="Of the features marked implemented/partial in a core SDK, % that have a registered symbols list — i.e. how much of &quot;done&quot; is backed by real code evidence rather than an unverified claim.">
-      <span class="label">Coverage scope</span>
-      <span class="value">${pct(clamp01(parity.coverageScope))}</span>
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="label">Coverage scope</span>
+        <span class="value">${pct(clamp01(parity.coverageScope))}</span>
+      </div>
+      <p class="metric-desc">Of the features marked implemented/partial in a core SDK, % that have a registered symbols list — real code evidence behind the "done" claim.</p>
     </div>
   </div>
-  <p class="badge-note">Overall parity and coverage scope are computed only across core SDKs (JavaScript, Flutter, Python, Swift) — hover a badge for details.</p>
   <div class="sdk-grid">
     ${sdkCards}
   </div>
