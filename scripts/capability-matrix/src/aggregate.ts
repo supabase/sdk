@@ -19,8 +19,8 @@ const REPOS: Repo[] = [
   { slug: "supabase/supabase-flutter", language: "flutter" },
   { slug: "supabase/supabase-py", language: "python" },
   { slug: "supabase/supabase-swift", language: "swift" },
-  { slug: "supabase/postgrest-csharp", language: "csharp" },
-  { slug: "supabase/postgrest-go", language: "go" },
+  { slug: "supabase-community/supabase-csharp", language: "csharp" },
+  { slug: "supabase/supabase-go", language: "go" },
   { slug: "supabase-community/supabase-kt", language: "kotlin" },
 ];
 
