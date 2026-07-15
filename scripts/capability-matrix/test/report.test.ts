@@ -137,11 +137,20 @@ describe("computeParity — coverageScope", () => {
       javascript: { "auth.a": entry("implemented", ["Foo.bar"]) },
       flutter: { "auth.a": entry("implemented") }, // done, no symbols
       python: { "auth.a": entry("not_implemented") }, // not done, doesn't count
-      swift: { "auth.a": entry("partially_implemented", ["Bar.baz"]) },
+      swift: { "auth.a": entry("partially_implemented", ["Bar.baz"]) }, // partial doesn't count as done
     };
-    // done cells: javascript, flutter, swift (3); with symbols: javascript, swift (2) -> 2/3
+    // done cells: javascript, flutter (2); with symbols: javascript (1) -> 1/2
     const report = computeParity([a], c);
-    expect(report.coverageScope).toBeCloseTo(2 / 3, 6);
+    expect(report.coverageScope).toBeCloseTo(1 / 2, 6);
+  });
+
+  it("excludes partially_implemented entirely from coverage scope, even with symbols", () => {
+    const a = area("auth", [feature("auth.a")]);
+    const c: Partial<Record<Language, ComplianceMap>> = {
+      javascript: { "auth.a": entry("partially_implemented", ["Foo.bar"]) },
+    };
+    const report = computeParity([a], c);
+    expect(report.coverageScope).toBe(0);
   });
 
   it("ignores csharp/go/kotlin cells even if they have symbols", () => {

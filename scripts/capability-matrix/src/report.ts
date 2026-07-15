@@ -42,11 +42,13 @@ export function computeParity(
         if (isDone(status)) langImplemented[lang]++;
       }
 
-      // Coverage scope (core languages only)
+      // Coverage scope (core languages only). Only exactly `implemented` counts
+      // as done here — unlike perLanguage's isDone, partial claims don't get
+      // credit for "coverage" since they're not actually complete.
       for (const lang of CORE_LANGUAGES) {
         const entry = compliance[lang]?.[feature.id];
         const status = entry?.status ?? "not_implemented";
-        if (!isDone(status)) continue;
+        if (status !== "implemented") continue;
         doneCells++;
         if (entry?.symbols && entry.symbols.length > 0) doneCellsWithSymbols++;
       }
