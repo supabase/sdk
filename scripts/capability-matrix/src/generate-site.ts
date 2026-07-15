@@ -225,9 +225,11 @@ export function renderHtml(
       padding: 0.5rem 1rem;
       border-radius: 8px;
       font-size: 0.85rem;
+      cursor: help;
     }
     .overall-badge .label { color: #888; }
     .overall-badge .value { font-weight: 700; color: #3ECF8E; font-size: 1.1rem; }
+    .badge-note { font-size: 0.72rem; color: #888; margin-top: 0.6rem; }
 
     /* ── SDK score cards ───────────────────────────────────── */
     .sdk-grid {
@@ -442,15 +444,16 @@ export function renderHtml(
       <h1 class="site-title"><span>Supabase</span> SDK Capability Matrix</h1>
       <p class="build-info">Updated ${esc(buildDate)} · <a href="compliance.json">compliance.json</a></p>
     </div>
-    <div class="overall-badge">
+    <div class="overall-badge" title="% of tracked features that are fully implemented in every core SDK (JavaScript, Flutter, Python, Swift). A feature only counts if none of them are missing or partial.">
       <span class="label">Overall parity</span>
       <span class="value">${pct(clamp01(parity.overall))}</span>
     </div>
-    <div class="overall-badge">
+    <div class="overall-badge" title="Of the features marked implemented/partial in a core SDK, % that have a registered symbols list — i.e. how much of &quot;done&quot; is backed by real code evidence rather than an unverified claim.">
       <span class="label">Coverage scope</span>
       <span class="value">${pct(clamp01(parity.coverageScope))}</span>
     </div>
   </div>
+  <p class="badge-note">Overall parity and coverage scope are computed only across core SDKs (JavaScript, Flutter, Python, Swift) — hover a badge for details.</p>
   <div class="sdk-grid">
     ${sdkCards}
   </div>
