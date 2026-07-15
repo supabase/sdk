@@ -103,7 +103,7 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
   });
 });
 
-describe("computeParity — perLanguage (unchanged, all 7 langs)", () => {
+describe("computeParity — perLanguage (all 7 langs, exact implemented only)", () => {
   it("treats not_applicable as excluded from that language's own denominator", () => {
     const a = area("auth", [feature("auth.a")]);
     const c: Partial<Record<Language, ComplianceMap>> = {
@@ -114,13 +114,13 @@ describe("computeParity — perLanguage (unchanged, all 7 langs)", () => {
     expect(report.perLanguage.swift).toBeCloseTo(0, 6);
   });
 
-  it("counts partially_implemented as implemented for a language's own score", () => {
+  it("does not credit partially_implemented for a language's own score", () => {
     const a = area("auth", [feature("auth.a")]);
     const c: Partial<Record<Language, ComplianceMap>> = {
       javascript: { "auth.a": entry("partially_implemented") },
     };
     const report = computeParity([a], c);
-    expect(report.perLanguage.javascript).toBeCloseTo(1, 6);
+    expect(report.perLanguage.javascript).toBe(0);
   });
 });
 

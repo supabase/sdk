@@ -6,9 +6,6 @@ export type { ParityReport };
 const mean = (xs: number[]): number =>
   xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length;
 
-const isDone = (status: string): boolean =>
-  status === "implemented" || status === "partially_implemented";
-
 export function computeParity(
   loaded: LoadedArea[],
   compliance: Partial<Record<Language, ComplianceMap>>
@@ -34,17 +31,17 @@ export function computeParity(
       featurePasses.push(passValue);
       perAreaPasses[area.area].push(passValue);
 
-      // Per-language completion score (all 7 langs, unchanged semantics)
+      // Per-language completion score (all 7 langs). Only exactly `implemented`
+      // counts — partial claims aren't credited as done.
       for (const lang of LANGUAGES) {
         const status = compliance[lang]?.[feature.id]?.status ?? "not_implemented";
         if (status === "not_applicable") continue;
         langApplicable[lang]++;
-        if (isDone(status)) langImplemented[lang]++;
+        if (status === "implemented") langImplemented[lang]++;
       }
 
-      // Coverage scope (core languages only). Only exactly `implemented` counts
-      // as done here — unlike perLanguage's isDone, partial claims don't get
-      // credit for "coverage" since they're not actually complete.
+      // Coverage scope (core languages only). Same rule — only exactly
+      // `implemented` counts as done.
       for (const lang of CORE_LANGUAGES) {
         const entry = compliance[lang]?.[feature.id];
         const status = entry?.status ?? "not_implemented";
