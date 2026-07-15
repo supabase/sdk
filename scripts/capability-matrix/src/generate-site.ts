@@ -90,9 +90,8 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
 
   let rows = "";
   for (const [group, features] of groups) {
-    rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 2}">${esc(group)}</td></tr>\n`;
+    rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 1}">${esc(group)}</td></tr>\n`;
     for (const f of features) {
-      const fp = parity.perFeature[f.id] ?? 0;
       const nameHtml = specs.has(f.id)
         ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
@@ -102,7 +101,6 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
           <div class="feature-desc">${esc(f.description)}</div>
         </td>
         ${LANGUAGES.map((l) => statusCell(f, l, compliance)).join("")}
-        <td class="parity-cell ${parityClass(fp)}">${pct(fp)}</td>
       </tr>\n`;
     }
   }
@@ -119,7 +117,6 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
           <tr>
             <th class="th-feature">Feature</th>
             ${LANGUAGES.map((l) => `<th class="th-sdk">${esc(LANG_LABELS[l])}</th>`).join("")}
-            <th class="th-parity">Parity</th>
           </tr>
         </thead>
         <tbody>
@@ -352,7 +349,6 @@ export function renderHtml(
     }
     .th-feature { min-width: 200px; }
     .th-sdk { width: 80px; text-align: center; }
-    .th-parity { width: 60px; text-align: center; }
 
     tbody tr:hover { background: #f8fafc; }
 
@@ -416,13 +412,6 @@ export function renderHtml(
       white-space: nowrap;
     }
 
-    /* ── Parity cell ───────────────────────────────────────── */
-    .parity-cell {
-      text-align: center;
-      font-weight: 600;
-      font-size: 0.75rem;
-      font-variant-numeric: tabular-nums;
-    }
     .parity-high { color: #16a34a; }
     .parity-mid  { color: #d97706; }
     .parity-low  { color: #dc2626; }
@@ -460,6 +449,10 @@ export function renderHtml(
     <div class="overall-badge">
       <span class="label">Overall parity</span>
       <span class="value">${pct(clamp01(parity.overall))}</span>
+    </div>
+    <div class="overall-badge">
+      <span class="label">Coverage scope</span>
+      <span class="value">${pct(clamp01(parity.coverageScope))}</span>
     </div>
   </div>
   <div class="sdk-grid">
