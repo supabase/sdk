@@ -70,7 +70,6 @@ export interface ParityReport {
   perArea: Record<string, number>;
   perLanguage: Record<Language, number>;
   coverageScope: number;
-  perFeature: Record<string, number>;
 }
 
 /** Shape of site/compliance.json — raw compliance data plus precomputed parity. */

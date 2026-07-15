@@ -15,7 +15,6 @@ export function computeParity(
 ): ParityReport {
   const featurePasses: number[] = [];
   const perAreaPasses: Record<string, number[]> = {};
-  const perFeature: Record<string, number> = {};
   const langImplemented = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
   const langApplicable = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
   let doneCells = 0;
@@ -34,7 +33,6 @@ export function computeParity(
       const passValue = passes ? 1 : 0;
       featurePasses.push(passValue);
       perAreaPasses[area.area].push(passValue);
-      perFeature[feature.id] = passValue;
 
       // Per-language completion score (all 7 langs, unchanged semantics)
       for (const lang of LANGUAGES) {
@@ -67,6 +65,5 @@ export function computeParity(
     perArea,
     perLanguage,
     coverageScope: doneCells === 0 ? 0 : doneCellsWithSymbols / doneCells,
-    perFeature,
   };
 }
