@@ -90,9 +90,8 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
 
   let rows = "";
   for (const [group, features] of groups) {
-    rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 2}">${esc(group)}</td></tr>\n`;
+    rows += `<tr class="group-row"><td colspan="${LANGUAGES.length + 1}">${esc(group)}</td></tr>\n`;
     for (const f of features) {
-      const fp = parity.perFeature[f.id] ?? 0;
       const nameHtml = specs.has(f.id)
         ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
@@ -102,7 +101,6 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
           <div class="feature-desc">${esc(f.description)}</div>
         </td>
         ${LANGUAGES.map((l) => statusCell(f, l, compliance)).join("")}
-        <td class="parity-cell ${parityClass(fp)}">${pct(fp)}</td>
       </tr>\n`;
     }
   }
@@ -119,7 +117,6 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
           <tr>
             <th class="th-feature">Feature</th>
             ${LANGUAGES.map((l) => `<th class="th-sdk">${esc(LANG_LABELS[l])}</th>`).join("")}
-            <th class="th-parity">Parity</th>
           </tr>
         </thead>
         <tbody>
@@ -220,17 +217,23 @@ export function renderHtml(
     }
     .build-info a { color: #3ECF8E; text-decoration: none; }
     .build-info a:hover { text-decoration: underline; }
-    .overall-badge {
+    .metrics-row {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: #2d2d2d;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
-    .overall-badge .label { color: #888; }
-    .overall-badge .value { font-weight: 700; color: #3ECF8E; font-size: 1.1rem; }
+    .metric-card {
+      background: #2d2d2d;
+      padding: 0.65rem 1rem;
+      border-radius: 8px;
+      min-width: 220px;
+      max-width: 320px;
+    }
+    .metric-card .metric-top { display: flex; align-items: baseline; gap: 0.5rem; }
+    .metric-card .label { color: #888; font-size: 0.85rem; }
+    .metric-card .value { font-weight: 700; color: #3ECF8E; font-size: 1.1rem; }
+    .metric-card .metric-desc { font-size: 0.72rem; color: #999; margin-top: 0.25rem; line-height: 1.4; }
 
     /* ── SDK score cards ───────────────────────────────────── */
     .sdk-grid {
@@ -352,7 +355,6 @@ export function renderHtml(
     }
     .th-feature { min-width: 200px; }
     .th-sdk { width: 80px; text-align: center; }
-    .th-parity { width: 60px; text-align: center; }
 
     tbody tr:hover { background: #f8fafc; }
 
@@ -416,17 +418,6 @@ export function renderHtml(
       white-space: nowrap;
     }
 
-    /* ── Parity cell ───────────────────────────────────────── */
-    .parity-cell {
-      text-align: center;
-      font-weight: 600;
-      font-size: 0.75rem;
-      font-variant-numeric: tabular-nums;
-    }
-    .parity-high { color: #16a34a; }
-    .parity-mid  { color: #d97706; }
-    .parity-low  { color: #dc2626; }
-
     /* ── SDK score parity colours ──────────────────────────── */
     .sdk-score.parity-high { color: #3ECF8E; }
     .sdk-score.parity-mid  { color: #f59e0b; }
@@ -457,9 +448,21 @@ export function renderHtml(
       <h1 class="site-title"><span>Supabase</span> SDK Capability Matrix</h1>
       <p class="build-info">Updated ${esc(buildDate)} · <a href="compliance.json">compliance.json</a></p>
     </div>
-    <div class="overall-badge">
-      <span class="label">Overall parity</span>
-      <span class="value">${pct(clamp01(parity.overall))}</span>
+  </div>
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="label">Overall parity</span>
+        <span class="value">${pct(clamp01(parity.overall))}</span>
+      </div>
+      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift) — a feature only counts if none of them are missing or partial.</p>
+    </div>
+    <div class="metric-card">
+      <div class="metric-top">
+        <span class="label">Coverage scope</span>
+        <span class="value">${pct(clamp01(parity.coverageScope))}</span>
+      </div>
+      <p class="metric-desc">Of the features marked implemented/partial in a core SDK, % that have a registered symbols list — real code evidence behind the "done" claim.</p>
     </div>
   </div>
   <div class="sdk-grid">

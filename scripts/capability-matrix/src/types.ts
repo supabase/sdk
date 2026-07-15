@@ -9,6 +9,13 @@ export const LANGUAGES = [
 ] as const;
 export type Language = (typeof LANGUAGES)[number];
 
+export const CORE_LANGUAGES = [
+  "javascript",
+  "flutter",
+  "python",
+  "swift",
+] as const satisfies readonly Language[];
+
 export const STATUSES = [
   "implemented",
   "partially_implemented",
@@ -61,8 +68,7 @@ export interface ParityReport {
   overall: number;
   perArea: Record<string, number>;
   perLanguage: Record<Language, number>;
-  /** Cross-language parity score per feature ID (0–1). */
-  perFeature: Record<string, number>;
+  coverageScope: number;
 }
 
 /** Shape of site/compliance.json — raw compliance data plus precomputed parity. */
