@@ -1,0 +1,68 @@
+name: Check capability matrix drift
+description: Non-blocking check — warns when an `implemented` capability's registered symbols can't be found by the parser, or has none registered at all.
+
+inputs:
+  compliance-file:
+    description: Path to sdk-compliance.yaml in the calling repo
+    default: sdk-compliance.yaml
+
+runs:
+  using: composite
+  steps:
+    - name: Check capability matrix drift
+      shell: bash
+      env:
+        COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+      run: |
+        npm run check-drift -- \
+          "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE" \
+          "$GITHUB_WORKSPACE/pr-symbols.json" \
+          "$COMPLIANCE_FILE"
+      working-directory: _sdk-spec/scripts/capability-matrix
+
+    - name: Upsert or clear drift comment
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const fs = require('fs');
+          const marker = '<!-- capability-matrix-drift -->';
+          const summaryPath = '_sdk-spec/scripts/capability-matrix/drift-summary.md';
+
+          try {
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (fs.existsSync(summaryPath)) {
+              const body = fs.readFileSync(summaryPath, 'utf8');
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body,
+                });
+              }
+            } else if (existing) {
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+              });
+            }
+          } catch (error) {
+            // Fork PRs get a read-only GITHUB_TOKEN, so writes here 403. This
+            // comment is a best-effort enhancement — the ::warning:: annotations
+            // from the CLI step already carry the signal, so never fail the job.
+            console.error('Could not upsert/clear drift comment:', error);
+          }
