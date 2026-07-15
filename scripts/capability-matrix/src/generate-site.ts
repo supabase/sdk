@@ -412,10 +412,6 @@ export function renderHtml(
       white-space: nowrap;
     }
 
-    .parity-high { color: #16a34a; }
-    .parity-mid  { color: #d97706; }
-    .parity-low  { color: #dc2626; }
-
     /* ── SDK score parity colours ──────────────────────────── */
     .sdk-score.parity-high { color: #3ECF8E; }
     .sdk-score.parity-mid  { color: #f59e0b; }

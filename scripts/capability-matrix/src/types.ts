@@ -15,7 +15,6 @@ export const CORE_LANGUAGES = [
   "python",
   "swift",
 ] as const satisfies readonly Language[];
-export type CoreLanguage = (typeof CORE_LANGUAGES)[number];
 
 export const STATUSES = [
   "implemented",
