@@ -1,19 +1,21 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { parse } from "yaml";
+import { parse, parseDocument, LineCounter, isMap, isNode, isScalar } from "yaml";
 import { loadAreas } from "./load.js";
 import { collectFeatureIds, findMissingFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
-import { buildSourceMap } from "./compliance-source-map.js";
 
 // Inserts canonical capability IDs that are missing from an SDK's
 // sdk-compliance.yaml as `not_implemented`. Canonical IDs and compliance keys
 // share the `area.group.feature` shape, so each new ID is placed next to its
 // existing siblings (same `area.group.` prefix); an ID whose group has no local
-// sibling yet is appended under a comment for manual placement. Editing the raw
-// text (rather than re-serializing the parsed document) keeps the file's
-// comments and formatting intact.
+// sibling yet is appended under a comment for manual placement.
+//
+// New entries are spliced into the raw text rather than re-serializing the
+// parsed document, because stringifying reflows hand-wrapped `note:` scalars and
+// so churns unrelated, human-curated lines. The syntax tree is still used (not
+// indentation heuristics) to find exactly where each entry ends.
 
 function repoRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
@@ -40,13 +42,25 @@ function parseArguments(argv: string[]): { compliancePath: string; newIdsOutput:
   return { compliancePath, newIdsOutput };
 }
 
-function blockEnd(lines: string[], start: number): number {
-  let end = start + 1;
-  while (end < lines.length && lines[end].startsWith("    ")) end++;
-  return end;
+// The 1-based line each declared feature entry ends on, read from the YAML
+// syntax tree so multi-line entries (notes, symbol lists) are handled exactly.
+function featureEndLines(text: string): Map<string, number> {
+  const lineCounter = new LineCounter();
+  const features = parseDocument(text, { lineCounter }).get("features", true);
+  const endLines = new Map<string, number>();
+  if (!isMap(features)) return endLines;
+  for (const pair of features.items) {
+    const key = pair.key;
+    if (!isScalar(key) || typeof key.value !== "string") continue;
+    const rangeNode = isNode(pair.value) ? pair.value : key;
+    if (rangeNode.range) {
+      endLines.set(key.value, lineCounter.linePos(rangeNode.range[1] - 1).line);
+    }
+  }
+  return endLines;
 }
 
-async function main(): Promise<void> {
+function main(): void {
   const { compliancePath, newIdsOutput } = parseArguments(process.argv.slice(2));
 
   const { areas, findings } = loadAreas(join(repoRoot(), "capabilities"));
@@ -72,8 +86,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const { featureLines } = buildSourceMap(text);
-  const existing = [...featureLines.entries()];
+  const endLines = featureEndLines(text);
 
   const hadTrailingNewline = text.endsWith("\n");
   const lines = text.split("\n");
@@ -90,16 +103,15 @@ async function main(): Promise<void> {
   const insertions: { index: number; newLines: string[] }[] = [];
   const orphans: string[] = [];
   for (const [prefix, ids] of byPrefix) {
-    const siblingLines = existing
+    const siblingEndLines = [...endLines.entries()]
       .filter(([existingId]) => existingId.startsWith(prefix))
       .map(([, line]) => line);
-    if (siblingLines.length === 0) {
+    if (siblingEndLines.length === 0) {
       orphans.push(...ids);
       continue;
     }
-    const lastKeyIndex = Math.max(...siblingLines) - 1;
     insertions.push({
-      index: blockEnd(lines, lastKeyIndex),
+      index: Math.max(...siblingEndLines),
       newLines: ids.map((id) => `  ${id}: not_implemented`),
     });
   }
@@ -119,7 +131,4 @@ async function main(): Promise<void> {
   );
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+main();
