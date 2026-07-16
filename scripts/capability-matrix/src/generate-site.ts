@@ -462,7 +462,7 @@ export function renderHtml(
         <span class="label">Coverage scope</span>
         <span class="value">${pct(clamp01(parity.coverageScope))}</span>
       </div>
-      <p class="metric-desc">Of the features marked implemented/partial in a core SDK, % that have a registered symbols list — real code evidence behind the "done" claim.</p>
+      <p class="metric-desc">% of features marked implemented in a core SDK that have a registered symbols list — real code evidence behind the "done" claim.</p>
     </div>
   </div>
   <div class="sdk-grid">
