@@ -55,13 +55,23 @@ jobs:
           ref: ${{ inputs.sdk-ref }}
           path: _sdk-spec
 
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+
+      - name: Install capability matrix tooling
+        run: npm ci
+        working-directory: _sdk-spec/scripts/capability-matrix
+
       - name: Insert new capability IDs
+        working-directory: _sdk-spec/scripts/capability-matrix
         env:
           COMPLIANCE_FILE: ${{ inputs.compliance-file }}
         run: |
-          python3 _sdk-spec/scripts/sync-compliance/sync_compliance_matrix.py \
-            --compliance-file "$GITHUB_WORKSPACE/$COMPLIANCE_FILE" \
-            --capabilities-dir "$GITHUB_WORKSPACE/_sdk-spec/capabilities"
+          npm run sync-compliance -- \
+            "$GITHUB_WORKSPACE/$COMPLIANCE_FILE" \
+            --new-ids-output "$GITHUB_WORKSPACE/new_ids.txt"
 
       - name: Create pull request
         env:
