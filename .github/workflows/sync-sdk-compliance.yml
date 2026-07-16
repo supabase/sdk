@@ -17,8 +17,11 @@ on:
         default: main
     secrets:
       app-id:
-        description: GitHub App ID used to open the pull request
-        required: true
+        description: GitHub App ID used to open the pull request (provide this or client-id)
+        required: false
+      client-id:
+        description: GitHub App client ID used to open the pull request (provide this or app-id)
+        required: false
       private-key:
         description: GitHub App private key used to open the pull request
         required: true
@@ -34,9 +37,10 @@ jobs:
     steps:
       - name: Generate token
         id: app-token
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           app-id: ${{ secrets.app-id }}
+          client-id: ${{ secrets.client-id }}
           private-key: ${{ secrets.private-key }}
 
       - name: Checkout SDK repo
