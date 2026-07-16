@@ -1,0 +1,94 @@
+name: Sync SDK Compliance Matrix (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      base-branch:
+        description: Branch to open the pull request against
+        type: string
+        default: main
+      sdk-ref:
+        description: Ref to check out from supabase/sdk for the spec and script
+        type: string
+        default: main
+    secrets:
+      app-id:
+        description: GitHub App ID used to open the pull request
+        required: true
+      private-key:
+        description: GitHub App private key used to open the pull request
+        required: true
+
+jobs:
+  sync:
+    name: Sync new capability IDs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+
+      - name: Checkout SDK repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Checkout capability spec
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref }}
+          path: _sdk-spec
+
+      - name: Insert new capability IDs
+        env:
+          COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+        run: |
+          python3 _sdk-spec/scripts/sync-compliance/sync_compliance_matrix.py \
+            --compliance-file "$GITHUB_WORKSPACE/$COMPLIANCE_FILE" \
+            --capabilities-dir "$GITHUB_WORKSPACE/_sdk-spec/capabilities"
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+          BASE_BRANCH: ${{ inputs.base-branch }}
+        run: |
+          if git diff --quiet -- "$COMPLIANCE_FILE"; then
+            echo "No new capability IDs; nothing to do."
+            exit 0
+          fi
+
+          branch="chore/sync-compliance-matrix"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add "$COMPLIANCE_FILE"
+          git commit -m "chore: sync new capability IDs from canonical spec"
+          git push --force-with-lease origin "$branch"
+
+          body="$(printf 'New capability IDs from https://github.com/supabase/sdk were added as `not_implemented`.\n\nTriage each one: set the real status and add symbols/notes before merging.\n\n')"
+          while IFS= read -r feature_id; do
+            [ -n "$feature_id" ] && body="${body}- \`${feature_id}\`"$'\n'
+          done < new_ids.txt
+
+          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')" ]; then
+            echo "Pull request already open for $branch; pushed the update."
+          else
+            gh pr create \
+              --base "$BASE_BRANCH" \
+              --head "$branch" \
+              --title "chore: sync new capability IDs from canonical spec" \
+              --body "$body"
+          fi
