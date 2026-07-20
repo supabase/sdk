@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
-import { parse, parseDocument, LineCounter, isMap, isNode, isScalar } from "yaml";
+import { parseDocument, isMap, isScalar } from "yaml";
 import { loadAreas } from "./load.js";
 import { collectFeatureIds, findMissingFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
@@ -12,17 +12,20 @@ import type { RawCompliance } from "./compliance.js";
 // existing siblings (same `area.group.` prefix); an ID whose group has no local
 // sibling yet is appended under a comment for manual placement.
 //
-// New entries are spliced into the raw text rather than re-serializing the
-// parsed document, because stringifying reflows hand-wrapped `note:` scalars and
-// so churns unrelated, human-curated lines. The syntax tree is still used (not
-// indentation heuristics) to find exactly where each entry ends.
+// Entries are added to the parsed YAML document and re-serialized with the yaml
+// writer, so the output is always valid YAML regardless of the source layout.
+// Re-serializing may collapse hand-wrapped `note:` scalars onto a single line.
+// That is fine; the only concern here is keeping the file valid.
 
 function repoRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
   return resolve(here, "..", "..", "..");
 }
 
-function parseArguments(argv: string[]): { compliancePath: string; newIdsOutput: string } {
+function parseArguments(argv: string[]): {
+  compliancePath: string;
+  newIdsOutput: string;
+} {
   let compliancePath: string | undefined;
   let newIdsOutput = "new_ids.txt";
   for (let index = 0; index < argv.length; index++) {
@@ -42,55 +45,50 @@ function parseArguments(argv: string[]): { compliancePath: string; newIdsOutput:
   return { compliancePath, newIdsOutput };
 }
 
-// The 1-based line each declared feature entry ends on, read from the YAML
-// syntax tree so multi-line entries (notes, symbol lists) are handled exactly.
-function featureEndLines(text: string): Map<string, number> {
-  const lineCounter = new LineCounter();
-  const features = parseDocument(text, { lineCounter }).get("features", true);
-  const endLines = new Map<string, number>();
-  if (!isMap(features)) return endLines;
-  for (const pair of features.items) {
-    const key = pair.key;
-    if (!isScalar(key) || typeof key.value !== "string") continue;
-    const rangeNode = isNode(pair.value) ? pair.value : key;
-    if (rangeNode.range) {
-      endLines.set(key.value, lineCounter.linePos(rangeNode.range[1] - 1).line);
-    }
-  }
-  return endLines;
-}
-
 function main(): void {
-  const { compliancePath, newIdsOutput } = parseArguments(process.argv.slice(2));
+  const { compliancePath, newIdsOutput } = parseArguments(
+    process.argv.slice(2),
+  );
 
   const { areas, findings } = loadAreas(join(repoRoot(), "capabilities"));
   if (findings.some((finding) => finding.level === "error")) {
-    console.error("Failed to load canonical capability spec — check this repo's capabilities/*.yaml");
+    console.error(
+      "Failed to load canonical capability spec — check this repo's capabilities/*.yaml",
+    );
     process.exit(1);
   }
   const knownIds = collectFeatureIds(areas);
 
   const text = readFileSync(resolve(compliancePath), "utf8");
-  let raw: RawCompliance;
-  try {
-    raw = parse(text) as RawCompliance;
-  } catch (error) {
-    console.error(`YAML parse error: ${(error as Error).message}`);
+  const doc = parseDocument(text);
+  if (doc.errors.length > 0) {
+    console.error(`YAML parse error: ${doc.errors[0].message}`);
     process.exit(1);
   }
+  const raw = doc.toJS() as RawCompliance;
 
   const missing = findMissingFeatureIds(raw, knownIds);
-  writeFileSync(resolve(newIdsOutput), missing.length ? missing.join("\n") + "\n" : "");
+  writeFileSync(
+    resolve(newIdsOutput),
+    missing.length ? missing.join("\n") + "\n" : "",
+  );
   if (missing.length === 0) {
     console.log("No new capability IDs.");
     return;
   }
 
-  const endLines = featureEndLines(text);
+  const features = doc.get("features", true);
+  if (!isMap(features)) {
+    console.error("Compliance file has no `features` map to sync into.");
+    process.exit(1);
+  }
 
-  const hadTrailingNewline = text.endsWith("\n");
-  const lines = text.split("\n");
-  if (hadTrailingNewline) lines.pop();
+  const idIndex = new Map<string, number>();
+  features.items.forEach((pair, index) => {
+    if (isScalar(pair.key) && typeof pair.key.value === "string") {
+      idIndex.set(pair.key.value, index);
+    }
+  });
 
   const byPrefix = new Map<string, string[]>();
   for (const id of missing) {
@@ -100,32 +98,34 @@ function main(): void {
     else byPrefix.set(prefix, [id]);
   }
 
-  const insertions: { index: number; newLines: string[] }[] = [];
+  const insertions: { index: number; ids: string[] }[] = [];
   const orphans: string[] = [];
   for (const [prefix, ids] of byPrefix) {
-    const siblingEndLines = [...endLines.entries()]
+    const siblingIndices = [...idIndex.entries()]
       .filter(([existingId]) => existingId.startsWith(prefix))
-      .map(([, line]) => line);
-    if (siblingEndLines.length === 0) {
+      .map(([, index]) => index);
+    if (siblingIndices.length === 0) {
       orphans.push(...ids);
       continue;
     }
-    insertions.push({
-      index: Math.max(...siblingEndLines),
-      newLines: ids.map((id) => `  ${id}: not_implemented`),
-    });
+    // Insert right after the last existing sibling so the new IDs land in-group.
+    insertions.push({ index: Math.max(...siblingIndices) + 1, ids });
   }
 
-  for (const { index, newLines } of insertions.sort((a, b) => b.index - a.index)) {
-    lines.splice(index, 0, ...newLines);
+  // Splice back-to-front so earlier indices stay valid as items shift.
+  for (const { index, ids } of insertions.sort((a, b) => b.index - a.index)) {
+    const pairs = ids.map((id) => doc.createPair(id, "not_implemented"));
+    features.items.splice(index, 0, ...pairs);
   }
 
   if (orphans.length > 0) {
-    lines.push("", "  # Newly synced from the canonical spec; no local group yet, place manually.");
-    for (const id of orphans) lines.push(`  ${id}: not_implemented`);
+    const pairs = orphans.map((id) => doc.createPair(id, "not_implemented"));
+    (pairs[0].key as { commentBefore?: string }).commentBefore =
+      " Newly synced from the canonical spec; no local group yet, place manually.";
+    features.items.push(...pairs);
   }
 
-  writeFileSync(resolve(compliancePath), lines.join("\n") + "\n");
+  writeFileSync(resolve(compliancePath), doc.toString({ lineWidth: 0 }));
   console.log(
     `Added ${missing.length} new capability IDs (${orphans.length} without an existing group).`,
   );
