@@ -14,7 +14,7 @@ on:
       sdk-ref:
         description: Ref to check out from supabase/sdk for the spec and script
         type: string
-        default: faba359a57d270bbbf68fd6b583db0604ddce8af # main
+        default: faba359a57d270bbbf68fd6b583db0604ddce8af
     secrets:
       app-id:
         description: GitHub App ID used to open the pull request (provide this or client-id)
