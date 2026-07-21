@@ -65,7 +65,7 @@ structure InvokeFunctionOutput {
 // methods Supabase Edge Functions accept; FunctionsClient.invoke() dispatches
 // to the appropriate generated method based on FunctionInvokeOptions.method.
 
-@http(method: "GET", uri: "/functions/v1/{functionName}", code: 200)
+@http(method: "GET", uri: "/functions/v1/{functionName+}", code: 200)
 @readonly
 operation InvokeFunctionGet {
   input: InvokeFunctionGetInput
@@ -73,14 +73,14 @@ operation InvokeFunctionGet {
   errors: [FunctionsError]
 }
 
-@http(method: "POST", uri: "/functions/v1/{functionName}", code: 200)
+@http(method: "POST", uri: "/functions/v1/{functionName+}", code: 200)
 operation InvokeFunctionPost {
   input: InvokeFunctionInput
   output: InvokeFunctionOutput
   errors: [FunctionsError]
 }
 
-@http(method: "PUT", uri: "/functions/v1/{functionName}", code: 200)
+@http(method: "PUT", uri: "/functions/v1/{functionName+}", code: 200)
 @idempotent
 operation InvokeFunctionPut {
   input: InvokeFunctionInput
@@ -88,14 +88,14 @@ operation InvokeFunctionPut {
   errors: [FunctionsError]
 }
 
-@http(method: "PATCH", uri: "/functions/v1/{functionName}", code: 200)
+@http(method: "PATCH", uri: "/functions/v1/{functionName+}", code: 200)
 operation InvokeFunctionPatch {
   input: InvokeFunctionInput
   output: InvokeFunctionOutput
   errors: [FunctionsError]
 }
 
-@http(method: "DELETE", uri: "/functions/v1/{functionName}", code: 200)
+@http(method: "DELETE", uri: "/functions/v1/{functionName+}", code: 200)
 @idempotent
 @suppress(["HttpMethodSemantics.UnexpectedPayload"])
 operation InvokeFunctionDelete {

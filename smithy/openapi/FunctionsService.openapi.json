@@ -5,7 +5,7 @@
         "version": "1.0"
     },
     "paths": {
-        "/functions/v1/{functionName}": {
+        "/functions/v1/{functionName+}": {
             "delete": {
                 "operationId": "InvokeFunctionDelete",
                 "requestBody": {
@@ -19,7 +19,7 @@
                 },
                 "parameters": [
                     {
-                        "name": "functionName",
+                        "name": "functionName+",
                         "in": "path",
                         "schema": {
                             "type": "string"
@@ -70,7 +70,7 @@
                 "operationId": "InvokeFunctionGet",
                 "parameters": [
                     {
-                        "name": "functionName",
+                        "name": "functionName+",
                         "in": "path",
                         "schema": {
                             "type": "string"
@@ -130,7 +130,7 @@
                 },
                 "parameters": [
                     {
-                        "name": "functionName",
+                        "name": "functionName+",
                         "in": "path",
                         "schema": {
                             "type": "string"
@@ -190,7 +190,7 @@
                 },
                 "parameters": [
                     {
-                        "name": "functionName",
+                        "name": "functionName+",
                         "in": "path",
                         "schema": {
                             "type": "string"
@@ -250,7 +250,7 @@
                 },
                 "parameters": [
                     {
-                        "name": "functionName",
+                        "name": "functionName+",
                         "in": "path",
                         "schema": {
                             "type": "string"
