@@ -44,6 +44,11 @@ operation ListBuckets {
   errors: [StorageError]
 }
 
+/// NOTE: the API returns a bare JSON array — there is no {items:[]} envelope.
+/// Verified against a live platform (supabase start). restJson1 cannot bind a
+/// list to the HTTP payload (@httpPayload supports string/blob/structure/union/
+/// document only), so patch-openapi.py unwraps this envelope in the generated
+/// OpenAPI. Applies to all *Output structures holding a single `items` list.
 structure ListBucketsOutput {
   @required
   items: BucketList

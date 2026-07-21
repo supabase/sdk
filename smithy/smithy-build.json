@@ -7,7 +7,8 @@
       "io.supabase:smithy-supabase-extensions:1.0.0-SNAPSHOT"
     ],
     "repositories": [
-      {"url": "file://${HOME}/.m2/repository"}
+      {"url": "file://${HOME}/.m2/repository"},
+      {"url": "https://repo.maven.apache.org/maven2"}
     ]
   },
   "sources": ["model"],
