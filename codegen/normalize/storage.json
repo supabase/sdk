@@ -1,0 +1,17 @@
+{
+  "schemaRenames": {
+    "def-0": "AuthHeader",
+    "def-1": "ErrorBody"
+  },
+  "operationIdOverrides": {
+    "POST /object/{bucketName}/{objectPath}": "uploadObject",
+    "GET /bucket/": "listBuckets",
+    "POST /bucket/": "createBucket",
+    "DELETE /bucket/{bucketId}": "deleteBucket",
+    "GET /bucket/{bucketId}": "getBucket"
+  },
+  "requestBodyInjections": {
+    "POST /object/{bucketName}/{objectPath}": { "required": true, "content": { "application/octet-stream": { "schema": { "type": "string", "format": "binary" } } } },
+    "PUT /object/{bucketName}/{objectPath}": { "required": true, "content": { "application/octet-stream": { "schema": { "type": "string", "format": "binary" } } } }
+  }
+}

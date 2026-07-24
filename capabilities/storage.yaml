@@ -22,6 +22,9 @@ features:
     name: Create File Bucket
     description: Create a new file storage bucket.
     group: file_buckets
+    binding:
+      spec: storage
+      operationId: createBucket
   - id: storage.file_buckets.create_signed_upload_url
     name: Create Signed Upload URL
     description: Create a signed URL that allows an unauthenticated client to upload a file to the bucket.
@@ -38,6 +41,9 @@ features:
     name: Delete File Bucket
     description: Delete an existing file bucket. The bucket must be empty before deletion.
     group: file_buckets
+    binding:
+      spec: storage
+      operationId: deleteBucket
   - id: storage.file_buckets.download
     name: Download File
     description: Download a file from a private bucket.
@@ -58,6 +64,9 @@ features:
     name: Get Bucket
     description: Retrieve the details of a specific storage bucket.
     group: file_buckets
+    binding:
+      spec: storage
+      operationId: getBucket
   - id: storage.file_buckets.get_public_url
     name: Get Public URL
     description: Get the public URL for a file in a public bucket.
@@ -66,6 +75,9 @@ features:
     name: List File Buckets
     description: List all file storage buckets in the project.
     group: file_buckets
+    binding:
+      spec: storage
+      operationId: listBuckets
   - id: storage.file_buckets.list_files
     name: List Files
     description: List files and folders within a path of the bucket.
@@ -94,6 +106,9 @@ features:
     name: Upload File
     description: Upload a file to an existing bucket.
     group: file_buckets
+    binding:
+      spec: storage
+      operationId: uploadObject
   - id: storage.file_buckets.upload_with_signed_url
     name: Upload with Signed URL
     description: Upload a file using a pre-signed upload URL, without requiring standard authentication.

@@ -1,0 +1,65 @@
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { describe, it, expect, afterEach } from "vitest";
+import { run } from "../src/cli";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
+const schema = JSON.parse(readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"));
+const codegenSchema = JSON.parse(readFileSync(join(root, "schema", "codegen.schema.json"), "utf8"));
+
+describe("run() with codegen checks", () => {
+  const tempDirs: string[] = [];
+
+  afterEach(() => {
+    for (const dir of tempDirs.splice(0)) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("flags a feature bound to a spec absent from codegen.yaml", async () => {
+    const capDir = mkdtempSync(join(tmpdir(), "cap-"));
+    tempDirs.push(capDir);
+    writeFileSync(
+      join(capDir, "storage.yaml"),
+      "area: storage\ntitle: Storage\ndescription: d\nfeatures:\n  - id: storage.objects.upload\n    name: Upload\n    description: d\n    binding:\n      spec: ghost\n      operationId: uploadObject\n",
+    );
+    const cfgDir = mkdtempSync(join(tmpdir(), "cfg-"));
+    tempDirs.push(cfgDir);
+    const cfgPath = join(cfgDir, "codegen.yaml");
+    writeFileSync(
+      cfgPath,
+      "engine:\n  tool: openapi-generator\n  version: 7.10.0\nspecs:\n  storage:\n    source: x\n    version: v1\nlanguages:\n  swift:\n    generator: swift5\n    templates: templates/swift\n",
+    );
+
+    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, codegenConfigPath: cfgPath, codegenSchema });
+    expect(result.findings.some((f) => f.message.includes('unknown spec "ghost"'))).toBe(true);
+    expect(result.errorCount).toBeGreaterThan(0);
+  });
+
+  it("produces no findings when a feature binding references a spec declared in codegen.yaml", async () => {
+    const capDir = mkdtempSync(join(tmpdir(), "cap-"));
+    tempDirs.push(capDir);
+    writeFileSync(
+      join(capDir, "storage.yaml"),
+      "area: storage\ntitle: Storage\ndescription: d\nfeatures:\n  - id: storage.objects.upload\n    name: Upload\n    description: d\n    binding:\n      spec: storage\n      operationId: uploadObject\n",
+    );
+    const cfgDir = mkdtempSync(join(tmpdir(), "cfg-"));
+    tempDirs.push(cfgDir);
+    const cfgPath = join(cfgDir, "codegen.yaml");
+    // Write a minimal spec file so checkBindingOperations can verify the operationId exists.
+    writeFileSync(
+      join(cfgDir, "storage.normalized.json"),
+      JSON.stringify({ openapi: "3.0.3", paths: { "/object/{bucketName}/{objectPath}": { post: { operationId: "uploadObject" } } } }),
+    );
+    writeFileSync(
+      cfgPath,
+      "engine:\n  tool: openapi-generator\n  version: 7.10.0\nspecs:\n  storage:\n    source: storage.normalized.json\n    version: v1\nlanguages:\n  swift:\n    generator: swift5\n    templates: templates/swift\n",
+    );
+
+    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema, codegenConfigPath: cfgPath, codegenSchema });
+    expect(result.errorCount).toBe(0);
+    expect(result.findings.every((f) => !f.message.includes("unknown spec"))).toBe(true);
+  });
+});

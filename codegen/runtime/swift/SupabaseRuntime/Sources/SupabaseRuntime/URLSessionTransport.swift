@@ -1,0 +1,170 @@
+import Foundation
+
+public actor URLSessionTransport: Transport {
+  let configuration: ClientConfiguration
+  nonisolated let urlSession: URLSession   // URLSession is Sendable; readable from nonisolated upload/download
+
+  public init(configuration: ClientConfiguration, urlSession: URLSession? = nil) {
+    self.configuration = configuration
+    if let urlSession {
+      self.urlSession = urlSession
+    } else {
+      let cfg: URLSessionConfiguration
+      switch configuration.sessionKind {
+      case .foreground: cfg = .default
+      case .background(let id): cfg = .background(withIdentifier: id)
+      }
+      // No session-level delegate — progress is handled by per-call TaskProgressDelegate.
+      self.urlSession = URLSession(configuration: cfg)
+    }
+  }
+
+  func makeURLRequest(_ request: HTTPRequest) async throws -> URLRequest {
+    var components = URLComponents(url: configuration.baseURL, resolvingAgainstBaseURL: false)!
+    if components.path.hasSuffix("/") { components.path.removeLast() }
+    components.path += request.path
+    if !request.query.isEmpty { components.queryItems = request.query }
+    var urlRequest = URLRequest(url: components.url!)
+    urlRequest.httpMethod = request.method.rawValue
+    for (k, v) in configuration.defaultHeaders { urlRequest.setValue(v, forHTTPHeaderField: k) }
+    for (k, v) in try await configuration.auth.headers() { urlRequest.setValue(v, forHTTPHeaderField: k) }
+    for (k, v) in request.headers { urlRequest.setValue(v, forHTTPHeaderField: k) }
+    return urlRequest
+  }
+
+  nonisolated func head(from response: URLResponse) -> HTTPResponseHead {
+    let http = response as? HTTPURLResponse
+    let headers = (http?.allHeaderFields as? [String: String]) ?? [:]
+    return HTTPResponseHead(status: http?.statusCode ?? 0, headers: headers)
+  }
+
+  func validate(_ data: Data, _ response: URLResponse) throws -> Data {
+    let responseHead = head(from: response)
+    guard (200..<300).contains(responseHead.status) else {
+      if let mapped = configuration.errorMapper(data, responseHead) { throw mapped }
+      throw TransportError.http(status: responseHead.status, body: data, head: responseHead)
+    }
+    return data
+  }
+
+  /// Nonisolated variant for use from `upload`/`download` — `configuration` is a `let` Sendable value,
+  /// so it is accessible from nonisolated contexts.
+  nonisolated func validateNonisolated(_ data: Data, _ response: URLResponse) throws -> Data {
+    let responseHead = head(from: response)
+    guard (200..<300).contains(responseHead.status) else {
+      if let mapped = configuration.errorMapper(data, responseHead) { throw mapped }
+      throw TransportError.http(status: responseHead.status, body: data, head: responseHead)
+    }
+    return data
+  }
+
+  public func send<R: Decodable & Sendable>(_ request: HTTPRequest) async throws -> R {
+    let urlRequest = try await makeURLRequest(request)
+    let (data, response) = try await urlSession.data(for: urlRequest)
+    let body = try validate(data, response)
+    do { return try configuration.decoder.decode(R.self, from: body) }
+    catch { throw TransportError.decoding(error) }
+  }
+
+  public func send<B: Encodable & Sendable, R: Decodable & Sendable>(_ request: HTTPRequest, body: B) async throws -> R {
+    var urlRequest = try await makeURLRequest(request)
+    urlRequest.httpBody = try configuration.encoder.encode(body)
+    if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+      urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    }
+    let (data, response) = try await urlSession.data(for: urlRequest)
+    let validated = try validate(data, response)
+    do { return try configuration.decoder.decode(R.self, from: validated) }
+    catch { throw TransportError.decoding(error) }
+  }
+
+  public func send(_ request: HTTPRequest) async throws {
+    let urlRequest = try await makeURLRequest(request)
+    let (data, response) = try await urlSession.data(for: urlRequest)
+    _ = try validate(data, response)
+  }
+
+  // MARK: - Streaming upload/download (Task 6)
+
+  public nonisolated func upload<R: Decodable & Sendable>(_ request: HTTPRequest, from source: UploadSource) -> TransferTask<R> {
+    let isBackground: Bool = { if case .background = configuration.sessionKind { return true } else { return false } }()
+    let (stream, cont) = AsyncStream<TransferProgress>.makeStream()
+    let task = Task { [self] () -> R in
+      defer { cont.finish() }
+      if isBackground, case .data = source { throw TransportError.backgroundRequiresFile }
+      let urlRequest = try await makeURLRequest(request)
+      let progressDelegate = TaskProgressDelegate(continuation: cont)
+      let data: Data
+      let response: URLResponse
+      switch source {
+      case .file(let url): (data, response) = try await urlSession.upload(for: urlRequest, fromFile: url, delegate: progressDelegate)
+      case .data(let d):   (data, response) = try await urlSession.upload(for: urlRequest, from: d, delegate: progressDelegate)
+      }
+      let validated = try validateNonisolated(data, response)
+      do { return try configuration.decoder.decode(R.self, from: validated) }
+      catch { throw TransportError.decoding(error) }
+    }
+    return TransferTask(progress: stream, value: { try await task.value }, cancel: { task.cancel() })
+  }
+
+  public nonisolated func download(_ request: HTTPRequest, toFile destination: URL) -> TransferTask<Void> {
+    let (stream, cont) = AsyncStream<TransferProgress>.makeStream()
+    let task = Task { [self] () -> Void in
+      defer { cont.finish() }
+      let urlRequest = try await makeURLRequest(request)
+      let progressDelegate = TaskProgressDelegate(continuation: cont)
+      let (tempURL, response) = try await urlSession.download(for: urlRequest, delegate: progressDelegate)
+      let responseHead = head(from: response)
+      guard (200..<300).contains(responseHead.status) else {
+        let body = (try? Data(contentsOf: tempURL)) ?? Data()
+        if let mapped = configuration.errorMapper(body, responseHead) { throw mapped }
+        throw TransportError.http(status: responseHead.status, body: body, head: responseHead)
+      }
+      try? FileManager.default.removeItem(at: destination)
+      try FileManager.default.moveItem(at: tempURL, to: destination)
+    }
+    return TransferTask(progress: stream, value: { try await task.value }, cancel: { task.cancel() })
+  }
+  public func stream(_ request: HTTPRequest) async throws -> ResponseStream {
+    let urlRequest = try await makeURLRequest(request)
+    let (bytes, response) = try await urlSession.bytes(for: urlRequest)
+    let responseHead = head(from: response)
+    guard (200..<300).contains(responseHead.status) else {
+      var collected = Data()
+      for try await byte in bytes { collected.append(byte) }
+      if let mapped = configuration.errorMapper(collected, responseHead) { throw mapped }
+      throw TransportError.http(status: responseHead.status, body: collected, head: responseHead)
+    }
+    let body = AsyncThrowingStream<ArraySlice<UInt8>, any Error> { continuation in
+      let task = Task {
+        do {
+          var chunk = [UInt8]()
+          chunk.reserveCapacity(4096)
+          for try await byte in bytes {
+            chunk.append(byte)
+            if chunk.count >= 4096 { continuation.yield(ArraySlice(chunk)); chunk.removeAll(keepingCapacity: true) }
+          }
+          if !chunk.isEmpty { continuation.yield(ArraySlice(chunk)) }
+          continuation.finish()
+        } catch { continuation.finish(throwing: error) }
+      }
+      continuation.onTermination = { _ in task.cancel() }
+    }
+    return ResponseStream(head: responseHead, body: body)
+  }
+
+  // MARK: - Background relaunch hook (Task 8)
+
+  private var backgroundCompletions: [String: @Sendable () -> Void] = [:]
+
+  /// Call from the app's `handleEventsForBackgroundURLSession` / SwiftUI `backgroundTask`.
+  public func handleBackgroundEvents(identifier: String, completionHandler: @escaping @Sendable () -> Void) {
+    backgroundCompletions[identifier] = completionHandler
+  }
+
+  /// Returns and clears the stored completion for `identifier` (call once the session finishes delivering events).
+  public func consumeBackgroundCompletion(identifier: String) -> (@Sendable () -> Void)? {
+    defer { backgroundCompletions[identifier] = nil }
+    return backgroundCompletions[identifier]
+  }
+}
