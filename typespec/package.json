@@ -1,0 +1,11 @@
+{
+  "name": "@supabase/typespec-models",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@typespec/compiler": "^0.65.0",
+    "@typespec/http": "^0.65.0",
+    "@typespec/openapi": "^0.65.0",
+    "@typespec/openapi3": "^0.65.0"
+  }
+}
