@@ -94,6 +94,10 @@ features:
     name: Postgres Changes Row Filter
     description: Apply a PostgREST-style filter expression (e.g. id=eq.200) to a Postgres changes subscription to receive events only for matching rows.
     group: subscriptions
+  - id: realtime.subscriptions.postgres_changes_multiple_filters
+    name: Multiple Postgres Changes Row Filters
+    description: Apply more than one PostgREST-style filter expression to a single Postgres changes subscription, combined with AND, to receive events only for rows matching all of them.
+    group: subscriptions
   - id: realtime.subscriptions.private_channel
     name: Private Channel (RLS)
     description: Mark a channel as private to enforce Row Level Security on Postgres change events and restrict broadcast and presence access to authorized users.
