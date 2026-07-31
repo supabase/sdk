@@ -9,6 +9,8 @@ groups:
     title: Vector Buckets
   - id: analytics
     title: Analytics Buckets (Iceberg)
+  - id: errors
+    title: Errors
 features:
   - id: storage.file_buckets.access_bucket
     name: Access Bucket
@@ -206,3 +208,7 @@ features:
     name: Iceberg Table Management
     description: Create, list, load, update, rename, and drop Iceberg tables within a namespace, including schema and partition spec definition.
     group: analytics
+  - id: storage.errors.error_codes
+    name: Service Error Codes
+    description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
+    group: errors
