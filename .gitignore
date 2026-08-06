@@ -1,5 +1,7 @@
 # Claude Code internal state (worktree metadata, session files)
-.claude/
+.claude/*
+# ...except committed project skills
+!.claude/skills/
 
 # Generated site output
 site/
