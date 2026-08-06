@@ -70,11 +70,7 @@ features:
     group: file_buckets
   - id: storage.file_buckets.list_files
     name: List Files
-    description: List files and folders within a path of the bucket.
-    group: file_buckets
-  - id: storage.file_buckets.list_files_paginated
-    name: List Files (paginated)
-    description: List files and folders within a bucket with cursor-based pagination support.
+    description: List files and folders within a path of the bucket, with optional cursor-based pagination.
     group: file_buckets
   - id: storage.file_buckets.move
     name: Move File
@@ -200,13 +196,41 @@ features:
     name: Delete Analytics Bucket
     description: Delete an empty analytics bucket.
     group: analytics
-  - id: storage.analytics.iceberg_namespace
-    name: Iceberg Namespace Management
-    description: Create, list, and drop namespaces within an analytics bucket via the Iceberg REST Catalog API.
+  - id: storage.analytics.create_namespace
+    name: Create Iceberg Namespace
+    description: Create a new namespace within an analytics bucket via the Iceberg REST Catalog API.
     group: analytics
-  - id: storage.analytics.iceberg_table
-    name: Iceberg Table Management
-    description: Create, list, load, update, rename, and drop Iceberg tables within a namespace, including schema and partition spec definition.
+  - id: storage.analytics.list_namespaces
+    name: List Iceberg Namespaces
+    description: List namespaces within an analytics bucket via the Iceberg REST Catalog API.
+    group: analytics
+  - id: storage.analytics.delete_namespace
+    name: Delete Iceberg Namespace
+    description: Drop a namespace from an analytics bucket via the Iceberg REST Catalog API.
+    group: analytics
+  - id: storage.analytics.create_table
+    name: Create Iceberg Table
+    description: Create a new Iceberg table within a namespace, including schema and partition spec definition.
+    group: analytics
+  - id: storage.analytics.list_tables
+    name: List Iceberg Tables
+    description: List Iceberg tables within a namespace.
+    group: analytics
+  - id: storage.analytics.load_table
+    name: Load Iceberg Table
+    description: Load metadata for a specific Iceberg table within a namespace.
+    group: analytics
+  - id: storage.analytics.update_table
+    name: Update Iceberg Table
+    description: Update an Iceberg table's schema or partition spec.
+    group: analytics
+  - id: storage.analytics.rename_table
+    name: Rename Iceberg Table
+    description: Rename an Iceberg table to a new identifier within the same namespace.
+    group: analytics
+  - id: storage.analytics.delete_table
+    name: Delete Iceberg Table
+    description: Drop an Iceberg table from a namespace.
     group: analytics
   - id: storage.errors.error_codes
     name: Service Error Codes
