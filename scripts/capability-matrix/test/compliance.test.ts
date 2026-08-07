@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex, findMissingFeatureIds } from "../src/compliance";
+import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex, findMissingFeatureIds, TOP_LEVEL_SUPPORTING } from "../src/compliance";
+import { checkDrift } from "../src/drift-check";
+import { checkNewSymbols } from "../src/api-check";
+import type { ParsedSymbol } from "../src/normalize-typedoc";
 import type { LoadedArea } from "../src/types";
 
 function areas(ids: string[]): LoadedArea[] {
@@ -14,6 +17,10 @@ function areas(ids: string[]): LoadedArea[] {
       },
     },
   ];
+}
+
+function sym(name: string): ParsedSymbol {
+  return { name, kind: "method", file: "src/index.ts" };
 }
 
 const knownIds = new Set(["auth.sign_up", "auth.sign_in_with_password", "auth.mfa_enroll"]);
@@ -145,6 +152,112 @@ describe("symbols field", () => {
   });
 });
 
+describe("supporting_symbols field", () => {
+  it("accepts per-feature and top-level supporting_symbols", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+          supporting_symbols: ["SignUpOptions", "SignUpOptions.redirectTo"],
+        },
+      },
+      supporting_symbols: ["AuthException"],
+    };
+    expect(validateCompliance(raw, knownIds)).toEqual([]);
+  });
+
+  it("errors when per-feature supporting_symbols is not an array of strings", () => {
+    const raw = {
+      sdk: "javascript",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      features: { "auth.sign_up": { status: "implemented", supporting_symbols: [42] } as any },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) => f.message === '"auth.sign_up": supporting_symbols must be an array of strings')
+    ).toBe(true);
+  });
+
+  it("errors when top-level supporting_symbols is not an array of strings", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw = { sdk: "javascript", features: {}, supporting_symbols: "AuthException" } as any;
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) => f.message === "top level: supporting_symbols must be an array of strings")
+    ).toBe(true);
+  });
+
+  it("normalizeCompliance preserves supporting_symbols", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+      },
+    };
+    expect(normalizeCompliance(raw)["auth.sign_up"].supporting_symbols).toEqual(["SignUpOptions"]);
+  });
+
+  it("omits supporting_symbols from the normalized entry when absent", () => {
+    const raw = {
+      sdk: "javascript",
+      features: { "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] } },
+    };
+    expect(normalizeCompliance(raw)["auth.sign_up"]).toEqual({
+      status: "implemented",
+      symbols: ["GoTrueClient.signUp"],
+    });
+  });
+
+  it("is not treated as implementation evidence by the drift check", () => {
+    const compliance = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+          supporting_symbols: ["SignUpOptions"],
+        },
+      },
+    };
+    // Only the entry point exists in the parsed API; the supporting type is gone.
+    const findings = checkDrift([sym("GoTrueClient.signUp")], compliance);
+    expect(findings).toEqual([]);
+  });
+
+  it("does not let supporting_symbols alone satisfy the drift check", () => {
+    const compliance = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+      },
+    };
+    const findings = checkDrift([sym("SignUpOptions")], compliance);
+    expect(findings).toEqual([{ featureId: "auth.sign_up" }]);
+  });
+
+  it("counts toward new-symbol coverage", () => {
+    const compliance = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+          supporting_symbols: ["SignUpOptions"],
+        },
+      },
+      supporting_symbols: ["AuthException"],
+    };
+    const result = checkNewSymbols(
+      [],
+      [sym("SignUpOptions"), sym("AuthException"), sym("Unregistered")],
+      compliance
+    );
+    expect(result.uncoveredSymbols.map((s) => s.name)).toEqual(["Unregistered"]);
+  });
+});
+
 describe("buildSymbolIndex", () => {
   it("builds a symbol → feature-id map", () => {
     const raw = {
@@ -166,6 +279,36 @@ describe("buildSymbolIndex", () => {
     const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
     const index = buildSymbolIndex(raw);
     expect(index.size).toBe(0);
+  });
+
+  it("indexes supporting symbols against their feature", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+      },
+    };
+    expect(buildSymbolIndex(raw).get("SignUpOptions")).toBe("auth.sign_up");
+  });
+
+  it("indexes top-level supporting symbols against the pseudo feature id", () => {
+    const raw = { sdk: "javascript", features: {}, supporting_symbols: ["AuthException"] };
+    expect(buildSymbolIndex(raw).get("AuthException")).toBe(TOP_LEVEL_SUPPORTING);
+  });
+
+  it("attributes a symbol to the capability that implements it over any supporting list", () => {
+    const raw = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.mfa_enroll": {
+          status: "implemented",
+          supporting_symbols: ["GoTrueClient.signUp"],
+        },
+      },
+      supporting_symbols: ["GoTrueClient.signUp"],
+    };
+    expect(buildSymbolIndex(raw).get("GoTrueClient.signUp")).toBe("auth.sign_up");
   });
 });
 

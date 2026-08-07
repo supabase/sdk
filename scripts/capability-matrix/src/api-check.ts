@@ -44,6 +44,7 @@ export function formatErrorMessage(
       lines.push(`    defined at: ${location}`);
     }
   }
+  const example = uncoveredSymbols[0]?.name ?? "ClassName.methodName";
   lines.push(
     "",
     "Register each symbol in sdk-compliance.yaml under the appropriate feature:",
@@ -51,7 +52,22 @@ export function formatErrorMessage(
     "  auth.my_feature:",
     "    status: implemented",
     "    symbols:",
-    `      - ${uncoveredSymbols[0]?.name ?? "ClassName.methodName"}`,
+    `      - ${example}`,
+    "",
+    "Use `symbols` only for the entry points that implement the capability, since",
+    "the drift check treats them as evidence that it exists. Option types, result",
+    "types, schema models and errors belong under `supporting_symbols`, which",
+    "counts for coverage without claiming to implement anything:",
+    "",
+    "  auth.my_feature:",
+    "    status: implemented",
+    "    symbols:",
+    "      - GoTrueClient.myFeature",
+    "    supporting_symbols:",
+    `      - ${example}`,
+    "",
+    "Types shared across several features can go in the top-level",
+    "`supporting_symbols` list instead of being attributed to one of them.",
     "",
     "If the feature does not exist in the matrix yet, add it there first:",
     "  https://github.com/supabase/sdk/blob/main/CONTRIBUTING.md",

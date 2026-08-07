@@ -58,7 +58,14 @@ export interface Finding {
 export interface ComplianceEntry {
   status: Status;
   note?: string;
+  /** Entry points that implement the feature. Verified by the drift check. */
   symbols?: string[];
+  /**
+   * Public API that belongs to the feature's surface but does not by itself
+   * evidence the capability: option and result types, schema models, errors.
+   * Counts for new-symbol coverage only, never for drift verification.
+   */
+  supporting_symbols?: string[];
 }
 
 // Feature ID → ComplianceEntry (sparse; unlisted features default to not_implemented)
