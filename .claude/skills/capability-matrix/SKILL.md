@@ -27,9 +27,9 @@ cd scripts/capability-matrix && npm run validate
 ```
 
 This confirms schema conformance, `area` field matches the filename, IDs
-follow the `<area>.<group>.<method>` pattern, no two features share an exact
-ID, and every spec file maps to a real feature. If this fails, fix that
-first — the checks below assume a structurally valid file.
+follow the `<area>.<group_namespace>.<method_stem>` pattern, no two features
+share an exact ID, and every spec file maps to a real feature. If this
+fails, fix that first — the checks below assume a structurally valid file.
 
 ## Step 1: read for context, not just the diff
 
@@ -83,12 +83,16 @@ its siblings in the same `group`:
 
 ## Step 5: spec suggestion
 
-Spec files (`specs/<area>/<group>/<method>.md`) are optional, but valuable
-when a feature has real behavioral complexity: multiple named error
-conditions, branching behavior, side effects, or prerequisites. If the new
-feature's `description` hints at that kind of complexity and no spec exists,
-suggest creating one from `specs/TEMPLATE.md`. Don't suggest a spec for a
-simple getter/setter with an already-complete one-line description.
+Spec files (`specs/<area>/<group_namespace>/<method_stem>.md`) are optional,
+but valuable when a feature has real behavioral complexity: multiple named
+error conditions, branching behavior, side effects, or prerequisites. The
+directory always mirrors the feature `id`'s own segments — e.g.
+`auth.mfa.challenge` lives at `auth/mfa/challenge.md` — regardless of what
+that feature's optional `group` field currently says; the two can diverge
+when a feature has been regrouped for display without renaming its `id`.
+If the new feature's `description` hints at real complexity and no spec
+exists, suggest creating one from `specs/TEMPLATE.md`. Don't suggest a spec
+for a simple getter/setter with an already-complete one-line description.
 
 ## Step 6: platform-scope notes
 
