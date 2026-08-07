@@ -21,6 +21,8 @@ groups:
     title: Admin — OAuth Clients
   - id: passkey_admin
     title: Admin — Passkeys
+  - id: mfa_admin
+    title: Admin — Multi-Factor Authentication
 features:
   - id: auth.admin.create_provider
     name: Admin Create Provider
@@ -33,7 +35,7 @@ features:
   - id: auth.admin.delete_mfa_factor
     name: Admin Delete MFA Factor
     description: Delete a specific MFA factor from a user's account. Requires admin/service role.
-    group: admin
+    group: mfa_admin
   - id: auth.admin.delete_provider
     name: Admin Delete Provider
     description: Delete a custom provider. Requires admin/service role.
@@ -61,7 +63,7 @@ features:
   - id: auth.admin.list_mfa_factors
     name: Admin List MFA Factors
     description: List all MFA factors enrolled for a specific user. Requires admin/service role.
-    group: admin
+    group: mfa_admin
   - id: auth.admin.list_providers
     name: Admin List Providers
     description: List all custom providers with optional type filter. Requires admin/service role.
@@ -176,11 +178,11 @@ features:
     group: passkey_admin
   - id: auth.passkey.register_passkey
     name: Register Passkey
-    description: Register a new WebAuthn passkey for the currently authenticated user.
+    description: Register a new WebAuthn passkey for the currently authenticated user. The underlying credential API is platform-specific — browsers use the native WebAuthn API, while mobile/desktop SDKs rely on the platform's credential manager — so availability varies by SDK.
     group: passkey
   - id: auth.passkey.sign_in_with_passkey
     name: Sign In with Passkey
-    description: Authenticate using a WebAuthn passkey registered on the device.
+    description: Authenticate using a WebAuthn passkey registered on the device. The underlying credential API is platform-specific — browsers use the native WebAuthn API, while mobile/desktop SDKs rely on the platform's credential manager — so availability varies by SDK.
     group: passkey
   - id: auth.session.auto_refresh
     name: Auto Refresh Token
@@ -234,9 +236,9 @@ features:
     name: Resend Confirmation
     description: Resend a signup confirmation or OTP email/SMS to a user.
     group: sign_in
-  - id: auth.sign_in.reset_password
-    name: Reset Password
-    description: Send a password-reset link to a user's email address.
+  - id: auth.sign_in.send_password_reset_email
+    name: Send Password Reset Email
+    description: Send a password-reset link to a user's email address. Does not itself change the password — the link carries a recovery token that completes the reset via a subsequent sign-in/update-user call.
     group: sign_in
   - id: auth.sign_in.sign_in_anonymously
     name: Sign In Anonymously

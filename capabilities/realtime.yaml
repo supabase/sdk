@@ -22,9 +22,9 @@ features:
     name: Create or Reuse Channel
     description: Create a new channel or return an existing one for the given topic.
     group: client
-  - id: realtime.channel.send
-    name: Send Message
-    description: Send a message to other subscribers of the channel.
+  - id: realtime.channel.broadcast
+    name: Broadcast Message
+    description: Send a broadcast message to other subscribers of the channel over the websocket connection.
     group: channel
   - id: realtime.channel.subscribe
     name: Subscribe
@@ -117,7 +117,7 @@ features:
   - id: realtime.presence.presence_key
     name: Custom Presence Key
     description: Set a stable identifier for the current client's presence entries so multiple connections from the same user share one logical key via the presence.key channel option.
-    group: presence
+    group: subscriptions
   - id: realtime.configuration.custom_websocket_transport
     name: Custom WebSocket Transport
     description: Inject a custom WebSocket constructor at client construction time for runtimes without a native global WebSocket, such as Node.js (<22), Cloudflare Workers, or Deno.

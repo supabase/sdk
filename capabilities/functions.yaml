@@ -5,6 +5,8 @@ description: Invoke Supabase Edge Functions from the client with support for str
 groups:
   - id: invocation
     title: Invocation
+  - id: request_configuration
+    title: Request Configuration
 features:
   - id: functions.invocation.invoke
     name: Invoke Function
@@ -13,7 +15,7 @@ features:
   - id: functions.invocation.set_auth_token
     name: Set Auth Token
     description: Update the authorization token sent with all subsequent function invocations.
-    group: invocation
+    group: request_configuration
   - id: functions.invocation.method_override
     name: HTTP Method Override
     description: Invoke a function using a non-default HTTP method (GET, PUT, PATCH, DELETE) for RESTful Edge Function designs.
@@ -25,12 +27,12 @@ features:
   - id: functions.invocation.region_selection
     name: Region Selection
     description: Route an invocation to a specific geographic deployment region set at client construction time or overridden per individual call.
-    group: invocation
+    group: request_configuration
   - id: functions.invocation.timeout
     name: Invocation Timeout
     description: Cancel a function invocation after a specified timeout; composable with a caller-supplied cancellation signal.
-    group: invocation
+    group: request_configuration
   - id: functions.invocation.request_cancellation
     name: Request Cancellation
     description: Cancel an in-flight function invocation at any point before a response is received.
-    group: invocation
+    group: request_configuration

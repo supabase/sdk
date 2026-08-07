@@ -25,7 +25,7 @@ features:
   - id: database.mutate.select_after_mutation
     name: Select After Mutation
     description: Chain a column selection onto an insert, update, upsert, or delete to return the affected rows in the response.
-    group: mutate
+    group: using_modifiers
   - id: database.mutate.update
     name: Update Rows
     description: Update rows in a table or view that match a filter.

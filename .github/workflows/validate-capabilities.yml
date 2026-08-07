@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "capabilities/**"
+      - "specs/**"
       - "schema/**"
       - "scripts/capability-matrix/**"
       - "scripts/dart_symbol_extractor/**"
