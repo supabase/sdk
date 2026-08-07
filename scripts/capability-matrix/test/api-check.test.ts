@@ -104,6 +104,31 @@ describe("checkNewSymbols — removed registered symbols", () => {
     expect(symbols).toContain("AuthClient.signIn");
     expect(symbols).toContain("AuthClient.signUp");
   });
+
+  // Removal detection deliberately spans supporting symbols as well as entry
+  // points. The check asks whether the compliance file references API that no
+  // longer exists, which is equally true either way, and the drift check reads
+  // only `symbols`, so nothing else would catch a stale supporting entry.
+  it("detects a removed supporting symbol", () => {
+    const withSupporting = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["AuthClient.signUp"],
+          supporting_symbols: ["SignUpOptions"],
+        },
+      },
+      supporting_symbols: ["AuthException"],
+    };
+    const base = [sym("AuthClient.signUp"), sym("SignUpOptions"), sym("AuthException")];
+    const pr = [sym("AuthClient.signUp")];
+    const result = checkNewSymbols(base, pr, withSupporting);
+    expect(result.removedRegisteredSymbols).toEqual([
+      { symbol: "SignUpOptions", featureId: "auth.sign_up" },
+      { symbol: "AuthException", featureId: "supporting_symbols" },
+    ]);
+  });
 });
 
 describe("formatErrorMessage", () => {
