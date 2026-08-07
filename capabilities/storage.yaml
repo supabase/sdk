@@ -208,6 +208,18 @@ features:
     name: Delete Iceberg Namespace
     description: Drop a namespace from an analytics bucket via the Iceberg REST Catalog API.
     group: analytics
+  - id: storage.analytics.load_namespace_metadata
+    name: Load Iceberg Namespace Metadata
+    description: Load the properties stored against a namespace via the Iceberg REST Catalog API.
+    group: analytics
+  - id: storage.analytics.namespace_exists
+    name: Check Iceberg Namespace Exists
+    description: Check whether a namespace exists without loading its properties, via the Iceberg REST Catalog API.
+    group: analytics
+  - id: storage.analytics.update_namespace_properties
+    name: Update Iceberg Namespace Properties
+    description: Set and remove properties on a namespace via the Iceberg REST Catalog API, reporting which keys were updated, removed, or missing.
+    group: analytics
   - id: storage.analytics.create_table
     name: Create Iceberg Table
     description: Create a new Iceberg table within a namespace, including schema and partition spec definition.
@@ -231,6 +243,14 @@ features:
   - id: storage.analytics.delete_table
     name: Delete Iceberg Table
     description: Drop an Iceberg table from a namespace.
+    group: analytics
+  - id: storage.analytics.register_table
+    name: Register Iceberg Table
+    description: Register an existing Iceberg table with a namespace by pointing the catalog at its metadata file, without creating new data.
+    group: analytics
+  - id: storage.analytics.table_exists
+    name: Check Iceberg Table Exists
+    description: Check whether an Iceberg table exists within a namespace without loading its metadata.
     group: analytics
   - id: storage.errors.error_codes
     name: Service Error Codes
