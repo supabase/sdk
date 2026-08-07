@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=../schema/capability-matrix.schema.json
 area: client
 title: Client Initialization
-description: Cross-cutting SupabaseClient configuration — third-party auth integration, custom HTTP client, pluggable session storage, schema selection, and observability.
+description: Cross-cutting SupabaseClient configuration — third-party auth integration, custom HTTP client, pluggable session storage, schema selection, observability, and lifecycle.
 groups:
   - id: authentication_integration
     title: Authentication Integration
@@ -11,6 +11,8 @@ groups:
     title: Request Configuration
   - id: observability
     title: Observability
+  - id: lifecycle
+    title: Lifecycle
 features:
   - id: client.authentication_integration.third_party_auth
     name: Third-Party Auth
@@ -48,3 +50,7 @@ features:
     name: Distributed Trace Context Propagation
     description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.
     group: observability
+  - id: client.lifecycle.dispose
+    name: Client Disposal
+    description: Deterministically release every resource the client holds, including websocket connections, background refresh timers, worker threads and pooled HTTP connections, so a client can be torn down without leaking them. Runtimes that reclaim these automatically have no equivalent.
+    group: lifecycle
