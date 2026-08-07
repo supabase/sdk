@@ -184,6 +184,18 @@ features:
     name: Sign In with Passkey
     description: Authenticate using a WebAuthn passkey registered on the device. The underlying credential API is platform-specific — browsers use the native WebAuthn API, while mobile/desktop SDKs rely on the platform's credential manager — so availability varies by SDK.
     group: passkey
+  - id: auth.passkey.list_passkeys
+    name: List Passkeys
+    description: List the passkeys registered by the currently authenticated user, so they can review the credentials tied to their account.
+    group: passkey
+  - id: auth.passkey.update_passkey
+    name: Update Passkey
+    description: Update the mutable metadata of one of the currently authenticated user's own passkeys, such as its friendly name.
+    group: passkey
+  - id: auth.passkey.delete_passkey
+    name: Delete Passkey
+    description: Delete one of the currently authenticated user's own passkeys, revoking that credential without admin privileges.
+    group: passkey
   - id: auth.session.auto_refresh
     name: Auto Refresh Token
     description: Automatically refresh the access token in the background before it expires. Exposes controls to start and stop the refresh loop and configure whether it is enabled.

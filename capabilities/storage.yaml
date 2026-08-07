@@ -9,6 +9,8 @@ groups:
     title: Vector Buckets
   - id: analytics
     title: Analytics Buckets (Iceberg)
+  - id: configuration
+    title: Configuration
   - id: errors
     title: Errors
 features:
@@ -252,6 +254,18 @@ features:
     name: Check Iceberg Table Exists
     description: Check whether an Iceberg table exists within a namespace without loading its metadata.
     group: analytics
+  - id: storage.analytics.access_catalog
+    name: Access Iceberg Catalog
+    description: Scope subsequent Iceberg namespace and table operations to the REST Catalog of a specific analytics bucket.
+    group: analytics
+  - id: storage.file_buckets.request_cancellation
+    name: Cancel In-Flight Request
+    description: Abort an in-flight storage request before it completes, so a long-running upload or download stops transferring and releases its connection.
+    group: file_buckets
+  - id: storage.configuration.auto_retry
+    name: Automatic Retry
+    description: Automatically retry a failed storage request, with control over how many attempts are made before the error surfaces to the caller.
+    group: configuration
   - id: storage.errors.error_codes
     name: Service Error Codes
     description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
