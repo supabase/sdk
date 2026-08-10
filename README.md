@@ -98,6 +98,16 @@ This checks out the canonical feature list from this repo and runs two checks on
 1. **Compliance validation** — verifies your `sdk-compliance.yaml` against the canonical feature list.
 2. **Public API check** — parses the SDK's public symbols, diffs against the base branch, and fails if any new symbol is not registered in `sdk-compliance.yaml`.
 
+### Pinning
+
+This repo is tagged (`v1`, `v1.2.3`, ...) via [release-please](./.github/workflows/release.yml). Pin `uses:` references to a release tag's commit SHA, with the tag as a comment, the same way this repo pins its own third-party actions:
+
+```yaml
+uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@<sha> # v1.2.3
+```
+
+Dependabot picks up new tags automatically and opens a PR to bump the pin — see each SDK repo's `dependabot.yml` (`package-ecosystem: github-actions`). Avoid pinning to `@main`: it floats, so every consumer would pick up a change the moment it lands on this repo, without going through that consumer's own review.
+
 ## Local development
 
 ```bash
