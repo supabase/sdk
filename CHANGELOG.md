@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/supabase/sdk/compare/v1.0.0...v1.1.0) (2026-08-14)
+
+
+### Features
+
+* add six capabilities the registry was missing ([#78](https://github.com/supabase/sdk/issues/78)) ([81bb9c7](https://github.com/supabase/sdk/commit/81bb9c7744b743c7559815034ac0bb59b7d76488))
+
 ## [1.0.0](https://github.com/supabase/sdk/compare/v1.0.0...v1.0.0) (2026-08-12)
 
 
