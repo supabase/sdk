@@ -12,9 +12,9 @@ on:
         type: string
         default: main
       sdk-ref:
-        description: Ref to check out from supabase/sdk for the spec and script
+        description: Ref to check out from supabase/sdk for the spec and script (defaults to the revision of this workflow file, so the caller's pin governs the spec too; override only during pre-merge testing)
         type: string
-        default: faba359a57d270bbbf68fd6b583db0604ddce8af
+        default: ""
     secrets:
       app-id:
         description: GitHub App ID used to open the pull request (provide this or client-id)
@@ -41,11 +41,13 @@ jobs:
           ref: ${{ inputs.base-branch }}
           persist-credentials: false
 
+      # Defaults to this workflow file's own commit, so the spec and the script
+      # come from the revision the caller pinned rather than from a branch.
       - name: Checkout capability spec
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: supabase/sdk
-          ref: ${{ inputs.sdk-ref }}
+          ref: ${{ inputs.sdk-ref || github.job_workflow_sha }}
           path: _sdk-spec
           persist-credentials: false
 

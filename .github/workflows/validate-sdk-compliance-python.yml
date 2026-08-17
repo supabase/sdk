@@ -8,9 +8,9 @@ on:
         type: string
         default: sdk-compliance.yaml
       sdk-ref:
-        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        description: Ref to check out from supabase/sdk for the spec and scripts (defaults to the revision of this workflow file, so the caller's pin governs the spec too; override only during pre-merge testing)
         type: string
-        default: main
+        default: ""
       griffe-packages:
         description: Space- or comma-separated griffe package names to dump
         type: string
@@ -25,10 +25,22 @@ jobs:
     name: Validate compliance file
     runs-on: ubuntu-latest
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+      # The calling repo lands at the workspace root, so it has to come before
+      # the spec: actions/checkout cleans the directory it manages, which would
+      # delete an already-present _sdk-spec.
+      - name: Checkout SDK repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Checkout capability spec
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || github.job_workflow_sha }}
+          path: _sdk-spec
+
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
-          sdk-ref: ${{ inputs.sdk-ref }}
 
   check:
     name: Check public API against capability matrix
@@ -38,9 +50,16 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+      # Nothing else checks out at the workspace root here, so the spec can
+      # come first, which it has to: the actions below are loaded from it.
+      - name: Checkout capability spec
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          sdk-ref: ${{ inputs.sdk-ref }}
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || github.job_workflow_sha }}
+          path: _sdk-spec
+
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -79,10 +98,10 @@ jobs:
           done
         working-directory: _sdk-spec/scripts/capability-matrix
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-drift@main
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-drift
         with:
           compliance-file: ${{ inputs.compliance-file }}
