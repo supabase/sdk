@@ -18,10 +18,6 @@ If the callback rejects or throws, the SDK does not fall back to the anon key: t
 
 The Supabase project must be configured to accept JWTs from the external provider (verification is a server-side project setting, not a client capability).
 
-## Notes
-
-- Implementations must not wrap the callback invocation in a catch-and-return-null (or equivalent) — doing so masks token-provider failures as "no session," which can let a request that was meant to carry the caller's identity go out anonymously instead of surfacing the error.
-
 ## Related
 
 - [Cross-Client Token Synchronization](client.authentication_integration.cross_client_token_sync) — the propagation mechanism this capability relies on to reach the database/storage/realtime/functions sub-clients; when third-party auth is active, that propagation is driven by this callback instead of Supabase Auth's own session events
