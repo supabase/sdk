@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/supabase/sdk/compare/v1.1.0...v1.1.1) (2026-08-18)
+
+
+### Bug Fixes
+
+* **ci:** read the capability spec at the caller's pinned workflow ref ([#87](https://github.com/supabase/sdk/issues/87)) ([f51a1ec](https://github.com/supabase/sdk/commit/f51a1ec2dbfdd3e91a6cb86ba749bbb2ff61b8cf))
+
 ## [1.1.0](https://github.com/supabase/sdk/compare/v1.0.0...v1.1.0) (2026-08-14)
 
 
