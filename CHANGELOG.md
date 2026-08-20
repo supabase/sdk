@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/supabase/sdk/compare/v1.1.1...v1.2.0) (2026-08-20)
+
+
+### Features
+
+* **auth:** add concurrent PKCE flow id capability ([#91](https://github.com/supabase/sdk/issues/91)) ([bd6d972](https://github.com/supabase/sdk/commit/bd6d972a3924deb01bb7018d54ee92c6984e8453))
+
+
+### Bug Fixes
+
+* **specs:** correct third-party auth error propagation behavior ([#86](https://github.com/supabase/sdk/issues/86)) ([ccc2fbb](https://github.com/supabase/sdk/commit/ccc2fbb45f7845f5ee77a3982a07e19b87ac2416))
+
 ## [1.1.1](https://github.com/supabase/sdk/compare/v1.1.0...v1.1.1) (2026-08-18)
 
 
