@@ -240,7 +240,7 @@ features:
     name: Exchange Code for Session
     description: Exchange a PKCE authorization code for a user session.
     group: sign_in
-  - id: auth.sign_in.pkce_flow_id
+  - id: auth.sign_in.concurrent_pkce_flows
     name: Concurrent PKCE Flows (Flow ID)
     description: Store each PKCE code verifier in its own bounded, per-flow slot (keyed by a generated flow id) instead of one shared slot, so starting several PKCE flows at once — two OAuth sign-ins, or an OAuth flow started while a password reset is pending — does not let one flow's verifier overwrite another's. Exchanging the code accepts an optional flow id to select the right verifier.
     group: sign_in
