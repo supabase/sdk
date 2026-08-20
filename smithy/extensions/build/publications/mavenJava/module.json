@@ -1,0 +1,60 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "io.supabase",
+    "module": "smithy-supabase-extensions",
+    "version": "1.0.0-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.6.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "smithy-supabase-extensions-1.0.0-SNAPSHOT.jar",
+          "url": "smithy-supabase-extensions-1.0.0-SNAPSHOT.jar",
+          "size": 3979,
+          "sha512": "a94423a090a86f781718f959dbef6f1a86ba40a68d30efcc5c09e82a21db76dc9ab0a4c164332862e8c5f7cfed1d8d83b09420869702f186dfc85ec9e0d1b42d",
+          "sha256": "b5e2c4ef19054d3f5eea74a34e8f6d5770daed2b0781bb2dfe5937f379ef8361",
+          "sha1": "cf19c98118c8a4a7253ac9a1541a30f71dce36bc",
+          "md5": "63a0f25ca00576403cf83af7bcff285e"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "smithy-supabase-extensions-1.0.0-SNAPSHOT.jar",
+          "url": "smithy-supabase-extensions-1.0.0-SNAPSHOT.jar",
+          "size": 3979,
+          "sha512": "a94423a090a86f781718f959dbef6f1a86ba40a68d30efcc5c09e82a21db76dc9ab0a4c164332862e8c5f7cfed1d8d83b09420869702f186dfc85ec9e0d1b42d",
+          "sha256": "b5e2c4ef19054d3f5eea74a34e8f6d5770daed2b0781bb2dfe5937f379ef8361",
+          "sha1": "cf19c98118c8a4a7253ac9a1541a30f71dce36bc",
+          "md5": "63a0f25ca00576403cf83af7bcff285e"
+        }
+      ]
+    }
+  ]
+}
