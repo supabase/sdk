@@ -1,0 +1,58 @@
+name: SDK Compliance — Go (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      compliance-file:
+        description: Path to sdk-compliance.yaml in the calling repo
+        type: string
+        default: sdk-compliance.yaml
+      sdk-ref:
+        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        type: string
+        default: main
+
+jobs:
+  validate:
+    name: Validate compliance file
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+  # Unlike the other language workflows this one carries no drift step, so it
+  # never posts PR comments and the job needs no pull-requests permission.
+  # The blocking new-symbol check below already fails a PR that removes or
+  # renames a registered symbol.
+  check:
+    name: Check public API against capability matrix
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+        with:
+          sdk-ref: ${{ inputs.sdk-ref }}
+
+      # The Go extractor parses syntactically with the standard library's
+      # go/parser, so the target checkouts need no dependency resolution and
+      # the tool itself downloads nothing.
+      - name: Setup Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: stable
+
+      - name: Extract Go symbols
+        run: |
+          for b in pr base; do
+            go run . "$GITHUB_WORKSPACE/_sdk-$b" \
+              > "$GITHUB_WORKSPACE/$b-symbols.json"
+          done
+        working-directory: _sdk-spec/scripts/go_symbol_extractor
+
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+        with:
+          compliance-file: ${{ inputs.compliance-file }}

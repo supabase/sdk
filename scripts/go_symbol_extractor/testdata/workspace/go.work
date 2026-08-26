@@ -1,0 +1,8 @@
+go 1.24
+
+// Comments and the block form are both part of the go.work grammar the
+// extractor reads.
+use (
+	./alpha
+	./beta
+)
