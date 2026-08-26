@@ -18,7 +18,7 @@ const LANG_LABELS: Record<Language, string> = {
   kotlin: "Kotlin",
 };
 
-const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/specs";
+const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/packages/capability-matrix/specs";
 
 function buildSpecSet(root: string): Set<string> {
   const specsDir = join(root, "specs");
@@ -517,13 +517,13 @@ export function renderHtml(
 
 // ── CLI entrypoint ────────────────────────────────────────────────────────────
 
-function repoRoot(): string {
+function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "..", "..");
+  return resolve(here, "..");
 }
 
 function main() {
-  const root = repoRoot();
+  const root = packageRoot();
   const capDir = join(root, "capabilities");
   const outDir = join(root, "site");
   const compliancePath = process.argv[2];

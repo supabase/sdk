@@ -71,7 +71,7 @@ export function formatDriftSummary(findings: DriftFinding[], sdkName: string): s
   lines.push(
     "",
     "These may have been renamed, removed, or never registered. Please update the capability matrix.",
-    "See: https://github.com/supabase/sdk/blob/main/docs/capability-matrix.md",
+    "See: https://github.com/supabase/sdk/blob/main/packages/capability-matrix/docs/capability-matrix.md",
   );
 
   return lines.join("\n");

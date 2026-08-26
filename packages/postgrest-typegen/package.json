@@ -1,0 +1,7 @@
+{
+  "name": "postgrest-typegen",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Type generator for PostgREST schemas (not yet implemented).",
+  "type": "module"
+}

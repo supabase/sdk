@@ -24,9 +24,9 @@ const REPOS: Repo[] = [
   { slug: "supabase-community/supabase-kt", language: "kotlin" },
 ];
 
-function repoRoot(): string {
+function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "..", "..");
+  return resolve(here, "..");
 }
 
 async function fetchComplianceFile(slug: string, token: string): Promise<string | null> {
@@ -46,7 +46,7 @@ async function fetchComplianceFile(slug: string, token: string): Promise<string 
 
 async function main(): Promise<void> {
   const token = process.env.GITHUB_TOKEN ?? "";
-  const root = repoRoot();
+  const root = packageRoot();
   const { areas } = loadAreas(join(root, "capabilities"));
   const knownIds = collectFeatureIds(areas);
 

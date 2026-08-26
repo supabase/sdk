@@ -4,9 +4,9 @@ Thanks for your interest in contributing. This repo is the canonical, machine-re
 
 ## Ways to contribute
 
-- **Add or update a capability** in `capabilities/<area>.yaml`
-- **Document a feature's behavior** by adding a spec file under `specs/<area>/<feature>.md`
-- **Improve the validator or site generator** in `scripts/capability-matrix/`
+- **Add or update a capability** in `packages/capability-matrix/capabilities/<area>.yaml`
+- **Document a feature's behavior** by adding a spec file under `packages/capability-matrix/specs/<area>/<feature>.md`
+- **Improve the validator or site generator** in `packages/capability-matrix/`
 - **Report a bug or request a change** via [GitHub Issues](https://github.com/supabase/sdk/issues)
 
 For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filing a public issue.
@@ -18,7 +18,7 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 ## Adding or updating a capability
 
-1. Open the YAML for the relevant area under `capabilities/` (or create a new area file matching `schema/capability-matrix.schema.json`).
+1. Open the YAML for the relevant area under `packages/capability-matrix/capabilities/` (or create a new area file matching `packages/capability-matrix/schema/capability-matrix.schema.json`).
 2. Add or edit a feature entry. Required fields:
    - `id` — `<area>.<snake_case>` (e.g. `auth.sign_in_with_password`). Must be unique and stable.
    - `name` — human-readable title.
@@ -38,8 +38,8 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 Spec files are optional but encouraged for any feature with non-trivial behavior. They are free-form prose for humans and LLMs.
 
-1. Create `specs/<area>/<feature_id_stem>.md` — e.g. `auth.sign_up` → `specs/auth/sign_up.md`.
-2. Use [`specs/TEMPLATE.md`](./specs/TEMPLATE.md) as the starting point. Remove sections that don't apply.
+1. Create `packages/capability-matrix/specs/<area>/<feature_id_stem>.md` — e.g. `auth.sign_up` → `specs/auth/sign_up.md`.
+2. Use [`specs/TEMPLATE.md`](./packages/capability-matrix/specs/TEMPLATE.md) as the starting point. Remove sections that don't apply.
 3. The validator enforces that every spec file maps to a real feature ID. Orphaned spec files fail CI.
 
 Focus on what is observable: inputs, outputs, side effects, error conditions. Avoid language-specific function signatures.
@@ -51,7 +51,7 @@ If you're here to update which features your SDK supports, you're in the wrong p
 ## Local development
 
 ```bash
-cd scripts/capability-matrix
+cd packages/capability-matrix
 npm ci
 
 npm test                           # vitest suite for the validator
@@ -80,8 +80,8 @@ Run `npm test` and `npm run validate` before opening a PR. CI runs the same chec
 | `fix` | A bug fix in the validator, site, schema, or a correction to capability data. |
 | `docs` | Documentation-only changes (README, CONTRIBUTING, spec files). |
 | `chore` | Maintenance that doesn't change behavior — deps, tooling config, repo housekeeping. |
-| `refactor` | Code change in `scripts/` that neither fixes a bug nor adds a feature. |
-| `test` | Adding or updating tests in `scripts/capability-matrix/test/`. |
+| `refactor` | Code change in a package under `packages/` that neither fixes a bug nor adds a feature. |
+| `test` | Adding or updating tests in `packages/capability-matrix/test/`. |
 | `ci` | Changes to GitHub Actions workflows under `.github/workflows/`. |
 
 Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.signup → auth.sign_up`.

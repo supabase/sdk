@@ -1,6 +1,6 @@
 ---
 name: capability-matrix
-description: Helps maintain the Supabase SDK capability matrix in capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `npm run validate`, it doesn't replace it.
+description: Helps maintain the Supabase SDK capability matrix in packages/capability-matrix/capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `npm run validate`, it doesn't replace it.
 ---
 
 # Capability Matrix Maintenance
@@ -23,7 +23,7 @@ Before spending any judgment calls, run the deterministic validator so you're
 not duplicating what it already guarantees:
 
 ```bash
-cd scripts/capability-matrix && npm run validate
+cd packages/capability-matrix && npm run validate
 ```
 
 This confirms schema conformance, `area` field matches the filename, IDs

@@ -17,9 +17,9 @@ import type { RawCompliance } from "./compliance.js";
 // Re-serializing may collapse hand-wrapped `note:` scalars onto a single line.
 // That is fine; the only concern here is keeping the file valid.
 
-function repoRoot(): string {
+function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "..", "..");
+  return resolve(here, "..");
 }
 
 function parseArguments(argv: string[]): {
@@ -50,7 +50,7 @@ function main(): void {
     process.argv.slice(2),
   );
 
-  const { areas, findings } = loadAreas(join(repoRoot(), "capabilities"));
+  const { areas, findings } = loadAreas(join(packageRoot(), "capabilities"));
   if (findings.some((finding) => finding.level === "error")) {
     console.error(
       "Failed to load canonical capability spec — check this repo's capabilities/*.yaml",

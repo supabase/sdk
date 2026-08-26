@@ -34,4 +34,4 @@ runs:
     - name: Install dependencies
       shell: bash
       run: npm ci
-      working-directory: _sdk-spec/scripts/capability-matrix
+      working-directory: _sdk-spec/packages/capability-matrix

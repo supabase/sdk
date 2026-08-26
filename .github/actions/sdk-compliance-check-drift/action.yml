@@ -18,7 +18,7 @@ runs:
           "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE" \
           "$GITHUB_WORKSPACE/pr-symbols.json" \
           "$COMPLIANCE_FILE"
-      working-directory: _sdk-spec/scripts/capability-matrix
+      working-directory: _sdk-spec/packages/capability-matrix
 
     - name: Upsert or clear drift comment
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -26,7 +26,7 @@ runs:
         script: |
           const fs = require('fs');
           const marker = '<!-- capability-matrix-drift -->';
-          const summaryPath = '_sdk-spec/scripts/capability-matrix/drift-summary.md';
+          const summaryPath = '_sdk-spec/packages/capability-matrix/drift-summary.md';
 
           try {
             const { data: comments } = await github.rest.issues.listComments({

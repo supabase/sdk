@@ -9,7 +9,7 @@ import { run } from "../src/cli";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = JSON.parse(
-  readFileSync(join(here, "..", "..", "..", "schema", "capability-matrix.schema.json"), "utf8")
+  readFileSync(join(here, "..", "schema", "capability-matrix.schema.json"), "utf8")
 );
 
 function tempCapabilities(yamlByName: Record<string, string>): string {

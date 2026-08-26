@@ -4,7 +4,7 @@
 !.claude/skills/
 
 # Generated site output
-site/
+/packages/capability-matrix/site/
 
 # AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
-docs/superpowers/
+/packages/capability-matrix/docs/superpowers/

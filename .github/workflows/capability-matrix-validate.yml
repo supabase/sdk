@@ -5,19 +5,16 @@ on:
     branches: [main]
   pull_request:
     paths:
-      - "capabilities/**"
-      - "specs/**"
-      - "schema/**"
-      - "scripts/capability-matrix/**"
-      - "scripts/dart_symbol_extractor/**"
-      - "scripts/go_symbol_extractor/**"
-      - ".github/workflows/validate-capabilities.yml"
+      - "packages/capability-matrix/**"
+      - "packages/dart-symbol-extractor/**"
+      - "packages/go-symbol-extractor/**"
+      - ".github/workflows/capability-matrix-validate.yml"
   schedule:
     - cron: "0 6 * * *" # nightly drift sweep
 
 defaults:
   run:
-    working-directory: scripts/capability-matrix
+    working-directory: packages/capability-matrix
 
 jobs:
   structural:
@@ -39,13 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
-      - working-directory: scripts/dart_symbol_extractor
+      - working-directory: packages/dart-symbol-extractor
         run: dart pub get
-      - working-directory: scripts/dart_symbol_extractor
+      - working-directory: packages/dart-symbol-extractor
         run: dart format --output=none --set-exit-if-changed .
-      - working-directory: scripts/dart_symbol_extractor
+      - working-directory: packages/dart-symbol-extractor
         run: dart analyze
-      - working-directory: scripts/dart_symbol_extractor
+      - working-directory: packages/dart-symbol-extractor
         run: dart test
 
   go-parser:
@@ -58,13 +55,13 @@ jobs:
           go-version: stable
           # Nothing to cache for a stdlib-only tool, and the default cache
           # warns on the run when it finds no dependencies file at the
-          # repository root (the module lives under scripts/).
+          # repository root (the module lives under packages/).
           cache: false
-      - working-directory: scripts/go_symbol_extractor
+      - working-directory: packages/go-symbol-extractor
         run: test -z "$(gofmt -l .)"
-      - working-directory: scripts/go_symbol_extractor
+      - working-directory: packages/go-symbol-extractor
         run: go vet ./...
-      - working-directory: scripts/go_symbol_extractor
+      - working-directory: packages/go-symbol-extractor
         run: go test ./...
 
   references:

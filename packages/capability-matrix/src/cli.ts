@@ -41,13 +41,13 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   return { findings, errorCount };
 }
 
-function repoRoot(): string {
+function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "..", "..");
+  return resolve(here, "..");
 }
 
 async function main(): Promise<void> {
-  const root = repoRoot();
+  const root = packageRoot();
   const argv = process.argv.slice(2);
   const mode = (argv[0] === "report" ? "report" : "validate") as "validate" | "report";
   const positionals = argv.slice(1).filter((a) => !a.startsWith("--"));

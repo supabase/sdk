@@ -1,134 +1,38 @@
-# Supabase SDK Capability Matrix
+# Supabase SDK
 
-The canonical, machine-readable record of which features exist across Supabase client SDKs. This repository is a **pure feature registry** — it defines what features exist and what they mean. Each SDK repo is responsible for declaring which features it implements.
+Shared tooling and specifications for the Supabase client SDKs. This repository is a lightweight monorepo: each project lives as a flat sibling under `packages/`, with a single toolchain per package and no monorepo build tooling on top.
 
-A static site rendered from this data is published at [https://supabase.github.io/sdk/](https://supabase.github.io/sdk/).
+## Packages
+
+| Package                                                    | Toolchain  | What it is                                                                                                                                          |
+| ---------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`packages/capability-matrix`](./packages/capability-matrix) | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
+| [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor) | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                     |
+| [`packages/go-symbol-extractor`](./packages/go-symbol-extractor) | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                         |
+| [`packages/postgrest-typegen`](./packages/postgrest-typegen) | TypeScript | Type generator for PostgREST schemas. Currently an empty scaffold, implementation to follow.                                                        |
 
 ## Repository layout
 
 ```
-capabilities/   # One YAML file per product area (auth, database, storage, realtime, functions)
-specs/          # Optional human-readable spec per feature: specs/{area}/{feature}.md
-schema/         # JSON Schema for area files
-scripts/        # TypeScript validator + site generator (scripts/capability-matrix)
-.github/        # CI workflows (see below)
+packages/       # One directory per project (flat siblings, one toolchain each)
+.github/        # CI workflows and composite actions, including the reusable
+                # SDK compliance workflows consumed by the SDK repos
+scripts/        # Transitional compatibility symlinks into packages/ for
+                # SDK repos still pinned to pre-monorepo releases
 ```
 
-## SDKs tracked
-
-`javascript` · `flutter` · `python` · `swift` · `csharp` · `go` · `kotlin`
-
-## Status values
-
-| Status                  | Meaning                                                                            |
-| ----------------------- | ---------------------------------------------------------------------------------- |
-| `implemented`           | Feature is fully implemented in the SDK.                                           |
-| `partially_implemented` | Feature is partially implemented. A `note` explaining what is missing is required. |
-| `not_implemented`       | Feature is in scope but not yet shipped (default for unlisted features).           |
-| `not_applicable`        | Feature does not apply to this SDK (e.g. browser-only APIs in a server SDK).       |
-
-## Adding or updating a capability
-
-1. Open the YAML for the relevant area under `capabilities/` (or create a new file matching the schema).
-2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, and an optional `group`.
-3. Optionally add a spec file at `specs/<area>/<feature>.md` documenting the expected behavior. The validator enforces that every spec file has a matching feature ID.
-4. Validate locally and open a PR. CI runs structural checks (including spec file validation) on every PR.
-
-The full schema lives in `schema/capability-matrix.schema.json`.
+The workflow and action paths under `.github/` are a public interface: SDK repos reference `supabase/sdk/.github/workflows/validate-sdk-compliance-<language>.yml`, `sync-sdk-compliance.yml`, and the `sdk-compliance-*` composite actions. Those file names and locations are stable.
 
 ## SDK compliance
 
-SDK compliance is **declared in each SDK repo**, not here. To report which features your SDK implements, add a `sdk-compliance.yaml` file to the root of your SDK repo:
+If you are here to opt an SDK into compliance validation, or to update which features your SDK supports, see the [capability-matrix README](./packages/capability-matrix/README.md#sdk-compliance).
 
-```yaml
-sdk: javascript   # one of: javascript, flutter, python, swift, csharp, go, kotlin
+## Contributing
 
-features:
-  auth.sign_up:                implemented
-  auth.sign_in_with_password:  implemented
-
-  auth.mfa_enroll:
-    status: partially_implemented
-    note: "TOTP only — phone factor not yet supported"
-    symbols:
-      - GoTrueClient.mfaEnroll   # public symbol names that implement this feature
-
-  # Unlisted features default to not_implemented
-```
-
-The file is **sparse** — only list features that differ from `not_implemented`. Unknown feature IDs and invalid status values fail CI.
-
-The optional `symbols` field maps a compliance entry to the public API symbols in your SDK. CI uses this to detect when a PR adds a new public symbol that is not yet registered — see [Opt-in to validation](#opt-in-to-validation) below.
-
-### Opt-in to validation
-
-Add `.github/workflows/validate-capabilities.yml` to your SDK repo:
-
-```yaml
-on: [pull_request]
-jobs:
-  validate:
-    uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@main
-```
-
-JavaScript / TypeScript SDKs use the `validate-sdk-compliance-javascript.yml` workflow, which requires a `typedoc-packages` input:
-
-```yaml
-on: [pull_request]
-jobs:
-  validate:
-    uses: supabase/sdk/.github/workflows/validate-sdk-compliance-javascript.yml@main
-    with:
-      typedoc-packages: packages/core/auth-js,packages/core/storage-js
-```
-
-There is one reusable workflow per language — pick the one matching your SDK:
-
-| Language                | Workflow                                 |
-| ----------------------- | ---------------------------------------- |
-| Swift                   | `validate-sdk-compliance-swift.yml`      |
-| JavaScript / TypeScript | `validate-sdk-compliance-javascript.yml` |
-| Python                  | `validate-sdk-compliance-python.yml`     |
-| Dart                    | `validate-sdk-compliance-dart.yml`       |
-
-The JavaScript workflow requires a `typedoc-packages` input — comma-separated package dirs (relative to the SDK root), each defining a `docs:json` script that owns its TypeDoc entrypoints; the JS path installs with pnpm and merges all packages. The Python workflow requires a `griffe-packages` input and accepts an optional `griffe-search-paths` input.
-
-This checks out the canonical feature list from this repo and runs two checks on every PR:
-
-1. **Compliance validation** — verifies your `sdk-compliance.yaml` against the canonical feature list.
-2. **Public API check** — parses the SDK's public symbols, diffs against the base branch, and fails if any new symbol is not registered in `sdk-compliance.yaml`.
-
-### Pinning
-
-This repo is tagged (`v1`, `v1.2.3`, ...) via [release-please](./.github/workflows/release.yml). Pin `uses:` references to a release tag's commit SHA, with the tag as a comment, the same way this repo pins its own third-party actions:
-
-```yaml
-uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@<sha> # v1.2.3
-```
-
-Dependabot picks up new tags automatically and opens a PR to bump the pin — see each SDK repo's `dependabot.yml` (`package-ecosystem: github-actions`). Avoid pinning to `@main`: it floats, so every consumer would pick up a change the moment it lands on this repo, without going through that consumer's own review.
-
-## Local development
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Run each package's own toolchain from its directory:
 
 ```bash
-cd scripts/capability-matrix
-npm ci
-
-npm test                           # vitest suite for the validator
-npm run typecheck                  # tsc --noEmit
-npm run validate                   # schema + structural checks (no network)
-npm run validate:online            # + reference checks against GitHub (needs GITHUB_TOKEN)
-npm run report                     # parity report as JSON (overall, per-area, per-language)
-npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
-npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
-npm run build-site                 # render the static site to site/index.html
-npm run build-site compliance.json # render the site with compliance data
+cd packages/capability-matrix && npm ci && npm test
+cd packages/dart-symbol-extractor && dart pub get && dart test
+cd packages/go-symbol-extractor && go test ./...
 ```
-
-## CI
-
-| Workflow                                 | Trigger                                            | What it does                                                                                                                                                                                                                         |
-| ---------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `validate-capabilities.yml`              | push to `main`, PRs touching matrix files, nightly | Tier 1: schema, tests, typecheck, structural checks. Tier 2 (PRs + nightly): reference checks against GitHub.                                                                                                                        |
-| `validate-sdk-compliance-<language>.yml` | `workflow_call` from SDK repos                     | One reusable workflow per language (`swift`, `javascript`, `python`, `dart`). Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; blocks PRs that add public symbols not registered in the compliance file. |
-| `aggregate-capabilities.yml`             | hourly cron + `workflow_dispatch`                  | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages.                                                                                                                                                          |

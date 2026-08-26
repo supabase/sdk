@@ -77,7 +77,7 @@ jobs:
               --project-root "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
-        working-directory: _sdk-spec/scripts/capability-matrix
+        working-directory: _sdk-spec/packages/capability-matrix
 
       - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
         with:

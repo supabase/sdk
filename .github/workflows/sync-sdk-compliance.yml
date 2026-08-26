@@ -52,10 +52,10 @@ jobs:
 
       - name: Install capability matrix tooling
         run: npm ci
-        working-directory: _sdk-spec/scripts/capability-matrix
+        working-directory: _sdk-spec/packages/capability-matrix
 
       - name: Insert new capability IDs
-        working-directory: _sdk-spec/scripts/capability-matrix
+        working-directory: _sdk-spec/packages/capability-matrix
         env:
           COMPLIANCE_FILE: ${{ inputs.compliance-file }}
         run: |

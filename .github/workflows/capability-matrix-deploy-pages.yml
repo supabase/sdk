@@ -4,10 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "capabilities/**"
-      - "schema/**"
-      - "scripts/capability-matrix/**"
-      - ".github/workflows/deploy-pages.yml"
+      - "packages/capability-matrix/**"
+      - ".github/workflows/capability-matrix-deploy-pages.yml"
   schedule:
     - cron: "0 2 * * *" # daily refresh to pick up SDK compliance updates
   workflow_dispatch:
@@ -25,7 +23,7 @@ concurrency:
 
 defaults:
   run:
-    working-directory: scripts/capability-matrix
+    working-directory: packages/capability-matrix
 
 jobs:
   build:
@@ -51,14 +49,14 @@ jobs:
         run: npm run aggregate
 
       - name: Build site
-        run: npm run build-site -- ../../site/compliance.json
+        run: npm run build-site -- site/compliance.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           # Uploads site/index.html (the matrix UI) and site/compliance.json
           # (machine-readable compliance data, publicly queryable by external tools).
-          path: site/
+          path: packages/capability-matrix/site/
 
   deploy:
     name: Deploy to GitHub Pages

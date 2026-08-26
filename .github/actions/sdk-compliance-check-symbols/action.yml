@@ -18,4 +18,4 @@ runs:
           "$GITHUB_WORKSPACE/pr-symbols.json" \
           "$GITHUB_WORKSPACE/base-symbols.json" \
           "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE"
-      working-directory: _sdk-spec/scripts/capability-matrix
+      working-directory: _sdk-spec/packages/capability-matrix

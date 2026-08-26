@@ -6,9 +6,9 @@ import { loadAreas } from "./load.js";
 import { validateCompliance, collectFeatureIds, findMissingFeatureIds } from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
 
-function repoRoot(): string {
+function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "..", "..");
+  return resolve(here, "..");
 }
 
 async function main(): Promise<void> {
@@ -18,7 +18,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const root = repoRoot();
+  const root = packageRoot();
   const { areas, findings: loadFindings } = loadAreas(join(root, "capabilities"));
   if (loadFindings.some((f) => f.level === "error")) {
     console.error("Failed to load canonical capability spec — check this repo's capabilities/*.yaml");

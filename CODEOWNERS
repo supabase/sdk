@@ -12,6 +12,15 @@
 
 * @supabase/sdk
 
+# 1b. PER-PACKAGE OWNERSHIP
+#     One rule per package under packages/. All currently owned by the SDK team;
+#     adjust individual rules here when a package gains dedicated maintainers.
+
+/packages/capability-matrix/ @supabase/sdk
+/packages/dart-symbol-extractor/ @supabase/sdk
+/packages/go-symbol-extractor/ @supabase/sdk
+/packages/postgrest-typegen/ @supabase/sdk
+
 # 2. GENERAL SECURITY & SUPPLY CHAIN LAYER (High Risk)
 #    Security review is strictly mandated for supply chain vectors and repository governance.
 #    Git client configuration files (.gitignore, .gitattributes) are intentionally excluded to avoid unnecessary friction and false positives.

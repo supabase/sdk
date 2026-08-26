@@ -7,7 +7,7 @@ import type { LoadedArea } from "../src/types";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = JSON.parse(
-  readFileSync(join(here, "..", "..", "..", "schema", "capability-matrix.schema.json"), "utf8")
+  readFileSync(join(here, "..", "schema", "capability-matrix.schema.json"), "utf8")
 );
 
 function loaded(area: unknown): LoadedArea[] {

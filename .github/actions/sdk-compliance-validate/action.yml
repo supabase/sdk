@@ -29,11 +29,11 @@ runs:
     - name: Install dependencies
       shell: bash
       run: npm ci
-      working-directory: _sdk-spec/scripts/capability-matrix
+      working-directory: _sdk-spec/packages/capability-matrix
 
     - name: Validate compliance file
       shell: bash
       env:
         COMPLIANCE_FILE: ${{ inputs.compliance-file }}
       run: npm run validate-compliance -- "$GITHUB_WORKSPACE/$COMPLIANCE_FILE"
-      working-directory: _sdk-spec/scripts/capability-matrix
+      working-directory: _sdk-spec/packages/capability-matrix
