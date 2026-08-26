@@ -12,32 +12,32 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 **Request body**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `email` | string | yes | |
-| `password` | string | yes | |
-| `data` | object | no | Arbitrary metadata attached to the user record |
-| `gotrue_meta_security.captcha_token` | string | no | Captcha verification token |
-| `code_challenge` | string | conditional | PKCE — see [PKCE](#pkce) |
-| `code_challenge_method` | string | conditional | `s256` — required when `code_challenge` is present |
+| Field                                | Type   | Required    | Description                                        |
+| ------------------------------------ | ------ | ----------- | -------------------------------------------------- |
+| `email`                              | string | yes         |                                                    |
+| `password`                           | string | yes         |                                                    |
+| `data`                               | object | no          | Arbitrary metadata attached to the user record     |
+| `gotrue_meta_security.captcha_token` | string | no          | Captcha verification token                         |
+| `code_challenge`                     | string | conditional | PKCE — see [PKCE](#pkce)                           |
+| `code_challenge_method`              | string | conditional | `s256` — required when `code_challenge` is present |
 
 **Query parameters**
 
-| Parameter | Description |
-|---|---|
+| Parameter     | Description                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
 | `redirect_to` | URL the user is sent to after confirming their email. Passed as a query parameter, not in the request body. |
 
 ### Phone registration
 
 **Request body**
 
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `phone` | string | yes | |
-| `password` | string | yes | |
-| `data` | object | no | Arbitrary metadata attached to the user record |
-| `channel` | string | no | OTP delivery method: `sms` (default) or `whatsapp` |
-| `gotrue_meta_security.captcha_token` | string | no | Captcha verification token |
+| Field                                | Type   | Required | Description                                        |
+| ------------------------------------ | ------ | -------- | -------------------------------------------------- |
+| `phone`                              | string | yes      |                                                    |
+| `password`                           | string | yes      |                                                    |
+| `data`                               | object | no       | Arbitrary metadata attached to the user record     |
+| `channel`                            | string | no       | OTP delivery method: `sms` (default) or `whatsapp` |
+| `gotrue_meta_security.captcha_token` | string | no       | Captcha verification token                         |
 
 ## Behavior
 

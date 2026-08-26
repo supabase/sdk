@@ -4,12 +4,12 @@ Shared tooling and specifications for the Supabase client SDKs. This repository 
 
 ## Packages
 
-| Package                                                    | Toolchain  | What it is                                                                                                                                          |
-| ---------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`packages/capability-matrix`](./packages/capability-matrix) | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
-| [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor) | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                     |
-| [`packages/go-symbol-extractor`](./packages/go-symbol-extractor) | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                         |
-| [`packages/postgrest-typegen`](./packages/postgrest-typegen) | TypeScript | Type generator for PostgREST schemas. Currently an empty scaffold, implementation to follow.                                                        |
+| Package                                                              | Toolchain  | What it is                                                                                                                                                                                                           |
+| -------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`packages/capability-matrix`](./packages/capability-matrix)         | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
+| [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor) | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                                                                                     |
+| [`packages/go-symbol-extractor`](./packages/go-symbol-extractor)     | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                                                                                         |
+| [`packages/postgrest-typegen`](./packages/postgrest-typegen)         | TypeScript | Type generator for PostgREST schemas. Currently an empty scaffold, implementation to follow.                                                                                                                         |
 
 ## Repository layout
 

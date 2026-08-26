@@ -74,15 +74,15 @@ Run `npm test` and `npm run validate` before opening a PR. CI runs the same chec
 
 ### Commit types we use
 
-| Type | When to use |
-|---|---|
-| `feat` | A new capability, new spec, or a new feature in the validator/site. |
-| `fix` | A bug fix in the validator, site, schema, or a correction to capability data. |
-| `docs` | Documentation-only changes (README, CONTRIBUTING, spec files). |
-| `chore` | Maintenance that doesn't change behavior — deps, tooling config, repo housekeeping. |
+| Type       | When to use                                                                             |
+| ---------- | --------------------------------------------------------------------------------------- |
+| `feat`     | A new capability, new spec, or a new feature in the validator/site.                     |
+| `fix`      | A bug fix in the validator, site, schema, or a correction to capability data.           |
+| `docs`     | Documentation-only changes (README, CONTRIBUTING, spec files).                          |
+| `chore`    | Maintenance that doesn't change behavior — deps, tooling config, repo housekeeping.     |
 | `refactor` | Code change in a package under `packages/` that neither fixes a bug nor adds a feature. |
-| `test` | Adding or updating tests in `packages/capability-matrix/test/`. |
-| `ci` | Changes to GitHub Actions workflows under `.github/workflows/`. |
+| `test`     | Adding or updating tests in `packages/capability-matrix/test/`.                         |
+| `ci`       | Changes to GitHub Actions workflows under `.github/workflows/`.                         |
 
 Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.signup → auth.sign_up`.
 
