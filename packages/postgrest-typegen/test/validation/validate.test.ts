@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
   GENERATOR_METADATA_VERSION,
+  generatorMetadataJsonSchema,
   generatorMetadataSchema,
   type GeneratorMetadata,
   parseGeneratorMetadata,
@@ -15,6 +16,7 @@ import {
   type PostgresTable,
   type PostgresType,
   type PostgresView,
+  serializeGeneratorMetadata,
 } from "../../src/types.ts";
 import {
   addressCompositeType,
@@ -324,5 +326,45 @@ describe("parseGeneratorMetadata", () => {
 describe("generatorMetadataSchema", () => {
   test("is exported for advanced/custom validation flows", () => {
     expect(typeof generatorMetadataSchema).toBe("function");
+  });
+});
+
+describe("serializeGeneratorMetadata", () => {
+  const validMetadata: GeneratorMetadata = buildMetadata({
+    tables: [baseTable()],
+    columns: [baseColumn({ name: "id" })],
+  });
+
+  test("round-trips through JSON without loss", () => {
+    const json = serializeGeneratorMetadata(validMetadata);
+    expect(JSON.parse(json)).toEqual(validMetadata);
+  });
+
+  test("produces a value parseGeneratorMetadata accepts unchanged", () => {
+    const json = serializeGeneratorMetadata(validMetadata);
+    expect(parseGeneratorMetadata(JSON.parse(json))).toEqual(validMetadata);
+  });
+});
+
+describe("generatorMetadataJsonSchema", () => {
+  test("is a JSON Schema object requiring every top-level collection", () => {
+    const schema = generatorMetadataJsonSchema as {
+      type: string;
+      required: string[];
+    };
+    expect(schema.type).toBe("object");
+    expect(schema.required).toEqual(
+      expect.arrayContaining([
+        "version",
+        "schemas",
+        "tables",
+        "primaryKeys",
+        "relationships",
+      ]),
+    );
+  });
+
+  test("is itself JSON-serializable", () => {
+    expect(() => JSON.stringify(generatorMetadataJsonSchema)).not.toThrow();
   });
 });

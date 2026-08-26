@@ -20,6 +20,16 @@ WHERE
   ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
   ${props.tableIdentifierFilter ? `n.nspname || '.' || c.relname ${props.tableIdentifierFilter} AND` : ""}
   i.indisprimary
+  AND c.relkind IN ('r', 'p')
+  AND NOT pg_is_other_temp_schema(n.oid)
+  AND (
+    pg_has_role(c.relowner, 'USAGE')
+    OR has_table_privilege(
+      c.oid,
+      'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'
+    )
+    OR has_any_column_privilege(c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
+  )
 ORDER BY
   c.oid,
   array_position(i.indkey, a.attnum)

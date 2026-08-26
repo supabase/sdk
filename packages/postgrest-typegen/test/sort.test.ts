@@ -53,6 +53,29 @@ describe("sortGeneratorMetadata", () => {
     ]);
   });
 
+  test("groups primary keys by table, preserving composite-key column order", () => {
+    const shuffled = buildMetadata({
+      tables: [
+        baseTable({ id: 3, name: "a" }),
+        baseTable({ id: 1, name: "b" }),
+      ],
+      primaryKeys: [
+        { schema: "public", table_name: "b", name: "id", table_id: 1 },
+        // Composite key on "a": declared column order (tenant_id, id) is
+        // semantic and must survive the table-grouping sort.
+        { schema: "public", table_name: "a", name: "tenant_id", table_id: 3 },
+        { schema: "public", table_name: "a", name: "id", table_id: 3 },
+      ],
+    });
+
+    const result = sortGeneratorMetadata(shuffled);
+    expect(result.primaryKeys.map((pk) => [pk.table_name, pk.name])).toEqual([
+      ["a", "tenant_id"],
+      ["a", "id"],
+      ["b", "id"],
+    ]);
+  });
+
   test("disambiguates overloaded functions by signature", () => {
     const result = sortGeneratorMetadata(
       buildMetadata({

@@ -64,7 +64,7 @@
   "dependencies": {
     "arktype": "2.2.3",
     "pg-format": "1.0.4",
-    "prettier": "3.9.6"
+    "prettier": "3.5.3"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",

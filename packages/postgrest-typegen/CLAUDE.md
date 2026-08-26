@@ -56,10 +56,13 @@ bun run knip            # unused-code/deps check
 This package must produce **byte-identical** output to postgres-meta's
 templates until parity is validated and released. Two consequences:
 
-- `prettier` is pinned **exact** (not a caret range), since a version bump can
-  reformat generator output and silently break byte parity. Bumping it means
-  regenerating every inline snapshot (`bun test --update-snapshots`) and the
-  parity fixtures under `test/parity/expected/`, and reviewing the diff.
+- `prettier` is pinned **exact** to the version postgres-meta's own lockfile
+  currently resolves (not a caret range, and not just "latest"), since a
+  version mismatch reformats generator output and silently breaks parity with
+  the real upstream CLI, not just with this package's own snapshots. Check
+  postgres-meta's resolved version before bumping. Bumping means regenerating
+  every inline snapshot (`bun test --update-snapshots`) and the parity
+  fixtures under `test/parity/expected/`, and reviewing the diff.
 - Don't "improve" template strings or SQL for existing generators without
   regenerating snapshots/fixtures first. Byte parity first; behavior-changing
   cleanups (e.g. oxfmt instead of prettier) come later.

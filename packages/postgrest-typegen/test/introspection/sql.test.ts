@@ -145,6 +145,16 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         n.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
         
         i.indisprimary
+        AND c.relkind IN ('r', 'p')
+        AND NOT pg_is_other_temp_schema(n.oid)
+        AND (
+          pg_has_role(c.relowner, 'USAGE')
+          OR has_table_privilege(
+            c.oid,
+            'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'
+          )
+          OR has_any_column_privilege(c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
+        )
       ORDER BY
         c.oid,
         array_position(i.indkey, a.attnum)
