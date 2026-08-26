@@ -1,3 +1,4 @@
-// Placeholder entrypoint. The PostgREST type generator implementation
-// will land in a follow-up change.
-export {};
+export * from "./types.ts";
+export * from "./sort.ts";
+export * from "./introspection/index.ts";
+export * from "./generation/index.ts";
