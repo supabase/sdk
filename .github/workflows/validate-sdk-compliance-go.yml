@@ -12,12 +12,17 @@ on:
         type: string
         default: main
 
+# The composite actions below are referenced by full commit SHA rather than
+# a branch: a calling repository's actions policy applies transitively to
+# these references, and enterprise policies can require every action to be
+# pinned to a full-length SHA. The pin moves deliberately when the actions
+# themselves change.
 jobs:
   validate:
     name: Validate compliance file
     runs-on: ubuntu-latest
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
         with:
           compliance-file: ${{ inputs.compliance-file }}
           sdk-ref: ${{ inputs.sdk-ref }}
@@ -33,7 +38,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
         with:
           sdk-ref: ${{ inputs.sdk-ref }}
 
@@ -53,6 +58,6 @@ jobs:
           done
         working-directory: _sdk-spec/scripts/go_symbol_extractor
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
         with:
           compliance-file: ${{ inputs.compliance-file }}
