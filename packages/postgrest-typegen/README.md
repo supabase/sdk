@@ -8,6 +8,21 @@ small, driver-agnostic library.
 > **Status:** alpha. The public API is settling as generators and introspection
 > are ported.
 
+## Scope: introspection is permanent, four generators are transitional
+
+This package's permanent job is introspection and the `GeneratorMetadata`
+contract (see "Out-of-process generators" below): any *new* language's
+generator lives in that language's own SDK repo, consuming this package's
+JSON output, not inside `postgrest-typegen`.
+
+The TypeScript, Go, Python, and Swift generators bundled here are a
+**deliberate transition**, not the target architecture for new languages.
+They were ported byte-parity from postgres-meta's own templates so
+`supabase gen types` keeps working unchanged while postgres-meta's copies get
+deprecated in favor of this package. Whether they eventually move out to
+their own SDK repos too is an open question, tracked separately — don't
+assume either way when touching this code.
+
 ## Design
 
 There is a hard split between **introspection** (database → metadata) and

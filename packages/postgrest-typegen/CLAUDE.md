@@ -8,6 +8,19 @@ into a normalized `GeneratorMetadata` shape, then renders language types
 postgres-meta (the one behind `supabase gen types`), repackaged as a small,
 driver-agnostic library.
 
+**IMPORTANT — scope, read before adding a language here.** Introspection and
+the `GeneratorMetadata`/JSON contract are this package's permanent job. The
+four bundled generators (TypeScript/Go/Python/Swift) are a **deliberate
+transition**, not the pattern for new languages: they exist to let
+`supabase gen types` keep working unchanged while postgres-meta's own copies
+of these templates get deprecated in favor of this package (see SDK-1617).
+**A new language's generator does NOT belong in this package** — it lives in
+that language's own SDK repo, consuming `introspect()`'s JSON output via
+`serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
+`supabase_typegen` package in `supabase/supabase-flutter` for the pattern).
+Whether the four transitional generators eventually move out too is an open
+question tracked in SDK-1641, not decided.
+
 ## Architecture
 
 Hard split between **introspection** and **generation**:
