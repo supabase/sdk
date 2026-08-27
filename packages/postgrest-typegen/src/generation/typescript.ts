@@ -47,9 +47,10 @@ type TsRelationship = Pick<
 >;
 
 /**
- * Sorts every collection internally, so it is order-insensitive — but pass
- * input pre-sorted with `sortGeneratorMetadata` to stay consistent with the
- * other generators (whose output depends on `GeneratorMetadata` order).
+ * Does not re-sort collections; pass input pre-sorted with
+ * `sortGeneratorMetadata` first. Still merge-sorts tables+foreign tables and
+ * views+materialized views per schema, since that cross-collection grouping
+ * can't be expressed by the single-collection `sortGeneratorMetadata` pass.
  */
 export const generateTypescript = async (
   metadata: GeneratorMetadata,
