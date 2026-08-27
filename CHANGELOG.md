@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/supabase/sdk/compare/v1.2.0...v1.3.0) (2026-08-27)
+
+
+### Miscellaneous Chores
+
+* release 1.3.0 ([#97](https://github.com/supabase/sdk/issues/97)) ([ee2ef6e](https://github.com/supabase/sdk/commit/ee2ef6e5d2da7fb9b9676b39666ca2152d463dbc))
+
 ## [1.2.0](https://github.com/supabase/sdk/compare/v1.1.1...v1.2.0) (2026-08-20)
 
 
