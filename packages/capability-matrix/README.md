@@ -8,7 +8,7 @@ A static site rendered from this data is published at [https://supabase.github.i
 
 ```
 capabilities/   # One YAML file per product area (auth, database, storage, realtime, functions)
-specs/          # Optional human-readable spec per feature: specs/{area}/{feature}.md
+specs/          # Optional human-readable spec per feature: specs/{area}/{group}/{feature}.md
 schema/         # JSON Schema for area files
 docs/           # Longer-form documentation (capability-matrix.md)
 src/            # TypeScript validator + site generator

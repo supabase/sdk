@@ -49,7 +49,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 ### Key Directories (under `packages/capability-matrix/`)
 
 - `capabilities/` — YAML files, one per product area (auth, database, storage, realtime, functions, client). These are the source of truth for feature IDs and definitions.
-- `schema/capability-matrix.schema.json` — JSON Schema that validates capability YAML files. Feature IDs must follow three-segment format: `area.group_namespace.method`.
+- `schema/capability-matrix.schema.json` — JSON Schema that validates capability YAML files. Feature IDs must follow three-segment format: `area.group_namespace.feature`.
 - `specs/` — Optional Markdown specs for individual features. Referenced by feature ID stem.
 - `src/` — TypeScript source for validation, aggregation, and site generation.
 - `test/` — Vitest test suite with fixtures in `test/fixtures/`.
@@ -94,9 +94,9 @@ The `symbols` field is optional but enables the public API check in CI: when a P
 ## Adding a Feature
 
 1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for the relevant area.
-2. Add the feature entry; ID must be `{area}.{group}.{method}` and globally unique.
+2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally unique.
 3. Run `npm run validate` — catches schema errors and duplicate IDs.
-4. Optionally add a spec at `packages/capability-matrix/specs/{area}.{group_namespace}/{method}.md`.
+4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`.
 
 ## Commit Style
 
