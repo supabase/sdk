@@ -234,6 +234,45 @@ describe("typescript typegen", () => {
     `);
   });
 
+  test("resolves an enum by the column's type_schema, not the table's own schema", async () => {
+    // A table in `tenant` referencing `public.user_status`, while `tenant`
+    // also defines its own same-named enum with different variants. Without
+    // consulting type_schema, resolution falls back to preferring an enum in
+    // the table's own schema and silently picks the wrong one.
+    const tenantSchema = { id: 2, name: "tenant", owner: "postgres" };
+    const tenantStatusEnum = {
+      ...userStatusEnum,
+      id: 101,
+      schema: "tenant",
+      enums: ["PENDING", "DONE"],
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [{ id: 1, name: "public", owner: "postgres" }, tenantSchema],
+        types: [userStatusEnum, tenantStatusEnum],
+        tables: [baseTable({ id: 2, schema: "tenant", name: "accounts" })],
+        columns: [
+          baseColumn({
+            table_id: 2,
+            schema: "tenant",
+            table: "accounts",
+            name: "status",
+            format: "user_status",
+            type_schema: "public",
+            ordinal_position: 1,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'status: Database["public"]["Enums"]["user_status"]',
+    );
+    expect(result).not.toContain(
+      'status: Database["tenant"]["Enums"]["user_status"]',
+    );
+  });
+
   test("relationships without detectOneToOneRelationships omit isOneToOne", async () => {
     const result = await generateTypescript(
       buildMetadata({

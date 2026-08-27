@@ -402,6 +402,7 @@ export const generateTypescript = async (
                     {
                       name: column.name,
                       format: column.format,
+                      type_schema: column.type_schema,
                       is_nullable: column.is_nullable,
                       is_optional: false,
                     },
@@ -625,6 +626,7 @@ export const generateTypescript = async (
     column: {
       name: string;
       format: string;
+      type_schema: string;
       is_nullable: boolean;
       is_optional: boolean;
     },
@@ -636,7 +638,7 @@ export const generateTypescript = async (
     },
   ) {
     return `${JSON.stringify(column.name)}${column.is_optional ? "?" : ""}: ${generateNullableUnionTsType(
-      pgTypeToTsType(schema, column.format, context),
+      pgTypeToTsType(schema, column.format, context, column.type_schema),
       column.is_nullable,
     )}`;
   }
@@ -672,6 +674,7 @@ export type Database = {
                           {
                             name: column.name,
                             format: column.format,
+                            type_schema: column.type_schema,
                             is_nullable: column.is_nullable,
                             is_optional: false,
                           },
@@ -698,6 +701,7 @@ export type Database = {
                         {
                           name: column.name,
                           format: column.format,
+                          type_schema: column.type_schema,
                           is_nullable: column.is_nullable,
                           is_optional:
                             column.is_nullable ||
@@ -719,6 +723,7 @@ export type Database = {
                         {
                           name: column.name,
                           format: column.format,
+                          type_schema: column.type_schema,
                           is_nullable: column.is_nullable,
                           is_optional: true,
                         },
@@ -750,6 +755,7 @@ export type Database = {
                           {
                             name: column.name,
                             format: column.format,
+                            type_schema: column.type_schema,
                             is_nullable: column.is_nullable,
                             is_optional: false,
                           },
@@ -779,6 +785,7 @@ export type Database = {
                                {
                                  name: column.name,
                                  format: column.format,
+                                 type_schema: column.type_schema,
                                  is_nullable: true,
                                  is_optional: true,
                                },
@@ -796,6 +803,7 @@ export type Database = {
                                {
                                  name: column.name,
                                  format: column.format,
+                                 type_schema: column.type_schema,
                                  is_nullable: true,
                                  is_optional: true,
                                },
@@ -1030,6 +1038,11 @@ export const pgTypeToTsType = (
     tables: PostgresTable[];
     views: PostgresView[];
   },
+  // The schema that actually owns `pgType` (a column's `type_schema`), when
+  // known. Disambiguates same-named enums/composites across schemas; falls
+  // back to `schema.name` (the table's own schema) when not provided, e.g.
+  // for function args/return types where no equivalent field exists yet.
+  typeSchema?: string,
 ): string => {
   if (pgType === "bool") {
     return "boolean";
@@ -1062,19 +1075,21 @@ export const pgTypeToTsType = (
   } else if (pgType === "record") {
     return "Record<string, unknown>";
   } else if (pgType.startsWith("_")) {
-    return `(${pgTypeToTsType(schema, pgType.substring(1), {
-      types,
-      schemas,
-      tables,
-      views,
-    })})[]`;
+    return `(${pgTypeToTsType(
+      schema,
+      pgType.substring(1),
+      { types, schemas, tables, views },
+      typeSchema,
+    )})[]`;
   } else {
+    const preferredSchema = typeSchema ?? schema.name;
     const enumTypes = types.filter(
       (type) => type.name === pgType && type.enums.length > 0,
     );
     if (enumTypes.length > 0) {
       const enumType =
-        enumTypes.find((type) => type.schema === schema.name) || enumTypes[0];
+        enumTypes.find((type) => type.schema === preferredSchema) ||
+        enumTypes[0];
       if (schemas.some(({ name }) => name === enumType.schema)) {
         return `Database[${JSON.stringify(enumType.schema)}]['Enums'][${JSON.stringify(
           enumType.name,
@@ -1088,7 +1103,7 @@ export const pgTypeToTsType = (
     );
     if (compositeTypes.length > 0) {
       const compositeType =
-        compositeTypes.find((type) => type.schema === schema.name) ||
+        compositeTypes.find((type) => type.schema === preferredSchema) ||
         compositeTypes[0];
       if (schemas.some(({ name }) => name === compositeType.schema)) {
         return `Database[${JSON.stringify(
@@ -1101,7 +1116,7 @@ export const pgTypeToTsType = (
     const tableRowTypes = tables.filter((table) => table.name === pgType);
     if (tableRowTypes.length > 0) {
       const tableRowType =
-        tableRowTypes.find((type) => type.schema === schema.name) ||
+        tableRowTypes.find((type) => type.schema === preferredSchema) ||
         tableRowTypes[0];
       if (schemas.some(({ name }) => name === tableRowType.schema)) {
         return `Database[${JSON.stringify(tableRowType.schema)}]['Tables'][${JSON.stringify(
@@ -1114,7 +1129,7 @@ export const pgTypeToTsType = (
     const viewRowTypes = views.filter((view) => view.name === pgType);
     if (viewRowTypes.length > 0) {
       const viewRowType =
-        viewRowTypes.find((type) => type.schema === schema.name) ||
+        viewRowTypes.find((type) => type.schema === preferredSchema) ||
         viewRowTypes[0];
       if (schemas.some(({ name }) => name === viewRowType.schema)) {
         return `Database[${JSON.stringify(viewRowType.schema)}]['Views'][${JSON.stringify(
