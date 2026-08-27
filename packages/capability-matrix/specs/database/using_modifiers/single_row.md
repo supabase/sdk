@@ -2,9 +2,9 @@
 
 Enables query execution where the end result is one of two states:
 
-| Query Match | Result |
-| ----------- | ------ |
-| Exactly one row. | Success with Row |
+| Query Match                     | Result             |
+| ------------------------------- | ------------------ |
+| Exactly one row.                | Success with Row   |
 | Zero rows or more than one row. | Failure with Error |
 
 Where:

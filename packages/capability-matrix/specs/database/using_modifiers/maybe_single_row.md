@@ -2,11 +2,11 @@
 
 Enables query execution where the end result is one of three states:
 
-| Query Match | Result |
-| ----------- | ------ |
-| No rows. | Success with Nothing |
-| Exactly one row. | Success with Row |
-| More than one row. | Failure with Error |
+| Query Match        | Result               |
+| ------------------ | -------------------- |
+| No rows.           | Success with Nothing |
+| Exactly one row.   | Success with Row     |
+| More than one row. | Failure with Error   |
 
 Where:
 
