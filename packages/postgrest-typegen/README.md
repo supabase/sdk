@@ -19,9 +19,9 @@ The TypeScript, Go, Python, and Swift generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
 They were ported byte-parity from postgres-meta's own templates so
 `supabase gen types` keeps working unchanged while postgres-meta's copies get
-deprecated in favor of this package. Whether they eventually move out to
-their own SDK repos too is an open question, tracked separately — don't
-assume either way when touching this code.
+deprecated in favor of this package. It's decided that all four eventually
+move out to their own SDK repos too (tracked in SDK-1641), not yet scheduled
+— sequenced after postgres-meta's cutover to this package settles.
 
 ## Design
 

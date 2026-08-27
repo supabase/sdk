@@ -18,8 +18,9 @@ of these templates get deprecated in favor of this package (see SDK-1617).
 that language's own SDK repo, consuming `introspect()`'s JSON output via
 `serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
 `supabase_typegen` package in `supabase/supabase-flutter` for the pattern).
-Whether the four transitional generators eventually move out too is an open
-question tracked in SDK-1641, not decided.
+It's decided (not open) that all four eventually move out too, tracked in
+SDK-1641 — not yet scheduled, sequenced after postgres-meta's cutover to this
+package settles.
 
 ## Architecture
 
