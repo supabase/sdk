@@ -1,0 +1,33 @@
+name: Validate postgrest-typegen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/postgrest-typegen/**"
+      - ".github/workflows/postgrest-typegen-validate.yml"
+  pull_request:
+    paths:
+      - "packages/postgrest-typegen/**"
+      - ".github/workflows/postgrest-typegen-validate.yml"
+
+defaults:
+  run:
+    working-directory: packages/postgrest-typegen
+
+jobs:
+  test:
+    name: Types, lint, build, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash
+      - name: Add bun to PATH
+        run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - run: bun install --frozen-lockfile
+      - run: bun run check-types
+      - run: bun run format-and-lint
+      - run: bun run knip
+      - run: bun run build
+      - run: bun run test
