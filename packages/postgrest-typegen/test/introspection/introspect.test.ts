@@ -88,6 +88,7 @@ describe("introspect (integration)", () => {
       .map((c) => ({
         name: c.name,
         format: c.format,
+        type_schema: c.type_schema,
         is_nullable: c.is_nullable,
         is_identity: c.is_identity,
       }));
@@ -99,33 +100,61 @@ describe("introspect (integration)", () => {
           "is_identity": false,
           "is_nullable": true,
           "name": "decimal",
+          "type_schema": "pg_catalog",
         },
         {
           "format": "int8",
           "is_identity": true,
           "is_nullable": false,
           "name": "id",
+          "type_schema": "pg_catalog",
         },
         {
           "format": "text",
           "is_identity": false,
           "is_nullable": true,
           "name": "name",
+          "type_schema": "pg_catalog",
         },
         {
           "format": "user_status",
           "is_identity": false,
           "is_nullable": true,
           "name": "status",
+          "type_schema": "public",
         },
         {
           "format": "uuid",
           "is_identity": false,
           "is_nullable": true,
           "name": "user_uuid",
+          "type_schema": "pg_catalog",
         },
       ]
     `);
+  });
+
+  describe("primary keys", () => {
+    test("single-column primary key (users.id)", () => {
+      const users = findTable(full, "users")!;
+      const pks = full.primaryKeys
+        .filter((pk) => pk.table_id === users.id)
+        .map((pk) => pk.name);
+      expect(pks).toEqual(["id"]);
+    });
+
+    test("every primary key entry resolves to a real table id", () => {
+      const tableIds = new Set(full.tables.map((t) => t.id));
+      expect(full.primaryKeys.every((pk) => tableIds.has(pk.table_id))).toBe(
+        true,
+      );
+    });
+
+    test("excludedSchemas drops the named schema's primary keys", () => {
+      expect(
+        excludingPublic.primaryKeys.every((pk) => pk.schema !== "public"),
+      ).toBe(true);
+    });
   });
 
   test("excludes trigger and event_trigger functions", () => {
