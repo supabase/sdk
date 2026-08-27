@@ -30,8 +30,4 @@ jobs:
       - run: bun run format-and-lint
       - run: bun run knip
       - run: bun run build
-      # The generation/validation/sort/smoke/SQL-snapshot suites need no
-      # Docker; the introspection/parity suites spin up a real Postgres via
-      # testcontainers, which works against the runner's default Docker
-      # daemon with no extra setup.
       - run: bun run test
