@@ -1,5 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["test/global-setup.ts", "test/**/*.test.ts"],
+  "entry": [
+    "test/global-setup.ts",
+    "test/**/*.test.ts",
+    "scripts/load-fixtures.ts",
+    "scripts/print-generated.ts"
+  ],
   "ignoreBinaries": ["oxfmt", "oxlint"]
 }
