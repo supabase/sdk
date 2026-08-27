@@ -54,14 +54,6 @@ const postgresForeignTableSchema = type({
 });
 export type PostgresForeignTable = typeof postgresForeignTableSchema.infer;
 
-const postgresPrimaryKeySchema = type({
-  schema: "string",
-  table_name: "string",
-  name: "string",
-  table_id: "number",
-});
-export type PostgresPrimaryKey = typeof postgresPrimaryKeySchema.infer;
-
 const postgresFunctionSchema = type({
   id: "number",
   schema: "string",
@@ -103,6 +95,14 @@ const postgresMaterializedViewSchema = type({
 });
 export type PostgresMaterializedView =
   typeof postgresMaterializedViewSchema.infer;
+
+const postgresPrimaryKeySchema = type({
+  schema: "string",
+  table_name: "string",
+  name: "string",
+  table_id: "number",
+});
+export type PostgresPrimaryKey = typeof postgresPrimaryKeySchema.infer;
 
 const postgresRelationshipSchema = type({
   foreign_key_name: "string",
