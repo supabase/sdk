@@ -9,7 +9,7 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/capability-matrix/` — the **canonical feature registry** for all Supabase client SDKs — not the SDKs themselves. It defines what features exist (name, description, grouping) across 7 client SDKs (JavaScript, Flutter, Python, Swift, C#, Go, Kotlin). SDKs declare compliance separately in their own repos via `sdk-compliance.yaml` files. The output is a static capability matrix website at https://supabase.github.io/sdk/ showing which features each SDK implements.
 - `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by the Dart compliance workflow.
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
-- `packages/postgrest-typegen/` — empty scaffold for a PostgREST schema type generator.
+- `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, Python, and Swift. See its own `CLAUDE.md` for architecture and the byte-parity constraint with postgres-meta.
 
 The `scripts/` directory contains only transitional compatibility symlinks (`scripts/capability-matrix`, `scripts/dart_symbol_extractor`) into `packages/`, kept so SDK repos pinned to pre-monorepo releases of the reusable workflows keep working (those pinned workflows check out this repo at `main` but reference the old `scripts/` paths). Remove them once every caller has bumped past the restructure release.
 
