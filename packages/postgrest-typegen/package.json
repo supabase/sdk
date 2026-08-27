@@ -33,23 +33,23 @@
   "exports": {
     ".": {
       "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
     "./introspection": {
       "bun": "./src/introspection/index.ts",
+      "types": "./dist/introspection/index.d.ts",
       "import": "./dist/introspection/index.js",
       "require": "./dist/introspection/index.js",
-      "types": "./dist/introspection/index.d.ts",
       "default": "./dist/introspection/index.js"
     },
     "./generation": {
       "bun": "./src/generation/index.ts",
+      "types": "./dist/generation/index.d.ts",
       "import": "./dist/generation/index.js",
       "require": "./dist/generation/index.js",
-      "types": "./dist/generation/index.d.ts",
       "default": "./dist/generation/index.js"
     }
   },
