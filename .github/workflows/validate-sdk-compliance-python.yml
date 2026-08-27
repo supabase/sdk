@@ -8,7 +8,7 @@ on:
         type: string
         default: sdk-compliance.yaml
       sdk-ref:
-        description: Ref to checkout from supabase/sdk for scripts (defaults to main; override only during pre-merge testing)
+        description: Ref to checkout from supabase/sdk for tooling (defaults to main; override only during pre-merge testing)
         type: string
         default: main
       griffe-packages:

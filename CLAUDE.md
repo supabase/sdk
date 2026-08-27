@@ -11,8 +11,6 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
 - `packages/postgrest-typegen/` — empty scaffold for a PostgREST schema type generator.
 
-The `scripts/` directory contains only transitional compatibility symlinks (`scripts/capability-matrix`, `scripts/dart_symbol_extractor`) into `packages/`, kept so SDK repos pinned to pre-monorepo releases of the reusable workflows keep working (those pinned workflows check out this repo at `main` but reference the old `scripts/` paths). Remove them once every caller has bumped past the restructure release.
-
 ## Commands
 
 The capability-matrix scripts live under `packages/capability-matrix/`. Run them from that directory:
