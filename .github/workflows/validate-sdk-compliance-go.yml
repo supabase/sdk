@@ -37,7 +37,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
@@ -60,7 +60,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
 
       # The Go extractor parses syntactically with the standard library's
       # go/parser, so the target checkouts need no dependency resolution and
@@ -82,6 +82,6 @@ jobs:
           done
         working-directory: _sdk-spec/packages/go-symbol-extractor
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}

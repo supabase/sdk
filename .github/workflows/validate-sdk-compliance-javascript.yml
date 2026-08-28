@@ -42,7 +42,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
@@ -62,7 +62,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
 
       # This workflow is build-agnostic: the SDK declares how to produce its
       # TypeDoc spec.json files via `build-command`, and where they land via
@@ -93,10 +93,10 @@ jobs:
                    --out "$GITHUB_WORKSPACE/$b-symbols.json" "${INPUTS[@]}" )
           done
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-drift
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
         with:
           compliance-file: ${{ inputs.compliance-file }}

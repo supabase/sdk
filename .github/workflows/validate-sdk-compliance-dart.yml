@@ -34,7 +34,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
@@ -54,7 +54,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
 
       # The Dart parser is a small package:analyzer tool run directly with
       # `dart run`. It parses syntactically, so the target packages need no
@@ -74,10 +74,10 @@ jobs:
           done
         working-directory: _sdk-spec/packages/dart-symbol-extractor
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-drift
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
         with:
           compliance-file: ${{ inputs.compliance-file }}

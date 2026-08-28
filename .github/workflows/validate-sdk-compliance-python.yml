@@ -42,7 +42,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
@@ -62,7 +62,7 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -101,10 +101,10 @@ jobs:
           done
         working-directory: _sdk-spec/packages/capability-matrix
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-drift
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
         with:
           compliance-file: ${{ inputs.compliance-file }}
