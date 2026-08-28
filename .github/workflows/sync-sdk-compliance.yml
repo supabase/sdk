@@ -12,12 +12,9 @@ on:
         type: string
         default: main
     secrets:
-      app-id:
-        description: GitHub App ID used to open the pull request (provide this or client-id)
-        required: false
       client-id:
-        description: GitHub App client ID used to open the pull request (provide this or app-id)
-        required: false
+        description: GitHub App client ID used to open the pull request
+        required: true
       private-key:
         description: GitHub App private key used to open the pull request
         required: true
@@ -67,7 +64,6 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ secrets.app-id }}
           client-id: ${{ secrets.client-id }}
           private-key: ${{ secrets.private-key }}
 
