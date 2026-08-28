@@ -17,8 +17,6 @@ Shared tooling and specifications for the Supabase client SDKs. This repository 
 packages/       # One directory per project (flat siblings, one toolchain each)
 .github/        # CI workflows and composite actions, including the reusable
                 # SDK compliance workflows consumed by the SDK repos
-scripts/        # Transitional compatibility symlinks into packages/ for
-                # SDK repos still pinned to pre-monorepo releases
 ```
 
 The workflow and action paths under `.github/` are a public interface: SDK repos reference `supabase/sdk/.github/workflows/validate-sdk-compliance-<language>.yml`, `sync-sdk-compliance.yml`, and the `sdk-compliance-*` composite actions. Those file names and locations are stable.

@@ -3,7 +3,7 @@ description: Checks out the PR branch, base branch, and capability spec, then in
 
 inputs:
   sdk-ref:
-    description: Ref to checkout from supabase/sdk for scripts
+    description: Ref to checkout from supabase/sdk for tooling
     default: main
 
 runs:

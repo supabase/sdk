@@ -24,12 +24,16 @@ function buildSpecSet(root: string): Set<string> {
   const specsDir = join(root, "specs");
   const ids = new Set<string>();
   try {
-    for (const entry of readdirSync(specsDir, { withFileTypes: true })) {
-      if (!entry.isDirectory()) continue;
-      for (const file of readdirSync(join(specsDir, entry.name))) {
-        if (file.endsWith(".md")) ids.add(`${entry.name}.${file.slice(0, -3)}`);
-      }
-    }
+    for (const areaEntry of readdirSync(specsDir, { withFileTypes: true })) {
+      if (!areaEntry.isDirectory()) continue;
+      const areaDir = join(specsDir, areaEntry.name);
+      for (const nsEntry of readdirSync(areaDir, { withFileTypes: true })) {
+        if (!nsEntry.isDirectory()) continue;
+        for (const file of readdirSync(join(areaDir, nsEntry.name))) {
+          if (file.endsWith(".md")) ids.add(`${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`);
+        }
+       }
+     }
   } catch { /* specs dir absent */ }
   return ids;
 }
