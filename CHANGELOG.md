@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0](https://github.com/supabase/sdk/compare/v1.3.0...v1.4.0) (2026-08-28)
+
+
+### Features
+
+* Add spec for single row database modifiers ([#99](https://github.com/supabase/sdk/issues/99)) ([b39cce3](https://github.com/supabase/sdk/commit/b39cce3487840a2e4486dac126e0392a6c778b6b))
+
+
+### Bug Fixes
+
+* **ci:** resolve compliance tooling and spec from the called workflow SHA ([#107](https://github.com/supabase/sdk/issues/107)) ([c187e60](https://github.com/supabase/sdk/commit/c187e605142a4689712de6ee675e39e82f44a8cf))
+* Specs ([#100](https://github.com/supabase/sdk/issues/100)) ([de17547](https://github.com/supabase/sdk/commit/de175476457f759a567803d3b4417df206d8aa52))
+
 ## [1.3.0](https://github.com/supabase/sdk/compare/v1.2.0...v1.3.0) (2026-08-27)
 
 
