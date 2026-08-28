@@ -8,19 +8,35 @@ on:
         type: string
         default: sdk-compliance.yaml
       sdk-ref:
-        description: Ref to checkout from supabase/sdk for tooling (defaults to main; override only during pre-merge testing)
+        description: Ref to checkout from supabase/sdk for tooling and spec (defaults to the commit this workflow was called at; override only during pre-merge testing)
         type: string
-        default: main
+        default: ""
 
+# Tooling, composite actions, and capability spec all resolve from the single
+# supabase/sdk commit the caller pinned this workflow at (job.workflow_sha),
+# so action code and spec layout can never drift apart. See
+# validate-sdk-compliance-go.yml for the full rationale.
 jobs:
   validate:
     name: Validate compliance file
     runs-on: ubuntu-latest
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@main
+      - name: Checkout SDK repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Checkout compliance tooling
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || job.workflow_sha }}
+          path: _sdk-spec
+          persist-credentials: false
+
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
-          sdk-ref: ${{ inputs.sdk-ref }}
 
   check:
     name: Check public API against capability matrix
@@ -30,9 +46,15 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@main
+      - name: Checkout compliance tooling
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
-          sdk-ref: ${{ inputs.sdk-ref }}
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || job.workflow_sha }}
+          path: _sdk-spec
+          persist-credentials: false
+
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-setup
 
       - name: Cache SPM dependencies
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
@@ -69,10 +91,10 @@ jobs:
           done
         working-directory: _sdk-spec/packages/capability-matrix
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@main
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-symbols
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-drift@main
+      - uses: ./_sdk-spec/.github/actions/sdk-compliance-check-drift
         with:
           compliance-file: ${{ inputs.compliance-file }}

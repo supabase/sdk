@@ -1,21 +1,27 @@
 name: Validate SDK compliance file
-description: Checks out the calling SDK repo and the capability spec, then validates the compliance file.
+description: Validates the calling repo's compliance file against the capability spec. Expects the calling repo at the workspace root and the supabase/sdk checkout at _sdk-spec (the reusable workflows set both up).
 
 inputs:
   compliance-file:
     description: Path to sdk-compliance.yaml in the calling repo
     default: sdk-compliance.yaml
   sdk-ref:
-    description: Ref to checkout from supabase/sdk for tooling
-    default: main
+    description: Transitional: only set by pre-v1.4.0 reusable workflows that reference this action remotely. When non-empty, the action performs its own checkouts at this ref. Remove once every caller references the action locally.
+    default: ""
 
 runs:
   using: composite
   steps:
+    # Transitional compatibility for pre-v1.4.0 reusable workflows: they
+    # reference this action remotely (so nothing is checked out yet) and
+    # always pass a non-empty sdk-ref. Current workflows perform both
+    # checkouts themselves and leave sdk-ref empty.
     - name: Checkout SDK repo
+      if: ${{ inputs.sdk-ref != '' }}
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
     - name: Checkout capability spec
+      if: ${{ inputs.sdk-ref != '' }}
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         repository: supabase/sdk
