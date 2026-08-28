@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/supabase/sdk/compare/v1.4.0...v1.5.0) (2026-08-28)
+
+
+### Features
+
+* **postgrest-typegen:** add PostgREST introspection engine (+ transitional TS/Go/Python/Swift generators) ([#94](https://github.com/supabase/sdk/issues/94)) ([3d63578](https://github.com/supabase/sdk/commit/3d63578e066b2efa7bc62d6c592f568221f2aef8))
+
+
+### Bug Fixes
+
+* **ci:** unquoted colon made compliance action manifests invalid YAML ([#109](https://github.com/supabase/sdk/issues/109)) ([fd53fdb](https://github.com/supabase/sdk/commit/fd53fdb33123f22885b3c9864f7c67353c9b0fdb))
+
 ## [1.4.0](https://github.com/supabase/sdk/compare/v1.3.0...v1.4.0) (2026-08-28)
 
 
