@@ -8,7 +8,8 @@
     "packages/postgrest-typegen": {
       "release-type": "node",
       "package-name": "@supabase/postgrest-typegen",
-      "bump-minor-pre-major": true
+      "bump-minor-pre-major": true,
+      "release-as": "0.1.0"
     }
   }
 }
