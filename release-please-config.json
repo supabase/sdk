@@ -4,8 +4,7 @@
     "packages/capability-matrix": {
       "release-type": "node",
       "package-name": "@supabase/capability-matrix-validator",
-      "component": "capability-matrix",
-      "bump-minor-pre-major": true
+      "component": "capability-matrix"
     },
     "packages/postgrest-typegen": {
       "release-type": "node",
