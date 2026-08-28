@@ -3,7 +3,7 @@ description: Checks out the PR branch and base branch, then installs script depe
 
 inputs:
   sdk-ref:
-    description: Transitional: only set by pre-v1.4.0 reusable workflows that reference this action remotely. When non-empty, the action checks out the capability spec itself at this ref. Remove once every caller references the action locally.
+    description: Transitional, only set by pre-v1.4.0 reusable workflows that reference this action remotely. When non-empty, the action checks out the capability spec itself at this ref. Remove once every caller references the action locally.
     default: ""
 
 runs:

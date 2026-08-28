@@ -6,7 +6,7 @@ inputs:
     description: Path to sdk-compliance.yaml in the calling repo
     default: sdk-compliance.yaml
   sdk-ref:
-    description: Transitional: only set by pre-v1.4.0 reusable workflows that reference this action remotely. When non-empty, the action performs its own checkouts at this ref. Remove once every caller references the action locally.
+    description: Transitional, only set by pre-v1.4.0 reusable workflows that reference this action remotely. When non-empty, the action performs its own checkouts at this ref. Remove once every caller references the action locally.
     default: ""
 
 runs:
