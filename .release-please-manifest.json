@@ -1,4 +1,4 @@
 {
-  "packages/capability-matrix": "1.5.0",
-  "packages/postgrest-typegen": "0.0.0"
+  "packages/capability-matrix": "1.6.0",
+  "packages/postgrest-typegen": "0.1.0"
 }
