@@ -1,4 +1,7 @@
 {
   ".": "1.5.0",
+  "packages/capability-matrix": "0.0.0",
+  "packages/dart-symbol-extractor": "0.0.0",
+  "packages/go-symbol-extractor": "0.0.0",
   "packages/postgrest-typegen": "0.0.0"
 }

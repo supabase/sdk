@@ -5,6 +5,24 @@
       "release-type": "simple",
       "exclude-paths": ["packages/postgrest-typegen"]
     },
+    "packages/capability-matrix": {
+      "release-type": "node",
+      "package-name": "@supabase/capability-matrix-validator",
+      "component": "capability-matrix",
+      "bump-minor-pre-major": true
+    },
+    "packages/dart-symbol-extractor": {
+      "release-type": "dart",
+      "package-name": "dart_symbol_extractor",
+      "component": "dart-symbol-extractor",
+      "bump-minor-pre-major": true
+    },
+    "packages/go-symbol-extractor": {
+      "release-type": "go",
+      "package-name": "go-symbol-extractor",
+      "component": "go-symbol-extractor",
+      "bump-minor-pre-major": true
+    },
     "packages/postgrest-typegen": {
       "release-type": "node",
       "package-name": "@supabase/postgrest-typegen",
