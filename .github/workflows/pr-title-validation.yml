@@ -1,4 +1,6 @@
-# See https://github.com/amannn/action-semantic-pull-request
+# Validates that the PR title follows Conventional Commits, using a plain
+# run step because this repository only allows GitHub-owned and verified
+# actions.
 name: PR Title is Conventional
 
 on:
@@ -13,24 +15,28 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-permissions:
-  pull-requests: read
+permissions: {}
 
 jobs:
   validate:
     name: Validate PR title
     runs-on: ubuntu-latest
     steps:
-      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+      - name: Check title against Conventional Commits
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # Keep in sync with the commit types documented in CONTRIBUTING.md.
-          types: |
-            feat
-            fix
-            docs
-            chore
-            refactor
-            test
-            ci
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Keep the types in sync with the commit types documented in CONTRIBUTING.md.
+          pattern='^(feat|fix|docs|chore|refactor|test|ci)(\([^)]+\))?!?: .+'
+          if [[ "$PR_TITLE" =~ $pattern ]]; then
+            echo "PR title is valid: $PR_TITLE"
+          else
+            echo "::error::PR title is not a valid Conventional Commits header: \"$PR_TITLE\""
+            echo "Expected format: type(optional scope)!: description"
+            echo "Allowed types: feat, fix, docs, chore, refactor, test, ci"
+            echo "Examples:"
+            echo "  feat: add storage.list_buckets capability"
+            echo "  fix(schema): correct status enum"
+            echo "  feat!: rename auth.signup to auth.sign_up"
+            exit 1
+          fi
