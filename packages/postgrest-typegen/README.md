@@ -128,6 +128,10 @@ Not yet published; consumed in-repo for now (`packages/postgrest-typegen`).
 npm install pg
 ```
 
+## Releasing
+
+Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm.
+
 ## License
 
 MIT
