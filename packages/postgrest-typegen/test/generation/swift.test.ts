@@ -168,6 +168,92 @@ describe("swift typegen", () => {
     `);
   });
 
+  test("escapes string literals for pathological enum labels and column names", () => {
+    const result = generateSwift(
+      buildMetadata({
+        types: [
+          {
+            id: 100,
+            name: "hazard",
+            schema: "public",
+            format: "hazard",
+            enums: [
+              'say "hi"',
+              "back\\slash",
+              "interpolate \\(now)",
+              "line\nbreak",
+              "tab\there",
+              "carriage\rreturn",
+              "bell\u0007sound",
+              "line\u2028separator",
+            ],
+            attributes: [],
+            comment: null,
+            type_relation_id: null,
+          },
+        ],
+        tables: [baseTable()],
+        columns: [
+          baseColumn({ name: 'quote"col', ordinal_position: 1 }),
+          baseColumn({ name: "path\\col", ordinal_position: 2 }),
+        ],
+      }),
+    );
+
+    expect(result).toMatchInlineSnapshot(`
+      "import Foundation
+      import Supabase
+
+      internal enum PublicSchema {
+        internal enum Hazard: String, Codable, Hashable, Sendable {
+          case sayHi = "say \\"hi\\""
+          case backSlash = "back\\\\slash"
+          case interpolateNow = "interpolate \\\\(now)"
+          case lineBreak = "line\\nbreak"
+          case tabHere = "tab\\there"
+          case carriageReturn = "carriage\\rreturn"
+          case bellSound = "bell\\u{7}sound"
+          case lineSeparator = "line\\u{2028}separator"
+        }
+        internal struct TicketsSelect: Codable, Hashable, Sendable {
+          internal let pathCol: String
+          internal let quoteCol: String
+          internal enum CodingKeys: String, CodingKey {
+            case pathCol = "path\\\\col"
+            case quoteCol = "quote\\"col"
+          }
+        }
+        internal struct TicketsInsert: Codable, Hashable, Sendable {
+          internal let pathCol: String
+          internal let quoteCol: String
+          internal enum CodingKeys: String, CodingKey {
+            case pathCol = "path\\\\col"
+            case quoteCol = "quote\\"col"
+          }
+        }
+        internal struct TicketsUpdate: Codable, Hashable, Sendable {
+          internal let pathCol: String?
+          internal let quoteCol: String?
+          internal enum CodingKeys: String, CodingKey {
+            case pathCol = "path\\\\col"
+            case quoteCol = "quote\\"col"
+          }
+        }
+      }"
+    `);
+  });
+
+  test("leaves ordinary raw values unescaped", () => {
+    const result = generateSwift(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "plain_name" })],
+      }),
+    );
+
+    expect(result).toContain('case plainName = "plain_name"');
+  });
+
   test("array and uuid types", () => {
     const result = generateSwift(
       buildMetadata({

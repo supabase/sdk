@@ -174,6 +174,49 @@ function generateProtocolConformances(protocols: string[]): string {
   return protocols.length === 0 ? "" : `: ${protocols.join(", ")}`;
 }
 
+/**
+ * Serializes a database-provided value as a Swift string literal. Backslashes
+ * would otherwise start escape or interpolation sequences (`\(`), double
+ * quotes would terminate the literal early, and line breaks or control
+ * characters are not allowed in single-line literals, so all of them are
+ * escaped per Swift's string literal grammar. U+2028 and U+2029 are legal in
+ * Swift literals but are escaped anyway because other tooling mishandles
+ * them. Swift unescapes at compile time, so raw values round-trip unchanged.
+ */
+function swiftStringLiteral(value: string): string {
+  let escaped = "";
+  for (const character of value) {
+    switch (character) {
+      case "\\":
+        escaped += "\\\\";
+        break;
+      case '"':
+        escaped += '\\"';
+        break;
+      case "\t":
+        escaped += "\\t";
+        break;
+      case "\n":
+        escaped += "\\n";
+        break;
+      case "\r":
+        escaped += "\\r";
+        break;
+      default: {
+        const codePoint = character.codePointAt(0)!;
+        escaped +=
+          codePoint < 0x20 ||
+          codePoint === 0x7f ||
+          codePoint === 0x2028 ||
+          codePoint === 0x2029
+            ? `\\u{${codePoint.toString(16)}}`
+            : character;
+      }
+    }
+  }
+  return `"${escaped}"`;
+}
+
 function generateEnum(
   enum_: SwiftEnum,
   { accessControl, level }: SwiftGeneratorOptions & { level: number },
@@ -184,7 +227,7 @@ function generateEnum(
     )} {`,
     ...enum_.cases.map(
       (case_) =>
-        `${ident(level + 1)}case ${case_.formattedName} = "${case_.rawValue}"`,
+        `${ident(level + 1)}case ${case_.formattedName} = ${swiftStringLiteral(case_.rawValue)}`,
     ),
     `${ident(level)}}`,
   ];
