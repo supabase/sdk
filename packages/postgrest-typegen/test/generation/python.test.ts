@@ -159,6 +159,10 @@ describe("python typegen", () => {
       }),
     );
 
+    // Composite type attributes cannot carry NOT NULL constraints in
+    // Postgres, so every field must be Optional.
+    expect(result).toContain('street: Optional[str] = Field(alias="street")');
+
     expect(result).toMatchInlineSnapshot(`
       "from __future__ import annotations
 
@@ -185,8 +189,8 @@ describe("python typegen", () => {
 
 
       class PublicAddress(BaseModel):
-          street: str = Field(alias="street")
-          city: str = Field(alias="city")"
+          street: Optional[str] = Field(alias="street")
+          city: Optional[str] = Field(alias="city")"
     `);
   });
 

@@ -256,7 +256,7 @@ class PublicTodosMatview(BaseModel):
     user_id: Optional[int] = Field(alias="user-id")
 
 class PublicCompositeTypeWithArrayAttribute(BaseModel):
-    my_text_array: List[str] = Field(alias="my_text_array")
+    my_text_array: Optional[List[str]] = Field(alias="my_text_array")
 
 class PublicCompositeTypeWithRecordAttribute(BaseModel):
-    todo: PublicTodos = Field(alias="todo")
+    todo: Optional[PublicTodos] = Field(alias="todo")

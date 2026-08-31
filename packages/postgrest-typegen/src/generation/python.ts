@@ -142,7 +142,9 @@ class PythonContext {
     const attributeEntries: PythonBaseModelAttr[] = attributes.map(
       (attribute) => {
         const type = this.parsePgType(attribute.type!.name);
-        return new PythonBaseModelAttr(attribute.name, type, false);
+        // Composite type attributes cannot carry NOT NULL constraints in
+        // Postgres, so every field is inherently nullable.
+        return new PythonBaseModelAttr(attribute.name, type, true);
       },
     );
 
