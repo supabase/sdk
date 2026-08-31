@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.0...postgrest-typegen-v0.2.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** escape database values in Swift string literals ([#123](https://github.com/supabase/sdk/issues/123)) ([4a5cef5](https://github.com/supabase/sdk/commit/4a5cef5e721328973f3c8ac16aa6af8c1eced4aa))
+* **postgrest-typegen:** generated columns, NonNullable json, zero-arg Args, trigger-writable views ([#125](https://github.com/supabase/sdk/issues/125)) ([67650c6](https://github.com/supabase/sdk/commit/67650c6a8bed428ea3e11c90e1a6dd533851c70a))
+
 ## [0.2.0](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.1.0...postgrest-typegen-v0.2.0) (2026-08-31)
 
 
