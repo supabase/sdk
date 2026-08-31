@@ -287,22 +287,34 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         ) AS is_nullable,
         (
           c.relkind IN ('r', 'p')
-          -- Columns of views made writable by INSTEAD OF triggers can be written
-          -- through PostgREST even though the view is not auto-updatable, so they
-          -- must not degrade to \`?: never\` in generated Insert/Update types.
-          -- include_triggers => TRUE covers INSTEAD OF UPDATE triggers, but
-          -- pg_column_is_updatable only considers the UPDATE event, so INSTEAD OF
-          -- INSERT triggers (tgtype bits: 64 = INSTEAD, 4 = INSERT) are checked
-          -- separately. Which events a view accepts is gated per view via
+          -- Columns of views made writable by INSTEAD OF triggers or unconditional
+          -- INSTEAD rules can be written through PostgREST even though the view is
+          -- not auto-updatable, so they must not degrade to \`?: never\` in generated
+          -- Insert/Update types. pg_column_is_updatable cannot express this: it
+          -- requires the relation to support both UPDATE and DELETE, so a view with
+          -- only an INSTEAD OF INSERT or only an INSTEAD OF UPDATE trigger reports
+          -- every column as non-updatable regardless of include_triggers. Triggers
+          -- and rules rewrite whole rows, so their presence makes every column
+          -- writable (tgtype bits: 64 = INSTEAD, 4 = INSERT, 16 = UPDATE;
+          -- pg_rewrite ev_type: '2' = UPDATE, '3' = INSERT; ev_qual is '<>' for
+          -- unconditional rules, and only unconditional INSTEAD rules make a view
+          -- writable). Which events a view accepts is gated per view via
           -- is_insert_enabled / is_update_enabled.
           OR c.relkind IN ('v', 'f') AND (
-            pg_column_is_updatable(c.oid, a.attnum, TRUE)
+            pg_column_is_updatable(c.oid, a.attnum, FALSE)
             OR EXISTS (
               SELECT 1 FROM pg_trigger tg
               WHERE tg.tgrelid = c.oid
                 AND tg.tgtype & 64 <> 0
-                AND tg.tgtype & 4 <> 0
+                AND tg.tgtype & 20 <> 0
                 AND NOT tg.tgisinternal
+            )
+            OR EXISTS (
+              SELECT 1 FROM pg_rewrite rw
+              WHERE rw.ev_class = c.oid
+                AND rw.is_instead
+                AND rw.ev_type IN ('2', '3')
+                AND rw.ev_qual :: text = '<>'
             )
           )
         ) AS is_updatable,

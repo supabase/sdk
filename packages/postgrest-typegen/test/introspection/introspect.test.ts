@@ -244,10 +244,11 @@ describe("introspect (integration)", () => {
       expect(view?.is_update_enabled).toBe(true);
     });
 
-    test("INSTEAD OF triggers enable insert and update independently", async () => {
-      // A join view is not auto-updatable; an INSTEAD OF INSERT trigger makes
-      // it insertable (and only insertable), and its columns must stay
-      // writable rather than degrading to non-updatable.
+    test("INSTEAD OF triggers and rules enable insert and update independently", async () => {
+      // A join view is not auto-updatable; INSTEAD OF triggers and
+      // unconditional INSTEAD rules make individual write events work, and
+      // the affected views' columns must stay writable rather than degrading
+      // to non-updatable. Conditional rules do not make a view writable.
       await pool.query(/* SQL */ `
         create schema instead_of_trigger_test;
         create table instead_of_trigger_test.profile (
@@ -258,40 +259,133 @@ describe("introspect (integration)", () => {
           id int primary key,
           name text
         );
-        create view instead_of_trigger_test.profile_view as
-          select p.id, p.username, pt.name
-          from instead_of_trigger_test.profile p
-          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
-        create function instead_of_trigger_test.profile_view_insert()
+        create function instead_of_trigger_test.noop_trigger()
         returns trigger
         language plpgsql
         as $$
         begin
-          insert into instead_of_trigger_test.profile (id, username)
-          values (new.id, new.username);
           return new;
         end;
         $$;
-        create trigger profile_view_insert
-          instead of insert on instead_of_trigger_test.profile_view
+
+        create view instead_of_trigger_test.insert_trigger_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create trigger insert_trigger
+          instead of insert on instead_of_trigger_test.insert_trigger_view
           for each row
-          execute function instead_of_trigger_test.profile_view_insert();
+          execute function instead_of_trigger_test.noop_trigger();
+
+        create view instead_of_trigger_test.update_trigger_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create trigger update_trigger
+          instead of update on instead_of_trigger_test.update_trigger_view
+          for each row
+          execute function instead_of_trigger_test.noop_trigger();
+
+        create view instead_of_trigger_test.both_triggers_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create trigger both_insert_trigger
+          instead of insert on instead_of_trigger_test.both_triggers_view
+          for each row
+          execute function instead_of_trigger_test.noop_trigger();
+        create trigger both_update_trigger
+          instead of update on instead_of_trigger_test.both_triggers_view
+          for each row
+          execute function instead_of_trigger_test.noop_trigger();
+
+        create view instead_of_trigger_test.insert_rule_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create rule insert_rule as
+          on insert to instead_of_trigger_test.insert_rule_view do instead
+          insert into instead_of_trigger_test.profile (id, username)
+          values (new.id, new.username);
+
+        create view instead_of_trigger_test.conditional_rule_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create rule conditional_rule as
+          on update to instead_of_trigger_test.conditional_rule_view
+          where new.id > 0 do instead nothing;
+
+        create view instead_of_trigger_test.read_only_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
       `);
       try {
         const metadata = await introspect(pool, {
           includedSchemas: ["instead_of_trigger_test"],
         });
-        const view = metadata.views.find(
-          (candidate) => candidate.name === "profile_view",
-        );
-        expect(view?.is_updatable).toBe(false);
-        expect(view?.is_insert_enabled).toBe(true);
-        expect(view?.is_update_enabled).toBe(false);
-        const viewColumns = metadata.columns.filter(
-          (column) => column.table === "profile_view",
-        );
-        expect(viewColumns.length).toBe(3);
-        expect(viewColumns.every((column) => column.is_updatable)).toBe(true);
+        const expectations: Record<
+          string,
+          {
+            insertEnabled: boolean;
+            updateEnabled: boolean;
+            columnsUpdatable: boolean;
+          }
+        > = {
+          insert_trigger_view: {
+            insertEnabled: true,
+            updateEnabled: false,
+            columnsUpdatable: true,
+          },
+          update_trigger_view: {
+            insertEnabled: false,
+            updateEnabled: true,
+            columnsUpdatable: true,
+          },
+          both_triggers_view: {
+            insertEnabled: true,
+            updateEnabled: true,
+            columnsUpdatable: true,
+          },
+          insert_rule_view: {
+            insertEnabled: true,
+            updateEnabled: false,
+            columnsUpdatable: true,
+          },
+          conditional_rule_view: {
+            insertEnabled: false,
+            updateEnabled: false,
+            columnsUpdatable: false,
+          },
+          read_only_view: {
+            insertEnabled: false,
+            updateEnabled: false,
+            columnsUpdatable: false,
+          },
+        };
+        for (const [viewName, expected] of Object.entries(expectations)) {
+          const view = metadata.views.find(
+            (candidate) => candidate.name === viewName,
+          );
+          expect(view?.is_updatable, viewName).toBe(false);
+          expect(view?.is_insert_enabled, viewName).toBe(
+            expected.insertEnabled,
+          );
+          expect(view?.is_update_enabled, viewName).toBe(
+            expected.updateEnabled,
+          );
+          const viewColumns = metadata.columns.filter(
+            (column) => column.table === viewName,
+          );
+          expect(viewColumns.length, viewName).toBe(3);
+          expect(
+            viewColumns.every(
+              (column) => column.is_updatable === expected.columnsUpdatable,
+            ),
+            viewName,
+          ).toBe(true);
+        }
       } finally {
         await pool.query("drop schema instead_of_trigger_test cascade");
       }
