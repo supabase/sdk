@@ -223,6 +223,28 @@ describe("go typegen struct tag escaping", () => {
     expect(result).toContain('ABC string "json:\\"a\\\\\\"b`c\\""');
   });
 
+  test("a column name shaped like a full json tag stays inside the value", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: 'json:"x"', format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('JsonX string `json:"json:\\"x\\""`');
+  });
+
+  test("a control character escape survives the interpreted-literal fallback", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "tick`a\nb", format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('TickAB string "json:\\"tick`a\\\\nb\\""');
+  });
+
   test("composite type attribute names are escaped the same way", () => {
     const result = generateGo(
       buildMetadata({

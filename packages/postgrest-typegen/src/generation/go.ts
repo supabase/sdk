@@ -127,11 +127,13 @@ function formatForGoTypeName(name: string): string {
  * characters. The tag is emitted as a raw string literal like before, except
  * when the name contains a backtick: Go raw literals cannot contain one, so
  * such tags fall back to an interpreted literal with a second round of
- * escaping. Names that `encoding/json` rejects as tag names (for example
- * ones containing a comma or a quote) still compile and round-trip through
- * `reflect.StructTag`, but the marshaler ignores them at runtime and uses
- * the Go field name instead; that is a limitation of the struct tag
- * convention itself, not of the generated source.
+ * escaping. Names the marshaler cannot represent still compile and
+ * round-trip through `reflect.StructTag`, but `encoding/json` applies its
+ * own tag rules at runtime: a comma splits the name from tag options (so
+ * only the part before it is used as the JSON name), and a name it rejects
+ * outright (for example one containing a quote) falls back to the Go field
+ * name. That is a limitation of the struct tag convention itself, not of
+ * the generated source.
  *
  * @example
  * ```ts
