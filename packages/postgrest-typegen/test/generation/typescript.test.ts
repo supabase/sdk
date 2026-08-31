@@ -18,6 +18,12 @@ const generateTypescript = (
   opts?: Parameters<typeof rawGenerateTypescript>[1],
 ) => rawGenerateTypescript(sortGeneratorMetadata(metadata), opts);
 
+// The generated output ends with a long, fix-independent tail (helper types
+// and Constants). Tests that only assert on the Database type snapshot this
+// leading section to keep the inline snapshots focused.
+const databaseSection = (result: string) =>
+  result.slice(0, result.indexOf("\ntype DatabaseWithoutInternals"));
+
 describe("typescript typegen", () => {
   test("table Row/Insert/Update with enum, identity ALWAYS, default and nullable", async () => {
     const result = await generateTypescript(
@@ -230,6 +236,78 @@ describe("typescript typegen", () => {
           },
         },
       } as const
+      "
+    `);
+  });
+
+  test("omits stored generated columns from Insert and Update", async () => {
+    // Ported from supabase/postgres-meta#1105: `GENERATED ALWAYS AS … STORED`
+    // columns are not writable, so they stay on Row but become `?: never` on
+    // Insert and Update, matching identity ALWAYS columns.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({
+            name: "height_cm",
+            format: "numeric",
+            is_nullable: true,
+            ordinal_position: 1,
+          }),
+          baseColumn({
+            name: "height_in",
+            format: "numeric",
+            is_nullable: true,
+            is_generated: true,
+            is_updatable: false,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                height_cm: number | null
+                height_in: number | null
+              }
+              Insert: {
+                height_cm?: number | null
+                height_in?: never
+              }
+              Update: {
+                height_cm?: number | null
+                height_in?: never
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
       "
     `);
   });
