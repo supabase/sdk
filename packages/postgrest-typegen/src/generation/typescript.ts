@@ -547,7 +547,13 @@ export const generateTypescript = async (
   ) => {
     return fns
       .map(({ fn, inArgs }) => {
-        let argsType = "never";
+        // `never` would be wrong here: postgrest-js treats `Args extends { '': Row }`
+        // as a computed field (`never extends T` is always true, so same-named table
+        // columns get omitted from select results), and an object type with a required
+        // `never` property is uninhabited for any tool doing sound type math on the
+        // generated types. `Record<PropertyKey, never>` is the accurate type for
+        // "callable with no arguments".
+        let argsType = "Record<PropertyKey, never>";
         let returnType = getFunctionReturnType(schema, fn);
 
         // Check for specific error cases

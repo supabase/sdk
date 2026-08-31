@@ -94,6 +94,18 @@ export const addressCompositeType: PostgresType = {
   type_relation_id: 200,
 };
 
+/** Minimal builtin `int4` type so scalar function returns resolve. */
+export const int4Type: PostgresType = {
+  id: 23,
+  name: "int4",
+  schema: "pg_catalog",
+  format: "int4",
+  enums: [],
+  attributes: [],
+  comment: null,
+  type_relation_id: null,
+};
+
 /** Minimal builtin `text` type so composite attribute lookups resolve. */
 export const textType: PostgresType = {
   id: 25,

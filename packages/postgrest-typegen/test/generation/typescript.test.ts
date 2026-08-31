@@ -8,6 +8,7 @@ import {
   baseRelationship,
   baseTable,
   buildMetadata,
+  int4Type,
   userStatusEnum,
 } from "./fixtures.ts";
 
@@ -995,19 +996,7 @@ describe("typescript typegen", () => {
             return_type: "integer",
           }),
         ],
-        types: [
-          userStatusEnum,
-          {
-            id: 23,
-            name: "int4",
-            schema: "pg_catalog",
-            format: "int4",
-            enums: [],
-            attributes: [],
-            comment: null,
-            type_relation_id: null,
-          },
-        ],
+        types: [userStatusEnum, int4Type],
       }),
     );
 
@@ -1164,6 +1153,52 @@ describe("typescript typegen", () => {
           },
         },
       } as const
+      "
+    `);
+  });
+
+  test("zero-argument function emits Record<PropertyKey, never> for Args", async () => {
+    // Ported from supabase/postgres-meta#1035: `Args: never` breaks
+    // postgrest-js, which treats `never extends { '': Row }` as a computed
+    // field and omits same-named table columns from select results, and it
+    // makes the whole Database type uninhabited for tools doing sound type
+    // math on it. `Record<PropertyKey, never>` is the accurate type for a
+    // function callable with no arguments.
+    const result = await generateTypescript(
+      buildMetadata({
+        functions: [baseFunction()],
+        types: [userStatusEnum, int4Type],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            get_status: { Args: Record<PropertyKey, never>; Returns: number }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
       "
     `);
   });
