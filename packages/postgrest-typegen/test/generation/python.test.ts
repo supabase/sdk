@@ -63,11 +63,10 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
       from pydantic import BaseModel, Field, Json
 
@@ -127,11 +126,10 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
       from pydantic import BaseModel, Field, Json
 
@@ -171,11 +169,10 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
       from pydantic import BaseModel, Field, Json
 
@@ -191,6 +188,18 @@ describe("python typegen", () => {
           street: str = Field(alias="street")
           city: str = Field(alias="city")"
     `);
+  });
+
+  test("NotRequired and TypeAlias come from typing_extensions for Python 3.9 support", () => {
+    const result = generatePython(buildMetadata());
+    const typingImport = result.match(/from typing import \(([\s\S]*?)\)/)?.[1];
+
+    expect(typingImport).toBeDefined();
+    expect(typingImport).not.toContain("NotRequired");
+    expect(typingImport).not.toContain("TypeAlias");
+    expect(result).toContain(
+      "from typing_extensions import NotRequired, TypeAlias",
+    );
   });
 
   test("enum labels with quotes, backslashes and newlines are escaped", () => {
@@ -248,11 +257,10 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
       from pydantic import BaseModel, Field, Json
 
