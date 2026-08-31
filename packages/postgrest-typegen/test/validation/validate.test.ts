@@ -164,6 +164,11 @@ interface ExpectedPostgresView {
   schema: string;
   name: string;
   is_updatable: boolean;
+  // Extensions over postgres-meta's original contract: trigger-aware
+  // writability, added when porting supabase/postgres-meta#1062 into this
+  // package. Additive, so postgres-meta stays a drop-in consumer.
+  is_insert_enabled: boolean;
+  is_update_enabled: boolean;
   comment: string | null;
   columns?: ExpectedPostgresColumn[];
 }

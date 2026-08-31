@@ -156,6 +156,15 @@ const postgresViewSchema = type({
   schema: "string",
   name: "string",
   is_updatable: "boolean",
+  /**
+   * Whether INSERT works through this view: auto-updatable per
+   * `pg_relation_is_updatable`, or made insertable by an INSTEAD OF INSERT
+   * trigger. Tracked separately from `is_updatable` (which mirrors
+   * `information_schema.views` and ignores triggers).
+   */
+  is_insert_enabled: "boolean",
+  /** Same as `is_insert_enabled`, for UPDATE. */
+  is_update_enabled: "boolean",
   comment: "string | null",
   "columns?": postgresColumnSchema.array(),
 });

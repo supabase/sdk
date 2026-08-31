@@ -233,6 +233,71 @@ describe("introspect (integration)", () => {
     });
   });
 
+  describe("view writability flags", () => {
+    test("auto-updatable views enable both insert and update", () => {
+      const view = full.views.find(
+        (candidate) =>
+          candidate.schema === "public" && candidate.name === "todos_view",
+      );
+      expect(view?.is_updatable).toBe(true);
+      expect(view?.is_insert_enabled).toBe(true);
+      expect(view?.is_update_enabled).toBe(true);
+    });
+
+    test("INSTEAD OF triggers enable insert and update independently", async () => {
+      // A join view is not auto-updatable; an INSTEAD OF INSERT trigger makes
+      // it insertable (and only insertable), and its columns must stay
+      // writable rather than degrading to non-updatable.
+      await pool.query(/* SQL */ `
+        create schema instead_of_trigger_test;
+        create table instead_of_trigger_test.profile (
+          id int primary key,
+          username text
+        );
+        create table instead_of_trigger_test.profile_type (
+          id int primary key,
+          name text
+        );
+        create view instead_of_trigger_test.profile_view as
+          select p.id, p.username, pt.name
+          from instead_of_trigger_test.profile p
+          join instead_of_trigger_test.profile_type pt on pt.id = p.id;
+        create function instead_of_trigger_test.profile_view_insert()
+        returns trigger
+        language plpgsql
+        as $$
+        begin
+          insert into instead_of_trigger_test.profile (id, username)
+          values (new.id, new.username);
+          return new;
+        end;
+        $$;
+        create trigger profile_view_insert
+          instead of insert on instead_of_trigger_test.profile_view
+          for each row
+          execute function instead_of_trigger_test.profile_view_insert();
+      `);
+      try {
+        const metadata = await introspect(pool, {
+          includedSchemas: ["instead_of_trigger_test"],
+        });
+        const view = metadata.views.find(
+          (candidate) => candidate.name === "profile_view",
+        );
+        expect(view?.is_updatable).toBe(false);
+        expect(view?.is_insert_enabled).toBe(true);
+        expect(view?.is_update_enabled).toBe(false);
+        const viewColumns = metadata.columns.filter(
+          (column) => column.table === "profile_view",
+        );
+        expect(viewColumns.length).toBe(3);
+        expect(viewColumns.every((column) => column.is_updatable)).toBe(true);
+      } finally {
+        await pool.query("drop schema instead_of_trigger_test cascade");
+      }
+    });
+  });
+
   describe("schema filters", () => {
     test("includedSchemas restricts to the named schema", () => {
       expect(onlyPublic.schemas.every((s) => s.name === "public")).toBe(true);

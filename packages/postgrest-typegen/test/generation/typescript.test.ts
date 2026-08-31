@@ -7,6 +7,7 @@ import {
   baseFunction,
   baseRelationship,
   baseTable,
+  baseView,
   buildMetadata,
   int4Type,
   userStatusEnum,
@@ -1190,6 +1191,130 @@ describe("typescript typegen", () => {
           }
           Functions: {
             get_status: { Args: Record<PropertyKey, never>; Returns: number }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("views emit Insert and Update independently based on trigger-aware writability", async () => {
+    // Ported from supabase/postgres-meta#1062 (improved): views made writable
+    // by INSTEAD OF triggers get Insert/Update types even though they are not
+    // auto-updatable, and the two are gated independently so a view with only
+    // an INSTEAD OF INSERT trigger gets only an Insert type.
+    const viewColumn = (
+      tableId: number,
+      view: string,
+      overrides: Parameters<typeof baseColumn>[0] = {},
+    ) =>
+      baseColumn({
+        table_id: tableId,
+        table: view,
+        name: "id",
+        format: "int8",
+        is_nullable: true,
+        ...overrides,
+      });
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          baseView({
+            id: 1,
+            name: "insert_only_view",
+            is_insert_enabled: true,
+          }),
+          baseView({
+            id: 2,
+            name: "update_only_view",
+            is_update_enabled: true,
+          }),
+          baseView({
+            id: 3,
+            name: "auto_updatable_view",
+            is_updatable: true,
+            is_insert_enabled: true,
+            is_update_enabled: true,
+          }),
+          baseView({ id: 4, name: "read_only_view" }),
+        ],
+        columns: [
+          viewColumn(1, "insert_only_view"),
+          viewColumn(1, "insert_only_view", {
+            name: "derived",
+            format: "text",
+            is_updatable: false,
+            ordinal_position: 2,
+          }),
+          viewColumn(2, "update_only_view"),
+          viewColumn(3, "auto_updatable_view"),
+          viewColumn(4, "read_only_view"),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            auto_updatable_view: {
+              Row: {
+                id: number | null
+              }
+              Insert: {
+                id?: number | null
+              }
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+            insert_only_view: {
+              Row: {
+                derived: string | null
+                id: number | null
+              }
+              Insert: {
+                derived?: never
+                id?: number | null
+              }
+              Relationships: []
+            }
+            read_only_view: {
+              Row: {
+                id: number | null
+              }
+              Relationships: []
+            }
+            update_only_view: {
+              Row: {
+                id: number | null
+              }
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+          }
+          Functions: {
+            [_ in never]: never
           }
           Enums: {
             user_status: "ACTIVE" | "INACTIVE"

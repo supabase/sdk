@@ -49,6 +49,8 @@ export const baseView = (
   schema: "public",
   name: "tickets_view",
   is_updatable: false,
+  is_insert_enabled: false,
+  is_update_enabled: false,
   comment: null,
   ...overrides,
 });

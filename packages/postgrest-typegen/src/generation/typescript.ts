@@ -232,6 +232,8 @@ export const generateTypescript = async (
         view: {
           ...materializedView,
           is_updatable: false,
+          is_insert_enabled: false,
+          is_update_enabled: false,
         },
         relationships: getRelationships(materializedView),
       });
@@ -814,7 +816,7 @@ export type Database = {
                     ]}
                   }
                   ${
-                    view.is_updatable
+                    view.is_insert_enabled
                       ? `Insert: {
                            ${columnsByTableId[view.id].map((column) => {
                              if (!column.is_updatable) {
@@ -833,7 +835,11 @@ export type Database = {
                              );
                            })}
                          }
-                         Update: {
+                        `
+                      : ""
+                  }${
+                    view.is_update_enabled
+                      ? `Update: {
                            ${columnsByTableId[view.id].map((column) => {
                              if (!column.is_updatable) {
                                return `${JSON.stringify(column.name)}?: never`;
