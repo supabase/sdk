@@ -62,45 +62,48 @@ export async function introspect(
   const queryRows = async (sql: string) =>
     normalizeRows((await db.query(sql)).rows);
 
-  const schemas = await queryRows(
-    SCHEMAS_SQL({
-      includeSystemSchemas: false,
-      nameFilter: systemExcludingFilter,
+  // Issued concurrently, matching postgres-meta's CLI path which ran its nine
+  // introspection queries under Promise.all. A pooled Queryable runs them in
+  // parallel; a single-connection one pipelines them, which is no worse than
+  // awaiting each in turn.
+  const [
+    schemas,
+    tables,
+    foreignTables,
+    views,
+    materializedViews,
+    columns,
+    primaryKeys,
+    relationships,
+    functions,
+    types,
+  ] = await Promise.all([
+    queryRows(
+      SCHEMAS_SQL({
+        includeSystemSchemas: false,
+        nameFilter: systemExcludingFilter,
+      }),
+    ),
+    queryRows(TABLES_SQL({ schemaFilter: systemExcludingFilter })),
+    queryRows(FOREIGN_TABLES_SQL({ schemaFilter: plainFilter })),
+    queryRows(VIEWS_SQL({ schemaFilter: systemExcludingFilter })),
+    queryRows(MATERIALIZED_VIEWS_SQL({ schemaFilter: plainFilter })),
+    queryRows(COLUMNS_SQL({ schemaFilter: systemExcludingFilter })),
+    queryRows(PRIMARY_KEYS_SQL({ schemaFilter: systemExcludingFilter })),
+    listRelationships(db, {
+      includedSchemas: included,
+      excludedSchemas: excluded,
     }),
-  );
-  const tables = await queryRows(
-    TABLES_SQL({ schemaFilter: systemExcludingFilter }),
-  );
-  const foreignTables = await queryRows(
-    FOREIGN_TABLES_SQL({ schemaFilter: plainFilter }),
-  );
-  const views = await queryRows(
-    VIEWS_SQL({ schemaFilter: systemExcludingFilter }),
-  );
-  const materializedViews = await queryRows(
-    MATERIALIZED_VIEWS_SQL({ schemaFilter: plainFilter }),
-  );
-  const columns = await queryRows(
-    COLUMNS_SQL({ schemaFilter: systemExcludingFilter }),
-  );
-  const primaryKeys = await queryRows(
-    PRIMARY_KEYS_SQL({ schemaFilter: systemExcludingFilter }),
-  );
-  const relationships = await listRelationships(db, {
-    includedSchemas: included,
-    excludedSchemas: excluded,
-  });
-  const functions = await queryRows(
-    FUNCTIONS_SQL({ schemaFilter: systemExcludingFilter }),
-  );
-  // types: includeSystemSchemas true (no schema filter), table + array types included.
-  const types = await queryRows(
-    TYPES_SQL({
-      schemaFilter: "",
-      includeTableTypes: true,
-      includeArrayTypes: true,
-    }),
-  );
+    queryRows(FUNCTIONS_SQL({ schemaFilter: systemExcludingFilter })),
+    // types: includeSystemSchemas true (no schema filter), table + array types included.
+    queryRows(
+      TYPES_SQL({
+        schemaFilter: "",
+        includeTableTypes: true,
+        includeArrayTypes: true,
+      }),
+    ),
+  ]);
 
   return {
     version: GENERATOR_METADATA_VERSION,
