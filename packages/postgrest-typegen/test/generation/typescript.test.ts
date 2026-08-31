@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { generateTypescript as rawGenerateTypescript } from "../../src/generation/typescript.ts";
 import { sortGeneratorMetadata } from "../../src/sort.ts";
+import type { PostgresView } from "../../src/types.ts";
 import {
   baseColumn,
   baseFunction,
@@ -1306,6 +1307,95 @@ describe("typescript typegen", () => {
             update_only_view: {
               Row: {
                 id: number | null
+              }
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("views without the trigger-aware flags fall back to is_updatable", async () => {
+    // Version 1 metadata produced before is_insert_enabled and
+    // is_update_enabled existed must keep the original contract: an
+    // auto-updatable view gets both Insert and Update, a non-updatable view
+    // gets neither.
+    const legacyView = (
+      overrides: Partial<Omit<PostgresView, "columns">>,
+    ): Omit<PostgresView, "columns"> => {
+      const {
+        is_insert_enabled: _insertFlag,
+        is_update_enabled: _updateFlag,
+        ...view
+      } = baseView(overrides);
+      return view;
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          legacyView({ id: 1, name: "legacy_updatable", is_updatable: true }),
+          legacyView({ id: 2, name: "legacy_read_only" }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "legacy_updatable",
+            name: "id",
+            format: "int8",
+            is_nullable: true,
+          }),
+          baseColumn({
+            table_id: 2,
+            table: "legacy_read_only",
+            name: "id",
+            format: "int8",
+            is_nullable: true,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            legacy_read_only: {
+              Row: {
+                id: number | null
+              }
+              Relationships: []
+            }
+            legacy_updatable: {
+              Row: {
+                id: number | null
+              }
+              Insert: {
+                id?: number | null
               }
               Update: {
                 id?: number | null

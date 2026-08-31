@@ -159,12 +159,14 @@ const postgresViewSchema = type({
   /**
    * Whether INSERT works through this view: auto-updatable per
    * `pg_relation_is_updatable`, or made insertable by an INSTEAD OF INSERT
-   * trigger. Tracked separately from `is_updatable` (which mirrors
-   * `information_schema.views` and ignores triggers).
+   * trigger or an unconditional INSTEAD rule. Tracked separately from
+   * `is_updatable` (which mirrors `information_schema.views` and ignores
+   * triggers). Optional because version 1 metadata predating this field is
+   * still valid; consumers fall back to `is_updatable` when absent.
    */
-  is_insert_enabled: "boolean",
+  "is_insert_enabled?": "boolean",
   /** Same as `is_insert_enabled`, for UPDATE. */
-  is_update_enabled: "boolean",
+  "is_update_enabled?": "boolean",
   comment: "string | null",
   "columns?": postgresColumnSchema.array(),
 });

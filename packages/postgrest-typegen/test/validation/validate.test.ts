@@ -166,9 +166,11 @@ interface ExpectedPostgresView {
   is_updatable: boolean;
   // Extensions over postgres-meta's original contract: trigger-aware
   // writability, added when porting supabase/postgres-meta#1062 into this
-  // package. Additive, so postgres-meta stays a drop-in consumer.
-  is_insert_enabled: boolean;
-  is_update_enabled: boolean;
+  // package. Optional so the addition stays truly additive: version 1
+  // documents and postgres-meta's own view objects, which predate the
+  // fields, remain valid.
+  is_insert_enabled?: boolean;
+  is_update_enabled?: boolean;
   comment: string | null;
   columns?: ExpectedPostgresColumn[];
 }
@@ -247,6 +249,24 @@ describe("parseGeneratorMetadata", () => {
       types: [],
     };
     expect(parseGeneratorMetadata(empty)).toEqual(empty);
+  });
+
+  test("accepts views without the trigger-aware writability fields", () => {
+    // Version 1 documents produced before is_insert_enabled and
+    // is_update_enabled existed must keep validating.
+    const legacy = {
+      ...buildMetadata(),
+      views: [
+        {
+          id: 16386,
+          schema: "public",
+          name: "tickets_view",
+          is_updatable: true,
+          comment: null,
+        },
+      ],
+    };
+    expect(parseGeneratorMetadata(legacy)).toEqual(legacy);
   });
 
   test("rejects a non-object", () => {

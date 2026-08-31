@@ -816,7 +816,9 @@ export type Database = {
                     ]}
                   }
                   ${
-                    view.is_insert_enabled
+                    // Metadata predating the trigger-aware flags (still valid
+                    // version 1 documents) falls back to the old gate.
+                    (view.is_insert_enabled ?? view.is_updatable)
                       ? `Insert: {
                            ${columnsByTableId[view.id].map((column) => {
                              if (!column.is_updatable) {
@@ -838,7 +840,7 @@ export type Database = {
                         `
                       : ""
                   }${
-                    view.is_update_enabled
+                    (view.is_update_enabled ?? view.is_updatable)
                       ? `Update: {
                            ${columnsByTableId[view.id].map((column) => {
                              if (!column.is_updatable) {
