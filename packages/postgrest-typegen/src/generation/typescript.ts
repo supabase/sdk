@@ -3,7 +3,7 @@
 // literals (relying on Array#toString) to build the output. Preserving that is required for
 // byte-parity, and the offending expressions sit inside template literals where a targeted
 // disable comment would corrupt the emitted string.
-import prettier from "prettier";
+import { format as oxfmtFormat } from "oxfmt";
 import type {
   GeneratorMetadata,
   PostgresColumn,
@@ -36,14 +36,28 @@ export interface GenerateTypescriptOptions {
    */
   defaultSchema?: string;
   /**
-   * Formatter used on the generated output. Defaults to `prettier.format`,
-   * called inline. Callers on a latency-sensitive request path (e.g.
-   * postgres-meta's hosted `/generators/typescript` route) can substitute a
-   * worker-pool-backed formatter here instead of blocking the event loop on
-   * every call.
+   * Formatter used on the generated output. Defaults to `oxfmt`, called
+   * inline. Callers on a latency-sensitive request path (e.g. postgres-meta's
+   * hosted `/generators/typescript` route) can substitute a worker-pool-backed
+   * formatter here instead of blocking the event loop on every call.
    */
-  format?: (code: string, options: prettier.Options) => Promise<string>;
+  format?: (code: string) => Promise<string>;
 }
+
+const defaultFormat = async (code: string): Promise<string> => {
+  const { code: formatted, errors } = await oxfmtFormat("output.ts", code, {
+    semi: false,
+    printWidth: 80,
+  });
+  if (errors.length > 0) {
+    throw new Error(
+      `oxfmt failed to format generated TypeScript output: ${errors
+        .map((error) => error.message)
+        .join("; ")}`,
+    );
+  }
+  return formatted;
+};
 
 type TsRelationship = Pick<
   GeneratorMetadata["relationships"][number],
@@ -79,7 +93,7 @@ export const generateTypescript = async (
     detectOneToOneRelationships = false,
     postgrestVersion,
     defaultSchema = "public",
-    format = prettier.format,
+    format = defaultFormat,
   } = opts;
   // Ordering of all collections (incl. relationships, columns, args below) is
   // provided by `sortGeneratorMetadata`; this generator no longer re-sorts.
@@ -1025,10 +1039,7 @@ export const Constants = {
 } as const
 `;
 
-  output = await format(output, {
-    parser: "typescript",
-    semi: false,
-  });
+  output = await format(output);
   return output;
 };
 

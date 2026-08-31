@@ -4,7 +4,8 @@
     "test/global-setup.ts",
     "test/**/*.test.ts",
     "scripts/load-fixtures.ts",
-    "scripts/print-generated.ts"
+    "scripts/print-generated.ts",
+    "scripts/canonicalize-typescript.ts"
   ],
   "ignoreBinaries": ["oxfmt", "oxlint"]
 }

@@ -96,6 +96,14 @@ jobs:
           for lang in typescript go python swift; do
             PG_META_GENERATE_TYPES="$lang" node --loader ts-node/esm src/server/server.ts > "/tmp/theirs/$lang.txt"
           done
+      - name: Canonicalize postgres-meta's TypeScript output
+        # postgres-meta formats with prettier; this package defaults to
+        # oxfmt, which has different line-wrap heuristics (e.g. printWidth is
+        # matched at 80, but wrapping decisions for nested object types can
+        # still differ). Reformatting postgres-meta's output through our own
+        # formatter first means the diff below reflects content, not which
+        # formatter produced it.
+        run: bun scripts/canonicalize-typescript.ts /tmp/theirs/typescript.txt > /tmp/theirs/typescript.canonical.txt
       - name: Compare outputs
         # Order-independent: sortGeneratorMetadata canonicalizes collection
         # order (semantic schema+name, not postgres-meta's environment- and
@@ -106,6 +114,7 @@ jobs:
         # verifies the two agree on content without being sensitive to that
         # reordering.
         run: |
+          mv /tmp/theirs/typescript.canonical.txt /tmp/theirs/typescript.txt
           normalize() { awk 'BEGIN{RS="";FS="\n"} {gsub(/\n/, "\\n"); print}' "$1" | sort; }
           failed=0
           for lang in typescript go python swift; do
