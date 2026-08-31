@@ -35,6 +35,14 @@ export interface GenerateTypescriptOptions {
    * env read. Default `'public'`.
    */
   defaultSchema?: string;
+  /**
+   * Formatter used on the generated output. Defaults to `prettier.format`,
+   * called inline. Callers on a latency-sensitive request path (e.g.
+   * postgres-meta's hosted `/generators/typescript` route) can substitute a
+   * worker-pool-backed formatter here instead of blocking the event loop on
+   * every call.
+   */
+  format?: (code: string, options: prettier.Options) => Promise<string>;
 }
 
 type TsRelationship = Pick<
@@ -71,6 +79,7 @@ export const generateTypescript = async (
     detectOneToOneRelationships = false,
     postgrestVersion,
     defaultSchema = "public",
+    format = prettier.format,
   } = opts;
   // Ordering of all collections (incl. relationships, columns, args below) is
   // provided by `sortGeneratorMetadata`; this generator no longer re-sorts.
@@ -1016,7 +1025,7 @@ export const Constants = {
 } as const
 `;
 
-  output = await prettier.format(output, {
+  output = await format(output, {
     parser: "typescript",
     semi: false,
   });

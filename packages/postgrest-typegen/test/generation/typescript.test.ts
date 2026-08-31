@@ -1204,4 +1204,23 @@ describe("typescript typegen", () => {
       "
     `);
   });
+
+  test("format option substitutes the default prettier formatter", async () => {
+    const calls: string[] = [];
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "id", format: "int8" })],
+      }),
+      {
+        format: async (code) => {
+          calls.push(code);
+          return "// formatted by custom formatter\n";
+        },
+      },
+    );
+
+    expect(calls).toHaveLength(1);
+    expect(result).toBe("// formatted by custom formatter\n");
+  });
 });
