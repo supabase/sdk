@@ -1,6 +1,6 @@
 {
   "name": "@supabase/postgrest-typegen",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Type generation for PostgREST from PostgreSQL schemas",
   "keywords": [
     "codegen",
