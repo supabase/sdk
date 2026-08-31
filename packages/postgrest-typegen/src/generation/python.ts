@@ -53,7 +53,7 @@ from typing import (
 )
 from typing_extensions import NotRequired, TypeAlias
 
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field, JsonValue
 
 ${concatLines(Object.values(ctx.user_enums))}
 
@@ -406,9 +406,11 @@ const PY_TYPE_MAP: Record<string, string> = {
   vector: "list[Any]",
   interval: "str",
 
-  // JSON
-  json: "Json[Any]",
-  jsonb: "Json[Any]",
+  // JSON. PostgREST returns these columns already deserialized, so the
+  // generated models must accept parsed values (JsonValue), not JSON strings
+  // (which is what pydantic's Json[...] validates and parses).
+  json: "JsonValue",
+  jsonb: "JsonValue",
 
   // Range types (can be adjusted to more complex types if needed)
   int4range: "str",

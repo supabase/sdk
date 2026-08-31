@@ -68,7 +68,7 @@ describe("python typegen", () => {
       )
       from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -131,7 +131,7 @@ describe("python typegen", () => {
       )
       from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -174,7 +174,7 @@ describe("python typegen", () => {
       )
       from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -200,6 +200,32 @@ describe("python typegen", () => {
     expect(result).toContain(
       "from typing_extensions import NotRequired, TypeAlias",
     );
+  });
+
+  test("json and jsonb columns accept deserialized values via JsonValue", () => {
+    const result = generatePython(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({ name: "payload", format: "json", ordinal_position: 1 }),
+          baseColumn({
+            name: "settings",
+            format: "jsonb",
+            is_nullable: true,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      "from pydantic import BaseModel, Field, JsonValue",
+    );
+    expect(result).toContain('payload: JsonValue = Field(alias="payload")');
+    expect(result).toContain(
+      'settings: Optional[JsonValue] = Field(alias="settings")',
+    );
+    expect(result).not.toContain("Json[Any]");
   });
 
   test("enum labels with quotes, backslashes and newlines are escaped", () => {
@@ -262,7 +288,7 @@ describe("python typegen", () => {
       )
       from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
