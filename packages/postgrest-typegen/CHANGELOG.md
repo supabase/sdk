@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.1.0...postgrest-typegen-v0.2.0) (2026-08-31)
+
+
+### Features
+
+* **postgrest-typegen:** formatter hook, oxfmt default, concurrent introspection ([#118](https://github.com/supabase/sdk/issues/118)) ([fa2286c](https://github.com/supabase/sdk/commit/fa2286c75bb4ec628bb4e466bf21143a24cfcb73))
+
 ## 0.1.0 (2026-08-28)
 
 
