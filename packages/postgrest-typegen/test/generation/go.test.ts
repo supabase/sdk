@@ -155,6 +155,91 @@ describe("go typegen", () => {
   });
 });
 
+describe("go typegen struct tag escaping", () => {
+  test("ordinary column names keep the raw literal form", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "display_name", format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('DisplayName string `json:"display_name"`');
+  });
+
+  test("a column name containing a backtick is emitted as an interpreted literal", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "back`tick", format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('BackTick string "json:\\"back`tick\\""');
+    expect(result).not.toContain('`json:"back`tick"`');
+  });
+
+  test("a double quote in a column name is escaped inside the raw literal", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: 'a"b', format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('AB string `json:"a\\"b"`');
+  });
+
+  test("a backslash in a column name is escaped inside the raw literal", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "a\\b", format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('AB string `json:"a\\\\b"`');
+  });
+
+  test("a control character in a column name is escaped inside the raw literal", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "line1\nline2", format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('Line1Line2 string `json:"line1\\nline2"`');
+  });
+
+  test("double quotes are escaped twice alongside a backtick", () => {
+    const result = generateGo(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: 'a"b`c', format: "text" })],
+      }),
+    );
+
+    expect(result).toContain('ABC string "json:\\"a\\\\\\"b`c\\""');
+  });
+
+  test("composite type attribute names are escaped the same way", () => {
+    const result = generateGo(
+      buildMetadata({
+        types: [
+          textType,
+          {
+            ...addressCompositeType,
+            attributes: [{ name: "back`tick", type_id: textType.id }],
+          },
+        ],
+      }),
+    );
+
+    expect(result).toContain('BackTick string "json:\\"back`tick\\""');
+  });
+});
+
 describe("go typegen pgTypeToGoType array fallback", () => {
   test("non-nullable array of enum resolves to []string, not []interface{}", () => {
     const result = generateGo(
