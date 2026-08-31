@@ -193,6 +193,35 @@ describe("python typegen", () => {
     `);
   });
 
+  test("enum labels with quotes, backslashes and newlines are escaped", () => {
+    const result = generatePython(
+      buildMetadata({
+        types: [
+          { ...userStatusEnum, enums: ['a";b', "back\\slash", "new\nline"] },
+          textType,
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'Literal["a\\";b", "back\\\\slash", "new\\nline"]',
+    );
+    expect(result).not.toContain('Literal["a";b"');
+  });
+
+  test("column names with quotes are escaped in Field aliases", () => {
+    const result = generatePython(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: 'quo"ted' })],
+      }),
+    );
+
+    expect(result).toContain('quo_ted: str = Field(alias="quo\\"ted")');
+    expect(result).toContain('Annotated[str, Field(alias="quo\\"ted")]');
+    expect(result).not.toContain('alias="quo"ted"');
+  });
+
   test("array column resolves to List[...] and multi-word names are normalized", () => {
     const result = generatePython(
       buildMetadata({

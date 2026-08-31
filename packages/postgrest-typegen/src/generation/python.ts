@@ -229,7 +229,9 @@ class PythonEnum implements Serializable {
     this.variants = type.enums;
   }
   serialize(): string {
-    const variants = this.variants.map((item) => `"${item}"`).join(", ");
+    const variants = this.variants
+      .map((item) => escapePythonString(item))
+      .join(", ");
     return `${this.name}: TypeAlias = Literal[${variants}]`;
   }
 }
@@ -273,7 +275,7 @@ class PythonBaseModelAttr implements Serializable {
     const py_type = this.nullable
       ? `Optional[${this.py_type.serialize()}]`
       : this.py_type.serialize();
-    return `    ${this.name}: ${py_type} = Field(alias="${this.pg_name}")`;
+    return `    ${this.name}: ${py_type} = Field(alias=${escapePythonString(this.pg_name)})`;
   }
 }
 
@@ -326,7 +328,7 @@ class PythonTypedDictAttr implements Serializable {
     const py_type = this.nullable
       ? `Optional[${this.py_type.serialize()}]`
       : this.py_type.serialize();
-    const annotation = `Annotated[${py_type}, Field(alias="${this.pg_name}")]`;
+    const annotation = `Annotated[${py_type}, Field(alias=${escapePythonString(this.pg_name)})]`;
     const rhs = this.not_required ? `NotRequired[${annotation}]` : annotation;
     return `    ${this.name}: ${rhs}`;
   }
@@ -365,6 +367,16 @@ class PythonTypedDict implements Serializable {
 
 function concatLines(items: Serializable[]): string {
   return items.map((item) => item.serialize()).join("\n\n");
+}
+
+/**
+ * Emits a Postgres name as a double-quoted Python string literal. JSON string
+ * escaping is a subset of Python's (`\"`, `\\`, `\n`, `\uXXXX`), so
+ * `JSON.stringify` yields a literal Python parses to the exact original name
+ * and keeps quotes, backslashes and newlines from breaking out of it.
+ */
+function escapePythonString(value: string): string {
+  return JSON.stringify(value);
 }
 
 const PY_TYPE_MAP: Record<string, string> = {
