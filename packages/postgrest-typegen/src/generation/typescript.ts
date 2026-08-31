@@ -637,6 +637,11 @@ export const generateTypescript = async (
     : "";
 
   function generateNullableUnionTsType(tsType: string, isNullable: boolean) {
+    // The generated Json type includes null, so a NOT NULL json/jsonb column
+    // has to be narrowed with NonNullable to reflect the database constraint.
+    if (tsType === "Json" && !isNullable) {
+      return `NonNullable<${tsType}>`;
+    }
     // Only add the null union if the type is not unknown as unknown already includes null
     if (tsType === "unknown" || tsType === "any" || !isNullable) {
       return tsType;

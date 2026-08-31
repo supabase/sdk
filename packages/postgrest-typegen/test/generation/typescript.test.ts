@@ -312,6 +312,76 @@ describe("typescript typegen", () => {
     `);
   });
 
+  test("narrows a non-nullable json column to NonNullable<Json>", async () => {
+    // Ported from supabase/postgres-meta#1085: the generated Json type itself
+    // includes null, so a NOT NULL json/jsonb column must be narrowed with
+    // NonNullable to reflect the database constraint. Nullable json columns
+    // keep the plain `Json | null` union.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({
+            name: "required_metadata",
+            format: "jsonb",
+            ordinal_position: 1,
+          }),
+          baseColumn({
+            name: "optional_metadata",
+            format: "jsonb",
+            is_nullable: true,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                optional_metadata: Json | null
+                required_metadata: NonNullable<Json>
+              }
+              Insert: {
+                optional_metadata?: Json | null
+                required_metadata: NonNullable<Json>
+              }
+              Update: {
+                optional_metadata?: Json | null
+                required_metadata?: NonNullable<Json>
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
   test("resolves an enum by the column's type_schema, not the table's own schema", async () => {
     // A table in `tenant` referencing `public.user_status`, while `tenant`
     // also defines its own same-named enum with different variants. Without
