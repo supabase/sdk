@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.6.0...capability-matrix-v1.7.0) (2026-09-01)
+
+
+### Features
+
+* **storage:** add object versioning capabilities ([#131](https://github.com/supabase/sdk/issues/131)) ([694a9c2](https://github.com/supabase/sdk/commit/694a9c21ab88d292ac048f1bf6756ba2abbaba9b))
+
 ## [1.6.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.5.0...capability-matrix-v1.6.0) (2026-08-28)
 
 
