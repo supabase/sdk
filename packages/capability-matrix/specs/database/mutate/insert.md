@@ -13,11 +13,27 @@ Spec: [https://docs.postgrest.org/en/latest/references/api/tables_views.html#ins
 Accepts either a single row or a collection of rows. The payload is sent as a JSON object for a
 single row and a JSON array for a collection; PostgREST accepts both at the same endpoint.
 
-The rows in a collection do not have to carry the same keys. Where the SDK's row type omits absent
-values rather than encoding them as `null` — for example a batch built by mapping over
-heterogeneous input — the request MUST name the union of keys across all rows in the `columns`
-query parameter. Without it PostgREST derives the column list from the first row alone and silently
-drops keys that only later rows carry.
+The rows in a collection do not have to carry the same keys, but only because the request says so
+explicitly. PostgREST branches on whether `columns` is present:
+
+| `columns` | Payload handling |
+| --------- | ---------------- |
+| present   | taken as the column list; the payload is passed through without inspection |
+| absent    | the first object's key set is canonical, and **every** later object must match it exactly |
+
+With `columns` absent, an object whose keys differ from the first — in either direction, missing or
+extra — is rejected outright: `PGRST102`, HTTP 400, "All object keys must match". It is not a partial
+write and not a silent truncation.
+
+So where the SDK's row type omits absent values rather than encoding them as `null` — for example a
+batch built by mapping over heterogeneous input — the request MUST name the union of keys across all
+rows in the `columns` query parameter. That parameter is what makes a ragged batch representable at
+all; without it the whole request fails.
+
+An implementation may instead send rows verbatim and let the server reject a ragged batch, which
+surfaces `PGRST102` to the caller. That is a legitimate choice, but it is a different contract, and
+it MUST be documented as such rather than left for a caller to discover on a batch that happens to
+be ragged.
 
 An empty collection is not an error. It sends a request that writes nothing. Implementations MUST
 NOT emit an empty `columns` parameter for it, because `columns=""` names a column called `""` and
@@ -55,6 +71,8 @@ lose preferences; the merge MUST replace only the entry with the matching key.
 
 ## Errors
 
+- `PGRST102` — HTTP 400, "All object keys must match": a bulk payload sent without `columns` whose
+  objects do not all carry an identical key set.
 - `PGRST204` — a column named in the payload or in `columns` does not exist on the relation.
 - `23502` — a not-null constraint was violated, which is the typical result of relying on the
   default `null` behavior for a column that has no default.
