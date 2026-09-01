@@ -20,8 +20,23 @@ heterogeneous batch, the empty-collection case — and adds a conflict target an
 `on_conflict` names the columns of the unique index to detect a collision on, comma-separated. When
 it is absent PostgREST resolves the collision against the relation's primary key.
 
-The target only takes effect for a row that actually carries those columns in its payload. A row
-that omits a database-generated key is inserted rather than merged, so a batch can mix the two.
+The target applies to every row the request inserts, including a row whose payload omitted the
+target column — it is not selectively enabled per row by what the payload happens to carry. What
+varies per row is the value being checked: Postgres evaluates the arbiter index for each individual
+row proposed for insertion, and takes the conflict action only for those that actually violate it.
+
+So for a row omitting a target column that `columns` names, the outcome follows from the value the
+column resolves to, not from the key's absence:
+
+- Under `missing=default`, the column takes its database-generated default — a sequence or identity
+  value — and the conflict is resolved against *that* resolved value. A freshly generated value
+  normally does not collide, so the row inserts; one that does collide is merged or ignored like any
+  other row.
+- Under the default `null` behavior, the column is set to `null`. A `NOT NULL` target, such as a
+  primary key, then fails with `23502` before any conflict is considered.
+
+A single request can therefore mix outcomes — some rows merged or ignored, others inserted — all
+under one `on_conflict` target.
 
 A relation with no unique constraint has nothing to collide on, which makes an upsert against it a
 plain insert that appends a row on every call. Implementations SHOULD make that unrepresentable
