@@ -1,4 +1,5 @@
 import { relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ParsedSymbol, ParseResult } from "./normalize-typedoc.js";
 export type { ParsedSymbol, ParseResult };
 
@@ -67,6 +68,6 @@ function qualifiedName(pathComponents: string[]): string {
 
 function resolveFile(uri: string | undefined, sdkRoot: string): string {
   if (!uri) return "";
-  const path = uri.startsWith("file://") ? uri.slice(7) : uri;
+  const path = uri.startsWith("file:") ? fileURLToPath(uri) : uri;
   return sdkRoot ? relative(sdkRoot, path) : path;
 }

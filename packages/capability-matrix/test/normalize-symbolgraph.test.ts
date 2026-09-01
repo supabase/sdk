@@ -157,6 +157,12 @@ describe("file path resolution", () => {
     const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"], uri)], sdkRoot);
     expect(symbols[0].file).toBe("Sources/Auth/AuthClient.swift");
   });
+  it("decodes percent-encoded characters in file URLs before resolving the path", () => {
+    const sdkRoot = "/home/runner/work/Supabase Swift";
+    const uri = "file:///home/runner/work/Supabase%20Swift/Sources/Auth/AuthClient.swift";
+    const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"], uri)], sdkRoot);
+    expect(symbols[0].file).toBe("Sources/Auth/AuthClient.swift");
+  });
   it("returns empty string when location is absent", () => {
     const { symbols } = normalizeSymbolGraph([sym("swift.class", ["Auth"])], "/any/root");
     expect(symbols[0].file).toBe("");
