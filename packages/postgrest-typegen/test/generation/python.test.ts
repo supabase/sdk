@@ -63,13 +63,12 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -127,13 +126,12 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -161,6 +159,10 @@ describe("python typegen", () => {
       }),
     );
 
+    // Composite type attributes cannot carry NOT NULL constraints in
+    // Postgres, so every field must be Optional.
+    expect(result).toContain('street: Optional[str] = Field(alias="street")');
+
     expect(result).toMatchInlineSnapshot(`
       "from __future__ import annotations
 
@@ -171,13 +173,12 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 
@@ -188,9 +189,76 @@ describe("python typegen", () => {
 
 
       class PublicAddress(BaseModel):
-          street: str = Field(alias="street")
-          city: str = Field(alias="city")"
+          street: Optional[str] = Field(alias="street")
+          city: Optional[str] = Field(alias="city")"
     `);
+  });
+
+  test("NotRequired and TypeAlias come from typing_extensions for Python 3.9 support", () => {
+    const result = generatePython(buildMetadata());
+    const typingImport = result.match(/from typing import \(([\s\S]*?)\)/)?.[1];
+
+    expect(typingImport).toBeDefined();
+    expect(typingImport).not.toContain("NotRequired");
+    expect(typingImport).not.toContain("TypeAlias");
+    expect(result).toContain(
+      "from typing_extensions import NotRequired, TypeAlias",
+    );
+  });
+
+  test("json and jsonb columns accept deserialized values via JsonValue", () => {
+    const result = generatePython(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({ name: "payload", format: "json", ordinal_position: 1 }),
+          baseColumn({
+            name: "settings",
+            format: "jsonb",
+            is_nullable: true,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      "from pydantic import BaseModel, Field, JsonValue",
+    );
+    expect(result).toContain('payload: JsonValue = Field(alias="payload")');
+    expect(result).toContain(
+      'settings: Optional[JsonValue] = Field(alias="settings")',
+    );
+    expect(result).not.toContain("Json[Any]");
+  });
+
+  test("enum labels with quotes, backslashes and newlines are escaped", () => {
+    const result = generatePython(
+      buildMetadata({
+        types: [
+          { ...userStatusEnum, enums: ['a";b', "back\\slash", "new\nline"] },
+          textType,
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'Literal["a\\";b", "back\\\\slash", "new\\nline"]',
+    );
+    expect(result).not.toContain('Literal["a";b"');
+  });
+
+  test("column names with quotes are escaped in Field aliases", () => {
+    const result = generatePython(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: 'quo"ted' })],
+      }),
+    );
+
+    expect(result).toContain('quo_ted: str = Field(alias="quo\\"ted")');
+    expect(result).toContain('Annotated[str, Field(alias="quo\\"ted")]');
+    expect(result).not.toContain('alias="quo"ted"');
   });
 
   test("array column resolves to List[...] and multi-word names are normalized", () => {
@@ -219,13 +287,12 @@ describe("python typegen", () => {
           Any,
           List,
           Literal,
-          NotRequired,
           Optional,
-          TypeAlias,
           TypedDict,
       )
+      from typing_extensions import NotRequired, TypeAlias
 
-      from pydantic import BaseModel, Field, Json
+      from pydantic import BaseModel, Field, JsonValue
 
       PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
 

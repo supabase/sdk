@@ -48,13 +48,12 @@ from typing import (
     Any,
     List,
     Literal,
-    NotRequired,
     Optional,
-    TypeAlias,
     TypedDict,
 )
+from typing_extensions import NotRequired, TypeAlias
 
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field, JsonValue
 
 ${concatLines(Object.values(ctx.user_enums))}
 
@@ -143,7 +142,9 @@ class PythonContext {
     const attributeEntries: PythonBaseModelAttr[] = attributes.map(
       (attribute) => {
         const type = this.parsePgType(attribute.type!.name);
-        return new PythonBaseModelAttr(attribute.name, type, false);
+        // Composite type attributes cannot carry NOT NULL constraints in
+        // Postgres, so every field is inherently nullable.
+        return new PythonBaseModelAttr(attribute.name, type, true);
       },
     );
 
@@ -229,7 +230,9 @@ class PythonEnum implements Serializable {
     this.variants = type.enums;
   }
   serialize(): string {
-    const variants = this.variants.map((item) => `"${item}"`).join(", ");
+    const variants = this.variants
+      .map((item) => escapePythonString(item))
+      .join(", ");
     return `${this.name}: TypeAlias = Literal[${variants}]`;
   }
 }
@@ -273,7 +276,7 @@ class PythonBaseModelAttr implements Serializable {
     const py_type = this.nullable
       ? `Optional[${this.py_type.serialize()}]`
       : this.py_type.serialize();
-    return `    ${this.name}: ${py_type} = Field(alias="${this.pg_name}")`;
+    return `    ${this.name}: ${py_type} = Field(alias=${escapePythonString(this.pg_name)})`;
   }
 }
 
@@ -326,7 +329,7 @@ class PythonTypedDictAttr implements Serializable {
     const py_type = this.nullable
       ? `Optional[${this.py_type.serialize()}]`
       : this.py_type.serialize();
-    const annotation = `Annotated[${py_type}, Field(alias="${this.pg_name}")]`;
+    const annotation = `Annotated[${py_type}, Field(alias=${escapePythonString(this.pg_name)})]`;
     const rhs = this.not_required ? `NotRequired[${annotation}]` : annotation;
     return `    ${this.name}: ${rhs}`;
   }
@@ -367,6 +370,16 @@ function concatLines(items: Serializable[]): string {
   return items.map((item) => item.serialize()).join("\n\n");
 }
 
+/**
+ * Emits a Postgres name as a double-quoted Python string literal. JSON string
+ * escaping is a subset of Python's (`\"`, `\\`, `\n`, `\uXXXX`), so
+ * `JSON.stringify` yields a literal Python parses to the exact original name
+ * and keeps quotes, backslashes and newlines from breaking out of it.
+ */
+function escapePythonString(value: string): string {
+  return JSON.stringify(value);
+}
+
 const PY_TYPE_MAP: Record<string, string> = {
   // Bool
   bool: "bool",
@@ -395,9 +408,11 @@ const PY_TYPE_MAP: Record<string, string> = {
   vector: "list[Any]",
   interval: "str",
 
-  // JSON
-  json: "Json[Any]",
-  jsonb: "Json[Any]",
+  // JSON. PostgREST returns these columns already deserialized, so the
+  // generated models must accept parsed values (JsonValue), not JSON strings
+  // (which is what pydantic's Json[...] validates and parses).
+  json: "JsonValue",
+  jsonb: "JsonValue",
 
   // Range types (can be adjusted to more complex types if needed)
   int4range: "str",

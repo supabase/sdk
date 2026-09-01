@@ -118,6 +118,35 @@ function formatForGoTypeName(name: string): string {
     .join("");
 }
 
+/**
+ * Renders the `json` struct tag for a column or composite attribute name.
+ *
+ * The name is quoted with `JSON.stringify`, whose escape sequences are a
+ * subset of Go's, so `reflect.StructTag.Get("json")` recovers the exact name
+ * via `strconv.Unquote` even when it contains quotes, backslashes or control
+ * characters. The tag is emitted as a raw string literal like before, except
+ * when the name contains a backtick: Go raw literals cannot contain one, so
+ * such tags fall back to an interpreted literal with a second round of
+ * escaping. Names the marshaler cannot represent still compile and
+ * round-trip through `reflect.StructTag`, but `encoding/json` applies its
+ * own tag rules at runtime: a comma splits the name from tag options (so
+ * only the part before it is used as the JSON name), and a name it rejects
+ * outright (for example one containing a quote) falls back to the Go field
+ * name. That is a limitation of the struct tag convention itself, not of
+ * the generated source.
+ *
+ * @example
+ * ```ts
+ * formatForGoStructTag('name') // `json:"name"`
+ * formatForGoStructTag('a"b') // `json:"a\"b"`
+ * formatForGoStructTag('back`tick') // "json:\"back`tick\""
+ * ```
+ */
+function formatForGoStructTag(name: string): string {
+  const tag = `json:${JSON.stringify(name)}`;
+  return tag.includes("`") ? JSON.stringify(tag) : `\`${tag}\``;
+}
+
 function generateTableStruct(
   schema: PostgresSchema,
   table: PostgresTable | PostgresView | PostgresMaterializedView,
@@ -170,7 +199,7 @@ function generateTableStruct(
     ([formattedName, type, name]) => {
       return `  ${formattedName.padEnd(maxFormattedNameLength)} ${type.padEnd(
         maxTypeLength,
-      )} \`json:"${name}"\``;
+      )} ${formatForGoStructTag(name)}`;
     },
   );
 
@@ -232,7 +261,7 @@ function generateCompositeTypeStruct(
     ([formattedName, type, name]) => {
       return `  ${formattedName.padEnd(maxFormattedNameLength)} ${type.padEnd(
         maxTypeLength,
-      )} \`json:"${name}"\``;
+      )} ${formatForGoStructTag(name)}`;
     },
   );
 
