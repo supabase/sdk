@@ -135,6 +135,30 @@ type PublicMemesUpdate struct {
   Status    *string     `json:"status"`
 }
 
+type PublicScalarTypeTestSelect struct {
+  DoublePrecision *float64 `json:"double_precision"`
+  Flag            bool     `json:"flag"`
+  Id              int64    `json:"id"`
+  SinglePrecision *float32 `json:"single_precision"`
+  SmallInt        *int16   `json:"small_int"`
+}
+
+type PublicScalarTypeTestInsert struct {
+  DoublePrecision *float64 `json:"double_precision"`
+  Flag            bool     `json:"flag"`
+  Id              *int64   `json:"id"`
+  SinglePrecision *float32 `json:"single_precision"`
+  SmallInt        *int16   `json:"small_int"`
+}
+
+type PublicScalarTypeTestUpdate struct {
+  DoublePrecision *float64 `json:"double_precision"`
+  Flag            *bool    `json:"flag"`
+  Id              *int64   `json:"id"`
+  SinglePrecision *float32 `json:"single_precision"`
+  SmallInt        *int16   `json:"small_int"`
+}
+
 type PublicTableWithOtherTablesRowTypeSelect struct {
   Col1 interface{} `json:"col1"`
   Col2 interface{} `json:"col2"`

@@ -254,6 +254,56 @@ describe("swift typegen", () => {
     expect(result).toContain('case plainName = "plain_name"');
   });
 
+  test("a leading underscore in a type name is preserved", () => {
+    // `formatForSwiftTypeName` pascal-cases each word, which would eat a
+    // leading underscore, so it is stripped and put back. Postgres names its
+    // implicit array types that way (`_int4`), and a table or enum may be named
+    // so deliberately, and the resulting Swift name has to stay distinct from
+    // the one without it.
+    const result = generateSwift(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "_key_id_context" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "_key_id_context",
+            name: "id",
+            format: "int8",
+            ordinal_position: 1,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain("struct _KeyIdContextSelect");
+    expect(result).not.toContain("struct KeyIdContextSelect");
+  });
+
+  test("separators that produce empty words are dropped, not capitalised", () => {
+    // The split pattern matches a *run* of non-alphanumerics, so `a--b` yields
+    // two words, not three: only a leading or trailing separator produces an
+    // empty string. `__weird--name_` produces two of them, one from the
+    // underscore left after the prefix is stripped and one from the trailing
+    // underscore. They have to contribute nothing, otherwise the name picks up
+    // stray characters or throws on `word[0]`.
+    const result = generateSwift(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "__weird--name_" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "__weird--name_",
+            name: "id",
+            format: "int8",
+            ordinal_position: 1,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain("struct _WeirdNameSelect");
+  });
+
   test("array and uuid types", () => {
     const result = generateSwift(
       buildMetadata({
