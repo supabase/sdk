@@ -166,6 +166,30 @@ export type Database = {
           },
         ]
       }
+      scalar_type_test: {
+        Row: {
+          double_precision: number | null
+          flag: boolean
+          id: number
+          single_precision: number | null
+          small_int: number | null
+        }
+        Insert: {
+          double_precision?: number | null
+          flag: boolean
+          id?: number
+          single_precision?: number | null
+          small_int?: number | null
+        }
+        Update: {
+          double_precision?: number | null
+          flag?: boolean
+          id?: number
+          single_precision?: number | null
+          small_int?: number | null
+        }
+        Relationships: []
+      }
       table_with_other_tables_row_type: {
         Row: {
           col1: Database["public"]["Tables"]["user_details"]["Row"] | null

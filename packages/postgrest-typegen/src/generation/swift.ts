@@ -424,6 +424,12 @@ const pgTypeToSwiftType = (
     swiftType = "String";
   } else if (["json", "jsonb"].includes(pgType)) {
     swiftType = "AnyJSON";
+    // `void` and `record` are pseudo-types: Postgres rejects them as a column or
+    // composite attribute type ("column has pseudo-type void"), and this
+    // generator only renders columns and attributes, never functions. So these
+    // two arms are unreachable today and deliberately untested. They are kept
+    // because they are the mappings to use if Swift ever emits functions, which
+    // is where these types do appear.
   } else if (pgType === "void") {
     swiftType = "Void";
   } else if (pgType === "record") {

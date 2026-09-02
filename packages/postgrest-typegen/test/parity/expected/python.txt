@@ -132,6 +132,27 @@ class PublicMemesUpdate(TypedDict):
     name: NotRequired[Annotated[str, Field(alias="name")]]
     status: NotRequired[Annotated[Optional[PublicMemeStatus], Field(alias="status")]]
 
+class PublicScalarTypeTest(BaseModel):
+    double_precision: Optional[float] = Field(alias="double_precision")
+    flag: bool = Field(alias="flag")
+    id: int = Field(alias="id")
+    single_precision: Optional[float] = Field(alias="single_precision")
+    small_int: Optional[int] = Field(alias="small_int")
+
+class PublicScalarTypeTestInsert(TypedDict):
+    double_precision: NotRequired[Annotated[Optional[float], Field(alias="double_precision")]]
+    flag: Annotated[bool, Field(alias="flag")]
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    single_precision: NotRequired[Annotated[Optional[float], Field(alias="single_precision")]]
+    small_int: NotRequired[Annotated[Optional[int], Field(alias="small_int")]]
+
+class PublicScalarTypeTestUpdate(TypedDict):
+    double_precision: NotRequired[Annotated[Optional[float], Field(alias="double_precision")]]
+    flag: NotRequired[Annotated[bool, Field(alias="flag")]]
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    single_precision: NotRequired[Annotated[Optional[float], Field(alias="single_precision")]]
+    small_int: NotRequired[Annotated[Optional[int], Field(alias="small_int")]]
+
 class PublicTableWithOtherTablesRowType(BaseModel):
     col1: Optional[PublicUserDetails] = Field(alias="col1")
     col2: Optional[PublicAView] = Field(alias="col2")

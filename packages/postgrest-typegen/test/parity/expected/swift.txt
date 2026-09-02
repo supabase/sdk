@@ -257,6 +257,48 @@ internal enum PublicSchema {
       case status = "status"
     }
   }
+  internal struct ScalarTypeTestSelect: Codable, Hashable, Sendable, Identifiable {
+    internal let doublePrecision: Double?
+    internal let flag: Bool
+    internal let id: Int64
+    internal let singlePrecision: Float?
+    internal let smallInt: Int16?
+    internal enum CodingKeys: String, CodingKey {
+      case doublePrecision = "double_precision"
+      case flag = "flag"
+      case id = "id"
+      case singlePrecision = "single_precision"
+      case smallInt = "small_int"
+    }
+  }
+  internal struct ScalarTypeTestInsert: Codable, Hashable, Sendable, Identifiable {
+    internal let doublePrecision: Double?
+    internal let flag: Bool
+    internal let id: Int64?
+    internal let singlePrecision: Float?
+    internal let smallInt: Int16?
+    internal enum CodingKeys: String, CodingKey {
+      case doublePrecision = "double_precision"
+      case flag = "flag"
+      case id = "id"
+      case singlePrecision = "single_precision"
+      case smallInt = "small_int"
+    }
+  }
+  internal struct ScalarTypeTestUpdate: Codable, Hashable, Sendable, Identifiable {
+    internal let doublePrecision: Double?
+    internal let flag: Bool?
+    internal let id: Int64?
+    internal let singlePrecision: Float?
+    internal let smallInt: Int16?
+    internal enum CodingKeys: String, CodingKey {
+      case doublePrecision = "double_precision"
+      case flag = "flag"
+      case id = "id"
+      case singlePrecision = "single_precision"
+      case smallInt = "small_int"
+    }
+  }
   internal struct TableWithOtherTablesRowTypeSelect: Codable, Hashable, Sendable {
     internal let col1: UserDetailsSelect?
     internal let col2: AViewSelect?
