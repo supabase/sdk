@@ -11,6 +11,7 @@ import {
   GENERATOR_METADATA_VERSION,
   type GeneratorMetadata,
   type PostgresColumn,
+  type PostgresForeignTable,
   type PostgresFunction,
   type PostgresMaterializedView,
   type PostgresSchema,
@@ -51,6 +52,16 @@ export const baseView = (
   is_updatable: false,
   is_insert_enabled: false,
   is_update_enabled: false,
+  comment: null,
+  ...overrides,
+});
+
+export const baseForeignTable = (
+  overrides: Partial<Omit<PostgresForeignTable, "columns">> = {},
+): Omit<PostgresForeignTable, "columns"> => ({
+  id: 1,
+  schema: "public",
+  name: "tickets_foreign",
   comment: null,
   ...overrides,
 });

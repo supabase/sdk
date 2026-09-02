@@ -5,7 +5,9 @@ import { sortGeneratorMetadata } from "../../src/sort.ts";
 import type { PostgresType, PostgresView } from "../../src/types.ts";
 import {
   baseColumn,
+  baseForeignTable,
   baseFunction,
+  baseMaterializedView,
   baseRelationship,
   baseTable,
   baseView,
@@ -1286,6 +1288,72 @@ describe("typescript typegen", () => {
       metadata("category", "variadic", 501),
     );
     expect(variadic).not.toContain("name_translated: string | null");
+  });
+
+  test("composite args on foreign tables and materialized views resolve to their Row", async () => {
+    // `pgTypeToTsType` used to resolve a relation-typed value against `tables`
+    // and `views` only, so an argument typed as a foreign table or as a
+    // materialized view fell through to `unknown` even though both are
+    // generated (foreign tables under `Tables`, materialized views under
+    // `Views`) and have a `Row` to point at.
+    const relationType = (
+      id: number,
+      name: string,
+      relationId: number,
+    ): PostgresType => ({
+      id,
+      name,
+      schema: "public",
+      format: name,
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: relationId,
+    });
+    const labelFunction = (name: string, typeId: number, argName: string) =>
+      baseFunction({
+        id: typeId,
+        name,
+        args: [
+          { mode: "in", name: argName, type_id: typeId, has_default: false },
+        ],
+        argument_types: `${argName} ${name.replace("_label", "")}`,
+        return_type_id: 25,
+        return_type: "text",
+      });
+
+    const result = await generateTypescript(
+      buildMetadata({
+        foreignTables: [baseForeignTable({ id: 1, name: "remote_tickets" })],
+        materializedViews: [
+          baseMaterializedView({ id: 2, name: "tickets_matview" }),
+        ],
+        columns: [
+          baseColumn({ table_id: 1, name: "id", format: "int4" }),
+          baseColumn({ table_id: 2, name: "id", format: "int4" }),
+        ],
+        functions: [
+          labelFunction("remote_tickets_label", 500, "ft"),
+          labelFunction("tickets_matview_label", 501, "mv"),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          relationType(500, "remote_tickets", 1),
+          relationType(501, "tickets_matview", 2),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'ft: Database["public"]["Tables"]["remote_tickets"]["Row"]',
+    );
+    expect(result).toContain(
+      'mv: Database["public"]["Views"]["tickets_matview"]["Row"]',
+    );
+    expect(result).not.toContain("ft: unknown");
+    expect(result).not.toContain("mv: unknown");
   });
 
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {
