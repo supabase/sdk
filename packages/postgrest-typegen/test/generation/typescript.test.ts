@@ -1472,6 +1472,114 @@ describe("typescript typegen", () => {
     );
   });
 
+  test("types owned by a schema that is not generated fall back rather than dangle", async () => {
+    // A column can reference an enum, a composite type or a relation that lives
+    // in a schema the caller did not ask to generate. Emitting
+    // `Database["other"][...]` there would dangle, because no `other` key is
+    // written, so each kind degrades instead: an enum inlines its variants as a
+    // string union (the values travel with the type, so nothing is lost) while
+    // composites and relations, whose shape lives in the schema that was
+    // skipped, go to `unknown`.
+    const outsideEnum: PostgresType = {
+      id: 600,
+      name: "mood",
+      schema: "other",
+      format: "mood",
+      enums: ["happy", "sad"],
+      attributes: [],
+      comment: null,
+      type_relation_id: null,
+    };
+    const outsideComposite: PostgresType = {
+      id: 601,
+      name: "point3",
+      schema: "other",
+      format: "point3",
+      enums: [],
+      attributes: [{ name: "x", type_id: 23 }],
+      comment: null,
+      type_relation_id: null,
+    };
+    const column = (position: number, name: string, format: string) =>
+      baseColumn({
+        table_id: 1,
+        table: "holder",
+        ordinal_position: position,
+        name,
+        format,
+        type_schema: "other",
+        is_nullable: true,
+      });
+
+    const result = await generateTypescript(
+      buildMetadata({
+        // `other` is deliberately absent from `schemas`, while types and
+        // relations belonging to it are still in the metadata. `introspect()`
+        // produces the type half of that itself: it filters relations by
+        // schema but queries `types` with no filter at all, so an
+        // out-of-schema enum or composite arrives on the canonical path. The
+        // relation half only arrives from a custom `GeneratorMetadata`
+        // producer, which the contract explicitly allows.
+        schemas: [{ id: 1, name: "public", owner: "postgres" }],
+        tables: [
+          baseTable({ id: 1, name: "holder" }),
+          baseTable({ id: 20, schema: "other", name: "remote" }),
+        ],
+        views: [baseView({ id: 21, schema: "other", name: "remote_view" })],
+        columns: [
+          column(1, "mood_col", "mood"),
+          column(2, "point_col", "point3"),
+          column(3, "row_col", "remote"),
+          column(4, "view_col", "remote_view"),
+        ],
+        types: [userStatusEnum, textType, outsideEnum, outsideComposite],
+      }),
+    );
+
+    expect(result).toContain('mood_col: "happy" | "sad" | null');
+    expect(result).toContain("point_col: unknown");
+    expect(result).toContain("row_col: unknown");
+    expect(result).toContain("view_col: unknown");
+    // Nothing may reference the schema that was never generated.
+    expect(result).not.toContain('Database["other"]');
+  });
+
+  test("a non-updatable column on a writable view is `never` in Update", async () => {
+    // A view can be writable overall while individual columns are not, for
+    // instance a computed expression alongside plain passthrough columns. Those
+    // columns have to be spelled `?: never` so writing one is a type error
+    // rather than a runtime rejection. The Insert side of this is already
+    // covered; the Update side was not.
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          baseView({ id: 30, name: "editable_view", is_update_enabled: true }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 30,
+            table: "editable_view",
+            ordinal_position: 1,
+            name: "writable",
+            is_nullable: true,
+          }),
+          baseColumn({
+            table_id: 30,
+            table: "editable_view",
+            ordinal_position: 2,
+            name: "computed",
+            is_nullable: true,
+            is_updatable: false,
+          }),
+        ],
+      }),
+    );
+
+    const update = result.slice(result.indexOf("Update: {"));
+    expect(update).toContain("computed?: never");
+    expect(update).toContain("writable?: string | null");
+  });
+
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {
     // Ported from supabase/postgres-meta#1062 (improved): views made writable
     // by INSTEAD OF triggers get Insert/Update types even though they are not
