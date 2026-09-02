@@ -81,6 +81,14 @@ templates until parity is validated and released. Two consequences:
   regenerating snapshots/fixtures first. Byte parity first; behavior-changing
   cleanups (e.g. oxfmt instead of prettier) come later.
 
+SQL literal quoting: the introspection queries use `literal()` from
+`src/introspection/sql/pg-format.ts`, an inlined port of `pg-format@1.0.4`
+(the package has no `pg-format` runtime dependency; it was CJS-only and painful
+for ESM/bundled consumers such as the CLI). It intentionally keeps pg-format's
+quirks — numbers are quoted (`limit '10'`) — because that is what postgres-meta
+emits. Don't align it with `packages/pg-meta`'s variant in `supabase/supabase`,
+which emits unquoted numbers; that would break SQL byte parity.
+
 `int8` columns: stock `pg` returns them as strings while postgres-meta installs
 a global int8 type parser. `src/introspection/normalize.ts` coerces known
 numeric id fields after each query so output is identical under any driver.

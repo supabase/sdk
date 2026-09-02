@@ -1,4 +1,4 @@
-import { literal } from "pg-format";
+import { literal } from "./pg-format.ts";
 
 /**
  * Schemas that postgres-meta excludes by default when `includeSystemSchemas`
@@ -13,7 +13,7 @@ export const DEFAULT_SYSTEM_SCHEMAS = [
 /**
  * Build a SQL `IN (...)` / `NOT IN (...)` fragment for an include/exclude list,
  * ported verbatim from `postgres-meta/src/lib/helpers.ts`. Values are escaped
- * with pg-format's `literal`. Returns an empty string when there is nothing to
+ * with the inlined pg-format `literal`. Returns an empty string when there is nothing to
  * filter, so callers interpolate it conditionally.
  */
 export const filterByList = (

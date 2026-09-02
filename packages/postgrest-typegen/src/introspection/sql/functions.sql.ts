@@ -1,7 +1,7 @@
 // oxlint-disable typescript/restrict-template-expressions -- verbatim port of postgres-meta's
 // builder, which interpolates the `args` string[] into the SQL (relying on Array#toString). The
 // expression sits inside a template literal where a targeted disable comment would corrupt the SQL.
-import { literal } from "pg-format";
+import { literal } from "./pg-format.ts";
 import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
 
 export const FUNCTIONS_SQL = (

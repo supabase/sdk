@@ -1,4 +1,4 @@
-import { literal } from "pg-format";
+import { literal } from "./pg-format.ts";
 import type { SQLQueryProps } from "./common.ts";
 
 export const FOREIGN_TABLES_SQL = (

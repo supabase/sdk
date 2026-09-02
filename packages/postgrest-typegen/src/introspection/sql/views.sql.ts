@@ -1,4 +1,4 @@
-import { literal } from "pg-format";
+import { literal } from "./pg-format.ts";
 import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
 
 export const VIEWS_SQL = (
