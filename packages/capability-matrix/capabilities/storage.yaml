@@ -266,6 +266,34 @@ features:
     name: Automatic Retry
     description: Automatically retry a failed storage request, with control over how many attempts are made before the error surfaces to the caller.
     group: configuration
+  - id: storage.file_buckets.download_specific_version
+    name: Download Specific File Version
+    description: Download a file for a specific noncurrent or current version, rather than whichever version is currently at that path.
+    group: file_buckets
+  - id: storage.file_buckets.file_info_specific_version
+    name: Get File Info for a Specific Version
+    description: Retrieve a file's metadata for a specific noncurrent or current version, including its version id, archived timestamp, and delete-marker/versioned flags.
+    group: file_buckets
+  - id: storage.file_buckets.move_specific_version
+    name: Move a Specific File Version
+    description: Move a specific version of a file, current or noncurrent, rather than the version currently at the source path. Moving a version to the same path restores it in place.
+    group: file_buckets
+  - id: storage.file_buckets.copy_specific_version
+    name: Copy a Specific File Version
+    description: Copy a specific version of a file, current or noncurrent, rather than the version currently at the source path.
+    group: file_buckets
+  - id: storage.file_buckets.remove_specific_version
+    name: Delete a Specific File Version
+    description: Delete an exact (path, version) pair, current or archived, rather than whichever version is currently at that path.
+    group: file_buckets
+  - id: storage.file_buckets.list_file_versions
+    name: List File Versions and Delete Markers
+    description: Include noncurrent file versions and/or delete markers when listing files, and expose per-file version metadata (version id, archived timestamp, delete-marker and versioned flags) in list results.
+    group: file_buckets
+  - id: storage.file_buckets.bucket_versioning_status
+    name: Bucket Versioning Status
+    description: Enable, suspend, or read a bucket's versioning status, which controls whether writes retain distinct historical file versions or replace the bucket's logical null version.
+    group: file_buckets
   - id: storage.errors.error_codes
     name: Service Error Codes
     description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
