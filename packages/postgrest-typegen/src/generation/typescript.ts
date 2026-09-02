@@ -69,7 +69,7 @@ const defaultFormat = async (code: string): Promise<string> => {
  * a `Row` to point at and belongs here. Both are optional so the exported
  * `pgTypeToTsType` signature stays backwards compatible.
  */
-type TypeResolutionContext = {
+export type TypeResolutionContext = {
   types: PostgresType[];
   schemas: PostgresSchema[];
   tables: PostgresTable[];
@@ -424,7 +424,7 @@ export const generateTypescript = async (
         const type = typesById.get(type_id);
         let tsType = "unknown";
         if (type) {
-          tsType = pgTypeToTsType(schema, type.name, typeContext);
+          tsType = pgTypeToTsType(schema, type.name, typeContext, type.schema);
         }
         return { name, type: tsType };
       });
@@ -465,7 +465,7 @@ export const generateTypescript = async (
     // Case 3: returns base/array/composite/enum type.
     const type = typesById.get(fn.return_type_id);
     if (type) {
-      return pgTypeToTsType(schema, type.name, typeContext);
+      return pgTypeToTsType(schema, type.name, typeContext, type.schema);
     }
 
     return "unknown";
@@ -581,7 +581,12 @@ export const generateTypescript = async (
                 const type = typesById.get(type_id);
                 let tsType = "unknown";
                 if (type) {
-                  tsType = pgTypeToTsType(schema, type.name, typeContext);
+                  tsType = pgTypeToTsType(
+                    schema,
+                    type.name,
+                    typeContext,
+                    type.schema,
+                  );
                 }
                 return { name, type: tsType, has_default };
               },
@@ -600,7 +605,12 @@ export const generateTypescript = async (
                 const type = typesById.get(type_id);
                 let tsType = "unknown";
                 if (type) {
-                  tsType = pgTypeToTsType(schema, type.name, typeContext);
+                  tsType = pgTypeToTsType(
+                    schema,
+                    type.name,
+                    typeContext,
+                    type.schema,
+                  );
                 }
                 return { name, type: tsType, has_default };
               },
@@ -619,7 +629,12 @@ export const generateTypescript = async (
               const type = typesById.get(type_id);
               let tsType = "unknown";
               if (type) {
-                tsType = pgTypeToTsType(schema, type.name, typeContext);
+                tsType = pgTypeToTsType(
+                  schema,
+                  type.name,
+                  typeContext,
+                  type.schema,
+                );
               }
               return { name, type: tsType, has_default };
             },
@@ -956,7 +971,12 @@ export type Database = {
                           let tsType = "unknown";
                           if (type) {
                             tsType = `${generateNullableUnionTsType(
-                              pgTypeToTsType(schema, type.name, typeContext),
+                              pgTypeToTsType(
+                                schema,
+                                type.name,
+                                typeContext,
+                                type.schema,
+                              ),
                               true,
                             )}`;
                           }
@@ -1103,10 +1123,11 @@ export const pgTypeToTsType = (
   schema: PostgresSchema,
   pgType: string,
   context: TypeResolutionContext,
-  // The schema that actually owns `pgType` (a column's `type_schema`), when
-  // known. Disambiguates same-named enums/composites across schemas; falls
-  // back to `schema.name` (the table's own schema) when not provided, e.g.
-  // for function args/return types where no equivalent field exists yet.
+  // The schema that actually owns `pgType`, from the column's `type_schema` or
+  // the resolved `PostgresType.schema`. Disambiguates same-named enums,
+  // composites and relations across schemas. Falls back to `schema.name` (the
+  // schema being generated) when not provided, which is only a guess, so pass
+  // it whenever the owning schema is known.
   typeSchema?: string,
 ): string => {
   const {

@@ -5,6 +5,7 @@ export {
   generateTypescript,
   type GenerateTypescriptOptions,
   pgTypeToTsType,
+  type TypeResolutionContext,
 } from "./typescript.ts";
 export {
   type AccessControl,

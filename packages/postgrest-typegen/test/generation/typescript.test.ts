@@ -1409,6 +1409,69 @@ describe("typescript typegen", () => {
     ).toBe(`Database["public"]['Tables']["foo"]['Row']`);
   });
 
+  test("a function argument resolves in the schema that owns its type", async () => {
+    // Argument and return types used to be resolved without telling the
+    // resolver which schema owns them, so it guessed the schema being
+    // generated. The call sites already hold the resolved `PostgresType`, which
+    // carries the owning schema, so they pass it: an argument genuinely typed
+    // `other.foo` must not resolve to a same-named relation in `public`.
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [
+          { id: 1, name: "public", owner: "postgres" },
+          { id: 2, name: "other", owner: "postgres" },
+        ],
+        tables: [baseTable({ id: 20, schema: "other", name: "foo" })],
+        views: [baseView({ id: 21, schema: "public", name: "foo" })],
+        columns: [
+          baseColumn({
+            table_id: 20,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+          baseColumn({
+            table_id: 21,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+        ],
+        functions: [
+          baseFunction({
+            id: 310,
+            schema: "public",
+            name: "describe",
+            args: [{ mode: "in", name: "a", type_id: 500, has_default: false }],
+            argument_types: "a other.foo",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          {
+            id: 500,
+            name: "foo",
+            schema: "other",
+            format: "foo",
+            enums: [],
+            attributes: [],
+            comment: null,
+            type_relation_id: 20,
+          },
+        ],
+      }),
+    );
+
+    expect(result).toContain('a: Database["other"]["Tables"]["foo"]["Row"]');
+    expect(result).not.toContain(
+      'a: Database["public"]["Views"]["foo"]["Row"]',
+    );
+  });
+
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {
     // Ported from supabase/postgres-meta#1062 (improved): views made writable
     // by INSTEAD OF triggers get Insert/Update types even though they are not
