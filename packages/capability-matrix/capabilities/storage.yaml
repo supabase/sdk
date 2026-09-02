@@ -294,6 +294,18 @@ features:
     name: Bucket Versioning Status
     description: Enable, suspend, or read a bucket's versioning status, which controls whether writes retain distinct historical file versions or replace the bucket's logical null version.
     group: file_buckets
+  - id: storage.file_buckets.get_bucket_lifecycle
+    name: Get Bucket Lifecycle
+    description: Retrieve the lifecycle policy stored on a file bucket. Fails when no policy is stored.
+    group: file_buckets
+  - id: storage.file_buckets.update_bucket_lifecycle
+    name: Update Bucket Lifecycle
+    description: Replace the lifecycle policy on a file bucket. The rules sent are the full policy. Currently only noncurrent-version expiration is accepted.
+    group: file_buckets
+  - id: storage.file_buckets.delete_bucket_lifecycle
+    name: Delete Bucket Lifecycle
+    description: Remove the lifecycle policy from a file bucket. Succeeds even when no policy is stored.
+    group: file_buckets
   - id: storage.errors.error_codes
     name: Service Error Codes
     description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
