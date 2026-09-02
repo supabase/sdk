@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { generateTypescript as rawGenerateTypescript } from "../../src/generation/typescript.ts";
 import { sortGeneratorMetadata } from "../../src/sort.ts";
-import type { PostgresView } from "../../src/types.ts";
+import type { PostgresType, PostgresView } from "../../src/types.ts";
 import {
   baseColumn,
   baseFunction,
@@ -11,6 +11,7 @@ import {
   baseView,
   buildMetadata,
   int4Type,
+  textType,
   userStatusEnum,
 } from "./fixtures.ts";
 
@@ -1203,6 +1204,88 @@ describe("typescript typegen", () => {
       }
       "
     `);
+  });
+
+  test("computed field lands in Row when its parameter is named", async () => {
+    // Ported from supabase/postgres-meta#1034: computed fields were matched by
+    // comparing `argument_types` — `pg_get_function_arguments()` — against the
+    // table name. That string carries the parameter name when the parameter has
+    // one, so `name_translated(category category)` produced `category category`
+    // and never matched, dropping the field from `Row` and making
+    // `.select("name_translated")` a SelectQueryError. The unnamed
+    // `name_translated(category)` matched and worked, which is why this
+    // reproduced for some schemas and not others. Matching on the argument's
+    // composite type covers both spellings.
+    const categoryRowType: PostgresType = {
+      id: 500,
+      name: "category",
+      schema: "public",
+      format: "category",
+      enums: [],
+      attributes: [],
+      comment: null,
+      // The table's own composite type points back at the table's oid.
+      type_relation_id: 1,
+    };
+    // A variadic argument arrives as the array type, which is backed by no
+    // relation and so must never be taken for a computed field.
+    const categoryArrayType: PostgresType = {
+      id: 501,
+      name: "_category",
+      schema: "public",
+      format: "category[]",
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: null,
+    };
+    const metadata = (
+      argName: string,
+      mode: "in" | "inout" | "variadic" = "in",
+      typeId = 500,
+    ) =>
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "category" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            name: "name",
+            format: "text",
+            ordinal_position: 1,
+          }),
+        ],
+        functions: [
+          baseFunction({
+            name: "name_translated",
+            args: [
+              { mode, name: argName, type_id: typeId, has_default: false },
+            ],
+            argument_types: argName ? `${argName} category` : "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [userStatusEnum, textType, categoryRowType, categoryArrayType],
+      });
+
+    const named = await generateTypescript(metadata("category"));
+    expect(named).toContain("name_translated: string | null");
+
+    // The unnamed spelling already worked; keep it working.
+    const unnamed = await generateTypescript(metadata(""));
+    expect(unnamed).toContain("name_translated: string | null");
+
+    // `INOUT` is a valid PostgREST computed field and counts as an input arg
+    // everywhere else in this generator, so it belongs in `Row` too.
+    const inout = await generateTypescript(metadata("category", "inout"));
+    expect(inout).toContain("name_translated: string | null");
+
+    // A variadic argument is an array of the row type, not the row type.
+    const variadic = await generateTypescript(
+      metadata("category", "variadic", 501),
+    );
+    expect(variadic).not.toContain("name_translated: string | null");
   });
 
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {

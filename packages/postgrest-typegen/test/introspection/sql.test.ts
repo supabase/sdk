@@ -572,7 +572,7 @@ describe("introspection SQL builders (generator-path option combination)", () =>
                 t.typrelid = 0
                 or (
                   select
-                    c.relkind in ('c', 'r', 'v', 'm', 'p')
+                    c.relkind in ('c', 'r', 'v', 'm', 'p', 'f')
                   from
                     pg_class c
                   where

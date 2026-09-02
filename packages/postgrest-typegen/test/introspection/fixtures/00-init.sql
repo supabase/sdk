@@ -110,6 +110,17 @@ create foreign table foreign_table (
   status user_status
 ) server foreign_server options (schema_name 'public', table_name 'users');
 
+-- A computed field on a foreign table, declared with a named parameter. The
+-- foreign table's composite type has to reach the generator metadata for this
+-- to resolve, so it pins relkind 'f' being included in TYPES_SQL.
+create or replace function public.foreign_table_label(ft public.foreign_table)
+returns text
+language sql
+stable
+as $$
+select ft.name;
+$$;
+
 create or replace function public.function_returning_row()
 returns public.users
 language sql

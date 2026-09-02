@@ -99,6 +99,7 @@ export type Database = {
           id: number
           name: string | null
           status: Database["public"]["Enums"]["user_status"] | null
+          foreign_table_label: string | null
         }
         Insert: {
           id: number
@@ -117,6 +118,7 @@ export type Database = {
           duration_optional: string | null
           duration_required: string
           id: number
+          double_duration: string | null
         }
         Insert: {
           duration_optional?: string | null
@@ -204,6 +206,18 @@ export type Database = {
           details_is_long: boolean | null
           details_length: number | null
           details_words: string[] | null
+          function_returning_single_row: {
+            decimal: number | null
+            id: number
+            name: string | null
+            status: Database["public"]["Enums"]["user_status"] | null
+            user_uuid: string | null
+          } | null
+          get_todos_setof_rows: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
           test_unnamed_row_scalar: number | null
           test_unnamed_row_setof: {
             details: string | null
@@ -319,6 +333,44 @@ export type Database = {
           name: string | null
           status: Database["public"]["Enums"]["user_status"] | null
           user_uuid: string | null
+          function_using_setof_rows_one: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
+          function_using_table_returns: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
+          get_single_user_summary_from_view: {
+            todo_count: number | null
+            todo_details: string[] | null
+            user_id: number | null
+            user_name: string | null
+            user_status: Database["public"]["Enums"]["user_status"] | null
+          } | null
+          get_todos_from_user: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
+          get_todos_setof_rows: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
+          get_user_audit_setof_single_row: {
+            created_at: string | null
+            id: number
+            previous_value: Json | null
+            user_id: number | null
+          } | null
+          postgrest_resolvable_with_override_function: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
           test_unnamed_row_composite:
             | Database["public"]["CompositeTypes"]["composite_type_with_array_attribute"]
             | null
@@ -508,6 +560,18 @@ export type Database = {
           name: string | null
           status: Database["public"]["Enums"]["user_status"] | null
           user_uuid: string | null
+          get_single_user_summary_from_view: {
+            todo_count: number | null
+            todo_details: string[] | null
+            user_id: number | null
+            user_name: string | null
+            user_status: Database["public"]["Enums"]["user_status"] | null
+          } | null
+          get_todos_from_user: {
+            details: string | null
+            id: number
+            "user-id": number
+          } | null
         }
         Insert: {
           decimal?: number | null
@@ -595,6 +659,7 @@ export type Database = {
         }
         Returns: string
       }
+      foreign_table_label: { Args: { ft: unknown }; Returns: string }
       function_returning_row: {
         Args: Record<PropertyKey, never>
         Returns: {
