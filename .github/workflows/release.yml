@@ -1,4 +1,4 @@
-name: Release
+name: Release capability-matrix
 
 # packages/postgrest-typegen is released on demand, see release-postgrest-typegen.yml
 on:
