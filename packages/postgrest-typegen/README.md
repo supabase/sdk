@@ -23,6 +23,14 @@ deprecated in favor of this package. It's decided that all four eventually
 move out to their own SDK repos too (tracked in SDK-1641), not yet scheduled
 — sequenced after postgres-meta's cutover to this package settles.
 
+> [!IMPORTANT]
+> **We are no longer accepting contributions that fix the bundled generators.**
+> Because each of the four is moving out to its own language's SDK repository,
+> a fix landed here would have to be made a second time in the destination
+> repository, and it also breaks byte parity with postgres-meta until a release
+> propagates. Please open an issue describing the bug instead, so it can be
+> tracked and carried across the move.
+
 ## Design
 
 There is a hard split between **introspection** (database → metadata) and
