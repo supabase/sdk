@@ -442,6 +442,7 @@ export type Database = {
             id: number
             "user-id": number
           } | null
+          todos_matview_label: string | null
         }
         Relationships: [
           {
@@ -659,7 +660,10 @@ export type Database = {
         }
         Returns: string
       }
-      foreign_table_label: { Args: { ft: unknown }; Returns: string }
+      foreign_table_label: {
+        Args: { ft: Database["public"]["Tables"]["foreign_table"]["Row"] }
+        Returns: string
+      }
       function_returning_row: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -812,7 +816,7 @@ export type Database = {
             }
           }
       get_todos_by_matview: {
-        Args: { "": unknown }
+        Args: { "": Database["public"]["Views"]["todos_matview"]["Row"] }
         Returns: {
           details: string | null
           id: number
@@ -1116,6 +1120,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      todos_matview_label: {
+        Args: { mv: Database["public"]["Views"]["todos_matview"]["Row"] }
+        Returns: string
       }
     }
     Enums: {

@@ -1,11 +1,20 @@
 import { describe, expect, test } from "bun:test";
 
-import { generateTypescript as rawGenerateTypescript } from "../../src/generation/typescript.ts";
+import {
+  generateTypescript as rawGenerateTypescript,
+  pgTypeToTsType,
+} from "../../src/generation/typescript.ts";
 import { sortGeneratorMetadata } from "../../src/sort.ts";
-import type { PostgresType, PostgresView } from "../../src/types.ts";
+import type {
+  PostgresSchema,
+  PostgresType,
+  PostgresView,
+} from "../../src/types.ts";
 import {
   baseColumn,
+  baseForeignTable,
   baseFunction,
+  baseMaterializedView,
   baseRelationship,
   baseTable,
   baseView,
@@ -1286,6 +1295,181 @@ describe("typescript typegen", () => {
       metadata("category", "variadic", 501),
     );
     expect(variadic).not.toContain("name_translated: string | null");
+  });
+
+  test("composite args on foreign tables and materialized views resolve to their Row", async () => {
+    // `pgTypeToTsType` used to resolve a relation-typed value against `tables`
+    // and `views` only, so an argument typed as a foreign table or as a
+    // materialized view fell through to `unknown` even though both are
+    // generated (foreign tables under `Tables`, materialized views under
+    // `Views`) and have a `Row` to point at.
+    const relationType = (
+      id: number,
+      name: string,
+      relationId: number,
+    ): PostgresType => ({
+      id,
+      name,
+      schema: "public",
+      format: name,
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: relationId,
+    });
+    const labelFunction = (
+      id: number,
+      relation: string,
+      typeId: number,
+      argName: string,
+    ) =>
+      baseFunction({
+        id,
+        name: `${relation}_label`,
+        args: [
+          { mode: "in", name: argName, type_id: typeId, has_default: false },
+        ],
+        argument_types: `${argName} ${relation}`,
+        return_type_id: 25,
+        return_type: "text",
+      });
+
+    const result = await generateTypescript(
+      buildMetadata({
+        foreignTables: [baseForeignTable({ id: 1, name: "remote_tickets" })],
+        materializedViews: [
+          baseMaterializedView({ id: 2, name: "tickets_matview" }),
+        ],
+        columns: [
+          baseColumn({ table_id: 1, name: "id", format: "int4" }),
+          baseColumn({ table_id: 2, name: "id", format: "int4" }),
+        ],
+        functions: [
+          labelFunction(300, "remote_tickets", 500, "ft"),
+          labelFunction(301, "tickets_matview", 501, "mv"),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          relationType(500, "remote_tickets", 1),
+          relationType(501, "tickets_matview", 2),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'ft: Database["public"]["Tables"]["remote_tickets"]["Row"]',
+    );
+    expect(result).toContain(
+      'mv: Database["public"]["Views"]["tickets_matview"]["Row"]',
+    );
+    expect(result).not.toContain("ft: unknown");
+    expect(result).not.toContain("mv: unknown");
+  });
+
+  test("a relation-typed value resolves in its own schema before its own kind", async () => {
+    // Relation-typed values carry a bare type name, so the resolver has to pick
+    // between same-named relations using `preferredSchema`. It used to settle
+    // the relation kind first and the schema second, which let a table-like
+    // relation in an unrelated schema outrank the view the caller actually
+    // meant. Harmless while only tables and views were consulted; adding
+    // foreign tables and materialized views made it reachable.
+    const schemas = [
+      { id: 1, name: "public", owner: "postgres" },
+      { id: 2, name: "other", owner: "postgres" },
+    ] as PostgresSchema[];
+    const resolve = (context: Parameters<typeof pgTypeToTsType>[2]) =>
+      pgTypeToTsType(schemas[0]!, "foo", context);
+
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "public", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "other", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Views']["foo"]['Row']`);
+
+    // Same rule the other way round: the foreign table is the one in the
+    // preferred schema, so it wins over the view in the unrelated schema.
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "other", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "public", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Tables']["foo"]['Row']`);
+  });
+
+  test("a function argument resolves in the schema that owns its type", async () => {
+    // Argument and return types used to be resolved without telling the
+    // resolver which schema owns them, so it guessed the schema being
+    // generated. The call sites already hold the resolved `PostgresType`, which
+    // carries the owning schema, so they pass it: an argument genuinely typed
+    // `other.foo` must not resolve to a same-named relation in `public`.
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [
+          { id: 1, name: "public", owner: "postgres" },
+          { id: 2, name: "other", owner: "postgres" },
+        ],
+        tables: [baseTable({ id: 20, schema: "other", name: "foo" })],
+        views: [baseView({ id: 21, schema: "public", name: "foo" })],
+        columns: [
+          baseColumn({
+            table_id: 20,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+          baseColumn({
+            table_id: 21,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+        ],
+        functions: [
+          baseFunction({
+            id: 310,
+            schema: "public",
+            name: "describe",
+            args: [{ mode: "in", name: "a", type_id: 500, has_default: false }],
+            argument_types: "a other.foo",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          {
+            id: 500,
+            name: "foo",
+            schema: "other",
+            format: "foo",
+            enums: [],
+            attributes: [],
+            comment: null,
+            type_relation_id: 20,
+          },
+        ],
+      }),
+    );
+
+    expect(result).toContain('a: Database["other"]["Tables"]["foo"]["Row"]');
+    expect(result).not.toContain(
+      'a: Database["public"]["Views"]["foo"]["Row"]',
+    );
   });
 
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {

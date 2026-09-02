@@ -71,6 +71,17 @@ GROUP BY u.id, u.name, u.status;
 
 create materialized view todos_matview as select * from public.todos;
 
+-- A computed field on a materialized view. Materialized views are generated
+-- under `Views`, so the argument must resolve to that view's `Row` rather than
+-- to `unknown`, the same as it does for a plain view.
+create or replace function public.todos_matview_label(mv public.todos_matview)
+returns text
+language sql
+stable
+as $$
+select mv.details;
+$$;
+
 create function public.blurb(public.todos) returns text as
 $$
 select substring($1.details, 1, 3);

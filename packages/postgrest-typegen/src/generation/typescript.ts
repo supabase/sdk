@@ -7,7 +7,9 @@ import { format as oxfmtFormat } from "oxfmt";
 import type {
   GeneratorMetadata,
   PostgresColumn,
+  PostgresForeignTable,
   PostgresFunction,
+  PostgresMaterializedView,
   PostgresSchema,
   PostgresTable,
   PostgresType,
@@ -59,6 +61,23 @@ const defaultFormat = async (code: string): Promise<string> => {
   return formatted;
 };
 
+/**
+ * Collections `pgTypeToTsType` resolves a relation-typed value against.
+ *
+ * Foreign tables are generated under `Tables` and materialized views under
+ * `Views`, exactly like their plain counterparts, so a value typed as one has
+ * a `Row` to point at and belongs here. Both are optional so the exported
+ * `pgTypeToTsType` signature stays backwards compatible.
+ */
+export type TypeResolutionContext = {
+  types: PostgresType[];
+  schemas: PostgresSchema[];
+  tables: PostgresTable[];
+  views: PostgresView[];
+  foreignTables?: PostgresForeignTable[];
+  materializedViews?: PostgresMaterializedView[];
+};
+
 type TsRelationship = Pick<
   GeneratorMetadata["relationships"][number],
   | "foreign_key_name"
@@ -95,6 +114,16 @@ export const generateTypescript = async (
     defaultSchema = "public",
     format = defaultFormat,
   } = opts;
+  // Every relation-typed value resolves against the same collections, so build
+  // the lookup context once rather than reassembling it at each call site.
+  const typeContext: TypeResolutionContext = {
+    types,
+    schemas,
+    tables,
+    views,
+    foreignTables,
+    materializedViews,
+  };
   // Ordering of all collections (incl. relationships, columns, args below) is
   // provided by `sortGeneratorMetadata`; this generator no longer re-sorts.
   const introspectionBySchema = Object.fromEntries<{
@@ -395,12 +424,7 @@ export const generateTypescript = async (
         const type = typesById.get(type_id);
         let tsType = "unknown";
         if (type) {
-          tsType = pgTypeToTsType(schema, type.name, {
-            types,
-            schemas,
-            tables,
-            views,
-          });
+          tsType = pgTypeToTsType(schema, type.name, typeContext, type.schema);
         }
         return { name, type: tsType };
       });
@@ -431,12 +455,7 @@ export const generateTypescript = async (
                       is_nullable: column.is_nullable,
                       is_optional: false,
                     },
-                    {
-                      types,
-                      schemas,
-                      tables,
-                      views,
-                    },
+                    typeContext,
                   ),
                 )
                 .join(",\n")}
@@ -446,12 +465,7 @@ export const generateTypescript = async (
     // Case 3: returns base/array/composite/enum type.
     const type = typesById.get(fn.return_type_id);
     if (type) {
-      return pgTypeToTsType(schema, type.name, {
-        types,
-        schemas,
-        tables,
-        views,
-      });
+      return pgTypeToTsType(schema, type.name, typeContext, type.schema);
     }
 
     return "unknown";
@@ -567,12 +581,12 @@ export const generateTypescript = async (
                 const type = typesById.get(type_id);
                 let tsType = "unknown";
                 if (type) {
-                  tsType = pgTypeToTsType(schema, type.name, {
-                    types,
-                    schemas,
-                    tables,
-                    views,
-                  });
+                  tsType = pgTypeToTsType(
+                    schema,
+                    type.name,
+                    typeContext,
+                    type.schema,
+                  );
                 }
                 return { name, type: tsType, has_default };
               },
@@ -591,12 +605,12 @@ export const generateTypescript = async (
                 const type = typesById.get(type_id);
                 let tsType = "unknown";
                 if (type) {
-                  tsType = pgTypeToTsType(schema, type.name, {
-                    types,
-                    schemas,
-                    tables,
-                    views,
-                  });
+                  tsType = pgTypeToTsType(
+                    schema,
+                    type.name,
+                    typeContext,
+                    type.schema,
+                  );
                 }
                 return { name, type: tsType, has_default };
               },
@@ -615,12 +629,12 @@ export const generateTypescript = async (
               const type = typesById.get(type_id);
               let tsType = "unknown";
               if (type) {
-                tsType = pgTypeToTsType(schema, type.name, {
-                  types,
-                  schemas,
-                  tables,
-                  views,
-                });
+                tsType = pgTypeToTsType(
+                  schema,
+                  type.name,
+                  typeContext,
+                  type.schema,
+                );
               }
               return { name, type: tsType, has_default };
             },
@@ -666,12 +680,7 @@ export const generateTypescript = async (
       is_nullable: boolean;
       is_optional: boolean;
     },
-    context: {
-      types: PostgresType[];
-      schemas: PostgresSchema[];
-      tables: PostgresTable[];
-      views: PostgresView[];
-    },
+    context: TypeResolutionContext,
   ) {
     return `${JSON.stringify(column.name)}${column.is_optional ? "?" : ""}: ${generateNullableUnionTsType(
       pgTypeToTsType(schema, column.format, context, column.type_schema),
@@ -751,7 +760,7 @@ export type Database = {
                             is_nullable: column.is_nullable,
                             is_optional: false,
                           },
-                          { types, schemas, tables, views },
+                          typeContext,
                         ),
                       ),
                       ...schemaFunctions
@@ -786,7 +795,7 @@ export type Database = {
                             column.is_identity ||
                             column.default_value !== null,
                         },
-                        { types, schemas, tables, views },
+                        typeContext,
                       );
                     })}
                   }
@@ -808,7 +817,7 @@ export type Database = {
                           is_nullable: column.is_nullable,
                           is_optional: true,
                         },
-                        { types, schemas, tables, views },
+                        typeContext,
                       );
                     })}
                   }
@@ -840,7 +849,7 @@ export type Database = {
                             is_nullable: column.is_nullable,
                             is_optional: false,
                           },
-                          { types, schemas, tables, views },
+                          typeContext,
                         ),
                       ),
                       ...schemaFunctions
@@ -874,7 +883,7 @@ export type Database = {
                                  is_nullable: true,
                                  is_optional: true,
                                },
-                               { types, schemas, tables, views },
+                               typeContext,
                              );
                            })}
                          }
@@ -896,7 +905,7 @@ export type Database = {
                                  is_nullable: true,
                                  is_optional: true,
                                },
-                               { types, schemas, tables, views },
+                               typeContext,
                              );
                            })}
                          }
@@ -962,12 +971,12 @@ export type Database = {
                           let tsType = "unknown";
                           if (type) {
                             tsType = `${generateNullableUnionTsType(
-                              pgTypeToTsType(schema, type.name, {
-                                types,
-                                schemas,
-                                tables,
-                                views,
-                              }),
+                              pgTypeToTsType(
+                                schema,
+                                type.name,
+                                typeContext,
+                                type.schema,
+                              ),
                               true,
                             )}`;
                           }
@@ -1113,23 +1122,22 @@ export const Constants = {
 export const pgTypeToTsType = (
   schema: PostgresSchema,
   pgType: string,
-  {
+  context: TypeResolutionContext,
+  // The schema that actually owns `pgType`, from the column's `type_schema` or
+  // the resolved `PostgresType.schema`. Disambiguates same-named enums,
+  // composites and relations across schemas. Falls back to `schema.name` (the
+  // schema being generated) when not provided, which is only a guess, so pass
+  // it whenever the owning schema is known.
+  typeSchema?: string,
+): string => {
+  const {
     types,
     schemas,
     tables,
     views,
-  }: {
-    types: PostgresType[];
-    schemas: PostgresSchema[];
-    tables: PostgresTable[];
-    views: PostgresView[];
-  },
-  // The schema that actually owns `pgType` (a column's `type_schema`), when
-  // known. Disambiguates same-named enums/composites across schemas; falls
-  // back to `schema.name` (the table's own schema) when not provided, e.g.
-  // for function args/return types where no equivalent field exists yet.
-  typeSchema?: string,
-): string => {
+    foreignTables = [],
+    materializedViews = [],
+  } = context;
   if (pgType === "bool") {
     return "boolean";
   } else if (
@@ -1161,12 +1169,7 @@ export const pgTypeToTsType = (
   } else if (pgType === "record") {
     return "Record<string, unknown>";
   } else if (pgType.startsWith("_")) {
-    return `(${pgTypeToTsType(
-      schema,
-      pgType.substring(1),
-      { types, schemas, tables, views },
-      typeSchema,
-    )})[]`;
+    return `(${pgTypeToTsType(schema, pgType.substring(1), context, typeSchema)})[]`;
   } else {
     const preferredSchema = typeSchema ?? schema.name;
     const enumTypes = types.filter(
@@ -1199,27 +1202,37 @@ export const pgTypeToTsType = (
       return "unknown";
     }
 
-    const tableRowTypes = tables.filter((table) => table.name === pgType);
-    if (tableRowTypes.length > 0) {
-      const tableRowType =
-        tableRowTypes.find((type) => type.schema === preferredSchema) ||
-        tableRowTypes[0];
-      if (schemas.some(({ name }) => name === tableRowType.schema)) {
-        return `Database[${JSON.stringify(tableRowType.schema)}]['Tables'][${JSON.stringify(
-          tableRowType.name,
-        )}]['Row']`;
+    // A relation-typed value carries only a bare type name, so several relations
+    // can share it and `preferredSchema` is what disambiguates them. Match on
+    // the schema across every relation kind before falling back to kind order,
+    // otherwise a relation in an unrelated schema outranks the one the caller
+    // meant. Foreign tables are generated under `Tables` and materialized views
+    // under `Views`, alongside their plain counterparts.
+    const relationKinds = [
+      ["Tables", tables],
+      ["Tables", foreignTables],
+      ["Views", views],
+      ["Views", materializedViews],
+    ] as const;
+    const findRelation = (
+      matches: (relation: { name: string; schema: string }) => boolean,
+    ) => {
+      for (const [kind, relations] of relationKinds) {
+        const relation = relations.find(matches);
+        if (relation) return { kind, relation };
       }
-      return "unknown";
-    }
-
-    const viewRowTypes = views.filter((view) => view.name === pgType);
-    if (viewRowTypes.length > 0) {
-      const viewRowType =
-        viewRowTypes.find((type) => type.schema === preferredSchema) ||
-        viewRowTypes[0];
-      if (schemas.some(({ name }) => name === viewRowType.schema)) {
-        return `Database[${JSON.stringify(viewRowType.schema)}]['Views'][${JSON.stringify(
-          viewRowType.name,
+      return undefined;
+    };
+    const match =
+      findRelation(
+        ({ name, schema: relationSchema }) =>
+          name === pgType && relationSchema === preferredSchema,
+      ) ?? findRelation(({ name }) => name === pgType);
+    if (match) {
+      const { kind, relation } = match;
+      if (schemas.some(({ name }) => name === relation.schema)) {
+        return `Database[${JSON.stringify(relation.schema)}]['${kind}'][${JSON.stringify(
+          relation.name,
         )}]['Row']`;
       }
       return "unknown";
