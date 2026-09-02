@@ -1,8 +1,15 @@
 import { describe, expect, test } from "bun:test";
 
-import { generateTypescript as rawGenerateTypescript } from "../../src/generation/typescript.ts";
+import {
+  generateTypescript as rawGenerateTypescript,
+  pgTypeToTsType,
+} from "../../src/generation/typescript.ts";
 import { sortGeneratorMetadata } from "../../src/sort.ts";
-import type { PostgresType, PostgresView } from "../../src/types.ts";
+import type {
+  PostgresSchema,
+  PostgresType,
+  PostgresView,
+} from "../../src/types.ts";
 import {
   baseColumn,
   baseForeignTable,
@@ -1310,14 +1317,19 @@ describe("typescript typegen", () => {
       comment: null,
       type_relation_id: relationId,
     });
-    const labelFunction = (name: string, typeId: number, argName: string) =>
+    const labelFunction = (
+      id: number,
+      relation: string,
+      typeId: number,
+      argName: string,
+    ) =>
       baseFunction({
-        id: typeId,
-        name,
+        id,
+        name: `${relation}_label`,
         args: [
           { mode: "in", name: argName, type_id: typeId, has_default: false },
         ],
-        argument_types: `${argName} ${name.replace("_label", "")}`,
+        argument_types: `${argName} ${relation}`,
         return_type_id: 25,
         return_type: "text",
       });
@@ -1333,8 +1345,8 @@ describe("typescript typegen", () => {
           baseColumn({ table_id: 2, name: "id", format: "int4" }),
         ],
         functions: [
-          labelFunction("remote_tickets_label", 500, "ft"),
-          labelFunction("tickets_matview_label", 501, "mv"),
+          labelFunction(300, "remote_tickets", 500, "ft"),
+          labelFunction(301, "tickets_matview", 501, "mv"),
         ],
         types: [
           userStatusEnum,
@@ -1354,6 +1366,47 @@ describe("typescript typegen", () => {
     );
     expect(result).not.toContain("ft: unknown");
     expect(result).not.toContain("mv: unknown");
+  });
+
+  test("a relation-typed value resolves in its own schema before its own kind", async () => {
+    // Relation-typed values carry a bare type name, so the resolver has to pick
+    // between same-named relations using `preferredSchema`. It used to settle
+    // the relation kind first and the schema second, which let a table-like
+    // relation in an unrelated schema outrank the view the caller actually
+    // meant. Harmless while only tables and views were consulted; adding
+    // foreign tables and materialized views made it reachable.
+    const schemas = [
+      { id: 1, name: "public", owner: "postgres" },
+      { id: 2, name: "other", owner: "postgres" },
+    ] as PostgresSchema[];
+    const resolve = (context: Parameters<typeof pgTypeToTsType>[2]) =>
+      pgTypeToTsType(schemas[0]!, "foo", context);
+
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "public", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "other", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Views']["foo"]['Row']`);
+
+    // Same rule the other way round: the foreign table is the one in the
+    // preferred schema, so it wins over the view in the unrelated schema.
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "other", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "public", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Tables']["foo"]['Row']`);
   });
 
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {

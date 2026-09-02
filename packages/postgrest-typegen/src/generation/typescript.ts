@@ -1102,20 +1102,21 @@ export const Constants = {
 export const pgTypeToTsType = (
   schema: PostgresSchema,
   pgType: string,
-  {
-    types,
-    schemas,
-    tables,
-    views,
-    foreignTables = [],
-    materializedViews = [],
-  }: TypeResolutionContext,
+  context: TypeResolutionContext,
   // The schema that actually owns `pgType` (a column's `type_schema`), when
   // known. Disambiguates same-named enums/composites across schemas; falls
   // back to `schema.name` (the table's own schema) when not provided, e.g.
   // for function args/return types where no equivalent field exists yet.
   typeSchema?: string,
 ): string => {
+  const {
+    types,
+    schemas,
+    tables,
+    views,
+    foreignTables = [],
+    materializedViews = [],
+  } = context;
   if (pgType === "bool") {
     return "boolean";
   } else if (
@@ -1147,12 +1148,7 @@ export const pgTypeToTsType = (
   } else if (pgType === "record") {
     return "Record<string, unknown>";
   } else if (pgType.startsWith("_")) {
-    return `(${pgTypeToTsType(
-      schema,
-      pgType.substring(1),
-      { types, schemas, tables, views, foreignTables, materializedViews },
-      typeSchema,
-    )})[]`;
+    return `(${pgTypeToTsType(schema, pgType.substring(1), context, typeSchema)})[]`;
   } else {
     const preferredSchema = typeSchema ?? schema.name;
     const enumTypes = types.filter(
@@ -1185,31 +1181,37 @@ export const pgTypeToTsType = (
       return "unknown";
     }
 
-    const tableRowTypes = [...tables, ...foreignTables].filter(
-      (table) => table.name === pgType,
-    );
-    if (tableRowTypes.length > 0) {
-      const tableRowType =
-        tableRowTypes.find((type) => type.schema === preferredSchema) ||
-        tableRowTypes[0];
-      if (schemas.some(({ name }) => name === tableRowType.schema)) {
-        return `Database[${JSON.stringify(tableRowType.schema)}]['Tables'][${JSON.stringify(
-          tableRowType.name,
-        )}]['Row']`;
+    // A relation-typed value carries only a bare type name, so several relations
+    // can share it and `preferredSchema` is what disambiguates them. Match on
+    // the schema across every relation kind before falling back to kind order,
+    // otherwise a relation in an unrelated schema outranks the one the caller
+    // meant. Foreign tables are generated under `Tables` and materialized views
+    // under `Views`, alongside their plain counterparts.
+    const relationKinds = [
+      ["Tables", tables],
+      ["Tables", foreignTables],
+      ["Views", views],
+      ["Views", materializedViews],
+    ] as const;
+    const findRelation = (
+      matches: (relation: { name: string; schema: string }) => boolean,
+    ) => {
+      for (const [kind, relations] of relationKinds) {
+        const relation = relations.find(matches);
+        if (relation) return { kind, relation };
       }
-      return "unknown";
-    }
-
-    const viewRowTypes = [...views, ...materializedViews].filter(
-      (view) => view.name === pgType,
-    );
-    if (viewRowTypes.length > 0) {
-      const viewRowType =
-        viewRowTypes.find((type) => type.schema === preferredSchema) ||
-        viewRowTypes[0];
-      if (schemas.some(({ name }) => name === viewRowType.schema)) {
-        return `Database[${JSON.stringify(viewRowType.schema)}]['Views'][${JSON.stringify(
-          viewRowType.name,
+      return undefined;
+    };
+    const match =
+      findRelation(
+        ({ name, schema: relationSchema }) =>
+          name === pgType && relationSchema === preferredSchema,
+      ) ?? findRelation(({ name }) => name === pgType);
+    if (match) {
+      const { kind, relation } = match;
+      if (schemas.some(({ name }) => name === relation.schema)) {
+        return `Database[${JSON.stringify(relation.schema)}]['${kind}'][${JSON.stringify(
+          relation.name,
         )}]['Row']`;
       }
       return "unknown";
