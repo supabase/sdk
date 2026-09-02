@@ -1204,6 +1204,45 @@ describe("typescript typegen", () => {
     `);
   });
 
+  test("function overload union order is stable when signatures tie", async () => {
+    const overload = (id: number) =>
+      baseFunction({
+        id,
+        name: "join_to_a",
+        argument_types: "source_row public.source",
+        identity_argument_types: "source_row public.source",
+        return_type: "SETOF public.target",
+        return_type_relation_id: 10,
+        is_set_returning_function: true,
+        args: [
+          {
+            mode: "in",
+            name: "source_row",
+            type_id: 200,
+            type: "source",
+            has_default: false,
+          },
+        ],
+      });
+
+    const first = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 10, name: "target" })],
+        functions: [overload(2), overload(1)],
+        types: [userStatusEnum, int4Type],
+      }),
+    );
+    const second = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 10, name: "target" })],
+        functions: [overload(1), overload(2)],
+        types: [userStatusEnum, int4Type],
+      }),
+    );
+
+    expect(first).toBe(second);
+  });
+
   test("views emit Insert and Update independently based on trigger-aware writability", async () => {
     // Ported from supabase/postgres-meta#1062 (improved): views made writable
     // by INSTEAD OF triggers get Insert/Update types even though they are not

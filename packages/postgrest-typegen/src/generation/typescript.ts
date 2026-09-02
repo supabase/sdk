@@ -883,11 +883,16 @@ export type Database = {
                 schemaFunctionsGroupedByName[fnName].sort(
                   (a, b) =>
                     a.fn.argument_types.localeCompare(b.fn.argument_types) ||
-                    a.fn.return_type.localeCompare(b.fn.return_type),
+                    a.fn.return_type.localeCompare(b.fn.return_type) ||
+                    a.fn.identity_argument_types.localeCompare(
+                      b.fn.identity_argument_types,
+                    ) ||
+                    a.fn.id - b.fn.id,
                 );
               }
 
               return Object.entries(schemaFunctionsGroupedByName)
+                .sort(([a], [b]) => a.localeCompare(b))
                 .map(([fnName, fns]) => {
                   const functionSignatures = getFunctionSignatures(schema, fns);
                   return `${JSON.stringify(fnName)}:\n${functionSignatures}`;
