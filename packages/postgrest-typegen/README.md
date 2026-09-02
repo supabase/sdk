@@ -30,9 +30,6 @@ move out to their own SDK repos too (tracked in SDK-1641), not yet scheduled
 > repository, and it also breaks byte parity with postgres-meta until a release
 > propagates. Please open an issue describing the bug instead, so it can be
 > tracked and carried across the move.
->
-> Contributions to introspection, the `GeneratorMetadata` contract, and
-> `sortGeneratorMetadata` are still very welcome.
 
 ## Design
 
