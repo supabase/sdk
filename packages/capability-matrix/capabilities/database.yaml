@@ -38,6 +38,10 @@ features:
     name: Query Table or View
     description: Scope a query to a specific table or view. The entry point for all table-level operations.
     group: query
+  - id: database.query.openapi_spec
+    name: Get OpenAPI Spec
+    description: Retrieve the OpenAPI description PostgREST publishes for a schema, listing only the tables, views and functions the caller's role can access.
+    group: query
   - id: database.query.rpc
     name: Call Function (RPC)
     description: Invoke a database function via the PostgREST RPC interface.
