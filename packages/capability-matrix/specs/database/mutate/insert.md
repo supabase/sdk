@@ -26,8 +26,10 @@ that all rows must share one key set.
 | absent (default)  | `null` |
 | `missing=default` | the column's `DEFAULT` |
 
-Implementations MUST expose this as `defaultToNull`, defaulting to true; `false` sends
-`missing=default`.
+Implementations that send `columns` MUST expose this as `defaultToNull`, defaulting to true; `false`
+sends `missing=default`. Without `columns` the preference has no effect — every row carries every
+key, and a column absent from the payload is left out of the statement so the database applies its
+default — so an implementation that sends rows verbatim need not expose it.
 
 **Returning rows.** `Prefer: return=representation` returns the inserted rows — feature
 `database.mutate.select_after_mutation`.
