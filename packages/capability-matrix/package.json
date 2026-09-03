@@ -2,7 +2,7 @@
   "name": "@supabase/capability-matrix-validator",
   "private": true,
   "type": "module",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Validator for the Supabase SDK capability matrix.",
   "scripts": {
     "validate": "tsx src/cli.ts validate",
