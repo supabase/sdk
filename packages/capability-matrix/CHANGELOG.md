@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.7.0...capability-matrix-v1.8.0) (2026-09-03)
+
+
+### Features
+
+* **database:** add openapi_spec capability ([#148](https://github.com/supabase/sdk/issues/148)) ([90e3cd5](https://github.com/supabase/sdk/commit/90e3cd5f1ab9c0462fd6bbd17e0334b28b723dec))
+* **storage:** add bucket lifecycle capabilities ([#147](https://github.com/supabase/sdk/issues/147)) ([c9c42b1](https://github.com/supabase/sdk/commit/c9c42b16413e7065a20ba2a9d8d2ecfaf27ab6f9))
+
+
+### Bug Fixes
+
+* **capability-matrix:** decode Swift symbol file URLs ([#134](https://github.com/supabase/sdk/issues/134)) ([a8e68a9](https://github.com/supabase/sdk/commit/a8e68a9699818c3d96d63273d18aaee5d01c07c6))
+
 ## [1.7.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.6.0...capability-matrix-v1.7.0) (2026-09-01)
 
 
