@@ -234,6 +234,10 @@ features:
     name: Automatic Retry with Backoff
     description: Automatically retry idempotent requests on transient failures using exponential backoff; configurable per-client and overridable per-request.
     group: configuration
+  - id: database.configuration.access_token
+    name: Per-Request Access Token
+    description: Attach an end-user access token to database requests - per derived or reconfigured client, or per single request - so they execute under that user's Row Level Security policies instead of the API key's default role.
+    group: configuration
   - id: database.configuration.request_timeout
     name: Request Timeout
     description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
