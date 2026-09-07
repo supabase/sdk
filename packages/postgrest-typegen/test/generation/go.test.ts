@@ -19,6 +19,50 @@ const generateGo = (metadata: Parameters<typeof rawGenerateGo>[0]) =>
   rawGenerateGo(sortGeneratorMetadata(metadata));
 
 describe("go typegen", () => {
+  // Every Postgres range and multirange type. This generator already maps all
+  // twelve to its string type; the TypeScript generator was brought in line
+  // with it, so lock the mapping here to keep the two from drifting apart.
+  const rangeTypes = [
+    "int4range",
+    "int4multirange",
+    "int8range",
+    "int8multirange",
+    "numrange",
+    "nummultirange",
+    "tsrange",
+    "tsmultirange",
+    "tstzrange",
+    "tstzmultirange",
+    "daterange",
+    "datemultirange",
+  ];
+
+  const rangeMetadata = () =>
+    buildMetadata({
+      tables: [baseTable({ id: 1, name: "ranges" })],
+      columns: rangeTypes.map((format, index) =>
+        baseColumn({
+          table_id: 1,
+          table: "ranges",
+          ordinal_position: index + 1,
+          name: format,
+          format,
+        }),
+      ),
+    });
+
+  test("range and multirange columns are strings", () => {
+    const result = generateGo(rangeMetadata());
+
+    for (const format of rangeTypes) {
+      const field = result
+        .split("\n")
+        .find((line) => line.includes(`json:"${format}"`));
+      // Surrounding spaces keep this from also matching `[]string` or `*string`.
+      expect(field).toContain(" string ");
+    }
+  });
+
   test("table with nullability, identity, generated and default columns", () => {
     const result = generateGo(
       buildMetadata({

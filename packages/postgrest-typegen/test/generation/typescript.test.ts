@@ -1978,27 +1978,60 @@ describe("typescript typegen", () => {
     `);
   });
 
-  test("range and multirange columns are strings, not `unknown`", async () => {
-    // PostgREST serialises a range as its Postgres literal form (`[1,10)`), so
-    // `string` is what actually arrives on the wire. Leaving these at `unknown`
-    // forced a cast at every use site. The Go and Python generators already map
-    // all twelve range and multirange types to their string type; this keeps
-    // TypeScript in step with them.
-    const rangeTypes = [
-      "int4range",
-      "int4multirange",
-      "int8range",
-      "int8multirange",
-      "numrange",
-      "nummultirange",
-      "tsrange",
-      "tsmultirange",
-      "tstzrange",
-      "tstzmultirange",
-      "daterange",
-      "datemultirange",
-    ];
+  // Every Postgres range and multirange type. PostgREST serialises a range as
+  // its Postgres literal form (`[1,10)`), so `string` is what actually arrives
+  // on the wire; these used to fall through to `unknown`, forcing a cast at
+  // every use site. The Go and Python generators in this package already map
+  // all twelve to their string type.
+  const rangeTypes = [
+    "int4range",
+    "int4multirange",
+    "int8range",
+    "int8multirange",
+    "numrange",
+    "nummultirange",
+    "tsrange",
+    "tsmultirange",
+    "tstzrange",
+    "tstzmultirange",
+    "daterange",
+    "datemultirange",
+  ];
 
+  /** The `int4range` builtin, for fixtures that resolve a range by `type_id`. */
+  const int4RangeType: PostgresType = {
+    id: 3904,
+    name: "int4range",
+    schema: "pg_catalog",
+    format: "int4range",
+    enums: [],
+    attributes: [],
+    comment: null,
+    type_relation_id: null,
+  };
+
+  test("every range and multirange type maps to string, scalar and array", () => {
+    // The mapping itself, asserted exhaustively and directly. The generation
+    // tests below cover one representative type through each code path that
+    // consumes this function; enumerating all twelve there as well would only
+    // re-test this single `includes` list.
+    const context: Parameters<typeof pgTypeToTsType>[2] = {
+      types: [],
+      schemas: [{ id: 1, name: "public", owner: "postgres" }],
+      tables: [],
+      views: [],
+    };
+    const schema = context.schemas[0]!;
+
+    for (const format of rangeTypes) {
+      expect(pgTypeToTsType(schema, format, context)).toBe("string");
+      // Array formats resolve by stripping the leading underscore and
+      // recursing, so the element mapping has to hold there too.
+      expect(pgTypeToTsType(schema, `_${format}`, context)).toBe("(string)[]");
+    }
+  });
+
+  test("range columns are strings in Row, Insert and Update", async () => {
     const result = await generateTypescript(
       buildMetadata({
         tables: [baseTable({ id: 1, name: "ranges" })],
@@ -2016,13 +2049,48 @@ describe("typescript typegen", () => {
 
     for (const format of rangeTypes) {
       expect(result).toContain(`${format}: string`);
+      expect(result).not.toContain(`${format}: unknown`);
     }
-    expect(result).not.toContain("unknown");
+  });
+
+  test("a nullable range column is `string | null`, not bare `unknown`", async () => {
+    // Regression guard for the second half of this fix. `unknown` already
+    // subsumes null, so the nullable-union helper deliberately skips the
+    // `| null` suffix for it — which meant a nullable range column and a NOT
+    // NULL one generated the identical `unknown`, erasing the constraint.
+    // Mapping to `string` is what makes the two spellings differ again.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "ranges" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 1,
+            name: "required_span",
+            format: "int4range",
+          }),
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 2,
+            name: "optional_span",
+            format: "int4range",
+            is_nullable: true,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain("required_span: string");
+    expect(result).toContain("optional_span: string | null");
+    // Insert and Update make a nullable column optional but keep the union.
+    expect(result).toContain("optional_span?: string | null");
+    expect(result).not.toContain("optional_span: unknown");
+    expect(result).not.toContain("required_span: unknown");
   });
 
   test("an array of a range type is a string array", async () => {
-    // Array formats are resolved by stripping the leading underscore and
-    // recursing, so the element mapping has to hold there too.
     const result = await generateTypescript(
       buildMetadata({
         tables: [baseTable({ id: 1, name: "ranges" })],
@@ -2034,11 +2102,88 @@ describe("typescript typegen", () => {
             name: "spans",
             format: "_int4range",
           }),
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 2,
+            name: "multi_spans",
+            format: "_int4multirange",
+          }),
         ],
       }),
     );
 
     expect(result).toContain("spans: string[]");
+    expect(result).toContain("multi_spans: string[]");
+  });
+
+  test("a range resolves as a function argument and return type", async () => {
+    // Functions reach the mapping through `typesById` rather than a column
+    // format, so a range only lands in `Args`/`Returns` if it is registered as
+    // a type and resolves by name.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "ranges" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 1,
+            name: "id",
+            format: "int4",
+          }),
+        ],
+        functions: [
+          baseFunction({
+            name: "widen",
+            args: [
+              { mode: "in", name: "r", type_id: 3904, has_default: false },
+            ],
+            argument_types: "r int4range",
+            identity_argument_types: "int4range",
+            return_type_id: 3904,
+            return_type: "int4range",
+          }),
+        ],
+        types: [userStatusEnum, textType, int4RangeType],
+      }),
+    );
+
+    expect(result).toContain("widen: { Args: { r: string }; Returns: string }");
+  });
+
+  test("a range attribute of a composite type is `string | null`", async () => {
+    // Composite attributes are always generated nullable, so this exercises
+    // the mapping and the nullable union together on a separate code path
+    // from table columns.
+    const spanComposite: PostgresType = {
+      id: 201,
+      name: "span",
+      schema: "public",
+      format: "span",
+      enums: [],
+      attributes: [{ name: "period", type_id: 3904 }],
+      comment: null,
+      type_relation_id: 201,
+    };
+
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "ranges" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 1,
+            name: "id",
+            format: "int4",
+          }),
+        ],
+        types: [userStatusEnum, textType, int4RangeType, spanComposite],
+      }),
+    );
+
+    expect(result).toContain("period: string | null");
   });
 
   test("format option substitutes the default oxfmt formatter", async () => {
