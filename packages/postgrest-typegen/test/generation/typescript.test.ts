@@ -1978,6 +1978,69 @@ describe("typescript typegen", () => {
     `);
   });
 
+  test("range and multirange columns are strings, not `unknown`", async () => {
+    // PostgREST serialises a range as its Postgres literal form (`[1,10)`), so
+    // `string` is what actually arrives on the wire. Leaving these at `unknown`
+    // forced a cast at every use site. The Go and Python generators already map
+    // all twelve range and multirange types to their string type; this keeps
+    // TypeScript in step with them.
+    const rangeTypes = [
+      "int4range",
+      "int4multirange",
+      "int8range",
+      "int8multirange",
+      "numrange",
+      "nummultirange",
+      "tsrange",
+      "tsmultirange",
+      "tstzrange",
+      "tstzmultirange",
+      "daterange",
+      "datemultirange",
+    ];
+
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "ranges" })],
+        columns: rangeTypes.map((format, index) =>
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: index + 1,
+            name: format,
+            format,
+          }),
+        ),
+      }),
+    );
+
+    for (const format of rangeTypes) {
+      expect(result).toContain(`${format}: string`);
+    }
+    expect(result).not.toContain("unknown");
+  });
+
+  test("an array of a range type is a string array", async () => {
+    // Array formats are resolved by stripping the leading underscore and
+    // recursing, so the element mapping has to hold there too.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "ranges" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "ranges",
+            ordinal_position: 1,
+            name: "spans",
+            format: "_int4range",
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain("spans: string[]");
+  });
+
   test("format option substitutes the default oxfmt formatter", async () => {
     const calls: string[] = [];
     const result = await generateTypescript(

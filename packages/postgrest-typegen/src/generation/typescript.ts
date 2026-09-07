@@ -1118,7 +1118,6 @@ export const Constants = {
   return output;
 };
 
-// TODO: Make this more robust. Currently doesn't handle range types - returns them as unknown.
 export const pgTypeToTsType = (
   schema: PostgresSchema,
   pgType: string,
@@ -1159,6 +1158,21 @@ export const pgTypeToTsType = (
       "uuid",
       "vector",
       "interval",
+      // Range and multirange types. PostgREST serialises these as their
+      // Postgres literal form (e.g. `[1,10)`), so `string` is the faithful
+      // mapping, matching the Go and Python generators.
+      "int4range",
+      "int4multirange",
+      "int8range",
+      "int8multirange",
+      "numrange",
+      "nummultirange",
+      "tsrange",
+      "tsmultirange",
+      "tstzrange",
+      "tstzmultirange",
+      "daterange",
+      "datemultirange",
     ].includes(pgType)
   ) {
     return "string";
