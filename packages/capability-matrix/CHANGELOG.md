@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.8.0...capability-matrix-v1.9.0) (2026-09-07)
+
+
+### Features
+
+* add MFA recovery codes capability ([#151](https://github.com/supabase/sdk/issues/151)) ([6801932](https://github.com/supabase/sdk/commit/6801932c013eba45034934294c0f5007909ee13d))
+* **database:** add `configuration.access_token` with spec ([#149](https://github.com/supabase/sdk/issues/149)) ([e8cf4f4](https://github.com/supabase/sdk/commit/e8cf4f4fc8df82e9e4897d01adf823b0366cf99b))
+
 ## [1.8.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.7.0...capability-matrix-v1.8.0) (2026-09-03)
 
 
