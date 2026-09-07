@@ -13,6 +13,8 @@ groups:
     title: Identity Linking
   - id: mfa
     title: Multi-Factor Authentication
+  - id: mfa_recovery_codes
+    title: MFA Recovery Codes
   - id: oauth_server
     title: OAuth Server
   - id: admin
@@ -124,6 +126,26 @@ features:
     name: MFA Verify
     description: Verify a code against an active MFA challenge to complete second-factor authentication.
     group: mfa
+  - id: auth.mfa_recovery_codes.generate
+    name: MFA Recovery Codes Generate
+    description: Generate a new set of single-use recovery codes for a user who does not already have one.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.get_status
+    name: MFA Recovery Codes Get Status
+    description: Return the enrollment status of a user's recovery codes, including how many remain unused.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.regenerate
+    name: MFA Recovery Codes Regenerate
+    description: Replace a user's existing set of recovery codes with a newly generated set, invalidating the previous codes.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.unenroll
+    name: MFA Recovery Codes Unenroll
+    description: Remove a user's recovery codes factor, invalidating all remaining codes.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.verify
+    name: MFA Recovery Codes Verify
+    description: Verify a single-use recovery code to upgrade the session to a higher authenticator assurance level.
+    group: mfa_recovery_codes
   - id: auth.oauth_admin.create_client
     name: Admin Create OAuth Client
     description: Register a new OAuth client application. Requires admin/service role.
