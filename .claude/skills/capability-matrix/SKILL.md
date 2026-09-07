@@ -100,10 +100,12 @@ There is no schema field for "this only applies to mobile/web SDKs" — that
 nuance (biometric auth, secure enclave storage, browser-only APIs like
 `localStorage`) is expected to live in prose, not structured data. If a
 feature's behavior is inherently platform-scoped, suggest a line either in
-the feature's `description` or, if it has a spec, in the spec's `## Notes`
-section. Point out *why* it matters: SDKs that don't apply can declare
-`not_applicable` in their `sdk-compliance.yaml`, but only if the constraint
-is documented somewhere a maintainer would see it.
+the feature's `description` or, if it has a spec, folded into the spec's
+`## Behavior` (or `## Prerequisites`, if it gates the feature) — specs don't
+have a separate `## Notes` section, since the whole document is already
+notes-in-nature. Point out *why* it matters: SDKs that don't apply can
+declare `not_applicable` in their `sdk-compliance.yaml`, but only if the
+constraint is documented somewhere a maintainer would see it.
 
 ## Presenting findings
 

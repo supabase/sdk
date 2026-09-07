@@ -19,7 +19,9 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 <!-- Required. Describe what the feature accepts, what it does, and what it returns.
      Focus on observable behavior — inputs, outputs, side effects, branching conditions.
-     Do not include language-specific function signatures; implementations vary across SDKs. -->
+     Do not include language-specific function signatures; implementations vary across SDKs.
+     Fold in platform quirks, security considerations, rate limits, and deprecation warnings
+     where they're relevant, rather than collecting them in a separate section. -->
 
 ## Prerequisites
 
@@ -31,11 +33,6 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 <!-- Optional — remove this section if the feature surfaces no named error conditions. -->
 
 - `error_code` — description of when this error is returned
-
-## Notes
-
-<!-- Optional — remove this section if there are none.
-     Platform quirks, security considerations, rate limits, deprecation warnings. -->
 
 ## Related
 
