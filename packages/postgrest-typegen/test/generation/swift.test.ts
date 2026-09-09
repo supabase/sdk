@@ -254,6 +254,23 @@ describe("swift typegen", () => {
     expect(result).toContain('case plainName = "plain_name"');
   });
 
+  test("escapes Swift reserved words used as column names", () => {
+    const result = generateSwift(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({ name: "class", ordinal_position: 1 }),
+          baseColumn({ name: "async", ordinal_position: 2 }),
+        ],
+      }),
+    );
+
+    expect(result).toContain("let `class`: String");
+    expect(result).toContain('case `class` = "class"');
+    expect(result).toContain("let `async`: String");
+    expect(result).toContain('case `async` = "async"');
+  });
+
   test("a leading underscore in a type name is preserved", () => {
     // `formatForSwiftTypeName` pascal-cases each word, which would eat a
     // leading underscore, so it is stripped and put back. Postgres names its
