@@ -7,6 +7,7 @@ import { validateCompliance, normalizeCompliance, collectFeatureIds } from "./co
 import type { RawCompliance } from "./compliance.js";
 import { computeParity } from "./report.js";
 import type { ComplianceFile, ComplianceMap, Language } from "./types.js";
+import { fetchComplianceFile } from "./fetch-compliance.js";
 
 interface Repo {
   slug: string;
@@ -27,21 +28,6 @@ const REPOS: Repo[] = [
 function packageRoot(): string {
   const here = dirname(fileURLToPath(import.meta.url));
   return resolve(here, "..");
-}
-
-async function fetchComplianceFile(slug: string, token: string): Promise<string | null> {
-  const url = `https://api.github.com/repos/${slug}/contents/sdk-compliance.yaml`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github.raw+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`GitHub API ${res.status} for ${slug}`);
-  return res.text();
 }
 
 async function main(): Promise<void> {
