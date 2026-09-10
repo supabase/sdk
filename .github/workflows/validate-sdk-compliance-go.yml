@@ -66,7 +66,7 @@ jobs:
       # go/parser, so the target checkouts need no dependency resolution and
       # the tool itself downloads nothing.
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
           # Nothing to cache for a stdlib-only tool, and the default cache
