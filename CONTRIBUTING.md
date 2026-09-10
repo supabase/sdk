@@ -63,6 +63,8 @@ npm run aggregate                  # fetch all SDK compliance files → site/com
 npm run build-site                 # render the static site to site/index.html
 ```
 
+`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+
 Run `npm test` and `npm run validate` before opening a PR. CI runs the same checks plus spec file validation.
 
 ## Pull requests

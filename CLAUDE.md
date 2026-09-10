@@ -29,6 +29,8 @@ npm run build-site              # Build HTML site (uses cached compliance data)
 npm run build-site <compliance.json>  # Build with specific compliance data
 ```
 
+`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+
 To run a single test file:
 ```bash
 npx vitest run test/schema.test.ts
