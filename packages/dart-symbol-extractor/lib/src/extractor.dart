@@ -50,14 +50,30 @@ void _visitTopLevel(
       .getLocation(declaration.firstTokenAfterCommentAndMetadata.offset)
       .lineNumber;
   switch (declaration) {
-    // Class-like containers expose their name and members identically. Unnamed
-    // extensions (name == null) fall through, as they have no qualifiable
-    // surface.
-    case ClassDeclaration(:final name, :final members):
-    case MixinDeclaration(:final name, :final members):
-    case EnumDeclaration(:final name, :final members):
-    case ExtensionTypeDeclaration(:final name, :final members):
-    case ExtensionDeclaration(name: final name?, :final members):
+    // Class-like containers expose their members identically; the ones that
+    // can carry a primary constructor keep their name behind a name part.
+    case ClassDeclaration(:final namePart, body: ClassBody(:final members)):
+    case EnumDeclaration(:final namePart, body: EnumBody(:final members)):
+    case ExtensionTypeDeclaration(
+      :final namePart,
+      body: ClassBody(:final members),
+    ):
+      _emitContainer(
+        namePart.typeName.lexeme,
+        members,
+        relPath,
+        lineInfo,
+        line,
+        out,
+      );
+
+    // Unnamed extensions (name == null) fall through, as they have no
+    // qualifiable surface.
+    case MixinDeclaration(:final name, body: ClassBody(:final members)):
+    case ExtensionDeclaration(
+      name: final name?,
+      body: ClassBody(:final members),
+    ):
       _emitContainer(name.lexeme, members, relPath, lineInfo, line, out);
 
     case FunctionDeclaration(:final name, :final isGetter, :final isSetter)
