@@ -128,6 +128,8 @@ npm run build-site                 # render the static site to site/index.html
 npm run build-site compliance.json # render the site with compliance data
 ```
 
+`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+
 ## CI
 
 | Workflow                                 | Trigger                                            | What it does                                                                                                                                                                                                                         |
