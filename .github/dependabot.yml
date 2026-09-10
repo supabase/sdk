@@ -1,0 +1,59 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      github-actions:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directories:
+      - /packages/*
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: pub
+    directory: /packages/dart-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      pub:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: gomod
+    directory: /packages/go-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      gomod:
+        update-types:
+          - minor
+          - patch
