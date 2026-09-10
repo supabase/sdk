@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "arktype": "2.2.3",
-    "oxfmt": "0.65.0"
+    "oxfmt": "0.66.0"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",
@@ -72,7 +72,7 @@
     "@types/node": "^26.3.0",
     "@types/pg": "^8.23.1",
     "knip": "^6.32.3",
-    "oxlint": "1.80.0",
+    "oxlint": "1.81.0",
     "oxlint-tsgolint": "7.0.2001",
     "pg": "^8.23.0",
     "testcontainers": "^12.1.0",
