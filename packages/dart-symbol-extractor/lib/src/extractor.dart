@@ -64,7 +64,8 @@ void _visitTopLevel(
         when !isGetter && !isSetter:
       _emit(name.lexeme, SymbolKind.function, relPath, line, out);
 
-    // `class C = A with M;` is a class, not a typedef, so it precedes TypeAlias.
+    // `class C = A with M;` is a class, not a typedef, so it precedes
+    // TypeAlias.
     case ClassTypeAlias(:final name):
       _emit(name.lexeme, SymbolKind.classKind, relPath, line, out);
 
@@ -79,8 +80,13 @@ void _visitTopLevel(
   }
 }
 
-void _emit(String name, SymbolKind kind, String relPath, int line,
-    List<ParsedSymbol> out) {
+void _emit(
+  String name,
+  SymbolKind kind,
+  String relPath,
+  int line,
+  List<ParsedSymbol> out,
+) {
   if (_isPrivate(name)) return;
   out.add(ParsedSymbol(name: name, kind: kind, file: relPath, line: line));
 }
@@ -117,10 +123,11 @@ void _emitContainer(
           : SymbolKind.method;
       out.add(
         ParsedSymbol(
-            name: '$containerName.$name',
-            kind: kind,
-            file: relPath,
-            line: memberLine),
+          name: '$containerName.$name',
+          kind: kind,
+          file: relPath,
+          line: memberLine,
+        ),
       );
     } else if (member is FieldDeclaration) {
       for (final field in member.fields.variables) {
@@ -161,8 +168,9 @@ bool _isPrivate(String name) => name.startsWith('_');
 bool _isInternal(NodeList<Annotation> metadata) {
   return metadata.any((annotation) {
     final name = annotation.name;
-    final identifier =
-        name is PrefixedIdentifier ? name.identifier.name : name.name;
+    final identifier = name is PrefixedIdentifier
+        ? name.identifier.name
+        : name.name;
     return identifier == 'internal';
   });
 }
