@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "../src/api-check";
+import {
+  checkFullCoverage,
+  checkNewSymbols,
+  formatErrorMessage,
+  formatRemovedMessage,
+} from "../src/api-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
 
 function sym(name: string, line?: number): ParsedSymbol {
@@ -68,6 +73,64 @@ describe("checkNewSymbols", () => {
     expect(result.uncoveredSymbols).toHaveLength(1);
     expect(result.uncoveredSymbols[0].file).toBe("src/auth.ts");
     expect(result.uncoveredSymbols[0].line).toBe(42);
+  });
+});
+
+describe("checkFullCoverage", () => {
+  it("reports every unregistered symbol in the current API", () => {
+    const current = [
+      sym("AuthClient.signIn"),
+      sym("AuthClient.signUp"),
+      sym("AuthClient.unregistered"),
+    ];
+
+    const result = checkFullCoverage(current, compliance);
+
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.unregistered")]);
+  });
+
+  it("reports every registered symbol missing from the current API", () => {
+    const result = checkFullCoverage([sym("AuthClient.signIn")], compliance);
+
+    expect(result.removedRegisteredSymbols).toEqual([
+      { symbol: "AuthClient.signUp", featureId: "auth.sign_up" },
+    ]);
+  });
+
+  it("accepts an entirely covered and current API", () => {
+    const result = checkFullCoverage(
+      [sym("AuthClient.signIn"), sym("AuthClient.signUp")],
+      compliance,
+    );
+
+    expect(result.uncoveredSymbols).toEqual([]);
+    expect(result.removedRegisteredSymbols).toEqual([]);
+  });
+
+  it("counts feature and top-level supporting symbols as coverage", () => {
+    const withSupporting = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["AuthClient.signUp"],
+          supporting_symbols: ["SignUpOptions"],
+        },
+      },
+      supporting_symbols: ["AuthException"],
+    };
+
+    const result = checkFullCoverage(
+      [
+        sym("AuthClient.signUp"),
+        sym("SignUpOptions"),
+        sym("AuthException"),
+      ],
+      withSupporting,
+    );
+
+    expect(result.uncoveredSymbols).toEqual([]);
+    expect(result.removedRegisteredSymbols).toEqual([]);
   });
 });
 
@@ -163,6 +226,26 @@ describe("formatErrorMessage", () => {
     const s: ParsedSymbol = { name: "AuthClient.signUp", kind: "method", file: "" };
     const msg = formatErrorMessage([s], "javascript");
     expect(msg).not.toContain("defined at:");
+  });
+
+  it("names the comparison base in additions mode", () => {
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+      "additions",
+      "main",
+    );
+    expect(msg).toContain("relative to the base branch (main)");
+  });
+
+  it("describes a static audit in full mode", () => {
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+      "full",
+    );
+    expect(msg).toContain("Public API is not registered");
+    expect(msg).not.toContain("base branch");
   });
 });
 

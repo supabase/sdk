@@ -48,7 +48,6 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,18 +61,25 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       - name: Set up Python
+        if: steps.api_check_setup.outputs.should-run == 'true'
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
 
       - name: Install griffe
+        if: steps.api_check_setup.outputs.should-run == 'true'
         run: pip install griffe
 
       - name: Dump griffe symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
           GRIFFE_PACKAGES: ${{ inputs.griffe-packages }}
           GRIFFE_SEARCH_PATHS: ${{ inputs.griffe-search-paths }}
         run: |
@@ -82,7 +88,9 @@ jobs:
             echo "::error::griffe-packages is required and must be non-empty"
             exit 1
           fi
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             SEARCH_FLAGS=""
             if [ -n "$GRIFFE_SEARCH_PATHS" ]; then
               SEARCH_FLAGS=$(echo "$GRIFFE_SEARCH_PATHS" | tr ',' '\n' \
@@ -93,8 +101,13 @@ jobs:
           done
 
       - name: Normalize griffe symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             npm run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-$b.json" \
               --project-root "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
@@ -102,9 +115,11 @@ jobs:
         working-directory: _sdk-spec/packages/capability-matrix
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
+        if: steps.api_check_setup.outputs.should-run == 'true' && github.event_name == 'pull_request'
         with:
           compliance-file: ${{ inputs.compliance-file }}

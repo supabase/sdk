@@ -1,8 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
-import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "./api-check.js";
-import type { RawCompliance } from "./compliance.js";
+import {
+  checkFullCoverage,
+  checkNewSymbols,
+  formatErrorMessage,
+  formatRemovedMessage,
+} from "./api-check.js";
+import { getApiCoverageMode, type RawCompliance } from "./compliance.js";
 import type { ParseResult } from "./normalize-typedoc.js";
 
 async function main(): Promise<void> {
@@ -16,22 +21,13 @@ async function main(): Promise<void> {
   }
 
   let prResult: ParseResult;
-  let baseResult: ParseResult;
+  let baseResult: ParseResult | undefined;
   let compliance: RawCompliance;
 
   try {
     prResult = JSON.parse(readFileSync(resolve(prFile), "utf8")) as ParseResult;
   } catch (e) {
     console.error(`Failed to read PR symbols: ${(e as Error).message}`);
-    process.exit(1);
-  }
-
-  try {
-    baseResult = JSON.parse(
-      readFileSync(resolve(baseFile), "utf8"),
-    ) as ParseResult;
-  } catch (e) {
-    console.error(`Failed to read base symbols: ${(e as Error).message}`);
     process.exit(1);
   }
 
@@ -44,19 +40,47 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const { uncoveredSymbols, removedRegisteredSymbols } = checkNewSymbols(
-    baseResult.symbols,
-    prResult.symbols,
-    compliance,
-  );
+  const coverageMode = getApiCoverageMode(compliance);
+
+  if (coverageMode === "additions") {
+    if (baseFile === "-") {
+      console.error("Additions coverage requires a base symbol file and a pull request event.");
+      process.exit(1);
+    }
+    try {
+      baseResult = JSON.parse(
+        readFileSync(resolve(baseFile), "utf8"),
+      ) as ParseResult;
+    } catch (e) {
+      console.error(`Failed to read base symbols: ${(e as Error).message}`);
+      process.exit(1);
+    }
+  }
+
+  const result =
+    coverageMode === "full"
+      ? checkFullCoverage(prResult.symbols, compliance)
+      : checkNewSymbols(baseResult?.symbols ?? [], prResult.symbols, compliance);
+  const { uncoveredSymbols, removedRegisteredSymbols } = result;
 
   if (uncoveredSymbols.length === 0 && removedRegisteredSymbols.length === 0) {
-    console.log("✅ All new public API symbols are covered in the capability matrix.");
+    console.log(
+      coverageMode === "full"
+        ? "✅ The complete public API is covered in the capability matrix."
+        : "✅ All new public API symbols are covered in the capability matrix.",
+    );
     return;
   }
 
   if (uncoveredSymbols.length > 0) {
-    console.error(formatErrorMessage(uncoveredSymbols, compliance.sdk));
+    console.error(
+      formatErrorMessage(
+        uncoveredSymbols,
+        compliance.sdk,
+        coverageMode,
+        process.env.GITHUB_BASE_REF,
+      ),
+    );
   }
   if (removedRegisteredSymbols.length > 0) {
     if (uncoveredSymbols.length > 0) console.error("");

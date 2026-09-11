@@ -43,11 +43,10 @@ jobs:
 
   # Unlike the other language workflows this one carries no drift step, so it
   # never posts PR comments and the job needs no pull-requests permission.
-  # The blocking new-symbol check below already fails a PR that removes or
-  # renames a registered symbol.
+  # The blocking public API check below already fails when a registered symbol
+  # is removed or renamed within the coverage scope selected by the manifest.
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -60,12 +59,16 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       # The Go extractor parses syntactically with the standard library's
       # go/parser, so the target checkouts need no dependency resolution and
       # the tool itself downloads nothing.
       - name: Setup Go
+        if: steps.api_check_setup.outputs.should-run == 'true'
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
@@ -75,13 +78,19 @@ jobs:
           cache: false
 
       - name: Extract Go symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             go run . "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
         working-directory: _sdk-spec/packages/go-symbol-extractor
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}

@@ -40,7 +40,6 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -54,30 +53,42 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       # The Dart parser is a small package:analyzer tool run directly with
       # `dart run`. It parses syntactically, so the target packages need no
       # `pub get` — only the Dart SDK and the tool's own dependencies.
       - name: Setup Dart SDK
+        if: steps.api_check_setup.outputs.should-run == 'true'
         uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
 
       - name: Get Dart extractor dependencies
+        if: steps.api_check_setup.outputs.should-run == 'true'
         run: dart pub get
         working-directory: _sdk-spec/packages/dart-symbol-extractor
 
       - name: Extract Dart symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             dart run bin/extract.dart "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
         working-directory: _sdk-spec/packages/dart-symbol-extractor
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
+        if: steps.api_check_setup.outputs.should-run == 'true' && github.event_name == 'pull_request'
         with:
           compliance-file: ${{ inputs.compliance-file }}

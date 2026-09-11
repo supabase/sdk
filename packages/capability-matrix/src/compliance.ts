@@ -12,8 +12,20 @@ type RawValue =
 
 export interface RawCompliance {
   sdk: string;
+  api_coverage?: ApiCoverageMode;
   features: Record<string, RawValue>;
   supporting_symbols?: string[];
+}
+
+export const API_COVERAGE_MODES = ["additions", "full"] as const;
+export type ApiCoverageMode = (typeof API_COVERAGE_MODES)[number];
+
+export function getApiCoverageMode(raw: RawCompliance): ApiCoverageMode {
+  const mode: unknown = raw.api_coverage ?? "additions";
+  if (!API_COVERAGE_MODES.includes(mode as ApiCoverageMode)) {
+    throw new Error(`unknown api_coverage "${String(mode)}"`);
+  }
+  return mode as ApiCoverageMode;
 }
 
 // Pseudo feature ID reported for symbols registered in the top-level
@@ -43,6 +55,16 @@ export function validateCompliance(
 
   if (!LANGUAGES.includes(raw.sdk as Language)) {
     findings.push({ level: "error", message: `unknown sdk "${raw.sdk}"` });
+  }
+
+  if (
+    raw.api_coverage !== undefined &&
+    !API_COVERAGE_MODES.includes(raw.api_coverage as ApiCoverageMode)
+  ) {
+    findings.push({
+      level: "error",
+      message: `unknown api_coverage "${raw.api_coverage}"`,
+    });
   }
 
   checkSymbolList(raw.supporting_symbols, "supporting_symbols", "top level", findings);
