@@ -12,6 +12,7 @@ Each SDK repo hosts a `sdk-compliance.yaml` at a known path:
 
 ```yaml
 sdk: javascript
+api_coverage: additions
 features:
   auth.sign_in.email: implemented
   auth.mfa.enroll:
@@ -24,12 +25,23 @@ features:
 
 Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
 
+`api_coverage` controls the blocking public API check. It defaults to
+`additions`, which compares a pull request with its target branch and requires
+new symbols to be registered. Set it to `full` to require every symbol in the
+current public API to be registered and every registered symbol to still exist.
+Full coverage is a static, single-checkout audit, so it can run consistently on
+pull requests, pushes, and manual workflow dispatches.
+
 ### Registering symbols
 
 CI asks two different questions about an SDK's public API, and each one reads a different field.
 
 - **Is this capability really implemented?** The **drift check** (non-blocking warning) re-verifies every feature marked `implemented` against the SDK's actual public API. If a registered symbol can no longer be found (renamed, removed), or if an `implemented` feature has no symbols registered at all to verify against, CI posts a warning so the entry can be corrected. This reads `symbols`.
-- **Is every public symbol accounted for?** The **new-symbol check** (blocking) fails a PR that adds a public symbol the compliance file does not mention anywhere, prompting the author to register it. This reads `symbols` and `supporting_symbols` alike.
+- **Is every required public symbol accounted for?** The **public API check**
+  (blocking) reads `symbols` and `supporting_symbols` alike. In `additions` mode
+  it checks symbols added relative to the target branch. In `full` mode it
+  checks the complete current API and also fails when a registered symbol no
+  longer exists.
 
 `symbols` is therefore for **entry points**: the methods a user calls to exercise the capability. Keep the list short and precise, because every name in it is a claim that the feature exists.
 

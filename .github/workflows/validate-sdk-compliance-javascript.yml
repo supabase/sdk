@@ -48,7 +48,6 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -62,7 +61,10 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       # This workflow is build-agnostic: the SDK declares how to produce its
       # TypeDoc spec.json files via `build-command`, and where they land via
@@ -71,14 +73,18 @@ jobs:
       # ParseResult. TypeDoc emits repo-root-relative paths, so the merged
       # output stays unambiguous without any prefixing.
       - name: Generate and normalize TypeScript symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         env:
           BUILD_COMMAND: ${{ inputs.build-command }}
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
           SPEC_GLOB: ${{ inputs.spec-glob }}
         run: |
           set -euo pipefail
           [ -n "${BUILD_COMMAND:-}" ] || { echo "::error::build-command is required"; exit 1; }
           [ -n "${SPEC_GLOB:-}" ]     || { echo "::error::spec-glob is required"; exit 1; }
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             ROOT="$GITHUB_WORKSPACE/_sdk-$b"
             # The SDK owns how it builds; we just run it and collect what it emits.
             ( cd "$ROOT" && eval "$BUILD_COMMAND" )
@@ -94,9 +100,11 @@ jobs:
           done
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
+        if: steps.api_check_setup.outputs.should-run == 'true' && github.event_name == 'pull_request'
         with:
           compliance-file: ${{ inputs.compliance-file }}

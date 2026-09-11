@@ -45,6 +45,7 @@ SDK compliance is **declared in each SDK repo**, not here. To report which featu
 
 ```yaml
 sdk: javascript   # one of: javascript, flutter, python, swift, csharp, go, kotlin
+api_coverage: additions # optional: additions (default) or full
 
 features:
   auth.sign_up:                implemented
@@ -62,6 +63,23 @@ features:
 The file is **sparse** — only list features that differ from `not_implemented`. Unknown feature IDs and invalid status values fail CI.
 
 The optional `symbols` field maps a compliance entry to the public API symbols in your SDK. CI uses this to detect when a PR adds a new public symbol that is not yet registered — see [Opt-in to validation](#opt-in-to-validation) below.
+
+### API coverage modes
+
+`api_coverage` controls how the blocking public API check interprets the
+extracted SDK surface:
+
+- `additions` is the backward-compatible default. On pull requests, CI compares
+  the current API with the target branch and requires only newly added symbols
+  to be registered. Existing unregistered symbols remain grandfathered.
+- `full` audits the current checkout by itself. Every extracted public symbol
+  must be registered under `symbols` or `supporting_symbols`, and every
+  registered symbol must still exist. It does not need a target-branch checkout,
+  so the same check works on pull requests, pushes, and manual runs.
+
+New SDKs should prefer `full`. Existing SDKs can remain on `additions` until
+their current public surface has been catalogued, then switch modes in the same
+change that completes that catalogue.
 
 ### Opt-in to validation
 
@@ -99,7 +117,22 @@ The JavaScript workflow requires a `typedoc-packages` input — comma-separated 
 This checks out the canonical feature list from this repo and runs two checks on every PR:
 
 1. **Compliance validation** — verifies your `sdk-compliance.yaml` against the canonical feature list.
-2. **Public API check** — parses the SDK's public symbols, diffs against the base branch, and fails if any new symbol is not registered in `sdk-compliance.yaml`.
+2. **Public API check** — parses the SDK's public symbols and applies the
+   `api_coverage` mode declared in `sdk-compliance.yaml`.
+
+For a repository using `api_coverage: full`, invoke the reusable workflow from
+every event that should enforce complete coverage:
+
+```yaml
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+```
+
+An `additions`-mode API check is skipped outside pull requests because it needs
+a target branch for comparison. Compliance-file validation still runs.
 
 ### Pinning
 
@@ -135,5 +168,5 @@ npm run build-site compliance.json # render the site with compliance data
 | Workflow                                 | Trigger                                            | What it does                                                                                                                                                                                                                         |
 | ---------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `capability-matrix-validate.yml`         | push to `main`, PRs touching matrix files, nightly | Tier 1: schema, tests, typecheck, structural checks. Tier 2 (PRs + nightly): reference checks against GitHub.                                                                                                                        |
-| `validate-sdk-compliance-<language>.yml` | `workflow_call` from SDK repos                     | One reusable workflow per language (`swift`, `javascript`, `python`, `dart`). Validates an SDK's `sdk-compliance.yaml` against the canonical feature list; blocks PRs that add public symbols not registered in the compliance file. |
+| `validate-sdk-compliance-<language>.yml` | `workflow_call` from SDK repos                     | One reusable workflow per language (`swift`, `javascript`, `python`, `dart`). Validates an SDK's `sdk-compliance.yaml`; checks either newly added symbols or the complete public API according to `api_coverage`. |
 | `capability-matrix-deploy-pages.yml`     | push to `main`, daily cron, `workflow_dispatch`    | Fetches all SDK compliance files, builds the site, deploys to GitHub Pages.                                                                                                                                                          |

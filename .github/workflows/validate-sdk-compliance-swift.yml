@@ -40,7 +40,6 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: macos-latest
     permissions:
       contents: read
@@ -54,9 +53,13 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       - name: Cache SPM dependencies
+        if: steps.api_check_setup.outputs.should-run == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -67,8 +70,13 @@ jobs:
           restore-keys: spm-${{ runner.os }}-
 
       - name: Extract Swift symbol graphs
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             cd "$GITHUB_WORKSPACE/_sdk-$b"
             # || true: test targets may fail to extract on CI runners; library targets land first
             swift package dump-symbol-graph \
@@ -83,8 +91,13 @@ jobs:
           done
 
       - name: Normalize Swift symbol graphs
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             npm run --silent normalize-symbolgraph -- \
               "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
@@ -92,9 +105,11 @@ jobs:
         working-directory: _sdk-spec/packages/capability-matrix
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
+        if: steps.api_check_setup.outputs.should-run == 'true' && github.event_name == 'pull_request'
         with:
           compliance-file: ${{ inputs.compliance-file }}

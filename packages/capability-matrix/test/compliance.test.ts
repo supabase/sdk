@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex, findMissingFeatureIds, TOP_LEVEL_SUPPORTING } from "../src/compliance";
+import {
+  validateCompliance,
+  normalizeCompliance,
+  collectFeatureIds,
+  buildSymbolIndex,
+  findMissingFeatureIds,
+  getApiCoverageMode,
+  TOP_LEVEL_SUPPORTING,
+} from "../src/compliance";
 import { checkDrift } from "../src/drift-check";
 import { checkNewSymbols } from "../src/api-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
@@ -47,6 +55,30 @@ describe("validateCompliance", () => {
     expect(validateCompliance(raw, knownIds)).toEqual([]);
   });
 
+  it.each(["additions", "full"] as const)(
+    "accepts the %s API coverage mode",
+    (api_coverage) => {
+      const raw = {
+        sdk: "javascript",
+        api_coverage,
+        features: {},
+      };
+      expect(validateCompliance(raw, knownIds)).toEqual([]);
+    },
+  );
+
+  it("rejects an unknown API coverage mode", () => {
+    const raw = {
+      sdk: "javascript",
+      api_coverage: "partial",
+      features: {},
+    };
+    expect(validateCompliance(raw as never, knownIds)).toContainEqual({
+      level: "error",
+      message: 'unknown api_coverage "partial"',
+    });
+  });
+
   it("allows note on any status", () => {
     const raw = {
       sdk: "javascript",
@@ -82,6 +114,34 @@ describe("validateCompliance", () => {
     };
     const findings = validateCompliance(raw, knownIds);
     expect(findings.some((f) => f.message.includes("requires a note"))).toBe(true);
+  });
+});
+
+describe("getApiCoverageMode", () => {
+  it("defaults to additions", () => {
+    expect(getApiCoverageMode({ sdk: "javascript", features: {} })).toBe(
+      "additions",
+    );
+  });
+
+  it("returns an explicit full mode", () => {
+    expect(
+      getApiCoverageMode({
+        sdk: "javascript",
+        api_coverage: "full",
+        features: {},
+      }),
+    ).toBe("full");
+  });
+
+  it("rejects an unknown mode at runtime", () => {
+    expect(() =>
+      getApiCoverageMode({
+        sdk: "javascript",
+        api_coverage: "partial",
+        features: {},
+      } as never),
+    ).toThrow('unknown api_coverage "partial"');
   });
 });
 

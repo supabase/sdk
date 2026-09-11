@@ -1,11 +1,14 @@
 import { buildSymbolIndex } from "./compliance.js";
-import type { RawCompliance } from "./compliance.js";
+import type { ApiCoverageMode, RawCompliance } from "./compliance.js";
 import type { ParsedSymbol } from "./normalize-typedoc.js";
 
-export interface CheckResult {
-  newSymbols: string[];
+export interface CoverageCheckResult {
   uncoveredSymbols: ParsedSymbol[];
   removedRegisteredSymbols: Array<{ symbol: string; featureId: string }>;
+}
+
+export interface CheckResult extends CoverageCheckResult {
+  newSymbols: string[];
 }
 
 export function checkNewSymbols(
@@ -29,13 +32,35 @@ export function checkNewSymbols(
   return { newSymbols, uncoveredSymbols, removedRegisteredSymbols };
 }
 
+export function checkFullCoverage(
+  currentSymbols: ParsedSymbol[],
+  compliance: RawCompliance,
+): CoverageCheckResult {
+  const currentNames = new Set(currentSymbols.map((symbol) => symbol.name));
+  const symbolIndex = buildSymbolIndex(compliance);
+  const uncoveredSymbols = currentSymbols.filter(
+    (symbol) => !symbolIndex.has(symbol.name),
+  );
+  const removedRegisteredSymbols = [...symbolIndex.entries()]
+    .filter(([symbol]) => !currentNames.has(symbol))
+    .map(([symbol, featureId]) => ({ symbol, featureId }));
+
+  return { uncoveredSymbols, removedRegisteredSymbols };
+}
+
 export function formatErrorMessage(
   uncoveredSymbols: ParsedSymbol[],
   sdkName: string,
+  mode: ApiCoverageMode = "additions",
+  baseRef?: string,
 ): string {
+  const scope =
+    mode === "full"
+      ? "Public API is not registered in the capability matrix:"
+      : `New public API detected relative to the base branch${baseRef ? ` (${baseRef})` : ""} that is not in the capability matrix:`;
   const lines: string[] = [
     "❌ Capability matrix check failed",
-    "New public API detected that is not in the capability matrix:",
+    scope,
   ];
   for (const s of uncoveredSymbols) {
     lines.push(`  - ${s.name} (${sdkName})`);
