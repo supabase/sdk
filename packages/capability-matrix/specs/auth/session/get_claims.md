@@ -23,6 +23,8 @@ Verification proceeds in order, cheapest first:
 
 The JWK Set is cached in the client for ten minutes, matching the `Cache-Control: public, max-age=600` the endpoint serves. The cache is shared across calls, and concurrent misses should coalesce into a single fetch.
 
+Bind the verification algorithm from the **matched JWK**, not from the token header. The attacker controls the header but not the published key set, so keying off the JWK removes the algorithm-confusion bug class by construction.
+
 ## Prerequisites
 
 Local verification requires the project to publish at least one asymmetric signing key. A project still on the legacy symmetric secret publishes an empty `keys` array, which is valid and must route every token through the server-side fallback rather than fail.
@@ -35,7 +37,6 @@ Local verification requires the project to publish at least one asymmetric signi
 ## Notes
 
 - The JWK Set endpoint serves only public keys. A public key can check a signature but never produce one, so the document is safe to serve unauthenticated and safe to cache. A symmetric legacy secret could mint tokens if published, which is why it never appears there and why those tokens take the server round trip.
-- Bind the verification algorithm from the **matched JWK**, not from the token header. The attacker controls the header but not the published key set, so keying off the JWK removes the algorithm-confusion bug class by construction. Implementations currently differ here and the JWK-bound stance is the recommended one.
 - Verified claims prove identity as of token minting. They cannot prove the session still exists: a revoked session's token keeps verifying locally until it expires. Decisions that must respect revocation belong on [Get User](auth.session.get_user).
 
 ## Related
