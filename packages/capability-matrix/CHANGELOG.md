@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.9.0...capability-matrix-v1.10.0) (2026-09-14)
+
+
+### Features
+
+* add full API coverage mode ([#176](https://github.com/supabase/sdk/issues/176)) ([ef94626](https://github.com/supabase/sdk/commit/ef946260f055559c49a78d94aa529239bd88a534)), closes [#96](https://github.com/supabase/sdk/issues/96)
+
+
+### Bug Fixes
+
+* **matrix:** allow anonymous compliance aggregation ([#157](https://github.com/supabase/sdk/issues/157)) ([00a3b6d](https://github.com/supabase/sdk/commit/00a3b6d9b895b4d4b923d79b3822fb2e6ea912d2))
+
 ## [1.9.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.8.0...capability-matrix-v1.9.0) (2026-09-07)
 
 
