@@ -1,14 +1,6 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const COLUMNS_SQL = (
-  props: SQLQueryPropsWithSchemaFilter & {
-    tableIdFilter?: string;
-    tableIdentifierFilter?: string;
-    columnNameFilter?: string;
-    idsFilter?: string;
-  },
-) => /* SQL */ `
+export const COLUMNS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 -- Adapted from information_schema.columns
 
 SELECT
@@ -140,10 +132,6 @@ FROM
   ) AS check_constraints ON check_constraints.table_id = c.oid AND check_constraints.ordinal_position = a.attnum
 WHERE
   ${props.schemaFilter ? `nc.nspname ${props.schemaFilter} AND` : ""}
-  ${props.idsFilter ? `(c.oid || '.' || a.attnum) ${props.idsFilter} AND` : ""}
-  ${props.columnNameFilter ? `(c.relname || '.' || a.attname) ${props.columnNameFilter} AND` : ""}
-  ${props.tableIdFilter ? `c.oid ${props.tableIdFilter} AND` : ""}
-  ${props.tableIdentifierFilter ? `nc.nspname || '.' || c.relname ${props.tableIdentifierFilter} AND` : ""}
   NOT pg_is_other_temp_schema(nc.oid)
   AND a.attnum > 0
   AND NOT a.attisdropped
@@ -156,6 +144,4 @@ WHERE
       'SELECT, INSERT, UPDATE, REFERENCES'
     )
   )
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

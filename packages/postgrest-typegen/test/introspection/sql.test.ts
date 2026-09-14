@@ -17,15 +17,14 @@ import { TABLE_RELATIONSHIPS_SQL } from "../../src/introspection/sql/table_relat
 import { VIEWS_KEY_DEPENDENCIES_SQL } from "../../src/introspection/sql/views_key_dependencies.sql.ts";
 
 /**
- * These tests pin the exact SQL the generator/introspection path builds. The
- * builders are ported verbatim from postgres-meta and parameterized; here we
- * exercise the single option combination `introspect()` (PGMETA-110) will use:
+ * These tests pin the exact SQL the introspection builds. The builders are
+ * ported from postgres-meta, reduced to the single option `introspect()`
+ * sets, the schema filter:
  *
  * - schemas/tables/views/columns/functions/relationships: system schemas
- *   excluded (`includeSystemSchemas: false`)
+ *   excluded
  * - foreign tables / materialized views: no default system-schema exclusion
- * - types: includeTableTypes + includeArrayTypes true, no schema filter
- *   (includeSystemSchemas: true)
+ * - types: every schema, table row types and array types included
  *
  * Snapshots double as a guard that the ported SQL stays byte-stable.
  */
@@ -54,9 +53,7 @@ const schemaFilter = filterByList(undefined, undefined, DEFAULT_SYSTEM_SCHEMAS);
 
 describe("introspection SQL builders (generator-path option combination)", () => {
   test("SCHEMAS_SQL", () => {
-    expect(
-      SCHEMAS_SQL({ includeSystemSchemas: false, nameFilter: schemaFilter }),
-    ).toMatchInlineSnapshot(`
+    expect(SCHEMAS_SQL({ schemaFilter })).toMatchInlineSnapshot(`
         "
         -- Adapted from information_schema.schemata
         select
@@ -68,7 +65,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
           pg_roles u
         where
           n.nspowner = u.oid
-          
           and n.nspname NOT IN ('information_schema','pg_catalog','pg_toast')
           and not pg_catalog.starts_with(n.nspname, 'pg_')
           and (
@@ -77,8 +73,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
           )
           and not pg_catalog.starts_with(n.nspname, 'pg_temp_')
           and not pg_catalog.starts_with(n.nspname, 'pg_toast_temp_')
-
-
         "
       `);
   });
@@ -110,8 +104,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         JOIN pg_class c ON nc.oid = c.relnamespace
       WHERE
         nc.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
-        
-        
         c.relkind IN ('r', 'p')
         AND NOT pg_is_other_temp_schema(nc.oid)
         AND (
@@ -122,8 +114,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
           )
           OR has_any_column_privilege(c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
         )
-
-
       "
     `);
   });
@@ -143,7 +133,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = ANY(i.indkey)
       WHERE
         n.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
-        
         i.indisprimary
         AND c.relkind IN ('r', 'p')
         AND NOT pg_is_other_temp_schema(n.oid)
@@ -158,8 +147,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
       ORDER BY
         c.oid,
         array_position(i.indkey, a.attnum)
-
-
       "
     `);
   });
@@ -178,11 +165,7 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         JOIN pg_namespace n ON n.oid = c.relnamespace
       WHERE
         
-        
-        
         c.relkind = 'f'
-
-
       "
     `);
   });
@@ -208,11 +191,7 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         JOIN pg_namespace n ON n.oid = c.relnamespace
       WHERE
         n.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
-        
-        
         c.relkind = 'v'
-
-
       "
     `);
   });
@@ -232,11 +211,7 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         join pg_namespace n on n.oid = c.relnamespace
       where
         
-        
-        
         c.relkind = 'm'
-
-
       "
     `);
   });
@@ -375,10 +350,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         ) AS check_constraints ON check_constraints.table_id = c.oid AND check_constraints.ordinal_position = a.attnum
       WHERE
         nc.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
-        
-        
-        
-        
         NOT pg_is_other_temp_schema(nc.oid)
         AND a.attnum > 0
         AND NOT a.attisdropped
@@ -391,8 +362,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
             'SELECT, INSERT, UPDATE, REFERENCES'
           )
         )
-
-
       "
     `);
   });
@@ -426,9 +395,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
           join pg_namespace n on p.pronamespace = n.oid
         where
           n.nspname NOT IN ('information_schema','pg_catalog','pg_toast') AND
-          
-          
-          
           p.prokind = 'f'
       )
       select
@@ -516,20 +482,12 @@ describe("introspection SQL builders (generator-path option combination)", () =>
           group by
             t1.oid
         ) f_args on f_args.oid = f.oid
-
-
       "
     `);
   });
 
   test("TYPES_SQL", () => {
-    expect(
-      TYPES_SQL({
-        schemaFilter: "",
-        includeTableTypes: true,
-        includeArrayTypes: true,
-      }),
-    ).toMatchInlineSnapshot(`
+    expect(TYPES_SQL).toMatchInlineSnapshot(`
         "
         select
           t.oid::int8 as id,
@@ -579,11 +537,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
                     c.oid = t.typrelid
                 )
               )
-              
-              
-              
-
-
         "
       `);
   });

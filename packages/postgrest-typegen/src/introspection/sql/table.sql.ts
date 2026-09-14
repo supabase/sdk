@@ -1,11 +1,6 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const TABLES_SQL = (
-  props: SQLQueryPropsWithSchemaFilterAndIdsFilter & {
-    tableIdentifierFilter?: string;
-  },
-) => /* SQL */ `
+export const TABLES_SQL = (props: SchemaFilterProps) => /* SQL */ `
 SELECT
   c.oid :: int8 AS id,
   nc.nspname AS schema,
@@ -30,8 +25,6 @@ FROM
   JOIN pg_class c ON nc.oid = c.relnamespace
 WHERE
   ${props.schemaFilter ? `nc.nspname ${props.schemaFilter} AND` : ""}
-  ${props.idsFilter ? `c.oid ${props.idsFilter} AND` : ""}
-  ${props.tableIdentifierFilter ? `nc.nspname || '.' || c.relname ${props.tableIdentifierFilter} AND` : ""}
   c.relkind IN ('r', 'p')
   AND NOT pg_is_other_temp_schema(nc.oid)
   AND (
@@ -42,6 +35,4 @@ WHERE
     )
     OR has_any_column_privilege(c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
   )
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

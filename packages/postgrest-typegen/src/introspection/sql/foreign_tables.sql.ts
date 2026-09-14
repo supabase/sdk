@@ -1,13 +1,6 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryProps } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const FOREIGN_TABLES_SQL = (
-  props: SQLQueryProps & {
-    schemaFilter?: string;
-    idsFilter?: string;
-    tableIdentifierFilter?: string;
-  },
-) => /* SQL */ `
+export const FOREIGN_TABLES_SQL = (props: SchemaFilterProps) => /* SQL */ `
 SELECT
   c.oid :: int8 AS id,
   n.nspname AS schema,
@@ -18,9 +11,5 @@ FROM
   JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE
   ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
-  ${props.idsFilter ? `c.oid ${props.idsFilter} AND` : ""}
-  ${props.tableIdentifierFilter ? `(n.nspname || '.' || c.relname) ${props.tableIdentifierFilter} AND` : ""}
   c.relkind = 'f'
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

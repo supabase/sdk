@@ -1,8 +1,6 @@
-import type { SQLQueryPropsWithSchemaFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const TABLE_RELATIONSHIPS_SQL = (
-  props: SQLQueryPropsWithSchemaFilter,
-) => /* SQL */ `
+export const TABLE_RELATIONSHIPS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 -- Adapted from
 -- https://github.com/PostgREST/postgrest/blob/f9f0f79fa914ac00c11fbf7f4c558e14821e67e2/src/PostgREST/SchemaCache.hs#L722
 WITH

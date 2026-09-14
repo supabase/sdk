@@ -1,12 +1,8 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
-
-export const TYPES_SQL = (
-  props: SQLQueryPropsWithSchemaFilterAndIdsFilter & {
-    includeTableTypes?: boolean;
-    includeArrayTypes?: boolean;
-  },
-) => /* SQL */ `
+/**
+ * Every type of every schema, including the row types of tables and views
+ * and the array types, since a column of any schema may use them.
+ */
+export const TYPES_SQL = /* SQL */ `
 select
   t.oid::int8 as id,
   t.typname as name,
@@ -48,27 +44,11 @@ from
         t.typrelid = 0
         or (
           select
-            c.relkind ${props.includeTableTypes ? `in ('c', 'r', 'v', 'm', 'p', 'f')` : `= 'c'`}
+            c.relkind in ('c', 'r', 'v', 'm', 'p', 'f')
           from
             pg_class c
           where
             c.oid = t.typrelid
         )
       )
-      ${
-        !props.includeArrayTypes
-          ? `and not exists (
-                 select
-                 from
-                   pg_type el
-                 where
-                   el.oid = t.typelem
-                   and el.typarray = t.oid
-               )`
-          : ""
-      }
-      ${props.schemaFilter ? `and n.nspname ${props.schemaFilter}` : ""}
-      ${props.idsFilter ? `and t.oid ${props.idsFilter}` : ""}
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

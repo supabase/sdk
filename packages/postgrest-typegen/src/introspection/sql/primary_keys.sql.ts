@@ -1,11 +1,6 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const PRIMARY_KEYS_SQL = (
-  props: SQLQueryPropsWithSchemaFilter & {
-    tableIdentifierFilter?: string;
-  },
-) => /* SQL */ `
+export const PRIMARY_KEYS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 SELECT
   c.oid :: int8 AS table_id,
   n.nspname AS schema,
@@ -18,7 +13,6 @@ FROM
   JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = ANY(i.indkey)
 WHERE
   ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
-  ${props.tableIdentifierFilter ? `n.nspname || '.' || c.relname ${props.tableIdentifierFilter} AND` : ""}
   i.indisprimary
   AND c.relkind IN ('r', 'p')
   AND NOT pg_is_other_temp_schema(n.oid)
@@ -33,6 +27,4 @@ WHERE
 ORDER BY
   c.oid,
   array_position(i.indkey, a.attnum)
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

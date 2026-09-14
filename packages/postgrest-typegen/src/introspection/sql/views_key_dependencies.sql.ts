@@ -1,8 +1,8 @@
-import type { SQLQueryPropsWithSchemaFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 import { literal } from "./pg-format.ts";
 
 export const VIEWS_KEY_DEPENDENCIES_SQL = (
-  props: SQLQueryPropsWithSchemaFilter,
+  props: SchemaFilterProps,
 ) => /* SQL */ `
 -- Adapted from
 -- https://github.com/PostgREST/postgrest/blob/f9f0f79fa914ac00c11fbf7f4c558e14821e67e2/src/PostgREST/SchemaCache.hs#L820
