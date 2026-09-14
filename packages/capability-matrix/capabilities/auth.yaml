@@ -232,7 +232,7 @@ features:
     group: session
   - id: auth.session.get_user
     name: Get User
-    description: Fetch the authenticated user's profile from the server, verifying the token.
+    description: Fetch the authenticated user's profile from the Auth server. The server authenticates the supplied access token before answering, so a successful response also proves the token is currently valid and its session has not been revoked.
     group: session
   - id: auth.session.refresh_session
     name: Refresh Session
