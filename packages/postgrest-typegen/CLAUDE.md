@@ -85,9 +85,10 @@ SQL literal quoting: the introspection queries use `literal()` from
 `src/introspection/sql/pg-format.ts`, an inlined port of `pg-format@1.0.4`
 (the package has no `pg-format` runtime dependency; it was CJS-only and painful
 for ESM/bundled consumers such as the CLI). It intentionally keeps pg-format's
-quirks — numbers are quoted (`limit '10'`) — because that is what postgres-meta
-emits. Don't align it with `packages/pg-meta`'s variant in `supabase/supabase`,
-which emits unquoted numbers; that would break SQL byte parity.
+quirks — numbers are quoted (`literal(10)` is `'10'`) — so it stays a faithful
+port even though the introspection only quotes schema names today. Don't align
+it with `packages/pg-meta`'s variant in `supabase/supabase`, which emits
+unquoted numbers.
 
 `int8` columns: stock `pg` returns them as strings while postgres-meta installs
 a global int8 type parser. `src/introspection/normalize.ts` coerces known
