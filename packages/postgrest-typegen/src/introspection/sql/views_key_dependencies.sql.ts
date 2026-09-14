@@ -1,4 +1,5 @@
 import type { SQLQueryPropsWithSchemaFilter } from "./common.ts";
+import { literal } from "./pg-format.ts";
 
 export const VIEWS_KEY_DEPENDENCIES_SQL = (
   props: SQLQueryPropsWithSchemaFilter,
@@ -47,81 +48,7 @@ views as (
 transform_json as (
   select
     view_id, view_schema, view_name,
-    -- the following formatting is without indentation on purpose
-    -- to allow simple diffs, with less whitespace noise
-    replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      regexp_replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-      replace(
-        view_definition::text,
-      -- This conversion to json is heavily optimized for performance.
-      -- The general idea is to use as few regexp_replace() calls as possible.
-      -- Simple replace() is a lot faster, so we jump through some hoops
-      -- to be able to use regexp_replace() only once.
-      -- This has been tested against a huge schema with 250+ different views.
-      -- The unit tests do NOT reflect all possible inputs. Be careful when changing this!
-      -- -----------------------------------------------
-      -- pattern           | replacement         | flags
-      -- -----------------------------------------------
-      -- <> in pg_node_tree is the same as null in JSON, but due to very poor performance of json_typeof
-      -- we need to make this an empty array here to prevent json_array_elements from throwing an error
-      -- when the targetList is null.
-      -- We'll need to put it first, to make the node protection below work for node lists that start with
-      -- null: (<> ..., too. This is the case for coldefexprs, when the first column does not have a default value.
-         '<>'              , '()'
-      -- , is not part of the pg_node_tree format, but used in the regex.
-      -- This removes all , that might be part of column names.
-      ), ','               , ''
-      -- The same applies for { and }, although those are used a lot in pg_node_tree.
-      -- We remove the escaped ones, which might be part of column names again.
-      ), E'\\\\{'            , ''
-      ), E'\\\\}'            , ''
-      -- The fields we need are formatted as json manually to protect them from the regex.
-      ), ' :targetList '   , ',"targetList":'
-      ), ' :resno '        , ',"resno":'
-      ), ' :resorigtbl '   , ',"resorigtbl":'
-      ), ' :resorigcol '   , ',"resorigcol":'
-      -- Make the regex also match the node type, e.g. \`{QUERY ...\`, to remove it in one pass.
-      ), '{'               , '{ :'
-      -- Protect node lists, which start with \`({\` or \`((\` from the greedy regex.
-      -- The extra \`{\` is removed again later.
-      ), '(('              , '{(('
-      ), '({'              , '{({'
-      -- This regex removes all unused fields to avoid the need to format all of them correctly.
-      -- This leads to a smaller json result as well.
-      -- Removal stops at \`,\` for used fields (see above) and \`}\` for the end of the current node.
-      -- Nesting can't be parsed correctly with a regex, so we stop at \`{\` as well and
-      -- add an empty key for the followig node.
-      ), ' :[^}{,]+'       , ',"":'              , 'g'
-      -- For performance, the regex also added those empty keys when hitting a \`,\` or \`}\`.
-      -- Those are removed next.
-      ), ',"":}'           , '}'
-      ), ',"":,'           , ','
-      -- This reverses the "node list protection" from above.
-      ), '{('              , '('
-      -- Every key above has been added with a \`,\` so far. The first key in an object doesn't need it.
-      ), '{,'              , '{'
-      -- pg_node_tree has \`()\` around lists, but JSON uses \`[]\`
-      ), '('               , '['
-      ), ')'               , ']'
-      -- pg_node_tree has \` \` between list items, but JSON uses \`,\`
-      ), ' '             , ','
-    )::json as view_definition
+${nodeTreeToJson("view_definition::text")}::json as view_definition
   from views
 ),
 target_entries as(
@@ -197,3 +124,82 @@ group by sch.nspname, tbl.relname,  rep.view_schema, rep.view_name, pks_fks.conn
 -- make sure we only return key for which all columns are referenced in the view - no partial PKs or FKs
 having ncol = array_length(array_agg(row(col.attname, view_columns) order by pks_fks.ord), 1)
 `;
+
+/**
+ * One text rewrite of the `pg_node_tree` to JSON conversion: a `replace`, or
+ * a global `regexp_replace` when `isRegex` is set.
+ */
+type NodeTreeRewrite = {
+  pattern: string;
+  replacement: string;
+  isRegex?: boolean;
+};
+
+/**
+ * The rewrites, innermost first, that turn the `pg_node_tree` text of a view
+ * definition into JSON exposing only `targetList`, `resno`, `resorigtbl` and
+ * `resorigcol`. Ported from PostgREST's schema cache query, which keeps them
+ * as plain `replace` calls with a single `regexp_replace` for speed; the
+ * order matters, and the comments carry PostgREST's reasoning.
+ */
+const NODE_TREE_TO_JSON_REWRITES: readonly NodeTreeRewrite[] = [
+  // `<>` is pg_node_tree's null. json_typeof is too slow to special-case it,
+  // so it becomes an empty list, which also keeps the node protection below
+  // working for lists that start with null, such as coldefexprs whose first
+  // column has no default.
+  { pattern: "<>", replacement: "()" },
+  // `,`, `{` and `}` are used by the JSON conversion; drop the ones that may
+  // be part of column names (`{` and `}` are escaped there).
+  { pattern: ",", replacement: "" },
+  { pattern: "\\{", replacement: "" },
+  { pattern: "\\}", replacement: "" },
+  // Format the fields we need as JSON keys so the regex below leaves them.
+  { pattern: " :targetList ", replacement: ',"targetList":' },
+  { pattern: " :resno ", replacement: ',"resno":' },
+  { pattern: " :resorigtbl ", replacement: ',"resorigtbl":' },
+  { pattern: " :resorigcol ", replacement: ',"resorigcol":' },
+  // Make the regex also match the node type, e.g. `{QUERY ...`.
+  { pattern: "{", replacement: "{ :" },
+  // Protect node lists, which start with `({` or `((`, from the greedy regex.
+  // The extra `{` is removed again below.
+  { pattern: "((", replacement: "{((" },
+  { pattern: "({", replacement: "{({" },
+  // Remove every unused field. Removal stops at `,` for the kept fields, at
+  // `}` for the end of the node and at `{` for a nested node, leaving an empty
+  // key for the following node.
+  { pattern: " :[^}{,]+", replacement: ',"":', isRegex: true },
+  // The regex also added those empty keys before `}` and `,`.
+  { pattern: ',"":}', replacement: "}" },
+  { pattern: ',"":,', replacement: "," },
+  // Undo the node list protection.
+  { pattern: "{(", replacement: "(" },
+  // Every key was added with a leading `,`; the first key of an object does
+  // not need it.
+  { pattern: "{,", replacement: "{" },
+  // pg_node_tree lists use `( )` with space separated items; JSON uses `[ ]`
+  // with commas.
+  { pattern: "(", replacement: "[" },
+  { pattern: ")", replacement: "]" },
+  { pattern: " ", replacement: "," },
+];
+
+/**
+ * Render {@link NODE_TREE_TO_JSON_REWRITES} applied to `expression` as nested
+ * SQL calls: the opening calls stacked, then each rewrite's arguments on the
+ * line that closes it.
+ */
+function nodeTreeToJson(expression: string): string {
+  const lines = NODE_TREE_TO_JSON_REWRITES.toReversed().map(
+    (rewrite) => `    ${rewrite.isRegex ? "regexp_replace" : "replace"}(`,
+  );
+  lines.push(`      ${expression},`);
+  NODE_TREE_TO_JSON_REWRITES.forEach((rewrite, index) => {
+    const flags = rewrite.isRegex ? ", 'g'" : "";
+    const closing =
+      index === NODE_TREE_TO_JSON_REWRITES.length - 1 ? ")" : "),";
+    lines.push(
+      `      ${literal(rewrite.pattern)}, ${literal(rewrite.replacement)}${flags}${closing}`,
+    );
+  });
+  return lines.join("\n");
+}
