@@ -19,6 +19,7 @@ import {
   VALID_FUNCTION_ARGS_MODE,
   VALID_UNNAMED_FUNCTION_ARG_TYPES,
 } from "./constants.ts";
+import { compareStrings } from "../collation.ts";
 
 export interface GenerateTypescriptOptions {
   /**
@@ -333,19 +334,19 @@ export const generateTypescript = async (
   // single-collection `sortGeneratorMetadata` pass and stays here.
   for (const schema in introspectionBySchema) {
     introspectionBySchema[schema].tables.sort((a, b) =>
-      a.table.name.localeCompare(b.table.name),
+      compareStrings(a.table.name, b.table.name),
     );
     introspectionBySchema[schema].views.sort((a, b) =>
-      a.view.name.localeCompare(b.view.name),
+      compareStrings(a.view.name, b.view.name),
     );
     introspectionBySchema[schema].functions.sort((a, b) =>
-      a.fn.name.localeCompare(b.fn.name),
+      compareStrings(a.fn.name, b.fn.name),
     );
     introspectionBySchema[schema].enums.sort((a, b) =>
-      a.name.localeCompare(b.name),
+      compareStrings(a.name, b.name),
     );
     introspectionBySchema[schema].compositeTypes.sort((a, b) =>
-      a.name.localeCompare(b.name),
+      compareStrings(a.name, b.name),
     );
   }
 
@@ -934,8 +935,8 @@ export type Database = {
               for (const fnName in schemaFunctionsGroupedByName) {
                 schemaFunctionsGroupedByName[fnName].sort(
                   (a, b) =>
-                    a.fn.argument_types.localeCompare(b.fn.argument_types) ||
-                    a.fn.return_type.localeCompare(b.fn.return_type),
+                    compareStrings(a.fn.argument_types, b.fn.argument_types) ||
+                    compareStrings(a.fn.return_type, b.fn.return_type),
                 );
               }
 

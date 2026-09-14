@@ -26,6 +26,7 @@
  * addressed by name (the generated type is an object), matching TypeScript.
  */
 import type { GeneratorMetadata, PostgresRelationship } from "./types.ts";
+import { compareStrings } from "./collation.ts";
 
 // Relations (tables/views/materialized views/foreign tables) and types share a
 // (schema, name) identity within a database; `id` breaks any residual tie.
@@ -33,8 +34,8 @@ const bySchemaName = (
   a: { schema: string; name: string; id: number },
   b: { schema: string; name: string; id: number },
 ): number =>
-  a.schema.localeCompare(b.schema) ||
-  a.name.localeCompare(b.name) ||
+  compareStrings(a.schema, b.schema) ||
+  compareStrings(a.name, b.name) ||
   a.id - b.id;
 
 // Mirrors the TypeScript generator's historical `relationships.sort`.
@@ -42,9 +43,10 @@ const byRelationship = (
   a: PostgresRelationship,
   b: PostgresRelationship,
 ): number =>
-  a.foreign_key_name.localeCompare(b.foreign_key_name) ||
-  a.referenced_relation.localeCompare(b.referenced_relation) ||
-  JSON.stringify(a.referenced_columns).localeCompare(
+  compareStrings(a.foreign_key_name, b.foreign_key_name) ||
+  compareStrings(a.referenced_relation, b.referenced_relation) ||
+  compareStrings(
+    JSON.stringify(a.referenced_columns),
     JSON.stringify(b.referenced_columns),
   );
 
@@ -60,7 +62,7 @@ export function sortGeneratorMetadata(
   return {
     version: metadata.version,
     schemas: [...metadata.schemas].sort(
-      (a, b) => a.name.localeCompare(b.name) || a.id - b.id,
+      (a, b) => compareStrings(a.name, b.name) || a.id - b.id,
     ),
     tables: [...metadata.tables].sort(bySchemaName),
     foreignTables: [...metadata.foreignTables].sort(bySchemaName),
@@ -70,17 +72,17 @@ export function sortGeneratorMetadata(
     // (matches the TypeScript generator's per-table `columns.sort(by name)`).
     columns: [...metadata.columns].sort(
       (a, b) =>
-        a.schema.localeCompare(b.schema) ||
-        a.table.localeCompare(b.table) ||
-        a.name.localeCompare(b.name),
+        compareStrings(a.schema, b.schema) ||
+        compareStrings(a.table, b.table) ||
+        compareStrings(a.name, b.name),
     ),
     // Grouped by table like `columns`; within a table the SQL's declared
     // column order (`array_position(indkey, attnum)`) is preserved by the
     // stable sort, since composite key order is meaningful.
     primaryKeys: [...metadata.primaryKeys].sort(
       (a, b) =>
-        a.schema.localeCompare(b.schema) ||
-        a.table_name.localeCompare(b.table_name),
+        compareStrings(a.schema, b.schema) ||
+        compareStrings(a.table_name, b.table_name),
     ),
     relationships: [...metadata.relationships].sort(byRelationship),
     // Functions can overload, so the signature is part of the identity. Args
@@ -88,14 +90,17 @@ export function sortGeneratorMetadata(
     functions: [...metadata.functions]
       .sort(
         (a, b) =>
-          a.schema.localeCompare(b.schema) ||
-          a.name.localeCompare(b.name) ||
-          a.identity_argument_types.localeCompare(b.identity_argument_types) ||
+          compareStrings(a.schema, b.schema) ||
+          compareStrings(a.name, b.name) ||
+          compareStrings(
+            a.identity_argument_types,
+            b.identity_argument_types,
+          ) ||
           a.id - b.id,
       )
       .map((fn) => ({
         ...fn,
-        args: [...fn.args].sort((a, b) => a.name.localeCompare(b.name)),
+        args: [...fn.args].sort((a, b) => compareStrings(a.name, b.name)),
       })),
     types: [...metadata.types].sort(bySchemaName),
   };

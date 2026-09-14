@@ -7,6 +7,7 @@ import type {
   PostgresType,
   PostgresView,
 } from "../types.ts";
+import { compareStrings } from "../collation.ts";
 
 type Operation = "Select" | "Insert" | "Update";
 export type AccessControl = "internal" | "public" | "private" | "package";
@@ -313,11 +314,11 @@ export const generateSwift = (
     ...schemas.flatMap((schema) => {
       const schemaTables = [...tables, ...foreignTables]
         .filter((table) => table.schema === schema.name)
-        .sort(({ name: a }, { name: b }) => a.localeCompare(b));
+        .sort(({ name: a }, { name: b }) => compareStrings(a, b));
 
       const schemaViews = [...views, ...materializedViews]
         .filter((table) => table.schema === schema.name)
-        .sort(({ name: a }, { name: b }) => a.localeCompare(b));
+        .sort(({ name: a }, { name: b }) => compareStrings(a, b));
 
       const schemaEnums = types.filter(
         (type) => type.schema === schema.name && type.enums.length > 0,
