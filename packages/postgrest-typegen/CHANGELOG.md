@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.1...postgrest-typegen-v0.2.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** order generated output with a fixed collation ([#181](https://github.com/supabase/sdk/issues/181)) ([af7f8e8](https://github.com/supabase/sdk/commit/af7f8e852590184be777be90e8345529c78fd169))
+* **postgrest-typegen:** resolve composite args on foreign tables and matviews ([#143](https://github.com/supabase/sdk/issues/143)) ([e422eb7](https://github.com/supabase/sdk/commit/e422eb73b6a540a875bfc8ef809c78f8dd6b33b9))
+* **postgrest-typegen:** update-only trigger views, PG18 virtual generated columns, legacy metadata compatibility ([#128](https://github.com/supabase/sdk/issues/128)) ([50661bd](https://github.com/supabase/sdk/commit/50661bd5d95dd0e1cdbf524d2108500c54f2e3b7))
+
 ## [0.2.1](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.0...postgrest-typegen-v0.2.1) (2026-09-02)
 
 
