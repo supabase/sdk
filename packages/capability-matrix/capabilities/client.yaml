@@ -48,3 +48,7 @@ features:
     name: Distributed Trace Context Propagation
     description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.
     group: observability
+  - id: client.observability.diagnostic_logging
+    name: Diagnostic Logging
+    description: Supply a logger at construction time to receive the SDK's log emissions, such as request outcomes, retry decisions and background-work lifecycle events. The SDK is silent by default and never logs credentials, tokens or payloads.
+    group: observability
