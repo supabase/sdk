@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.10.0...capability-matrix-v1.11.0) (2026-09-15)
+
+
+### Features
+
+* **client:** add `observability.diagnostic_logging` with spec ([#183](https://github.com/supabase/sdk/issues/183)) ([c8b6598](https://github.com/supabase/sdk/commit/c8b659821bb98b042ca554e43663117de2c9d7f6))
+
 ## [1.10.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.9.0...capability-matrix-v1.10.0) (2026-09-14)
 
 
