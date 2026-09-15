@@ -1,6 +1,5 @@
 import type { PostgresRelationship } from "../types.ts";
-import type { IntrospectOptions, Queryable } from "./index.ts";
-import { DEFAULT_SYSTEM_SCHEMAS, filterByList } from "./sql/helpers.ts";
+import type { Queryable } from "./index.ts";
 import { TABLE_RELATIONSHIPS_SQL } from "./sql/table_relationships.sql.ts";
 import { VIEWS_KEY_DEPENDENCIES_SQL } from "./sql/views_key_dependencies.sql.ts";
 
@@ -52,16 +51,14 @@ export function expandViewRelationships(
       colDeps: ColDep[],
     ): { tableColumns: string[]; viewColumns: string[] }[] => {
       const tableColumns = colDeps.map(({ table_column }) => table_column);
-      // https://gist.github.com/ssippe/1f92625532eef28be6974f898efb23ef?permalink_comment_id=3474581#gistcomment-3474581
-      const cartesianProduct = <T>(allEntries: T[][]): T[][] => {
-        return allEntries.reduce<T[][]>(
-          (results, entries) =>
-            results
-              .map((result) => entries.map((entry) => result.concat(entry)))
-              .reduce((subResults, result) => subResults.concat(result), []),
+      const cartesianProduct = <T>(lists: T[][]): T[][] =>
+        lists.reduce<T[][]>(
+          (combinations, entries) =>
+            combinations.flatMap((combination) =>
+              entries.map((entry) => [...combination, entry]),
+            ),
           [[]],
         );
-      };
       const viewColumnsPermutations = cartesianProduct(
         colDeps.map((cd) => cd.view_columns),
       );
@@ -141,20 +138,14 @@ export function expandViewRelationships(
 
 /**
  * List all relationships (table↔table plus the view-derived ones) for the
- * given schema filter. Mirrors `PostgresMetaRelationships.list()` with the
- * generator path's defaults (`includeSystemSchemas: false`). Errors from the
+ * schemas selected by `schemaFilter`, the `IN (…)`/`NOT IN (…)` fragment
+ * `introspect()` builds with the system schemas excluded. Errors from the
  * injected `Queryable` propagate by throwing — callers adapt.
  */
 export async function listRelationships(
   db: Queryable,
-  { includedSchemas, excludedSchemas }: IntrospectOptions = {},
+  schemaFilter: string,
 ): Promise<PostgresRelationship[]> {
-  const schemaFilter = filterByList(
-    includedSchemas,
-    excludedSchemas,
-    DEFAULT_SYSTEM_SCHEMAS,
-  );
-
   const { rows: allTableM2oAndO2oRelationships } = await db.query(
     TABLE_RELATIONSHIPS_SQL({ schemaFilter }),
   );

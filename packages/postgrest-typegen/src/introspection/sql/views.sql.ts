@@ -1,11 +1,6 @@
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const VIEWS_SQL = (
-  props: SQLQueryPropsWithSchemaFilterAndIdsFilter & {
-    viewIdentifierFilter?: string;
-  },
-) => /* SQL */ `
+export const VIEWS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 SELECT
   c.oid :: int8 AS id,
   n.nspname AS schema,
@@ -24,9 +19,5 @@ FROM
   JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE
   ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
-  ${props.idsFilter ? `c.oid ${props.idsFilter} AND` : ""}
-  ${props.viewIdentifierFilter ? `(n.nspname || '.' || c.relname) ${props.viewIdentifierFilter} AND` : ""}
   c.relkind = 'v'
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

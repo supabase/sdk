@@ -1,15 +1,6 @@
-// oxlint-disable typescript/restrict-template-expressions -- verbatim port of postgres-meta's
-// builder, which interpolates the `args` string[] into the SQL (relying on Array#toString). The
-// expression sits inside a template literal where a targeted disable comment would corrupt the SQL.
-import { literal } from "./pg-format.ts";
-import type { SQLQueryPropsWithSchemaFilterAndIdsFilter } from "./common.ts";
+import type { SchemaFilterProps } from "./common.ts";
 
-export const FUNCTIONS_SQL = (
-  props: SQLQueryPropsWithSchemaFilterAndIdsFilter & {
-    nameFilter?: string;
-    args?: string[];
-  },
-) => /* SQL */ `
+export const FUNCTIONS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 -- CTE with sane arg_modes, arg_names, and arg_types.
 -- All three are always of the same length.
 -- All three include all args, including OUT and TABLE args.
@@ -36,37 +27,6 @@ with functions as (
     ${props.schemaFilter ? `join pg_namespace n on p.pronamespace = n.oid` : ""}
   where
     ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
-    ${props.idsFilter ? `p.oid ${props.idsFilter} AND` : ""}
-    ${props.nameFilter ? `p.proname ${props.nameFilter} AND` : ""}
-    ${
-      props.args === undefined
-        ? ""
-        : props.args.length > 0
-          ? `p.proargtypes::text = ${
-              props.args.length
-                ? `(
-          SELECT STRING_AGG(type_oid::text, ' ') FROM (
-            SELECT (
-              split_args.arr[
-                array_length(
-                  split_args.arr,
-                  1
-                )
-              ]::regtype::oid
-            ) AS type_oid FROM (
-              SELECT STRING_TO_ARRAY(
-                UNNEST(
-                  ARRAY[${props.args}]
-                ),
-                ' '
-              ) AS arr
-            ) AS split_args
-          ) args
-    )`
-                : "''"
-            } AND`
-          : ""
-    }
     p.prokind = 'f'
 )
 select
@@ -154,6 +114,4 @@ from
     group by
       t1.oid
   ) f_args on f_args.oid = f.oid
-${props.limit ? `limit ${literal(props.limit)}` : ""}
-${props.offset ? `offset ${literal(props.offset)}` : ""}
 `;

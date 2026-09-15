@@ -171,7 +171,7 @@ describe("listRelationships", () => {
       }),
     };
 
-    const result = await listRelationships(db, { includedSchemas: ["public"] });
+    const result = await listRelationships(db, "IN ('public')");
 
     expect(result).toEqual([
       postsAuthorFk,
