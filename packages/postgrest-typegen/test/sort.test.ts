@@ -14,6 +14,22 @@ import {
 } from "./generation/fixtures.ts";
 
 describe("sortGeneratorMetadata", () => {
+  test("orders names with a fixed collation, independent of the host locale", () => {
+    // An English collation puts "ä" next to "a"; Swedish would put it after
+    // "z". The order must not change with the machine that runs the generator.
+    const result = sortGeneratorMetadata(
+      buildMetadata({
+        tables: [
+          baseTable({ id: 1, name: "z" }),
+          baseTable({ id: 2, name: "b" }),
+          baseTable({ id: 3, name: "ä" }),
+          baseTable({ id: 4, name: "a" }),
+        ],
+      }),
+    );
+    expect(result.tables.map((t) => t.name)).toEqual(["a", "ä", "b", "z"]);
+  });
+
   test("orders by semantic keys (schema/name), NOT by oid", () => {
     // ids deliberately disagree with names so the assertions prove the sort is
     // name-based — an oid sort would yield a different order, and oids are not
