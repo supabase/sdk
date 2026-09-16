@@ -20,30 +20,22 @@ import { introspect } from "../../src/introspection/index.ts";
 import type { GeneratorMetadata } from "../../src/types.ts";
 
 /**
- * End-to-end parity gate: introspect the shared postgres-meta fixture DB, run
- * all four generators with their default options, and assert the output matches
- * the committed golden files in `expected/`.
+ * End-to-end golden gate: introspect the shared fixture DB, run all four
+ * generators with their default options, and assert the output matches the
+ * committed golden files in `expected/`.
  *
  * The metadata is passed through `sortGeneratorMetadata` first (as every
  * consumer must), so the golden files reflect the canonical, deterministic
- * ordering rather than the database's heap order. The goldens were originally
- * captured from a real postgres-meta CLI run against this fixture DB; only the
- * ordering of order-sensitive collections (Go/Python/Swift emit tables/views
- * in metadata order) is canonicalized — and postgres-meta applies the same
- * sort pass, so the two stay in lockstep. postgres-meta's CLI prints with
- * `console.log`, which appends exactly one trailing newline to the
- * generator's return value — hence the `+ "\n"` below.
+ * ordering rather than the database's heap order. Consumers print the
+ * generator's return value with `console.log`, which appends exactly one
+ * trailing newline, hence the `+ "\n"` below.
  *
- * CAUTION — this only proves parity at the moment a golden was captured. The
- * established workflow for an *intentional* generator change is to
- * regenerate the goldens from this package itself and review the diff, which
- * means a generator change and its golden update land in the same PR: the
- * gate then only proves internal self-consistency (generator output matches
- * its own golden), not agreement with postgres-meta's actual current output.
- * It cannot catch a regression introduced by that same change. Re-verify
- * against a real postgres-meta run periodically, and always whenever
- * postgres-meta's own templates change (e.g. the upstream fixes ported into
- * this package) rather than trusting a self-regenerated golden alone.
+ * The goldens were originally captured from postgres-meta's own templates
+ * before it cut over to this package; since then they are regenerated from
+ * this package whenever a generator changes on purpose. A generator change
+ * and its golden update land in the same PR, so this gate proves output does
+ * not change *unintentionally*, and the reviewed golden diff is where an
+ * intentional change gets scrutinized.
  */
 const FIXTURE_DIR = join(import.meta.dir, "..", "introspection", "fixtures");
 const EXPECTED_DIR = join(import.meta.dir, "expected");

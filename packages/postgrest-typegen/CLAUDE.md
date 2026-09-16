@@ -65,21 +65,23 @@ bun run format-and-lint # oxfmt + oxlint check
 bun run knip            # unused-code/deps check
 ```
 
-## Byte-Parity Constraint
+## Relationship to postgres-meta
 
-This package must produce **byte-identical** output to postgres-meta's
-templates until parity is validated and released. Two consequences:
+postgres-meta deleted its own templates and consumes this package for all four
+languages (supabase/postgres-meta#1084, shipped in postgres-meta v0.99.0 on
+2026-08-31), and so does the CLI (supabase/cli#6404). This package is the
+single source of truth for generator output: there is no upstream to stay
+byte-identical with, and there is no cross-check against postgres-meta (its
+output is whatever version of this package its lockfile pins, so such a check
+only ever measured release lag). Consequences:
 
-- `prettier` is pinned **exact** to the version postgres-meta's own lockfile
-  currently resolves (not a caret range, and not just "latest"), since a
-  version mismatch reformats generator output and silently breaks parity with
-  the real upstream CLI, not just with this package's own snapshots. Check
-  postgres-meta's resolved version before bumping. Bumping means regenerating
-  every inline snapshot (`bun test --update-snapshots`) and the parity
-  fixtures under `test/parity/expected/`, and reviewing the diff.
-- Don't "improve" template strings or SQL for existing generators without
-  regenerating snapshots/fixtures first. Byte parity first; behavior-changing
-  cleanups (e.g. oxfmt instead of prettier) come later.
+- Every generator output change is a behavior change for every consumer.
+  Regenerate the inline snapshots (`bun test --update-snapshots`) and the
+  goldens under `test/parity/expected/` in the same PR, review that diff
+  deliberately, and describe the output change in the PR so it reaches the
+  release notes consumers read before bumping.
+- Don't reformat or "clean up" template strings casually; a formatter-only
+  change still churns every consumer's generated files.
 
 SQL literal quoting: the introspection queries use `literal()` from
 `src/introspection/sql/pg-format.ts`, an inlined port of `pg-format@1.0.4`

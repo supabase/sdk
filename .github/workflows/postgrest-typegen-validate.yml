@@ -10,9 +10,6 @@ on:
     paths:
       - "packages/postgrest-typegen/**"
       - ".github/workflows/postgrest-typegen-validate.yml"
-  schedule:
-    - cron: "0 6 * * *" # nightly drift check against real postgres-meta
-  workflow_dispatch: {}
 
 defaults:
   run:
@@ -21,10 +18,9 @@ defaults:
 jobs:
   test:
     name: Types, lint, build, test
-    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install bun
         run: curl -fsSL https://bun.sh/install | bash
       - name: Add bun to PATH
@@ -35,92 +31,3 @@ jobs:
       - run: bun run knip
       - run: bun run build
       - run: bun run test
-
-  parity-check:
-    name: Parity vs. real postgres-meta
-    # Nightly/manual only, never on push or pull_request: postgres-meta can
-    # drift for reasons unrelated to any change here, and that shouldn't
-    # block or flake unrelated PRs (same pattern as capability-matrix's
-    # "Tier 2" reference checks).
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-    steps:
-      - name: Checkout supabase/sdk
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Checkout supabase/postgres-meta
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: supabase/postgres-meta
-          path: postgres-meta
-      - name: Install bun
-        run: curl -fsSL https://bun.sh/install | bash
-      - name: Add bun to PATH
-        run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
-      - run: bun install --frozen-lockfile
-      - name: Load shared fixture schema
-        run: bun scripts/load-fixtures.ts
-      - name: Generate postgrest-typegen output
-        run: |
-          mkdir -p /tmp/ours
-          for lang in typescript go python swift; do
-            bun scripts/print-generated.ts "$lang" > "/tmp/ours/$lang.txt"
-          done
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: "22"
-      - name: Install postgres-meta dependencies
-        working-directory: postgres-meta
-        run: npm ci
-      - name: Generate postgres-meta output
-        working-directory: postgres-meta
-        env:
-          PG_META_DB_URL: postgresql://postgres:postgres@localhost:5432/postgres
-        run: |
-          mkdir -p /tmp/theirs
-          for lang in typescript go python swift; do
-            PG_META_GENERATE_TYPES="$lang" node --loader ts-node/esm src/server/server.ts > "/tmp/theirs/$lang.txt"
-          done
-      - name: Canonicalize postgres-meta's TypeScript output
-        # postgres-meta formats with prettier; this package defaults to
-        # oxfmt, which has different line-wrap heuristics (e.g. printWidth is
-        # matched at 80, but wrapping decisions for nested object types can
-        # still differ). Reformatting postgres-meta's output through our own
-        # formatter first means the diff below reflects content, not which
-        # formatter produced it.
-        run: bun scripts/canonicalize-typescript.ts /tmp/theirs/typescript.txt > /tmp/theirs/typescript.canonical.txt
-      - name: Compare outputs
-        # Order-independent: sortGeneratorMetadata canonicalizes collection
-        # order (semantic schema+name, not postgres-meta's environment- and
-        # data-dependent heap order) across all four generators, which is a
-        # deliberate improvement over postgres-meta's real behavior, not a
-        # divergence to flag. Comparing declaration BLOCKS (paragraphs
-        # separated by a blank line) as a sorted set, rather than raw bytes,
-        # verifies the two agree on content without being sensitive to that
-        # reordering.
-        run: |
-          mv /tmp/theirs/typescript.canonical.txt /tmp/theirs/typescript.txt
-          normalize() { awk 'BEGIN{RS="";FS="\n"} {gsub(/\n/, "\\n"); print}' "$1" | sort; }
-          failed=0
-          for lang in typescript go python swift; do
-            if ! diff -u <(normalize "/tmp/theirs/$lang.txt") <(normalize "/tmp/ours/$lang.txt"); then
-              echo "::error::$lang output diverges from real postgres-meta"
-              failed=1
-            fi
-          done
-          exit "$failed"
