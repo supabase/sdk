@@ -17,19 +17,19 @@ JSON output, not inside `postgrest-typegen`.
 
 The TypeScript, Go, Python, and Swift generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
-They were ported byte-parity from postgres-meta's own templates so
-`supabase gen types` keeps working unchanged while postgres-meta's copies get
-deprecated in favor of this package. It's decided that all four eventually
-move out to their own SDK repos too (tracked in SDK-1641), not yet scheduled
-— sequenced after postgres-meta's cutover to this package settles.
+They were ported byte-for-byte from postgres-meta's own templates so
+`supabase gen types` kept working unchanged; postgres-meta has since deleted
+its copies and consumes this package instead. It's decided that all four
+eventually move out to their own SDK repos too (tracked in SDK-1641), not yet
+scheduled — sequenced after postgres-meta's cutover to this package settles.
 
 > [!IMPORTANT]
 > **We are no longer accepting contributions that fix the bundled generators.**
 > Because each of the four is moving out to its own language's SDK repository,
 > a fix landed here would have to be made a second time in the destination
-> repository, and it also breaks byte parity with postgres-meta until a release
-> propagates. Please open an issue describing the bug instead, so it can be
-> tracked and carried across the move.
+> repository, and postgres-meta and the CLI only pick it up once they bump
+> their pinned version of this package. Please open an issue describing the
+> bug instead, so it can be tracked and carried across the move.
 
 ## Design
 
