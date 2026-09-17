@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.11.0...capability-matrix-v1.12.0) (2026-09-17)
+
+
+### Features
+
+* **database:** add write operation capabilities ([#194](https://github.com/supabase/sdk/issues/194)) ([f646e31](https://github.com/supabase/sdk/commit/f646e312b3bce9404db965ec4216baee9cedec30))
+
 ## [1.11.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.10.0...capability-matrix-v1.11.0) (2026-09-15)
 
 
