@@ -48,3 +48,6 @@ whole header.
 ## Related
 
 - [Upsert Rows](upsert.md) — insert, but resolve a conflict instead of failing
+- [Bulk Write Rows with Differing Fields](bulk_rows_with_differing_fields.md)
+- [Use Defaults for Missing Fields](missing_defaults.md)
+- [Count Mutated Rows](count.md)

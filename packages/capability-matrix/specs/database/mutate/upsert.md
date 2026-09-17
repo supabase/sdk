@@ -45,3 +45,6 @@ the whole header drops `resolution=` and silently turns the upsert into an inser
 ## Related
 
 - [Insert Rows](insert.md) — the same write without conflict resolution
+- [Bulk Write Rows with Differing Fields](bulk_rows_with_differing_fields.md)
+- [Use Defaults for Missing Fields](missing_defaults.md)
+- [Count Mutated Rows](count.md)

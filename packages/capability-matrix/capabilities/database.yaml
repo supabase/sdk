@@ -14,6 +14,14 @@ groups:
   - id: configuration
     title: Client Configuration
 features:
+  - id: database.mutate.bulk_rows_with_differing_fields
+    name: Bulk Write Rows with Differing Fields
+    description: Insert or upsert multiple rows with different field sets in one request, without requiring callers to fill every omitted field explicitly.
+    group: mutate
+  - id: database.mutate.count
+    name: Count Mutated Rows
+    description: Request the number of rows affected by an insert, update, upsert, or delete operation.
+    group: mutate
   - id: database.mutate.delete
     name: Delete Rows
     description: Delete rows from a table or view that match a filter.
@@ -21,6 +29,10 @@ features:
   - id: database.mutate.insert
     name: Insert Rows
     description: Insert one or more rows into a table or view.
+    group: mutate
+  - id: database.mutate.missing_defaults
+    name: Use Defaults for Missing Fields
+    description: Use database column defaults instead of null for fields omitted from bulk insert or upsert rows.
     group: mutate
   - id: database.mutate.select_after_mutation
     name: Select After Mutation
