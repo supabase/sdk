@@ -1,5 +1,11 @@
 # Contributing to the Supabase SDK Capability Matrix
 
+> [!IMPORTANT]
+> **Only repository collaborators can open pull requests here**  
+> This repository is public so you can see how we design and build the Supabase client SDKs, but the packages in it are internal tooling for the Supabase SDK team.
+> We appreciate your interest in contributing. Please direct it at our other [`supabase`](https://github.com/orgs/supabase/repositories?q=visibility%3Apublic+archived%3Afalse) and
+> [`supabase-community`](https://github.com/orgs/supabase-community/repositories?q=visibility%3Apublic+archived%3Afalse) repositories, which welcome community pull requests.
+
 Thanks for your interest in contributing. This repo is the canonical, machine-readable record of which features exist across Supabase client SDKs. It is a **pure feature registry**: it defines what features exist and what they mean. Per-SDK compliance is declared in each SDK's own repo (see [README](./README.md#sdk-compliance)).
 
 ## Ways to contribute

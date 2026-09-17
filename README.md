@@ -2,6 +2,10 @@
 
 Shared tooling and specifications for the Supabase client SDKs. This repository is a lightweight monorepo: each project lives as a flat sibling under `packages/`, with a single toolchain per package and no monorepo build tooling on top.
 
+> [!IMPORTANT]
+> **Only repository collaborators can open pull requests here.**  
+> See the full notice at the top of [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Packages
 
 | Package                                                              | Toolchain  | What it is                                                                                                                                                                                                           |
