@@ -8,7 +8,12 @@ export interface ComplianceFinding {
 
 type RawValue =
   | string
-  | { status?: string; note?: string; symbols?: string[]; supporting_symbols?: string[] };
+  | {
+      status?: string;
+      note?: string;
+      symbols?: string[];
+      supporting_symbols?: string[];
+    };
 
 export interface RawCompliance {
   sdk: string;
@@ -36,7 +41,7 @@ function checkSymbolList(
   value: unknown,
   label: string,
   context: string,
-  findings: ComplianceFinding[]
+  findings: ComplianceFinding[],
 ): void {
   if (value === undefined) return;
   if (!Array.isArray(value) || value.some((s) => typeof s !== "string")) {
@@ -49,7 +54,7 @@ function checkSymbolList(
 
 export function validateCompliance(
   raw: RawCompliance,
-  knownIds: Set<string>
+  knownIds: Set<string>,
 ): ComplianceFinding[] {
   const findings: ComplianceFinding[] = [];
 
@@ -67,7 +72,12 @@ export function validateCompliance(
     });
   }
 
-  checkSymbolList(raw.supporting_symbols, "supporting_symbols", "top level", findings);
+  checkSymbolList(
+    raw.supporting_symbols,
+    "supporting_symbols",
+    "top level",
+    findings,
+  );
 
   for (const [id, value] of Object.entries(raw.features ?? {})) {
     if (!knownIds.has(id)) {
@@ -92,16 +102,27 @@ export function validateCompliance(
     }
 
     if (!STATUSES.includes(status as Status)) {
-      findings.push({ level: "error", message: `"${id}": unknown status "${status}"` });
+      findings.push({
+        level: "error",
+        message: `"${id}": unknown status "${status}"`,
+      });
     }
 
     if (status === "partially_implemented" && !note) {
-      findings.push({ level: "error", message: `"${id}": partially_implemented requires a note` });
+      findings.push({
+        level: "error",
+        message: `"${id}": partially_implemented requires a note`,
+      });
     }
 
     if (typeof value === "object" && value !== null) {
       checkSymbolList(value.symbols, "symbols", `"${id}"`, findings);
-      checkSymbolList(value.supporting_symbols, "supporting_symbols", `"${id}"`, findings);
+      checkSymbolList(
+        value.supporting_symbols,
+        "supporting_symbols",
+        `"${id}"`,
+        findings,
+      );
     }
   }
 
@@ -137,7 +158,10 @@ export function collectFeatureIds(areas: LoadedArea[]): Set<string> {
   return ids;
 }
 
-export function findMissingFeatureIds(raw: RawCompliance, knownIds: Set<string>): string[] {
+export function findMissingFeatureIds(
+  raw: RawCompliance,
+  knownIds: Set<string>,
+): string[] {
   const declared = new Set(Object.keys(raw.features ?? {}));
   return [...knownIds].filter((id) => !declared.has(id)).sort();
 }
@@ -158,7 +182,7 @@ export function buildSymbolIndex(raw: RawCompliance): Map<string, string> {
 
   const entries = Object.entries(raw.features ?? {}).filter(
     (entry): entry is [string, Exclude<RawValue, string>] =>
-      typeof entry[1] === "object" && entry[1] !== null
+      typeof entry[1] === "object" && entry[1] !== null,
   );
 
   for (const [featureId, value] of entries) {

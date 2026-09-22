@@ -25,7 +25,8 @@ export async function fetchComplianceFile(
       `GitHub API rate limit exhausted for ${slug}. Anonymous requests are limited to 60 per hour per IP address; retry with GITHUB_TOKEN=$(gh auth token) npm run aggregate`,
     );
   }
-  if (!response.ok) throw new Error(`GitHub API ${response.status} for ${slug}`);
+  if (!response.ok)
+    throw new Error(`GitHub API ${response.status} for ${slug}`);
   return response.text();
 }
 

@@ -14,7 +14,10 @@ export interface GriffeNode {
 
 export type GriffeOutput = Record<string, GriffeNode>;
 
-export function normalizeGriffe(raw: GriffeOutput, projectRoot = ""): ParseResult {
+export function normalizeGriffe(
+  raw: GriffeOutput,
+  projectRoot = "",
+): ParseResult {
   const ig = projectRoot ? loadIgnore(projectRoot) : null;
   const symbols: ParsedSymbol[] = [];
 
@@ -35,7 +38,9 @@ function walkNode(
   projectRoot: string,
 ): void {
   const file = node.filepath
-    ? (projectRoot ? relative(projectRoot, node.filepath) : basename(node.filepath))
+    ? projectRoot
+      ? relative(projectRoot, node.filepath)
+      : basename(node.filepath)
     : inheritedFile;
 
   if (node.kind === "module") {
@@ -48,21 +53,45 @@ function walkNode(
   if (name.startsWith("_")) return;
 
   if (node.kind === "class") {
-    emit(symbols, ig, { name: qual(classStack, name), kind: "class", file }, node.lineno);
+    emit(
+      symbols,
+      ig,
+      { name: qual(classStack, name), kind: "class", file },
+      node.lineno,
+    );
     for (const [childName, child] of Object.entries(node.members ?? {})) {
-      walkNode(childName, child, file, [...classStack, name], symbols, ig, projectRoot);
+      walkNode(
+        childName,
+        child,
+        file,
+        [...classStack, name],
+        symbols,
+        ig,
+        projectRoot,
+      );
     }
     return;
   }
 
   if (node.kind === "function") {
-    const kind = classStack.length > 0 ? ("method" as const) : ("function" as const);
-    emit(symbols, ig, { name: qual(classStack, name), kind, file }, node.lineno);
+    const kind =
+      classStack.length > 0 ? ("method" as const) : ("function" as const);
+    emit(
+      symbols,
+      ig,
+      { name: qual(classStack, name), kind, file },
+      node.lineno,
+    );
     return;
   }
 
   if (node.kind === "attribute" && node.labels?.includes("property")) {
-    emit(symbols, ig, { name: qual(classStack, name), kind: "property", file }, node.lineno);
+    emit(
+      symbols,
+      ig,
+      { name: qual(classStack, name), kind: "property", file },
+      node.lineno,
+    );
   }
 }
 
@@ -70,7 +99,12 @@ function qual(classStack: string[], name: string): string {
   return classStack.length > 0 ? `${classStack.join(".")}.${name}` : name;
 }
 
-function emit(symbols: ParsedSymbol[], ig: Ignore | null, sym: ParsedSymbol, lineno?: number): void {
+function emit(
+  symbols: ParsedSymbol[],
+  ig: Ignore | null,
+  sym: ParsedSymbol,
+  lineno?: number,
+): void {
   if (ig && sym.file && ig.ignores(sym.file)) return;
   // Griffe inherits Python ast.lineno which is already 1-based — no +1 needed (unlike TS/Swift).
   symbols.push(lineno !== undefined ? { ...sym, line: lineno } : sym);

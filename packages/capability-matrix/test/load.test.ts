@@ -23,11 +23,16 @@ describe("loadAreas", () => {
     try {
       writeFileSync(
         join(tmpDir, "auth.yaml"),
-        `area: auth\ntitle: Auth\ndescription: d\nfeatures: []\n`
+        `area: auth\ntitle: Auth\ndescription: d\nfeatures: []\n`,
       );
       writeFileSync(join(tmpDir, "bad.yaml"), ": : :\n  - [");
       const { areas, findings } = loadAreas(tmpDir);
-      expect(findings.some((f) => f.level === "error" && f.message.startsWith("YAML parse error"))).toBe(true);
+      expect(
+        findings.some(
+          (f) =>
+            f.level === "error" && f.message.startsWith("YAML parse error"),
+        ),
+      ).toBe(true);
       expect(areas).toHaveLength(1);
     } finally {
       rmSync(tmpDir, { recursive: true, force: true });

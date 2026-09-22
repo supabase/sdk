@@ -23,7 +23,9 @@ export function checkNewSymbols(
   const newSymbols = newSymbolObjs.map((s) => s.name);
 
   const symbolIndex = buildSymbolIndex(compliance);
-  const uncoveredSymbols = newSymbolObjs.filter((s) => !symbolIndex.has(s.name));
+  const uncoveredSymbols = newSymbolObjs.filter(
+    (s) => !symbolIndex.has(s.name),
+  );
 
   const removedRegisteredSymbols = baseSymbols
     .filter((s) => !prNames.has(s.name) && symbolIndex.has(s.name))
@@ -58,10 +60,7 @@ export function formatErrorMessage(
     mode === "full"
       ? "Public API is not registered in the capability matrix:"
       : `New public API detected relative to the base branch${baseRef ? ` (${baseRef})` : ""} that is not in the capability matrix:`;
-  const lines: string[] = [
-    "❌ Capability matrix check failed",
-    scope,
-  ];
+  const lines: string[] = ["❌ Capability matrix check failed", scope];
   for (const s of uncoveredSymbols) {
     lines.push(`  - ${s.name} (${sdkName})`);
     if (s.file) {
@@ -101,7 +100,9 @@ export function formatRemovedMessage(
   const lines: string[] = [
     "❌ Capability matrix check failed",
     "Registered public API was removed — sdk-compliance.yaml is now stale:",
-    ...removedRegisteredSymbols.map((r) => `  - ${r.symbol} (${sdkName}) → ${r.featureId}`),
+    ...removedRegisteredSymbols.map(
+      (r) => `  - ${r.symbol} (${sdkName}) → ${r.featureId}`,
+    ),
     "",
     "Update the affected feature entries in sdk-compliance.yaml:",
     "  - Remove the symbol from the symbols list",

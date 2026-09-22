@@ -15,7 +15,11 @@ export function checkSchema(loaded: LoadedArea[], schema: object): Finding[] {
     if (!validate(area)) {
       for (const err of validate.errors ?? []) {
         const where = err.instancePath || "/";
-        findings.push({ level: "error", file, message: `schema: ${where} ${err.message ?? "invalid"}` });
+        findings.push({
+          level: "error",
+          file,
+          message: `schema: ${where} ${err.message ?? "invalid"}`,
+        });
       }
     }
   }

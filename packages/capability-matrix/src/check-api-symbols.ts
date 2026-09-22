@@ -44,7 +44,9 @@ async function main(): Promise<void> {
 
   if (coverageMode === "additions") {
     if (baseFile === "-") {
-      console.error("Additions coverage requires a base symbol file and a pull request event.");
+      console.error(
+        "Additions coverage requires a base symbol file and a pull request event.",
+      );
       process.exit(1);
     }
     try {
@@ -60,7 +62,11 @@ async function main(): Promise<void> {
   const result =
     coverageMode === "full"
       ? checkFullCoverage(prResult.symbols, compliance)
-      : checkNewSymbols(baseResult?.symbols ?? [], prResult.symbols, compliance);
+      : checkNewSymbols(
+          baseResult?.symbols ?? [],
+          prResult.symbols,
+          compliance,
+        );
   const { uncoveredSymbols, removedRegisteredSymbols } = result;
 
   if (uncoveredSymbols.length === 0 && removedRegisteredSymbols.length === 0) {
@@ -84,9 +90,14 @@ async function main(): Promise<void> {
   }
   if (removedRegisteredSymbols.length > 0) {
     if (uncoveredSymbols.length > 0) console.error("");
-    console.error(formatRemovedMessage(removedRegisteredSymbols, compliance.sdk));
+    console.error(
+      formatRemovedMessage(removedRegisteredSymbols, compliance.sdk),
+    );
   }
   process.exit(1);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

@@ -11,14 +11,16 @@ describe("fetchComplianceFile", () => {
   it("does not send an empty bearer token when aggregating public compliance files", async () => {
     const fetchImpl = respondWith("sdk: javascript", { status: 200 });
 
-    await expect(fetchComplianceFile("supabase/supabase-js", "", fetchImpl)).resolves.toBe(
-      "sdk: javascript",
-    );
+    await expect(
+      fetchComplianceFile("supabase/supabase-js", "", fetchImpl),
+    ).resolves.toBe("sdk: javascript");
 
     expect(fetchImpl).toHaveBeenCalledWith(
       "https://api.github.com/repos/supabase/supabase-js/contents/sdk-compliance.yaml",
       expect.objectContaining({
-        headers: expect.not.objectContaining({ Authorization: expect.anything() }),
+        headers: expect.not.objectContaining({
+          Authorization: expect.anything(),
+        }),
       }),
     );
   });
@@ -44,7 +46,9 @@ describe("fetchComplianceFile", () => {
     expect(fetchImpl).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
-        headers: expect.not.objectContaining({ Authorization: expect.anything() }),
+        headers: expect.not.objectContaining({
+          Authorization: expect.anything(),
+        }),
       }),
     );
   });
@@ -52,7 +56,9 @@ describe("fetchComplianceFile", () => {
   it("returns null when the repo has no compliance file", async () => {
     const fetchImpl = respondWith("Not Found", { status: 404 });
 
-    await expect(fetchComplianceFile("supabase/supabase-go", "", fetchImpl)).resolves.toBeNull();
+    await expect(
+      fetchComplianceFile("supabase/supabase-go", "", fetchImpl),
+    ).resolves.toBeNull();
   });
 
   it("explains how to authenticate when the anonymous rate limit is exhausted", async () => {
@@ -61,7 +67,9 @@ describe("fetchComplianceFile", () => {
       headers: { "x-ratelimit-remaining": "0" },
     });
 
-    await expect(fetchComplianceFile("supabase/supabase-js", "", fetchImpl)).rejects.toThrow(
+    await expect(
+      fetchComplianceFile("supabase/supabase-js", "", fetchImpl),
+    ).rejects.toThrow(
       /rate limit exhausted for supabase\/supabase-js.*GITHUB_TOKEN/s,
     );
   });
@@ -72,8 +80,8 @@ describe("fetchComplianceFile", () => {
       headers: { "x-ratelimit-remaining": "58" },
     });
 
-    await expect(fetchComplianceFile("supabase/supabase-js", "token", fetchImpl)).rejects.toThrow(
-      "GitHub API 403 for supabase/supabase-js",
-    );
+    await expect(
+      fetchComplianceFile("supabase/supabase-js", "token", fetchImpl),
+    ).rejects.toThrow("GitHub API 403 for supabase/supabase-js");
   });
 });

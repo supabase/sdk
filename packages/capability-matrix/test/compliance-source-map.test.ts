@@ -41,7 +41,9 @@ describe("buildSourceMap", () => {
   });
 
   it("returns empty maps for a compliance file with no features", () => {
-    const { symbolLines, featureLines } = buildSourceMap("sdk: javascript\nfeatures: {}\n");
+    const { symbolLines, featureLines } = buildSourceMap(
+      "sdk: javascript\nfeatures: {}\n",
+    );
     expect(symbolLines.size).toBe(0);
     expect(featureLines.size).toBe(0);
   });

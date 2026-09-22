@@ -25,7 +25,11 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   const { areas, findings: loadFindings } = loadAreas(opts.capabilitiesDir);
 
   if (opts.mode === "report") {
-    return { findings: loadFindings, errorCount: loadFindings.filter((f) => f.level === "error").length, report: computeParity(areas, {}) };
+    return {
+      findings: loadFindings,
+      errorCount: loadFindings.filter((f) => f.level === "error").length,
+      report: computeParity(areas, {}),
+    };
   }
 
   const findings: Finding[] = [...loadFindings];
@@ -33,7 +37,9 @@ export async function run(opts: RunOptions): Promise<RunResult> {
   findings.push(...checkStructural(areas));
 
   if (opts.specsDir) {
-    const knownIds = new Set(areas.flatMap((a) => a.area.features.map((f) => f.id)));
+    const knownIds = new Set(
+      areas.flatMap((a) => a.area.features.map((f) => f.id)),
+    );
     findings.push(...checkSpecs(opts.specsDir, knownIds));
   }
 
@@ -49,10 +55,14 @@ function packageRoot(): string {
 async function main(): Promise<void> {
   const root = packageRoot();
   const argv = process.argv.slice(2);
-  const mode = (argv[0] === "report" ? "report" : "validate") as "validate" | "report";
+  const mode = (argv[0] === "report" ? "report" : "validate") as
+    | "validate"
+    | "report";
   const positionals = argv.slice(1).filter((a) => !a.startsWith("--"));
 
-  const schema = JSON.parse(readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"));
+  const schema = JSON.parse(
+    readFileSync(join(root, "schema", "capability-matrix.schema.json"), "utf8"),
+  );
   const result = await run({
     mode,
     capabilitiesDir: join(root, "capabilities"),

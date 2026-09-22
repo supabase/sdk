@@ -8,9 +8,7 @@
       "precise": "s:9SampleLib11SimpleClassC",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass"
-    ],
+    "pathComponents": ["SimpleClass"],
     "names": {
       "title": "SimpleClass",
       "navigator": [
@@ -66,10 +64,7 @@
       "precise": "s:9SampleLib11SimpleClassC5valueSSvp",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "value"
-    ],
+    "pathComponents": ["SimpleClass", "value"],
     "names": {
       "title": "value",
       "subHeading": [
@@ -137,10 +132,7 @@
       "precise": "s:9SampleLib11SimpleClassC5valueACSS_tcfc",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "init(value:)"
-    ],
+    "pathComponents": ["SimpleClass", "init(value:)"],
     "names": {
       "title": "init(value:)",
       "subHeading": [
@@ -238,10 +230,7 @@
       "precise": "s:9SampleLib11SimpleClassC14instanceMethodSSyF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "instanceMethod()"
-    ],
+    "pathComponents": ["SimpleClass", "instanceMethod()"],
     "names": {
       "title": "instanceMethod()",
       "subHeading": [
@@ -318,10 +307,7 @@
       "precise": "s:9SampleLib11SimpleClassC12staticMethodACyFZ",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "staticMethod()"
-    ],
+    "pathComponents": ["SimpleClass", "staticMethod()"],
     "names": {
       "title": "staticMethod()",
       "subHeading": [
@@ -414,10 +400,7 @@
       "precise": "s:9SampleLib11SimpleClassC12NestedStructV",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "NestedStruct"
-    ],
+    "pathComponents": ["SimpleClass", "NestedStruct"],
     "names": {
       "title": "SimpleClass.NestedStruct",
       "navigator": [
@@ -473,11 +456,7 @@
       "precise": "s:9SampleLib11SimpleClassC12NestedStructVAEycfc",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleClass",
-      "NestedStruct",
-      "init()"
-    ],
+    "pathComponents": ["SimpleClass", "NestedStruct", "init()"],
     "names": {
       "title": "init()",
       "subHeading": [
@@ -520,9 +499,7 @@
       "precise": "s:9SampleLib9OpenClassC",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "OpenClass"
-    ],
+    "pathComponents": ["OpenClass"],
     "names": {
       "title": "OpenClass",
       "navigator": [
@@ -578,10 +555,7 @@
       "precise": "s:9SampleLib9OpenClassCACycfc",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "OpenClass",
-      "init()"
-    ],
+    "pathComponents": ["OpenClass", "init()"],
     "names": {
       "title": "init()",
       "subHeading": [
@@ -624,10 +598,7 @@
       "precise": "s:9SampleLib9OpenClassC10openMethodyyF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "OpenClass",
-      "openMethod()"
-    ],
+    "pathComponents": ["OpenClass", "openMethod()"],
     "names": {
       "title": "openMethod()",
       "subHeading": [
@@ -693,9 +664,7 @@
       "precise": "s:9SampleLib10SimpleEnumO",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleEnum"
-    ],
+    "pathComponents": ["SimpleEnum"],
     "names": {
       "title": "SimpleEnum",
       "navigator": [
@@ -751,10 +720,7 @@
       "precise": "s:9SampleLib10SimpleEnumO5alphayA2CmF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleEnum",
-      "alpha"
-    ],
+    "pathComponents": ["SimpleEnum", "alpha"],
     "names": {
       "title": "SimpleEnum.alpha",
       "subHeading": [
@@ -804,10 +770,7 @@
       "precise": "s:9SampleLib10SimpleEnumO4betayA2CmF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleEnum",
-      "beta"
-    ],
+    "pathComponents": ["SimpleEnum", "beta"],
     "names": {
       "title": "SimpleEnum.beta",
       "subHeading": [
@@ -857,9 +820,7 @@
       "precise": "s:9SampleLib14SimpleProtocolP",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleProtocol"
-    ],
+    "pathComponents": ["SimpleProtocol"],
     "names": {
       "title": "SimpleProtocol",
       "navigator": [
@@ -915,10 +876,7 @@
       "precise": "s:9SampleLib14SimpleProtocolP11requirementyyF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "SimpleProtocol",
-      "requirement()"
-    ],
+    "pathComponents": ["SimpleProtocol", "requirement()"],
     "names": {
       "title": "requirement()",
       "subHeading": [
@@ -984,9 +942,7 @@
       "precise": "s:9SampleLib14globalFunctionyyF",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "globalFunction()"
-    ],
+    "pathComponents": ["globalFunction()"],
     "names": {
       "title": "globalFunction()",
       "subHeading": [
@@ -1052,9 +1008,7 @@
       "precise": "s:9SampleLib9globalVarSivp",
       "interfaceLanguage": "swift"
     },
-    "pathComponents": [
-      "globalVar"
-    ],
+    "pathComponents": ["globalVar"],
     "names": {
       "title": "globalVar",
       "subHeading": [

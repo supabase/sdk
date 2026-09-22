@@ -1,9 +1,9 @@
 {
   "name": "@supabase/capability-matrix-validator",
-  "private": true,
-  "type": "module",
   "version": "1.12.0",
+  "private": true,
   "description": "Validator for the Supabase SDK capability matrix.",
+  "type": "module",
   "scripts": {
     "validate": "bun src/cli.ts validate",
     "validate:online": "bun src/cli.ts validate --online",

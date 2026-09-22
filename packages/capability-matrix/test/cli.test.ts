@@ -9,14 +9,18 @@ import { run } from "../src/cli";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = JSON.parse(
-  readFileSync(join(here, "..", "schema", "capability-matrix.schema.json"), "utf8")
+  readFileSync(
+    join(here, "..", "schema", "capability-matrix.schema.json"),
+    "utf8",
+  ),
 );
 
 function tempCapabilities(yamlByName: Record<string, string>): string {
   const dir = mkdtempSync(join(tmpdir(), "capmatrix-"));
   const capDir = join(dir, "capabilities");
   mkdirSync(capDir);
-  for (const [name, body] of Object.entries(yamlByName)) writeFileSync(join(capDir, name), body);
+  for (const [name, body] of Object.entries(yamlByName))
+    writeFileSync(join(capDir, name), body);
   return capDir;
 }
 
@@ -27,7 +31,11 @@ const validAuthYaml = `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n${val
 describe("run", () => {
   it("returns 0 errors for a valid matrix in validate mode", async () => {
     const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
-    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema });
+    const result = await run({
+      mode: "validate",
+      capabilitiesDir: capDir,
+      schema,
+    });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.errorCount).toBe(0);
   });
@@ -37,14 +45,22 @@ describe("run", () => {
     const capDir = tempCapabilities({
       "auth.yaml": `area: auth\ntitle: Auth\ndescription: d\nfeatures:\n  - name: A\n    description: d\n`,
     });
-    const result = await run({ mode: "validate", capabilitiesDir: capDir, schema });
+    const result = await run({
+      mode: "validate",
+      capabilitiesDir: capDir,
+      schema,
+    });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     expect(result.errorCount).toBeGreaterThan(0);
   });
 
   it("produces a parity report in report mode", async () => {
     const capDir = tempCapabilities({ "auth.yaml": validAuthYaml });
-    const result = await run({ mode: "report", capabilitiesDir: capDir, schema });
+    const result = await run({
+      mode: "report",
+      capabilitiesDir: capDir,
+      schema,
+    });
     rmSync(join(capDir, ".."), { recursive: true, force: true });
     // With no compliance data, all languages default to not_implemented so parity is 0
     expect(result.report?.overall).toBe(0);
