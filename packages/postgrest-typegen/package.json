@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "arktype": "2.2.3",
-    "oxfmt": "0.66.0"
+    "oxfmt": "0.68.0"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",
