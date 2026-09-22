@@ -16,8 +16,7 @@ updates:
           - patch
 
   - package-ecosystem: npm
-    directories:
-      - /packages/*
+    directory: /packages/capability-matrix
     schedule:
       interval: weekly
       day: monday
@@ -26,6 +25,20 @@ updates:
       include: scope
     groups:
       npm:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: bun
+    directory: /packages/postgrest-typegen
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      bun:
         update-types:
           - minor
           - patch
