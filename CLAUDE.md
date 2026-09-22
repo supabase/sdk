@@ -17,23 +17,25 @@ The capability-matrix scripts live under `packages/capability-matrix/`. Run them
 
 ```bash
 cd packages/capability-matrix
-npm ci                          # Install deps (first time / after changes)
-npm test                        # Run full test suite (Vitest)
-npm run typecheck               # TypeScript check (strict, noEmit)
-npm run validate                # Schema + structural checks (offline)
-npm run validate:online         # + reference checks against GitHub (needs GITHUB_TOKEN)
-npm run report                  # Generate JSON parity report
-npm run validate-compliance <file>  # Validate a single SDK compliance file
-npm run aggregate               # Fetch all SDK compliance files via GitHub API
-npm run build-site              # Build HTML site (uses cached compliance data)
-npm run build-site <compliance.json>  # Build with specific compliance data
+bun install                     # Install deps (first time / after changes)
+bun test                        # Run full test suite
+bun run typecheck               # TypeScript check (strict, noEmit)
+bun run format-and-lint         # oxfmt --check + oxlint
+bun run knip                    # Unused files, exports, and dependencies
+bun run validate                # Schema + structural checks (offline)
+bun run validate:online         # + reference checks against GitHub (needs GITHUB_TOKEN)
+bun run report                  # Generate JSON parity report
+bun run validate-compliance <file>  # Validate a single SDK compliance file
+bun run aggregate               # Fetch all SDK compliance files via GitHub API
+bun run build-site              # Build HTML site (uses cached compliance data)
+bun run build-site <compliance.json>  # Build with specific compliance data
 ```
 
-`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+`bun run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
 
 To run a single test file:
 ```bash
-npx vitest run test/schema.test.ts
+bun test test/schema.test.ts
 ```
 
 ## Architecture
@@ -52,7 +54,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `schema/capability-matrix.schema.json` — JSON Schema that validates capability YAML files. Feature IDs must follow three-segment format: `area.group_namespace.feature`.
 - `specs/` — Optional Markdown specs for individual features. Referenced by feature ID stem.
 - `src/` — TypeScript source for validation, aggregation, and site generation.
-- `test/` — Vitest test suite with fixtures in `test/fixtures/`.
+- `test/` — `bun:test` suite with fixtures in `test/fixtures/`.
 
 ### Key Source Files
 
@@ -68,7 +70,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `validate-sdk-compliance-<language>.yml` — One **reusable workflow** per language (`swift`, `javascript`, `python`, `dart`), called by SDK repos; validates `sdk-compliance.yaml` and applies its `api_coverage` policy. `additions` (the default) checks PR-only API changes against the base branch, while `full` checks the complete current surface on PR, push, or dispatch events without a base checkout. Splitting per language avoids gating every step on a `language` input. For `javascript` (the supabase-js pnpm monorepo) pass `typedoc-packages` — comma-separated package dirs, each with a `docs:json` script that owns its TypeDoc entrypoints; the JS path installs with pnpm and merges all packages. Shared steps live in composite actions under `packages/capability-matrix/actions/sdk-compliance-*` (`-validate`, `-check-setup`, `-check-symbols`, `-check-drift`), referenced through the `_sdk-spec` checkout (`./_sdk-spec/packages/capability-matrix/actions/...`) that the wrappers pin to `job.workflow_sha`, so wrapper and action code always come from the same commit. The wrappers themselves must stay in `.github/workflows/` (a GitHub requirement for `workflow_call`); keep them thin shims, since wrapper-only commits do not bump the capability-matrix component — force a release with a `Release-As: x.y.z` commit footer if one ever needs to ship alone
 - `capability-matrix-deploy-pages.yml` — Fetches all SDK compliance data, rebuilds the site, and deploys to GitHub Pages (main push, daily cron, manual dispatch)
 - `release.yml` — release-please over two components; the repo root is deliberately not versioned anymore (the historical `vX.Y.Z` tags up to 1.5.0 remain for consumers pinned to them). `packages/capability-matrix` (`node`, tags `capability-matrix-vX.Y.Z`) gets a changelog and version bump only, nothing is published; its tags are what SDK repos pin the reusable compliance workflows at, since the compliance logic lives in the package. The symbol extractors are not release-managed at all. `packages/postgrest-typegen` (`node`, tags `postgrest-typegen-vX.Y.Z`) additionally publishes: when its release is created, the `publish-postgrest-typegen` job builds with bun and publishes `@supabase/postgrest-typegen` to npm via OIDC trusted publishing (no npm token; the trusted publisher must be configured on npmjs.com)
-- `dependabot.yml` — one entry per package directory instead of a `/packages/*` glob, because the ecosystem has to match the lockfile: `npm` for `packages/capability-matrix` (`package-lock.json`) and `bun` for `packages/postgrest-typegen` (`bun.lock`). The `npm` ecosystem rewrites `package.json` without touching `bun.lock`, which leaves the lockfile stale and fails the `bun install --frozen-lockfile` step in `postgrest-typegen-validate.yml`. A new package needs its own entry here, matched to whichever lockfile it commits
+- `dependabot.yml` — both JavaScript packages commit a `bun.lock`, so a single `bun` entry globs `/packages/*`. Do not move them back to the `npm` ecosystem: it rewrites `package.json` without touching `bun.lock`, which leaves the lockfile stale and fails every `bun install --frozen-lockfile` step
 
 ## Feature IDs
 
@@ -97,7 +99,7 @@ The `symbols` field is optional but enables the public API check in CI: when a P
 
 1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for the relevant area.
 2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally unique.
-3. Run `npm run validate` — catches schema errors and duplicate IDs.
+3. Run `bun run validate` — catches schema errors and duplicate IDs.
 4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`.
 
 ## Commit Style

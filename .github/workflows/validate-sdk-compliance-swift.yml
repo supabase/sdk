@@ -98,7 +98,7 @@ jobs:
           BRANCHES=(pr)
           if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
           for b in "${BRANCHES[@]}"; do
-            npm run --silent normalize-symbolgraph -- \
+            bun run --silent normalize-symbolgraph -- \
               "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done

@@ -42,13 +42,13 @@ jobs:
           path: _sdk-spec
           persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: "22"
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash
+      - name: Add bun to PATH
+        run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
 
       - name: Install capability matrix tooling
-        run: npm ci
+        run: bun install --frozen-lockfile
         working-directory: _sdk-spec/packages/capability-matrix
 
       - name: Insert new capability IDs
@@ -56,7 +56,7 @@ jobs:
         env:
           COMPLIANCE_FILE: ${{ inputs.compliance-file }}
         run: |
-          npm run sync-compliance -- \
+          bun run sync-compliance -- \
             "$GITHUB_WORKSPACE/$COMPLIANCE_FILE" \
             --new-ids-output "$GITHUB_WORKSPACE/new_ids.txt"
 

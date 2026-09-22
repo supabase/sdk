@@ -18,7 +18,7 @@ runs:
         if [ ! -f "$BASE_SYMBOLS" ]; then
           BASE_SYMBOLS="-"
         fi
-        npm run check-api-symbols -- \
+        bun run check-api-symbols -- \
           "$GITHUB_WORKSPACE/pr-symbols.json" \
           "$BASE_SYMBOLS" \
           "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE"

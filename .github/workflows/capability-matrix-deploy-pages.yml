@@ -35,21 +35,21 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: "22"
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash
+      - name: Add bun to PATH
+        run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Aggregate compliance data from SDK repos
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run aggregate
+        run: bun run aggregate
 
       - name: Build site
-        run: npm run build-site -- site/compliance.json
+        run: bun run build-site -- site/compliance.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

@@ -58,20 +58,20 @@ If you're here to update which features your SDK supports, you're in the wrong p
 
 ```bash
 cd packages/capability-matrix
-npm ci
+bun install
 
-npm test                           # vitest suite for the validator
-npm run typecheck                  # tsc --noEmit
-npm run validate                   # schema + structural checks (no network)
-npm run report                     # parity report as JSON
-npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
-npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
-npm run build-site                 # render the static site to site/index.html
+bun test                           # test suite for the validator
+bun run typecheck                  # tsc --noEmit
+bun run validate                   # schema + structural checks (no network)
+bun run report                     # parity report as JSON
+bun run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
+bun run aggregate                  # fetch all SDK compliance files → site/compliance.json
+bun run build-site                 # render the static site to site/index.html
 ```
 
-`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+`bun run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
 
-Run `npm test` and `npm run validate` before opening a PR. CI runs the same checks plus spec file validation.
+Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate` before opening a PR. CI runs the same checks plus spec file validation.
 
 ## Pull requests
 
