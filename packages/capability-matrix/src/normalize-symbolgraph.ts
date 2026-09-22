@@ -1,7 +1,7 @@
 import { relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ParsedSymbol, ParseResult } from "./normalize-typedoc.js";
-export type { ParsedSymbol, ParseResult };
+export type { ParseResult };
 
 export interface SymbolGraphSymbol {
   kind: { identifier: string };

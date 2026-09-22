@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { computeParity } from "../src/report";
 import type { ComplianceMap, Language, LoadedArea } from "../src/types";
 

@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { mkdtempSync } from "node:fs";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { checkStructural, checkSpecs } from "../src/structural";
 import type { LoadedArea } from "../src/types";
 

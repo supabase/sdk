@@ -1,7 +1,9 @@
+type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
+
 export async function fetchComplianceFile(
   slug: string,
   token: string,
-  fetchImpl: typeof fetch = fetch,
+  fetchImpl: FetchLike = fetch,
 ): Promise<string | null> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.raw+json",

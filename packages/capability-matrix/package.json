@@ -5,33 +5,38 @@
   "version": "1.12.0",
   "description": "Validator for the Supabase SDK capability matrix.",
   "scripts": {
-    "validate": "tsx src/cli.ts validate",
-    "validate:online": "tsx src/cli.ts validate --online",
-    "validate-compliance": "tsx src/compliance-cli.ts",
-    "sync-compliance": "tsx src/sync-compliance-cli.ts",
-    "normalize-typedoc": "tsx src/normalize-typedoc-cli.ts",
-    "normalize-symbolgraph": "tsx src/normalize-symbolgraph-cli.ts",
-    "normalize-griffe": "tsx src/normalize-griffe-cli.ts",
-    "check-api-symbols": "tsx src/check-api-symbols.ts",
-    "coverage-mode": "tsx src/coverage-mode-cli.ts",
-    "check-drift": "tsx src/check-drift.ts",
-    "aggregate": "tsx src/aggregate.ts",
-    "report": "tsx src/cli.ts report",
-    "test": "vitest run",
+    "validate": "bun src/cli.ts validate",
+    "validate:online": "bun src/cli.ts validate --online",
+    "validate-compliance": "bun src/compliance-cli.ts",
+    "sync-compliance": "bun src/sync-compliance-cli.ts",
+    "normalize-typedoc": "bun src/normalize-typedoc-cli.ts",
+    "normalize-symbolgraph": "bun src/normalize-symbolgraph-cli.ts",
+    "normalize-griffe": "bun src/normalize-griffe-cli.ts",
+    "check-api-symbols": "bun src/check-api-symbols.ts",
+    "coverage-mode": "bun src/coverage-mode-cli.ts",
+    "check-drift": "bun src/check-drift.ts",
+    "aggregate": "bun src/aggregate.ts",
+    "report": "bun src/cli.ts report",
+    "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "build-site": "tsx src/generate-site.ts"
+    "format-and-lint": "oxfmt --check . && oxlint --deny-warnings src test",
+    "format-and-lint:fix": "oxfmt . && oxlint --fix src test",
+    "knip": "knip",
+    "build-site": "bun src/generate-site.ts"
   },
   "dependencies": {
-    "@octokit/rest": "^22.0.1",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "ignore": "^7.0.9",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.0",
     "@types/node": "^26",
-    "tsx": "^4.23.13",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.1"
+    "knip": "^6.32.3",
+    "oxfmt": "0.66.0",
+    "oxlint": "1.83.0",
+    "oxlint-tsgolint": "7.0.2002",
+    "typescript": "^7.0.2"
   }
 }

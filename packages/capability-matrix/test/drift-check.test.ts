@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { checkDrift, formatDriftSummary } from "../src/drift-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
 

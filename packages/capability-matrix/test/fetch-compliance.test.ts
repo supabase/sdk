@@ -1,8 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+// oxlint-disable typescript/await-thenable -- bun-types declares the matcher
+// return as void, but resolves/rejects assertions must be awaited at runtime.
+import { describe, it, expect, mock } from "bun:test";
 import { fetchComplianceFile } from "../src/fetch-compliance";
 
 function respondWith(body: BodyInit | null, init?: ResponseInit) {
-  return vi.fn().mockResolvedValue(new Response(body, init));
+  return mock().mockResolvedValue(new Response(body, init));
 }
 
 describe("fetchComplianceFile", () => {

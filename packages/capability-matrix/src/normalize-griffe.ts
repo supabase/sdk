@@ -2,7 +2,7 @@ import { basename, relative } from "node:path";
 import type { ParsedSymbol, ParseResult } from "./normalize-typedoc.js";
 import { loadIgnore, type Ignore } from "./parse-ignore.js";
 
-export type { ParsedSymbol, ParseResult };
+export type { ParseResult };
 
 export interface GriffeNode {
   kind: "module" | "class" | "function" | "attribute";

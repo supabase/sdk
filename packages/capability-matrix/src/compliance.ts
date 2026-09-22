@@ -1,5 +1,5 @@
 import { LANGUAGES, STATUSES } from "./types.js";
-import type { ComplianceEntry, ComplianceMap, Language, LoadedArea, Status } from "./types.js";
+import type { ComplianceMap, Language, LoadedArea, Status } from "./types.js";
 
 export interface ComplianceFinding {
   level: "error";
@@ -17,7 +17,7 @@ export interface RawCompliance {
   supporting_symbols?: string[];
 }
 
-export const API_COVERAGE_MODES = ["additions", "full"] as const;
+const API_COVERAGE_MODES = ["additions", "full"] as const;
 export type ApiCoverageMode = (typeof API_COVERAGE_MODES)[number];
 
 export function getApiCoverageMode(raw: RawCompliance): ApiCoverageMode {
