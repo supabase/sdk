@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install bun
-        run: curl -fsSL https://bun.sh/install | bash
+        run: curl -fsSL https://bun.sh/install | bash -s "bun-v$(cat .bun-version)"
       - name: Add bun to PATH
         run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
       - run: bun install --frozen-lockfile

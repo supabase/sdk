@@ -43,7 +43,7 @@ jobs:
           persist-credentials: false
 
       - name: Install bun
-        run: curl -fsSL https://bun.sh/install | bash
+        run: curl -fsSL https://bun.sh/install | bash -s "bun-v$(cat _sdk-spec/packages/capability-matrix/.bun-version)"
       - name: Add bun to PATH
         run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
 

@@ -24,7 +24,7 @@ runs:
 
     - name: Install bun
       shell: bash
-      run: curl -fsSL https://bun.sh/install | bash
+      run: curl -fsSL https://bun.sh/install | bash -s "bun-v$(cat _sdk-spec/packages/capability-matrix/.bun-version)"
     - name: Add bun to PATH
       shell: bash
       run: echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
