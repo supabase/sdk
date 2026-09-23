@@ -24,6 +24,8 @@ updates:
     commit-message:
       prefix: chore
       include: scope
+    ignore:
+      - dependency-name: oxfmt
     groups:
       bun:
         update-types:
