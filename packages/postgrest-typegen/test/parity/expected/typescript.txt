@@ -7,6 +7,65 @@ export type Json =
   | Json[]
 
 export type Database = {
+  inventory: {
+    Tables: {
+      items: {
+        Row: {
+          id: number
+          owner_id: number
+          status: Database["inventory"]["Enums"]["user_status"]
+        }
+        Insert: {
+          id?: number
+          owner_id: number
+          status?: Database["inventory"]["Enums"]["user_status"]
+        }
+        Update: {
+          id?: number
+          owner_id?: number
+          status?: Database["inventory"]["Enums"]["user_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_owner_id_fkey"
+            columns: ["owner_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          id: number
+          public_user_id: number | null
+          status: Database["inventory"]["Enums"]["user_status"] | null
+        }
+        Insert: {
+          id?: number
+          public_user_id?: number | null
+          status?: Database["inventory"]["Enums"]["user_status"] | null
+        }
+        Update: {
+          id?: number
+          public_user_id?: number | null
+          status?: Database["inventory"]["Enums"]["user_status"] | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      user_status: "STOCKED" | "DISCONTINUED"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       category: {
@@ -1283,6 +1342,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  inventory: {
+    Enums: {
+      user_status: ["STOCKED", "DISCONTINUED"],
+    },
+  },
   public: {
     Enums: {
       meme_status: ["new", "old", "retired"],

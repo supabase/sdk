@@ -1,6 +1,72 @@
 import Foundation
 import Supabase
 
+internal enum InventorySchema {
+  internal enum UserStatus: String, Codable, Hashable, Sendable {
+    case stocked = "STOCKED"
+    case discontinued = "DISCONTINUED"
+  }
+  internal struct ItemsSelect: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64
+    internal let ownerId: Int64
+    internal let status: UserStatus
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case ownerId = "owner_id"
+      case status = "status"
+    }
+  }
+  internal struct ItemsInsert: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64?
+    internal let ownerId: Int64
+    internal let status: UserStatus?
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case ownerId = "owner_id"
+      case status = "status"
+    }
+  }
+  internal struct ItemsUpdate: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64?
+    internal let ownerId: Int64?
+    internal let status: UserStatus?
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case ownerId = "owner_id"
+      case status = "status"
+    }
+  }
+  internal struct UsersSelect: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64
+    internal let publicUserId: Int64?
+    internal let status: UserStatus?
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case publicUserId = "public_user_id"
+      case status = "status"
+    }
+  }
+  internal struct UsersInsert: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64?
+    internal let publicUserId: Int64?
+    internal let status: UserStatus?
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case publicUserId = "public_user_id"
+      case status = "status"
+    }
+  }
+  internal struct UsersUpdate: Codable, Hashable, Sendable, Identifiable {
+    internal let id: Int64?
+    internal let publicUserId: Int64?
+    internal let status: UserStatus?
+    internal enum CodingKeys: String, CodingKey {
+      case id = "id"
+      case publicUserId = "public_user_id"
+      case status = "status"
+    }
+  }
+}
 internal enum PublicSchema {
   internal enum MemeStatus: String, Codable, Hashable, Sendable {
     case new = "new"

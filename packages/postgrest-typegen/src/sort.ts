@@ -38,17 +38,31 @@ const bySchemaName = (
   compareStrings(a.name, b.name) ||
   a.id - b.id;
 
-// Mirrors the TypeScript generator's historical `relationships.sort`.
+// Column lists compare as their JSON text, matching the TypeScript generator's
+// historical `relationships.sort`.
+const compareColumns = (a: string[], b: string[]): number =>
+  compareStrings(JSON.stringify(a), JSON.stringify(b));
+
+// The first three keys mirror the TypeScript generator's historical
+// `relationships.sort`. They are not total: `expandViewRelationships` in
+// `introspection/relationships.ts` copies one foreign key onto every view
+// exposing it, on either side, and onto every combination of view columns
+// carrying it. View-to-table copies share the referenced side and differ in
+// `schema`, `relation` and `columns`; table-to-view copies onto same-named
+// views in different schemas differ only in `referenced_schema`. The remaining
+// keys order those copies, since the view key dependency query does not order
+// the view columns it aggregates.
 const byRelationship = (
   a: PostgresRelationship,
   b: PostgresRelationship,
 ): number =>
   compareStrings(a.foreign_key_name, b.foreign_key_name) ||
   compareStrings(a.referenced_relation, b.referenced_relation) ||
-  compareStrings(
-    JSON.stringify(a.referenced_columns),
-    JSON.stringify(b.referenced_columns),
-  );
+  compareColumns(a.referenced_columns, b.referenced_columns) ||
+  compareStrings(a.referenced_schema, b.referenced_schema) ||
+  compareStrings(a.schema, b.schema) ||
+  compareStrings(a.relation, b.relation) ||
+  compareColumns(a.columns, b.columns);
 
 /**
  * Return a new {@link GeneratorMetadata} with every collection ordered by a

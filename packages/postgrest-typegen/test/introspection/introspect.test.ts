@@ -186,6 +186,84 @@ describe("introspect (integration)", () => {
     ).toBe(true);
   });
 
+  describe("names shared between schemas", () => {
+    const statusColumn = (m: GeneratorMetadata, schema: string) => {
+      const users = m.tables.find(
+        (t) => t.schema === schema && t.name === "users",
+      )!;
+      return m.columns.find(
+        (c) => c.table_id === users.id && c.name === "status",
+      )!;
+    };
+
+    test("lists a same-named table once per schema", () => {
+      const schemas = full.tables
+        .filter((t) => t.name === "users")
+        .map((t) => t.schema)
+        .sort();
+      expect(schemas).toEqual(["inventory", "public"]);
+    });
+
+    test("tells same-named enum types apart by type_schema", () => {
+      expect(statusColumn(full, "public")).toMatchObject({
+        format: "user_status",
+        type_schema: "public",
+        enums: ["ACTIVE", "INACTIVE"],
+      });
+      expect(statusColumn(full, "inventory")).toMatchObject({
+        format: "user_status",
+        type_schema: "inventory",
+        enums: ["STOCKED", "DISCONTINUED"],
+      });
+      const enumTypes = full.types
+        .filter((t) => t.name === "user_status")
+        .map((t) => [t.schema, t.enums]);
+      expect(enumTypes).toEqual(
+        expect.arrayContaining([
+          ["public", ["ACTIVE", "INACTIVE"]],
+          ["inventory", ["STOCKED", "DISCONTINUED"]],
+        ]),
+      );
+      expect(enumTypes).toHaveLength(2);
+    });
+
+    test("carries both schemas on a cross-schema foreign key", () => {
+      expect(full.relationships).toContainEqual(
+        expect.objectContaining({
+          schema: "inventory",
+          relation: "users",
+          columns: ["public_user_id"],
+          referenced_schema: "public",
+          referenced_relation: "users",
+          referenced_columns: ["id"],
+        }),
+      );
+    });
+
+    test("filters relationships by the schema of the referencing side", () => {
+      const inventory = excludingPublic.relationships.filter(
+        (r) => r.schema === "inventory",
+      );
+      expect(inventory).toContainEqual(
+        expect.objectContaining({
+          relation: "users",
+          referenced_schema: "public",
+          referenced_relation: "users",
+        }),
+      );
+      expect(inventory).toContainEqual(
+        expect.objectContaining({
+          relation: "items",
+          referenced_schema: "inventory",
+          referenced_relation: "users",
+        }),
+      );
+      expect(
+        onlyPublic.relationships.some((r) => r.schema === "inventory"),
+      ).toBe(false);
+    });
+  });
+
   describe("relationships", () => {
     const has = (
       m: GeneratorMetadata,

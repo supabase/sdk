@@ -6,6 +6,7 @@ import {
   addressCompositeType,
   baseColumn,
   baseMaterializedView,
+  baseSchema,
   baseTable,
   baseView,
   buildMetadata,
@@ -33,6 +34,7 @@ describe("python typegen", () => {
           baseColumn({
             name: "status",
             format: "user_status",
+            type_schema: "public",
             is_nullable: true,
             ordinal_position: 2,
           }),
@@ -194,6 +196,53 @@ describe("python typegen", () => {
     `);
   });
 
+  test("resolves same-named enums in different schemas by the column's type_schema", () => {
+    const inventoryStatusEnum = {
+      ...userStatusEnum,
+      id: 101,
+      schema: "inventory",
+      enums: ["STOCKED", "DISCONTINUED"],
+    };
+    const result = generatePython(
+      buildMetadata({
+        schemas: [baseSchema, { id: 2, name: "inventory", owner: "postgres" }],
+        tables: [
+          baseTable(),
+          baseTable({ id: 2, schema: "inventory", name: "items" }),
+        ],
+        columns: [
+          baseColumn({
+            name: "status",
+            format: "user_status",
+            type_schema: "public",
+          }),
+          baseColumn({
+            table_id: 2,
+            schema: "inventory",
+            table: "items",
+            name: "status",
+            format: "user_status",
+            type_schema: "inventory",
+          }),
+        ],
+        types: [userStatusEnum, inventoryStatusEnum, textType],
+      }),
+    );
+
+    expect(result).toContain(
+      'InventoryUserStatus: TypeAlias = Literal["STOCKED", "DISCONTINUED"]',
+    );
+    expect(result).toContain(
+      'PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]',
+    );
+    expect(result).toContain(
+      'class InventoryItems(BaseModel):\n    status: InventoryUserStatus = Field(alias="status")',
+    );
+    expect(result).toContain(
+      'class PublicTickets(BaseModel):\n    status: PublicUserStatus = Field(alias="status")',
+    );
+  });
+
   test("NotRequired and TypeAlias come from typing_extensions for Python 3.9 support", () => {
     const result = generatePython(buildMetadata());
     const typingImport = result.match(/from typing import \(([\s\S]*?)\)/)?.[1];
@@ -269,6 +318,7 @@ describe("python typegen", () => {
           baseColumn({
             name: "tags",
             format: "_user_status",
+            type_schema: "public",
             is_nullable: false,
           }),
           baseColumn({ name: "names", format: "_text", is_nullable: true }),

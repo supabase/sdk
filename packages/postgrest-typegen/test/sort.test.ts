@@ -111,6 +111,41 @@ describe("sortGeneratorMetadata", () => {
     ]);
   });
 
+  test("orders the view copies of one foreign key deterministically", () => {
+    const copies = [
+      baseRelationship({ relation: "tickets_view", columns: ["owner_id"] }),
+      baseRelationship({ schema: "reporting", relation: "tickets" }),
+      baseRelationship({ referenced_schema: "reporting" }),
+      baseRelationship({ relation: "tickets_view", columns: ["assignee_id"] }),
+      baseRelationship(),
+    ];
+    const expected = [
+      ["public", "public", "tickets", ["owner_id"]],
+      ["public", "public", "tickets_view", ["assignee_id"]],
+      ["public", "public", "tickets_view", ["owner_id"]],
+      ["public", "reporting", "tickets", ["owner_id"]],
+      ["reporting", "public", "tickets", ["owner_id"]],
+    ];
+    const order = (result: { relationships: typeof copies }) =>
+      result.relationships.map((r) => [
+        r.referenced_schema,
+        r.schema,
+        r.relation,
+        r.columns,
+      ]);
+
+    expect(
+      order(sortGeneratorMetadata(buildMetadata({ relationships: copies }))),
+    ).toEqual(expected);
+    expect(
+      order(
+        sortGeneratorMetadata(
+          buildMetadata({ relationships: [...copies].reverse() }),
+        ),
+      ),
+    ).toEqual(expected);
+  });
+
   test("is idempotent", () => {
     const sorted = sortGeneratorMetadata(
       buildMetadata({
