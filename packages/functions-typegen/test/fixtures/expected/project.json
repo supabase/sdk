@@ -1,0 +1,965 @@
+{
+  "version": 1,
+  "functions": [
+    {
+      "slug": "broken",
+      "entrypoint": "supabase/functions/broken/index.ts",
+      "importMap": null,
+      "verifyJwt": true,
+      "requestBody": null,
+      "responseBody": null,
+      "types": []
+    },
+    {
+      "slug": "custom-entry",
+      "entrypoint": "supabase/custom/handler.ts",
+      "importMap": "supabase/custom/import_map.json",
+      "verifyJwt": false,
+      "requestBody": {
+        "kind": "reference",
+        "name": "Shared"
+      },
+      "responseBody": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "ok",
+            "type": {
+              "kind": "boolean"
+            },
+            "optional": false
+          }
+        ]
+      },
+      "types": [
+        {
+          "name": "Base",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              }
+            ],
+            "additionalProperties": {
+              "kind": "unknown"
+            }
+          }
+        },
+        {
+          "name": "Shared",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": true
+              }
+            ],
+            "additionalProperties": {
+              "kind": "unknown"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "slug": "greet",
+      "entrypoint": "supabase/functions/greet/index.ts",
+      "importMap": "supabase/functions/greet/deno.json",
+      "verifyJwt": true,
+      "requestBody": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "name",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          },
+          {
+            "name": "age",
+            "type": {
+              "kind": "union",
+              "members": [
+                {
+                  "kind": "number"
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            },
+            "optional": true
+          },
+          {
+            "name": "tags",
+            "type": {
+              "kind": "reference",
+              "name": "Tags"
+            },
+            "optional": false
+          },
+          {
+            "name": "address",
+            "type": {
+              "kind": "reference",
+              "name": "Address"
+            },
+            "optional": false
+          },
+          {
+            "name": "addresses",
+            "type": {
+              "kind": "array",
+              "element": {
+                "kind": "reference",
+                "name": "Address"
+              }
+            },
+            "optional": false
+          },
+          {
+            "name": "status",
+            "type": {
+              "kind": "reference",
+              "name": "Status"
+            },
+            "optional": false
+          },
+          {
+            "name": "level",
+            "type": {
+              "kind": "reference",
+              "name": "Level"
+            },
+            "optional": false
+          },
+          {
+            "name": "meta",
+            "type": {
+              "kind": "record",
+              "key": {
+                "kind": "string"
+              },
+              "value": {
+                "kind": "unknown"
+              }
+            },
+            "optional": false
+          },
+          {
+            "name": "flags",
+            "type": {
+              "kind": "record",
+              "key": {
+                "kind": "union",
+                "members": [
+                  {
+                    "kind": "literal",
+                    "value": "a"
+                  },
+                  {
+                    "kind": "literal",
+                    "value": "b"
+                  }
+                ]
+              },
+              "value": {
+                "kind": "boolean"
+              }
+            },
+            "optional": false
+          },
+          {
+            "name": "partial",
+            "type": {
+              "kind": "object",
+              "properties": [
+                {
+                  "name": "street",
+                  "type": {
+                    "kind": "string"
+                  },
+                  "optional": true
+                },
+                {
+                  "name": "zip",
+                  "type": {
+                    "kind": "string"
+                  },
+                  "optional": true
+                },
+                {
+                  "name": "country",
+                  "type": {
+                    "kind": "union",
+                    "members": [
+                      {
+                        "kind": "literal",
+                        "value": "SE"
+                      },
+                      {
+                        "kind": "literal",
+                        "value": "NO"
+                      }
+                    ]
+                  },
+                  "optional": true
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "shared",
+            "type": {
+              "kind": "reference",
+              "name": "Shared"
+            },
+            "optional": false
+          },
+          {
+            "name": "pair",
+            "type": {
+              "kind": "tuple",
+              "elements": [
+                {
+                  "kind": "string"
+                },
+                {
+                  "kind": "number"
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "mixed",
+            "type": {
+              "kind": "reference",
+              "name": "Mixed"
+            },
+            "optional": false
+          },
+          {
+            "name": "nested",
+            "type": {
+              "kind": "object",
+              "properties": [
+                {
+                  "name": "deep",
+                  "type": {
+                    "kind": "object",
+                    "properties": [
+                      {
+                        "name": "flag",
+                        "type": {
+                          "kind": "boolean"
+                        },
+                        "optional": false
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "loose",
+            "type": {
+              "kind": "record",
+              "key": {
+                "kind": "string"
+              },
+              "value": {
+                "kind": "unknown"
+              }
+            },
+            "optional": false
+          },
+          {
+            "name": "yes",
+            "type": {
+              "kind": "literal",
+              "value": true
+            },
+            "optional": false
+          },
+          {
+            "name": "bool",
+            "type": {
+              "kind": "boolean"
+            },
+            "optional": false
+          },
+          {
+            "name": "count",
+            "type": {
+              "kind": "union",
+              "members": [
+                {
+                  "kind": "literal",
+                  "value": 1
+                },
+                {
+                  "kind": "literal",
+                  "value": 2
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "when",
+            "type": {
+              "kind": "unsupported",
+              "repr": "Date"
+            },
+            "optional": false
+          },
+          {
+            "name": "extra",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          }
+        ]
+      },
+      "responseBody": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "id",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          },
+          {
+            "name": "label",
+            "type": {
+              "kind": "string"
+            },
+            "optional": true
+          },
+          {
+            "name": "greeting",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          },
+          {
+            "name": "page",
+            "type": {
+              "kind": "object",
+              "properties": [
+                {
+                  "name": "items",
+                  "type": {
+                    "kind": "array",
+                    "element": {
+                      "kind": "reference",
+                      "name": "Tree"
+                    }
+                  },
+                  "optional": false
+                },
+                {
+                  "name": "next",
+                  "type": {
+                    "kind": "union",
+                    "members": [
+                      {
+                        "kind": "string"
+                      },
+                      {
+                        "kind": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "paged",
+            "type": {
+              "kind": "object",
+              "properties": [
+                {
+                  "name": "items",
+                  "type": {
+                    "kind": "array",
+                    "element": {
+                      "kind": "number"
+                    }
+                  },
+                  "optional": false
+                },
+                {
+                  "name": "next",
+                  "type": {
+                    "kind": "union",
+                    "members": [
+                      {
+                        "kind": "number"
+                      },
+                      {
+                        "kind": "null"
+                      }
+                    ]
+                  },
+                  "optional": false
+                }
+              ]
+            },
+            "optional": false
+          },
+          {
+            "name": "tree",
+            "type": {
+              "kind": "reference",
+              "name": "Tree"
+            },
+            "optional": false
+          },
+          {
+            "name": "self",
+            "type": {
+              "kind": "reference",
+              "name": "RequestBody"
+            },
+            "optional": false
+          }
+        ],
+        "additionalProperties": {
+          "kind": "unknown"
+        }
+      },
+      "types": [
+        {
+          "name": "Address",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "street",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              },
+              {
+                "name": "zip",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": true
+              },
+              {
+                "name": "country",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "literal",
+                      "value": "SE"
+                    },
+                    {
+                      "kind": "literal",
+                      "value": "NO"
+                    }
+                  ]
+                },
+                "optional": true
+              }
+            ]
+          }
+        },
+        {
+          "name": "Base",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              }
+            ],
+            "additionalProperties": {
+              "kind": "unknown"
+            }
+          }
+        },
+        {
+          "name": "Level",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": 0
+              },
+              {
+                "kind": "literal",
+                "value": 10
+              },
+              {
+                "kind": "literal",
+                "value": 11
+              }
+            ]
+          }
+        },
+        {
+          "name": "Mixed",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "number"
+              }
+            ]
+          }
+        },
+        {
+          "name": "RequestBody",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "name",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              },
+              {
+                "name": "age",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "number"
+                    },
+                    {
+                      "kind": "null"
+                    }
+                  ]
+                },
+                "optional": true
+              },
+              {
+                "name": "tags",
+                "type": {
+                  "kind": "reference",
+                  "name": "Tags"
+                },
+                "optional": false
+              },
+              {
+                "name": "address",
+                "type": {
+                  "kind": "reference",
+                  "name": "Address"
+                },
+                "optional": false
+              },
+              {
+                "name": "addresses",
+                "type": {
+                  "kind": "array",
+                  "element": {
+                    "kind": "reference",
+                    "name": "Address"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "status",
+                "type": {
+                  "kind": "reference",
+                  "name": "Status"
+                },
+                "optional": false
+              },
+              {
+                "name": "level",
+                "type": {
+                  "kind": "reference",
+                  "name": "Level"
+                },
+                "optional": false
+              },
+              {
+                "name": "meta",
+                "type": {
+                  "kind": "record",
+                  "key": {
+                    "kind": "string"
+                  },
+                  "value": {
+                    "kind": "unknown"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "flags",
+                "type": {
+                  "kind": "record",
+                  "key": {
+                    "kind": "union",
+                    "members": [
+                      {
+                        "kind": "literal",
+                        "value": "a"
+                      },
+                      {
+                        "kind": "literal",
+                        "value": "b"
+                      }
+                    ]
+                  },
+                  "value": {
+                    "kind": "boolean"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "partial",
+                "type": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "name": "street",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "optional": true
+                    },
+                    {
+                      "name": "zip",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "optional": true
+                    },
+                    {
+                      "name": "country",
+                      "type": {
+                        "kind": "union",
+                        "members": [
+                          {
+                            "kind": "literal",
+                            "value": "SE"
+                          },
+                          {
+                            "kind": "literal",
+                            "value": "NO"
+                          }
+                        ]
+                      },
+                      "optional": true
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "shared",
+                "type": {
+                  "kind": "reference",
+                  "name": "Shared"
+                },
+                "optional": false
+              },
+              {
+                "name": "pair",
+                "type": {
+                  "kind": "tuple",
+                  "elements": [
+                    {
+                      "kind": "string"
+                    },
+                    {
+                      "kind": "number"
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "mixed",
+                "type": {
+                  "kind": "reference",
+                  "name": "Mixed"
+                },
+                "optional": false
+              },
+              {
+                "name": "nested",
+                "type": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "name": "deep",
+                      "type": {
+                        "kind": "object",
+                        "properties": [
+                          {
+                            "name": "flag",
+                            "type": {
+                              "kind": "boolean"
+                            },
+                            "optional": false
+                          }
+                        ]
+                      },
+                      "optional": false
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "loose",
+                "type": {
+                  "kind": "record",
+                  "key": {
+                    "kind": "string"
+                  },
+                  "value": {
+                    "kind": "unknown"
+                  }
+                },
+                "optional": false
+              },
+              {
+                "name": "yes",
+                "type": {
+                  "kind": "literal",
+                  "value": true
+                },
+                "optional": false
+              },
+              {
+                "name": "bool",
+                "type": {
+                  "kind": "boolean"
+                },
+                "optional": false
+              },
+              {
+                "name": "count",
+                "type": {
+                  "kind": "union",
+                  "members": [
+                    {
+                      "kind": "literal",
+                      "value": 1
+                    },
+                    {
+                      "kind": "literal",
+                      "value": 2
+                    }
+                  ]
+                },
+                "optional": false
+              },
+              {
+                "name": "when",
+                "type": {
+                  "kind": "unsupported",
+                  "repr": "Date"
+                },
+                "optional": false
+              },
+              {
+                "name": "extra",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              }
+            ]
+          }
+        },
+        {
+          "name": "Shared",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "id",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": false
+              },
+              {
+                "name": "label",
+                "type": {
+                  "kind": "string"
+                },
+                "optional": true
+              }
+            ],
+            "additionalProperties": {
+              "kind": "unknown"
+            }
+          }
+        },
+        {
+          "name": "Status",
+          "type": {
+            "kind": "union",
+            "members": [
+              {
+                "kind": "literal",
+                "value": "active"
+              },
+              {
+                "kind": "literal",
+                "value": "archived"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Tags",
+          "type": {
+            "kind": "array",
+            "element": {
+              "kind": "string"
+            }
+          }
+        },
+        {
+          "name": "Tree",
+          "type": {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "value",
+                "type": {
+                  "kind": "number"
+                },
+                "optional": false
+              },
+              {
+                "name": "children",
+                "type": {
+                  "kind": "array",
+                  "element": {
+                    "kind": "reference",
+                    "name": "Tree"
+                  }
+                },
+                "optional": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "slug": "no-contract",
+      "entrypoint": "supabase/functions/no-contract/index.ts",
+      "importMap": null,
+      "verifyJwt": true,
+      "requestBody": null,
+      "responseBody": null,
+      "types": []
+    },
+    {
+      "slug": "not-exported",
+      "entrypoint": "supabase/functions/not-exported/index.ts",
+      "importMap": null,
+      "verifyJwt": true,
+      "requestBody": null,
+      "responseBody": {
+        "kind": "string"
+      },
+      "types": []
+    },
+    {
+      "slug": "public-greet",
+      "entrypoint": "supabase/functions/public-greet/index.ts",
+      "importMap": null,
+      "verifyJwt": false,
+      "requestBody": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "name",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          }
+        ]
+      },
+      "responseBody": {
+        "kind": "object",
+        "properties": [
+          {
+            "name": "greeting",
+            "type": {
+              "kind": "string"
+            },
+            "optional": false
+          }
+        ]
+      },
+      "types": []
+    }
+  ],
+  "diagnostics": [
+    {
+      "slug": "greet",
+      "path": "RequestBody.compute",
+      "message": "Methods have no JSON representation; compute is left out."
+    },
+    {
+      "slug": "greet",
+      "path": "RequestBody.when",
+      "message": "Date cannot be expressed as JSON."
+    },
+    {
+      "slug": "not-exported",
+      "path": "RequestBody",
+      "message": "RequestBody is declared but not exported, so it is not part of the contract."
+    }
+  ]
+}

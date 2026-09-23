@@ -21,6 +21,7 @@
 /packages/go-symbol-extractor/ @supabase/sdk
 /packages/postgrest-typegen/ @supabase/sdk
 /packages/typegen/ @supabase/sdk
+/packages/functions-typegen/ @supabase/sdk
 
 # 2. GENERAL SECURITY & SUPPLY CHAIN LAYER (High Risk)
 #    Security review is strictly mandated for supply chain vectors and repository governance.

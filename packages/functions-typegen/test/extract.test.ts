@@ -1,0 +1,178 @@
+import { describe, expect, test } from "bun:test";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+
+import { createLocalDenoRunner, type DenoRunner } from "../src/deno.ts";
+import { extractEdgeFunctionsMetadata } from "../src/extract.ts";
+import {
+  parseEdgeFunctionsMetadata,
+  type EdgeFunctionsMetadata,
+} from "../src/types.ts";
+
+const projectRoot = join(import.meta.dir, "fixtures", "project");
+const expectedPath = join(
+  import.meta.dir,
+  "fixtures",
+  "expected",
+  "project.json",
+);
+
+/**
+ * End-to-end run against the fixture project with the `deno` binary on this
+ * machine. The whole document is pinned in `fixtures/expected/project.json`;
+ * regenerate it with `bun run update-expected` after an intentional change and
+ * review the diff. Only the `broken` function's diagnostic is checked loosely,
+ * since its message carries Deno's own wording and an absolute path.
+ */
+describe("extractEdgeFunctionsMetadata", () => {
+  test("extracts the fixture project into the expected document", async () => {
+    const actual = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: createLocalDenoRunner(),
+    });
+    const expected = parseEdgeFunctionsMetadata(
+      JSON.parse(await readFile(expectedPath, "utf8")),
+    );
+
+    const brokenDiagnostics = actual.diagnostics.filter(
+      (d) => d.slug === "broken",
+    );
+    expect(brokenDiagnostics).toHaveLength(1);
+    expect(brokenDiagnostics[0]?.path).toBe("");
+    expect(brokenDiagnostics[0]?.message).toStartWith(
+      "deno doc failed for supabase/functions/broken/index.ts:",
+    );
+
+    expect(withoutBroken(actual)).toEqual(withoutBroken(expected));
+  });
+
+  test("validates against the schema and round-trips through JSON", async () => {
+    const document = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: createLocalDenoRunner(),
+    });
+    expect(
+      parseEdgeFunctionsMetadata(JSON.parse(JSON.stringify(document))),
+    ).toEqual(document);
+  });
+
+  test("runs deno from the function directory with the import map the CLI would use", async () => {
+    const requests: { args: readonly string[]; cwd: string }[] = [];
+    const recording: DenoRunner = {
+      run(request) {
+        requests.push({ args: request.args, cwd: request.cwd });
+        return Promise.resolve({
+          exitCode: 0,
+          stdout: '{"version":2,"nodes":{}}',
+          stderr: "",
+        });
+      },
+    };
+    await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: recording,
+      functions: [
+        {
+          slug: "greet",
+          entrypoint: "supabase/functions/greet/index.ts",
+          importMap: "supabase/functions/greet/deno.json",
+          verifyJwt: true,
+        },
+        {
+          slug: "custom-entry",
+          entrypoint: "supabase/custom/handler.ts",
+          importMap: "supabase/custom/import_map.json",
+          verifyJwt: false,
+        },
+        {
+          slug: "plain",
+          entrypoint: "supabase/functions/plain/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+      ],
+    });
+    expect(requests).toEqual([
+      {
+        cwd: "supabase/functions/greet",
+        args: [
+          "doc",
+          "--json",
+          "--private",
+          "--no-lock",
+          "--config",
+          "deno.json",
+          "index.ts",
+        ],
+      },
+      {
+        cwd: "supabase/custom",
+        args: [
+          "doc",
+          "--json",
+          "--private",
+          "--no-lock",
+          "--import-map",
+          "import_map.json",
+          "handler.ts",
+        ],
+      },
+      {
+        cwd: "supabase/functions/plain",
+        args: [
+          "doc",
+          "--json",
+          "--private",
+          "--no-lock",
+          "--no-config",
+          "index.ts",
+        ],
+      },
+    ]);
+  });
+
+  test("a runner failure becomes a diagnostic on the function instead of an exception", async () => {
+    const failing: DenoRunner = {
+      run: () =>
+        Promise.resolve({ exitCode: 1, stdout: "", stderr: "error: boom\n" }),
+    };
+    const document = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: failing,
+      functions: [
+        {
+          slug: "x",
+          entrypoint: "supabase/functions/x/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+      ],
+    });
+    expect(document.functions).toEqual([
+      {
+        slug: "x",
+        entrypoint: "supabase/functions/x/index.ts",
+        importMap: null,
+        verifyJwt: true,
+        requestBody: null,
+        responseBody: null,
+        types: [],
+      },
+    ]);
+    expect(document.diagnostics).toEqual([
+      {
+        slug: "x",
+        path: "",
+        message:
+          "deno doc failed for supabase/functions/x/index.ts:\nerror: boom",
+      },
+    ]);
+  });
+});
+
+function withoutBroken(document: EdgeFunctionsMetadata): EdgeFunctionsMetadata {
+  return {
+    ...document,
+    diagnostics: document.diagnostics.filter((d) => d.slug !== "broken"),
+  };
+}
