@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { checkDrift, formatDriftSummary } from "../src/drift-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
 
@@ -11,7 +11,10 @@ describe("checkDrift", () => {
     const compliance = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", symbols: ["AuthClient.signUp"] },
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["AuthClient.signUp"],
+        },
       },
     };
     expect(checkDrift([sym("AuthClient.signUp")], compliance)).toEqual([]);
@@ -21,7 +24,10 @@ describe("checkDrift", () => {
     const compliance = {
       sdk: "javascript",
       features: {
-        "auth.mfa.enroll": { status: "implemented", symbols: ["MFAApi.enroll"] },
+        "auth.mfa.enroll": {
+          status: "implemented",
+          symbols: ["MFAApi.enroll"],
+        },
       },
     };
     expect(checkDrift([], compliance)).toEqual([
@@ -48,7 +54,10 @@ describe("checkDrift", () => {
     const compliance = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "not_implemented", symbols: ["AuthClient.signUp"] },
+        "auth.sign_up": {
+          status: "not_implemented",
+          symbols: ["AuthClient.signUp"],
+        },
       },
     };
     expect(checkDrift([], compliance)).toEqual([]);
@@ -61,7 +70,9 @@ describe("checkDrift", () => {
         "auth.mfa.enroll": { status: "implemented" },
       },
     };
-    expect(checkDrift([], compliance)).toEqual([{ featureId: "auth.mfa.enroll" }]);
+    expect(checkDrift([], compliance)).toEqual([
+      { featureId: "auth.mfa.enroll" },
+    ]);
   });
 
   it("reports an unverifiable finding when an implemented entry has an empty symbols list", () => {
@@ -71,7 +82,9 @@ describe("checkDrift", () => {
         "auth.mfa.enroll": { status: "implemented", symbols: [] },
       },
     };
-    expect(checkDrift([], compliance)).toEqual([{ featureId: "auth.mfa.enroll" }]);
+    expect(checkDrift([], compliance)).toEqual([
+      { featureId: "auth.mfa.enroll" },
+    ]);
   });
 
   it("reports an unverifiable finding for the string status shorthand", () => {
@@ -81,7 +94,9 @@ describe("checkDrift", () => {
         "auth.mfa.enroll": "implemented",
       },
     };
-    expect(checkDrift([], compliance)).toEqual([{ featureId: "auth.mfa.enroll" }]);
+    expect(checkDrift([], compliance)).toEqual([
+      { featureId: "auth.mfa.enroll" },
+    ]);
   });
 });
 
@@ -98,7 +113,10 @@ describe("formatDriftSummary", () => {
   });
 
   it("includes the unverifiable section for symbol-less findings", () => {
-    const msg = formatDriftSummary([{ featureId: "auth.mfa.enroll" }], "supabase-flutter");
+    const msg = formatDriftSummary(
+      [{ featureId: "auth.mfa.enroll" }],
+      "supabase-flutter",
+    );
     expect(msg).toContain("no registered symbols to verify");
     expect(msg).toContain(
       "auth.mfa.enroll (no `symbols` list — cannot confirm implementation exists)",
@@ -106,7 +124,10 @@ describe("formatDriftSummary", () => {
   });
 
   it("omits the symbol-not-found section when there are no such findings", () => {
-    const msg = formatDriftSummary([{ featureId: "auth.mfa.enroll" }], "javascript");
+    const msg = formatDriftSummary(
+      [{ featureId: "auth.mfa.enroll" }],
+      "javascript",
+    );
     expect(msg).not.toContain("could not be found in javascript");
   });
 

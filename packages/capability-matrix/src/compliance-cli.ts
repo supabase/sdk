@@ -3,7 +3,11 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { parse } from "yaml";
 import { loadAreas } from "./load.js";
-import { validateCompliance, collectFeatureIds, findMissingFeatureIds } from "./compliance.js";
+import {
+  validateCompliance,
+  collectFeatureIds,
+  findMissingFeatureIds,
+} from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
 
 function packageRoot(): string {
@@ -19,9 +23,13 @@ async function main(): Promise<void> {
   }
 
   const root = packageRoot();
-  const { areas, findings: loadFindings } = loadAreas(join(root, "capabilities"));
+  const { areas, findings: loadFindings } = loadAreas(
+    join(root, "capabilities"),
+  );
   if (loadFindings.some((f) => f.level === "error")) {
-    console.error("Failed to load canonical capability spec — check this repo's capabilities/*.yaml");
+    console.error(
+      "Failed to load canonical capability spec — check this repo's capabilities/*.yaml",
+    );
     process.exit(1);
   }
 
@@ -48,11 +56,16 @@ async function main(): Promise<void> {
 
   const missing = findMissingFeatureIds(raw, knownIds);
   if (missing.length > 0) {
-    console.log(`\n${missing.length} feature(s) not declared (treated as not_implemented):`);
+    console.log(
+      `\n${missing.length} feature(s) not declared (treated as not_implemented):`,
+    );
     for (const id of missing) {
       console.log(`  - ${id}`);
     }
   }
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

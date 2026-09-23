@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { computeParity } from "../src/report";
 import type { ComplianceMap, Language, LoadedArea } from "../src/types";
 
@@ -7,11 +7,16 @@ function feature(id: string) {
 }
 
 function area(id: string, features: ReturnType<typeof feature>[]): LoadedArea {
-  return { file: "auth.yaml", area: { area: id, title: "T", description: "d", features } };
+  return {
+    file: "auth.yaml",
+    area: { area: id, title: "T", description: "d", features },
+  };
 }
 
 function entry(status: string, symbols?: string[]) {
-  return symbols ? { status: status as never, symbols } : { status: status as never };
+  return symbols
+    ? { status: status as never, symbols }
+    : { status: status as never };
 }
 
 describe("computeParity — strict overall/perArea (core langs only)", () => {
@@ -91,9 +96,18 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
   it("computes overall as passing features / total features across a mixed fixture", () => {
     const a = area("auth", [feature("auth.a"), feature("auth.b")]);
     const c: Partial<Record<Language, ComplianceMap>> = {
-      javascript: { "auth.a": entry("implemented"), "auth.b": entry("implemented") },
-      flutter: { "auth.a": entry("implemented"), "auth.b": entry("not_implemented") },
-      python: { "auth.a": entry("implemented"), "auth.b": entry("implemented") },
+      javascript: {
+        "auth.a": entry("implemented"),
+        "auth.b": entry("implemented"),
+      },
+      flutter: {
+        "auth.a": entry("implemented"),
+        "auth.b": entry("not_implemented"),
+      },
+      python: {
+        "auth.a": entry("implemented"),
+        "auth.b": entry("implemented"),
+      },
       swift: { "auth.a": entry("implemented"), "auth.b": entry("implemented") },
     };
     // auth.a passes (all core implemented), auth.b fails (flutter not_implemented) -> 1/2

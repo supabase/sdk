@@ -22,13 +22,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: "22"
-      - run: npm ci
-      - run: npm test
-      - run: npm run typecheck
-      - run: npm run validate
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun test
+      - run: bun run typecheck
+      - run: bun run format-and-lint
+      - run: bun run knip
+      - run: bun run validate
 
   dart-parser:
     name: Dart parser (format, analyze, test)
@@ -71,11 +74,12 @@ jobs:
     if: github.event_name == 'pull_request' || github.event_name == 'schedule'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: "22"
-      - run: npm ci
+          bun-version: latest
+      - run: bun install --frozen-lockfile
       - name: Validate references (changed files on PR, all files nightly)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run validate:online
+        run: bun run validate:online

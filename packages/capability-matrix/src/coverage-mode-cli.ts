@@ -16,6 +16,8 @@ try {
   ) as RawCompliance;
   process.stdout.write(getApiCoverageMode(compliance));
 } catch (error) {
-  console.error(`Failed to read API coverage mode: ${(error as Error).message}`);
+  console.error(
+    `Failed to read API coverage mode: ${(error as Error).message}`,
+  );
   process.exit(1);
 }

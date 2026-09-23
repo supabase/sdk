@@ -1,5 +1,10 @@
 import { CORE_LANGUAGES, LANGUAGES } from "./types.js";
-import type { ComplianceMap, Language, LoadedArea, ParityReport } from "./types.js";
+import type {
+  ComplianceMap,
+  Language,
+  LoadedArea,
+  ParityReport,
+} from "./types.js";
 
 export type { ParityReport };
 
@@ -8,12 +13,16 @@ const mean = (xs: number[]): number =>
 
 export function computeParity(
   loaded: LoadedArea[],
-  compliance: Partial<Record<Language, ComplianceMap>>
+  compliance: Partial<Record<Language, ComplianceMap>>,
 ): ParityReport {
   const featurePasses: number[] = [];
   const perAreaPasses: Record<string, number[]> = {};
-  const langImplemented = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
-  const langApplicable = Object.fromEntries(LANGUAGES.map((l) => [l, 0])) as Record<Language, number>;
+  const langImplemented = Object.fromEntries(
+    LANGUAGES.map((l) => [l, 0]),
+  ) as Record<Language, number>;
+  const langApplicable = Object.fromEntries(
+    LANGUAGES.map((l) => [l, 0]),
+  ) as Record<Language, number>;
   let doneCells = 0;
   let doneCellsWithSymbols = 0;
 
@@ -22,11 +31,15 @@ export function computeParity(
     for (const feature of area.features ?? []) {
       // Strict cross-SDK pass check (core languages only)
       const applicableCore = CORE_LANGUAGES.filter(
-        (lang) => (compliance[lang]?.[feature.id]?.status ?? "not_implemented") !== "not_applicable"
+        (lang) =>
+          (compliance[lang]?.[feature.id]?.status ?? "not_implemented") !==
+          "not_applicable",
       );
       const passes =
         applicableCore.length > 0 &&
-        applicableCore.every((lang) => compliance[lang]?.[feature.id]?.status === "implemented");
+        applicableCore.every(
+          (lang) => compliance[lang]?.[feature.id]?.status === "implemented",
+        );
       const passValue = passes ? 1 : 0;
       featurePasses.push(passValue);
       perAreaPasses[area.area].push(passValue);
@@ -34,7 +47,8 @@ export function computeParity(
       // Per-language completion score (all 7 langs). Only exactly `implemented`
       // counts — partial claims aren't credited as done.
       for (const lang of LANGUAGES) {
-        const status = compliance[lang]?.[feature.id]?.status ?? "not_implemented";
+        const status =
+          compliance[lang]?.[feature.id]?.status ?? "not_implemented";
         if (status === "not_applicable") continue;
         langApplicable[lang]++;
         if (status === "implemented") langImplemented[lang]++;
@@ -53,10 +67,14 @@ export function computeParity(
   }
 
   const perArea: Record<string, number> = {};
-  for (const [name, xs] of Object.entries(perAreaPasses)) perArea[name] = mean(xs);
+  for (const [name, xs] of Object.entries(perAreaPasses))
+    perArea[name] = mean(xs);
 
   const perLanguage = Object.fromEntries(
-    LANGUAGES.map((l) => [l, langApplicable[l] === 0 ? 0 : langImplemented[l] / langApplicable[l]])
+    LANGUAGES.map((l) => [
+      l,
+      langApplicable[l] === 0 ? 0 : langImplemented[l] / langApplicable[l],
+    ]),
   ) as Record<Language, number>;
 
   return {

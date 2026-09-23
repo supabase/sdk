@@ -4,7 +4,9 @@ import { normalizeGriffe, type GriffeOutput } from "./normalize-griffe.js";
 async function main(): Promise<void> {
   const [, , filePath, ...rest] = process.argv;
   if (!filePath) {
-    console.error("Usage: normalize-griffe <api-raw.json> [--project-root <path>]");
+    console.error(
+      "Usage: normalize-griffe <api-raw.json> [--project-root <path>]",
+    );
     process.exit(1);
   }
 

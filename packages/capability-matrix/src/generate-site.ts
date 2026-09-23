@@ -1,10 +1,23 @@
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAreas } from "./load.js";
 import { computeParity } from "./report.js";
 import { LANGUAGES } from "./types.js";
-import type { ComplianceFile, ComplianceMap, Feature, Language, LoadedArea, ParityReport } from "./types.js";
+import type {
+  ComplianceFile,
+  ComplianceMap,
+  Feature,
+  Language,
+  LoadedArea,
+  ParityReport,
+} from "./types.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -18,7 +31,8 @@ const LANG_LABELS: Record<Language, string> = {
   kotlin: "Kotlin",
 };
 
-const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/packages/capability-matrix/specs";
+const SPEC_GITHUB_BASE =
+  "https://github.com/supabase/sdk/blob/main/packages/capability-matrix/specs";
 
 function buildSpecSet(root: string): Set<string> {
   const specsDir = join(root, "specs");
@@ -30,11 +44,14 @@ function buildSpecSet(root: string): Set<string> {
       for (const nsEntry of readdirSync(areaDir, { withFileTypes: true })) {
         if (!nsEntry.isDirectory()) continue;
         for (const file of readdirSync(join(areaDir, nsEntry.name))) {
-          if (file.endsWith(".md")) ids.add(`${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`);
+          if (file.endsWith(".md"))
+            ids.add(`${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`);
         }
-       }
-     }
-  } catch { /* specs dir absent */ }
+      }
+    }
+  } catch {
+    /* specs dir absent */
+  }
   return ids;
 }
 
@@ -64,7 +81,11 @@ function esc(s: string) {
 
 // ── Cell rendering ───────────────────────────────────────────────────────────
 
-function statusCell(feature: Feature, lang: Language, compliance: Partial<Record<Language, ComplianceMap>>): string {
+function statusCell(
+  feature: Feature,
+  lang: Language,
+  compliance: Partial<Record<Language, ComplianceMap>>,
+): string {
   const entry = compliance[lang]?.[feature.id];
   const status = entry?.status ?? "not_implemented";
   switch (status) {
@@ -81,7 +102,12 @@ function statusCell(feature: Feature, lang: Language, compliance: Partial<Record
 
 // ── Area table ───────────────────────────────────────────────────────────────
 
-function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, parity: ParityReport, specs: Set<string>): string {
+function renderArea(
+  loaded: LoadedArea,
+  compliance: Partial<Record<Language, ComplianceMap>>,
+  parity: ParityReport,
+  specs: Set<string>,
+): string {
   const { area } = loaded;
 
   // Group features preserving insertion order
@@ -137,13 +163,12 @@ export function renderHtml(
   compliance: Partial<Record<Language, ComplianceMap>>,
   parity: ParityReport,
   specs: Set<string>,
-  buildDate: string
+  buildDate: string,
 ): string {
-
   const navLinks = areas
     .map(
       (a) =>
-        `<a href="#area-${esc(a.area.area)}" class="nav-link">${esc(a.area.title)}</a>`
+        `<a href="#area-${esc(a.area.area)}" class="nav-link">${esc(a.area.title)}</a>`,
     )
     .join("");
 
@@ -171,7 +196,9 @@ export function renderHtml(
     })
     .join("");
 
-  const areaSections = areas.map((a) => renderArea(a, compliance, parity, specs)).join("\n");
+  const areaSections = areas
+    .map((a) => renderArea(a, compliance, parity, specs))
+    .join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -534,7 +561,8 @@ function main() {
 
   const { areas, findings } = loadAreas(capDir);
   if (findings.length > 0) {
-    for (const f of findings) console.error(`${f.level.toUpperCase()} ${f.file}: ${f.message}`);
+    for (const f of findings)
+      console.error(`${f.level.toUpperCase()} ${f.file}: ${f.message}`);
     if (findings.some((f) => f.level === "error")) process.exit(1);
   }
 
@@ -542,7 +570,9 @@ function main() {
   let parity = computeParity(areas, compliance);
 
   if (compliancePath) {
-    const fileData = JSON.parse(readFileSync(compliancePath, "utf8")) as ComplianceFile;
+    const fileData = JSON.parse(
+      readFileSync(compliancePath, "utf8"),
+    ) as ComplianceFile;
     compliance = fileData.compliance;
     parity = fileData.parity;
   }
@@ -553,7 +583,9 @@ function main() {
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), html, "utf8");
-  console.log(`Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`);
+  console.log(
+    `Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`,
+  );
 
   // Ensure compliance.json is in the output directory so it is served by
   // GitHub Pages alongside index.html and is queryable by external sources.

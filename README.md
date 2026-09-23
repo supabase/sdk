@@ -34,7 +34,7 @@ If you are here to opt an SDK into compliance validation, or to update which fea
 See [CONTRIBUTING.md](./CONTRIBUTING.md). Run each package's own toolchain from its directory:
 
 ```bash
-cd packages/capability-matrix && npm ci && npm test
+cd packages/capability-matrix && bun install && bun test
 cd packages/dart-symbol-extractor && dart pub get && dart test
 cd packages/go-symbol-extractor && go test ./...
 ```

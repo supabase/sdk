@@ -1,11 +1,18 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { writeFileSync, mkdtempSync } from "node:fs";
-import { normalizeGriffe, type GriffeOutput, type GriffeNode } from "../src/normalize-griffe";
+import {
+  normalizeGriffe,
+  type GriffeOutput,
+  type GriffeNode,
+} from "../src/normalize-griffe";
 
 // Helper: build a minimal module node wrapping members
-function pkg(filepath: string, members: Record<string, GriffeNode>): GriffeOutput {
+function pkg(
+  filepath: string,
+  members: Record<string, GriffeNode>,
+): GriffeOutput {
   return { mypkg: { kind: "module", filepath, members } };
 }
 
@@ -15,7 +22,11 @@ describe("normalizeGriffe — classes", () => {
       MyClient: { kind: "class", members: {} },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "MyClient", kind: "class", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "MyClient",
+      kind: "class",
+      file: "src/client.py",
+    });
   });
 
   it("skips class whose name starts with underscore", () => {
@@ -47,7 +58,11 @@ describe("normalizeGriffe — methods and functions", () => {
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "MyClient.sign_up", kind: "method", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "MyClient.sign_up",
+      kind: "method",
+      file: "src/client.py",
+    });
   });
 
   it("skips method whose name starts with underscore", () => {
@@ -68,7 +83,11 @@ describe("normalizeGriffe — methods and functions", () => {
       create_client: { kind: "function", labels: null },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "create_client", kind: "function", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "create_client",
+      kind: "function",
+      file: "src/client.py",
+    });
   });
 
   it("skips top-level function whose name starts with underscore", () => {
@@ -87,7 +106,11 @@ describe("normalizeGriffe — methods and functions", () => {
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "MyClient.from_env", kind: "method", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "MyClient.from_env",
+      kind: "method",
+      file: "src/client.py",
+    });
   });
 
   it("emits classmethod member as method", () => {
@@ -98,7 +121,11 @@ describe("normalizeGriffe — methods and functions", () => {
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "MyClient.from_url", kind: "method", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "MyClient.from_url",
+      kind: "method",
+      file: "src/client.py",
+    });
   });
 
   it("skips dunder method (__init__)", () => {
@@ -118,11 +145,17 @@ describe("normalizeGriffe — properties", () => {
     const input = pkg("/repo/src/client.py", {
       MyClient: {
         kind: "class",
-        members: { session: { kind: "attribute", labels: ["property", "writable"] } },
+        members: {
+          session: { kind: "attribute", labels: ["property", "writable"] },
+        },
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "MyClient.session", kind: "property", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "MyClient.session",
+      kind: "property",
+      file: "src/client.py",
+    });
   });
 
   it("does not emit attribute without property label (plain class variable)", () => {
@@ -134,7 +167,9 @@ describe("normalizeGriffe — properties", () => {
     });
     const { symbols } = normalizeGriffe(input, "/repo");
     // only the class itself
-    expect(symbols.find((s) => s.name === "MyClient.DEFAULT_URL")).toBeUndefined();
+    expect(
+      symbols.find((s) => s.name === "MyClient.DEFAULT_URL"),
+    ).toBeUndefined();
   });
 
   it("handles labels: [] (empty array) — not a property", () => {
@@ -183,8 +218,16 @@ describe("normalizeGriffe — sub-modules", () => {
       },
     };
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "AsyncGoTrueClient", kind: "class", file: "src/supabase_auth/_async/__init__.py" });
-    expect(symbols).toContainEqual({ name: "AsyncGoTrueClient.sign_up", kind: "method", file: "src/supabase_auth/_async/__init__.py" });
+    expect(symbols).toContainEqual({
+      name: "AsyncGoTrueClient",
+      kind: "class",
+      file: "src/supabase_auth/_async/__init__.py",
+    });
+    expect(symbols).toContainEqual({
+      name: "AsyncGoTrueClient.sign_up",
+      kind: "method",
+      file: "src/supabase_auth/_async/__init__.py",
+    });
   });
 });
 
@@ -199,7 +242,11 @@ describe("normalizeGriffe — nested classes", () => {
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "Outer.Inner", kind: "class", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "Outer.Inner",
+      kind: "class",
+      file: "src/client.py",
+    });
   });
 
   it("emits method of nested class as Outer.Inner.method", () => {
@@ -215,7 +262,11 @@ describe("normalizeGriffe — nested classes", () => {
       },
     });
     const { symbols } = normalizeGriffe(input, "/repo");
-    expect(symbols).toContainEqual({ name: "Outer.Inner.do_thing", kind: "method", file: "src/client.py" });
+    expect(symbols).toContainEqual({
+      name: "Outer.Inner.do_thing",
+      kind: "method",
+      file: "src/client.py",
+    });
   });
 });
 

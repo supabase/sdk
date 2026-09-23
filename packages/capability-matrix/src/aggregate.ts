@@ -3,7 +3,11 @@ import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { parse } from "yaml";
 import { loadAreas } from "./load.js";
-import { validateCompliance, normalizeCompliance, collectFeatureIds } from "./compliance.js";
+import {
+  validateCompliance,
+  normalizeCompliance,
+  collectFeatureIds,
+} from "./compliance.js";
 import type { RawCompliance } from "./compliance.js";
 import { computeParity } from "./report.js";
 import type { ComplianceFile, ComplianceMap, Language } from "./types.js";
@@ -44,13 +48,17 @@ async function main(): Promise<void> {
     try {
       content = await fetchComplianceFile(slug, token);
     } catch (e) {
-      console.error(`${language}: fetch failed for ${slug}: ${(e as Error).message}`);
+      console.error(
+        `${language}: fetch failed for ${slug}: ${(e as Error).message}`,
+      );
       errorCount++;
       continue;
     }
 
     if (!content) {
-      console.error(`${language}: no sdk-compliance.yaml found in ${slug} — skipping`);
+      console.error(
+        `${language}: no sdk-compliance.yaml found in ${slug} — skipping`,
+      );
       errorCount++;
       continue;
     }
@@ -59,25 +67,34 @@ async function main(): Promise<void> {
     try {
       raw = parse(content) as RawCompliance;
     } catch (e) {
-      console.error(`${language}: YAML parse error in ${slug}: ${(e as Error).message}`);
+      console.error(
+        `${language}: YAML parse error in ${slug}: ${(e as Error).message}`,
+      );
       errorCount++;
       continue;
     }
 
     const findings = validateCompliance(raw, knownIds);
     if (findings.length > 0) {
-      for (const f of findings) console.error(`${language} (${slug}): ${f.message}`);
-      console.error(`${language}: skipping ${slug} due to ${findings.length} error(s)`);
+      for (const f of findings)
+        console.error(`${language} (${slug}): ${f.message}`);
+      console.error(
+        `${language}: skipping ${slug} due to ${findings.length} error(s)`,
+      );
       errorCount++;
       continue;
     }
 
     result[language] = normalizeCompliance(raw);
-    console.log(`${language}: ${Object.keys(result[language]!).length} features loaded from ${slug}`);
+    console.log(
+      `${language}: ${Object.keys(result[language]!).length} features loaded from ${slug}`,
+    );
   }
 
   if (Object.keys(result).length === 0 && errorCount > 0) {
-    console.error(`All ${errorCount} SDK(s) failed — aborting to avoid deploying a blank matrix`);
+    console.error(
+      `All ${errorCount} SDK(s) failed — aborting to avoid deploying a blank matrix`,
+    );
     process.exit(1);
   }
 
@@ -91,4 +108,7 @@ async function main(): Promise<void> {
   console.log(`Compliance data written to site/compliance.json`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

@@ -1,12 +1,12 @@
 ---
 name: capability-matrix
-description: Helps maintain the Supabase SDK capability matrix in packages/capability-matrix/capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `npm run validate`, it doesn't replace it.
+description: Helps maintain the Supabase SDK capability matrix in packages/capability-matrix/capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `bun run validate`, it doesn't replace it.
 ---
 
 # Capability Matrix Maintenance
 
 This repo is the canonical registry of features across Supabase's client SDKs
-(`capabilities/*.yaml`). The JSON Schema and `npm run validate` already catch
+(`capabilities/*.yaml`). The JSON Schema and `bun run validate` already catch
 everything mechanical: malformed IDs, area/filename mismatches, exact
 duplicate IDs, orphaned spec files. What they can't catch is judgment —
 whether a new feature is *actually* new, whether its name reads naturally
@@ -23,7 +23,7 @@ Before spending any judgment calls, run the deterministic validator so you're
 not duplicating what it already guarantees:
 
 ```bash
-cd packages/capability-matrix && npm run validate
+cd packages/capability-matrix && bun run validate
 ```
 
 This confirms schema conformance, `area` field matches the filename, IDs
@@ -41,7 +41,7 @@ plausibly overlap another area (e.g. something touching both `realtime` and
 
 ## Step 2: semantic duplicates
 
-`npm run validate` only catches identical IDs. Read every feature's `name` +
+`bun run validate` only catches identical IDs. Read every feature's `name` +
 `description` in the same area (and group, if cross-area overlap looks
 possible) and ask: does this describe behavior another entry already
 covers, just worded differently? Common patterns to watch for:

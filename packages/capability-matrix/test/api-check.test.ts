@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "bun:test";
 import {
   checkFullCoverage,
   checkNewSymbols,
@@ -41,7 +41,9 @@ describe("checkNewSymbols", () => {
     const pr = [sym("AuthClient.signInWithPasskey")];
     const result = checkNewSymbols(base, pr, compliance);
     expect(result.newSymbols).toEqual(["AuthClient.signInWithPasskey"]);
-    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.signInWithPasskey")]);
+    expect(result.uncoveredSymbols).toEqual([
+      sym("AuthClient.signInWithPasskey"),
+    ]);
   });
 
   it("ignores symbols that exist in both base and PR", () => {
@@ -64,11 +66,19 @@ describe("checkNewSymbols", () => {
     const base: ParsedSymbol[] = [];
     const pr = [sym("AuthClient.foo"), sym("AuthClient.bar")];
     const result = checkNewSymbols(base, pr, compliance);
-    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.foo"), sym("AuthClient.bar")]);
+    expect(result.uncoveredSymbols).toEqual([
+      sym("AuthClient.foo"),
+      sym("AuthClient.bar"),
+    ]);
   });
 
   it("preserves file and line through to uncoveredSymbols", () => {
-    const withLocation: ParsedSymbol = { name: "AuthClient.signInWithPasskey", kind: "method", file: "src/auth.ts", line: 42 };
+    const withLocation: ParsedSymbol = {
+      name: "AuthClient.signInWithPasskey",
+      kind: "method",
+      file: "src/auth.ts",
+      line: 42,
+    };
     const result = checkNewSymbols([], [withLocation], compliance);
     expect(result.uncoveredSymbols).toHaveLength(1);
     expect(result.uncoveredSymbols[0].file).toBe("src/auth.ts");
@@ -121,11 +131,7 @@ describe("checkFullCoverage", () => {
     };
 
     const result = checkFullCoverage(
-      [
-        sym("AuthClient.signUp"),
-        sym("SignUpOptions"),
-        sym("AuthException"),
-      ],
+      [sym("AuthClient.signUp"), sym("SignUpOptions"), sym("AuthException")],
       withSupporting,
     );
 
@@ -184,7 +190,11 @@ describe("checkNewSymbols — removed registered symbols", () => {
       },
       supporting_symbols: ["AuthException"],
     };
-    const base = [sym("AuthClient.signUp"), sym("SignUpOptions"), sym("AuthException")];
+    const base = [
+      sym("AuthClient.signUp"),
+      sym("SignUpOptions"),
+      sym("AuthException"),
+    ];
     const pr = [sym("AuthClient.signUp")];
     const result = checkNewSymbols(base, pr, withSupporting);
     expect(result.removedRegisteredSymbols).toEqual([
@@ -196,7 +206,10 @@ describe("checkNewSymbols — removed registered symbols", () => {
 
 describe("formatErrorMessage", () => {
   it("includes all uncovered symbols in output", () => {
-    const msg = formatErrorMessage([sym("AuthClient.signInWithPasskey")], "javascript");
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+    );
     expect(msg).toContain("❌ Capability matrix check failed");
     expect(msg).toContain("AuthClient.signInWithPasskey (javascript)");
     expect(msg).toContain("sdk-compliance.yaml");
@@ -209,21 +222,34 @@ describe("formatErrorMessage", () => {
   });
 
   it("includes defined-at with file and line when both are present", () => {
-    const s: ParsedSymbol = { name: "SupabaseClient.signInWithPasskey", kind: "method", file: "Sources/Auth/SupabaseClient.swift", line: 142 };
+    const s: ParsedSymbol = {
+      name: "SupabaseClient.signInWithPasskey",
+      kind: "method",
+      file: "Sources/Auth/SupabaseClient.swift",
+      line: 142,
+    };
     const msg = formatErrorMessage([s], "swift");
     expect(msg).toContain("SupabaseClient.signInWithPasskey (swift)");
     expect(msg).toContain("defined at: Sources/Auth/SupabaseClient.swift:142");
   });
 
   it("includes defined-at with file only when line is absent", () => {
-    const s: ParsedSymbol = { name: "AuthClient.signUp", kind: "method", file: "src/auth.ts" };
+    const s: ParsedSymbol = {
+      name: "AuthClient.signUp",
+      kind: "method",
+      file: "src/auth.ts",
+    };
     const msg = formatErrorMessage([s], "javascript");
     expect(msg).toContain("defined at: src/auth.ts");
     expect(msg).not.toContain("defined at: src/auth.ts:");
   });
 
   it("omits defined-at when file is empty", () => {
-    const s: ParsedSymbol = { name: "AuthClient.signUp", kind: "method", file: "" };
+    const s: ParsedSymbol = {
+      name: "AuthClient.signUp",
+      kind: "method",
+      file: "",
+    };
     const msg = formatErrorMessage([s], "javascript");
     expect(msg).not.toContain("defined at:");
   });

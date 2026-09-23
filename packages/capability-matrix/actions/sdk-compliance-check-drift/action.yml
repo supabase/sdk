@@ -14,7 +14,7 @@ runs:
       env:
         COMPLIANCE_FILE: ${{ inputs.compliance-file }}
       run: |
-        npm run check-drift -- \
+        bun run check-drift -- \
           "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE" \
           "$GITHUB_WORKSPACE/pr-symbols.json" \
           "$COMPLIANCE_FILE"

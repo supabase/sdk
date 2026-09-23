@@ -148,20 +148,20 @@ Dependabot picks up new tags automatically and opens a PR to bump the pin — se
 
 ```bash
 cd packages/capability-matrix
-npm ci
+bun install
 
-npm test                           # vitest suite for the validator
-npm run typecheck                  # tsc --noEmit
-npm run validate                   # schema + structural checks (no network)
-npm run validate:online            # + reference checks against GitHub (needs GITHUB_TOKEN)
-npm run report                     # parity report as JSON (overall, per-area, per-language)
-npm run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
-npm run aggregate                  # fetch all SDK compliance files → site/compliance.json
-npm run build-site                 # render the static site to site/index.html
-npm run build-site compliance.json # render the site with compliance data
+bun test                           # test suite for the validator
+bun run typecheck                  # tsc --noEmit
+bun run validate                   # schema + structural checks (no network)
+bun run validate:online            # + reference checks against GitHub (needs GITHUB_TOKEN)
+bun run report                     # parity report as JSON (overall, per-area, per-language)
+bun run validate-compliance <file> # validate a sdk-compliance.yaml against the canonical spec
+bun run aggregate                  # fetch all SDK compliance files → site/compliance.json
+bun run build-site                 # render the static site to site/index.html
+bun run build-site compliance.json # render the site with compliance data
 ```
 
-`npm run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+`bun run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
 
 ## CI
 
