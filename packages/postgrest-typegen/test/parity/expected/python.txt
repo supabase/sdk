@@ -14,9 +14,39 @@ from typing_extensions import NotRequired, TypeAlias
 
 from pydantic import BaseModel, Field, JsonValue
 
+PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
+
 PublicMemeStatus: TypeAlias = Literal["new", "old", "retired"]
 
-PublicUserStatus: TypeAlias = Literal["ACTIVE", "INACTIVE"]
+class InventoryItems(BaseModel):
+    id: int = Field(alias="id")
+    owner_id: int = Field(alias="owner_id")
+    status: PublicUserStatus = Field(alias="status")
+
+class InventoryItemsInsert(TypedDict):
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    owner_id: Annotated[int, Field(alias="owner_id")]
+    status: NotRequired[Annotated[PublicUserStatus, Field(alias="status")]]
+
+class InventoryItemsUpdate(TypedDict):
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    owner_id: NotRequired[Annotated[int, Field(alias="owner_id")]]
+    status: NotRequired[Annotated[PublicUserStatus, Field(alias="status")]]
+
+class InventoryUsers(BaseModel):
+    id: int = Field(alias="id")
+    public_user_id: Optional[int] = Field(alias="public_user_id")
+    status: Optional[PublicUserStatus] = Field(alias="status")
+
+class InventoryUsersInsert(TypedDict):
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    public_user_id: NotRequired[Annotated[Optional[int], Field(alias="public_user_id")]]
+    status: NotRequired[Annotated[Optional[PublicUserStatus], Field(alias="status")]]
+
+class InventoryUsersUpdate(TypedDict):
+    id: NotRequired[Annotated[int, Field(alias="id")]]
+    public_user_id: NotRequired[Annotated[Optional[int], Field(alias="public_user_id")]]
+    status: NotRequired[Annotated[Optional[PublicUserStatus], Field(alias="status")]]
 
 class PublicCategory(BaseModel):
     id: int = Field(alias="id")

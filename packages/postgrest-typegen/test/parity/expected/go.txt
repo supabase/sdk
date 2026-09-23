@@ -1,5 +1,41 @@
 package database
 
+type InventoryItemsSelect struct {
+  Id      int64  `json:"id"`
+  OwnerId int64  `json:"owner_id"`
+  Status  string `json:"status"`
+}
+
+type InventoryItemsInsert struct {
+  Id      *int64  `json:"id"`
+  OwnerId int64   `json:"owner_id"`
+  Status  *string `json:"status"`
+}
+
+type InventoryItemsUpdate struct {
+  Id      *int64  `json:"id"`
+  OwnerId *int64  `json:"owner_id"`
+  Status  *string `json:"status"`
+}
+
+type InventoryUsersSelect struct {
+  Id           int64   `json:"id"`
+  PublicUserId *int64  `json:"public_user_id"`
+  Status       *string `json:"status"`
+}
+
+type InventoryUsersInsert struct {
+  Id           *int64  `json:"id"`
+  PublicUserId *int64  `json:"public_user_id"`
+  Status       *string `json:"status"`
+}
+
+type InventoryUsersUpdate struct {
+  Id           *int64  `json:"id"`
+  PublicUserId *int64  `json:"public_user_id"`
+  Status       *string `json:"status"`
+}
+
 type PublicCategorySelect struct {
   Id   int32  `json:"id"`
   Name string `json:"name"`

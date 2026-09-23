@@ -38,7 +38,13 @@ const bySchemaName = (
   compareStrings(a.name, b.name) ||
   a.id - b.id;
 
-// Mirrors the TypeScript generator's historical `relationships.sort`.
+// The first three keys mirror the TypeScript generator's historical
+// `relationships.sort`. They are not total: the view expansion in
+// `introspection/relationships.ts` copies one foreign key onto every view
+// exposing it, and onto every combination of view columns carrying it, so the
+// copies share all three keys and differ only in the referencing side. The
+// remaining keys order those copies, since the view key dependency query does
+// not order the view columns it aggregates.
 const byRelationship = (
   a: PostgresRelationship,
   b: PostgresRelationship,
@@ -48,7 +54,11 @@ const byRelationship = (
   compareStrings(
     JSON.stringify(a.referenced_columns),
     JSON.stringify(b.referenced_columns),
-  );
+  ) ||
+  compareStrings(a.referenced_schema, b.referenced_schema) ||
+  compareStrings(a.schema, b.schema) ||
+  compareStrings(a.relation, b.relation) ||
+  compareStrings(JSON.stringify(a.columns), JSON.stringify(b.columns));
 
 /**
  * Return a new {@link GeneratorMetadata} with every collection ordered by a
