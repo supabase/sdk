@@ -111,23 +111,28 @@ describe("sortGeneratorMetadata", () => {
     ]);
   });
 
-  test("orders the view copies of one foreign key by referencing side", () => {
-    // Every copy shares the foreign key name and the referenced side; only the
-    // relation, its schema and the view columns differ.
+  test("orders the view copies of one foreign key deterministically", () => {
     const copies = [
       baseRelationship({ relation: "tickets_view", columns: ["owner_id"] }),
       baseRelationship({ schema: "reporting", relation: "tickets" }),
+      baseRelationship({ referenced_schema: "reporting" }),
       baseRelationship({ relation: "tickets_view", columns: ["assignee_id"] }),
       baseRelationship(),
     ];
     const expected = [
-      ["public", "tickets", ["owner_id"]],
-      ["public", "tickets_view", ["assignee_id"]],
-      ["public", "tickets_view", ["owner_id"]],
-      ["reporting", "tickets", ["owner_id"]],
+      ["public", "public", "tickets", ["owner_id"]],
+      ["public", "public", "tickets_view", ["assignee_id"]],
+      ["public", "public", "tickets_view", ["owner_id"]],
+      ["public", "reporting", "tickets", ["owner_id"]],
+      ["reporting", "public", "tickets", ["owner_id"]],
     ];
     const order = (result: { relationships: typeof copies }) =>
-      result.relationships.map((r) => [r.schema, r.relation, r.columns]);
+      result.relationships.map((r) => [
+        r.referenced_schema,
+        r.schema,
+        r.relation,
+        r.columns,
+      ]);
 
     expect(
       order(sortGeneratorMetadata(buildMetadata({ relationships: copies }))),
