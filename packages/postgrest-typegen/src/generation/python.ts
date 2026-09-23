@@ -88,7 +88,9 @@ class PythonContext {
     this.schemas = Object.fromEntries(
       schemas.map((schema) => [schema.name, schema]),
     );
-    this.types = Object.fromEntries(types.map((type) => [type.name, type]));
+    this.types = Object.fromEntries(
+      types.map((type) => [qualifiedTypeName(type.schema, type.name), type]),
+    );
     this.columns = columns.reduce(
       (acc, curr) => {
         acc[curr.table_id] ??= [];
@@ -100,32 +102,37 @@ class PythonContext {
     this.user_enums = Object.fromEntries(
       types
         .filter((type) => type.enums.length > 0)
-        .map((type) => [type.name, new PythonEnum(type)]),
+        .map((type) => [
+          qualifiedTypeName(type.schema, type.name),
+          new PythonEnum(type),
+        ]),
     );
   }
 
-  resolveTypeName(name: string): string {
-    if (name in this.user_enums) {
-      return this.user_enums[name].name;
+  resolveTypeName(name: string, typeSchema: string): string {
+    const qualified = qualifiedTypeName(typeSchema, name);
+    if (qualified in this.user_enums) {
+      return this.user_enums[qualified].name;
     }
     if (name in PY_TYPE_MAP) {
       return PY_TYPE_MAP[name];
     }
-    if (name in this.types) {
-      const type = this.types[name];
-      const schema = type!.schema;
-      return `${formatForPyClassName(schema)}${formatForPyClassName(type.name)}`;
+    if (qualified in this.types) {
+      const type = this.types[qualified];
+      return `${formatForPyClassName(type.schema)}${formatForPyClassName(type.name)}`;
     }
     return "Any";
   }
 
-  parsePgType(pg_type: string): PythonType {
+  // Array types live in the schema of their element type, so `typeSchema`
+  // carries over to the element.
+  parsePgType(pg_type: string, typeSchema: string): PythonType {
     if (pg_type.startsWith("_")) {
       const inner_str = pg_type.slice(1);
-      const inner = this.parsePgType(inner_str);
+      const inner = this.parsePgType(inner_str, typeSchema);
       return new PythonListType(inner);
     } else {
-      const type_name = this.resolveTypeName(pg_type);
+      const type_name = this.resolveTypeName(pg_type, typeSchema);
       return new PythonSimpleType(type_name);
     }
   }
@@ -141,7 +148,10 @@ class PythonContext {
     });
     const attributeEntries: PythonBaseModelAttr[] = attributes.map(
       (attribute) => {
-        const type = this.parsePgType(attribute.type!.name);
+        const type = this.parsePgType(
+          attribute.type!.name,
+          attribute.type!.schema,
+        );
         // Composite type attributes cannot carry NOT NULL constraints in
         // Postgres, so every field is inherently nullable.
         return new PythonBaseModelAttr(attribute.name, type, true);
@@ -155,7 +165,7 @@ class PythonContext {
   columnsToClassAttrs(table_id: number): PythonBaseModelAttr[] {
     const attrs = this.columns[table_id] ?? [];
     return attrs.map((col) => {
-      const type = this.parsePgType(col.format);
+      const type = this.parsePgType(col.format, col.type_schema);
       return new PythonBaseModelAttr(col.name, type, col.is_nullable);
     });
   }
@@ -166,7 +176,7 @@ class PythonContext {
   ): PythonTypedDictAttr[] {
     const attrs = this.columns[table_id] ?? [];
     return attrs.map((col) => {
-      const type = this.parsePgType(col.format);
+      const type = this.parsePgType(col.format, col.type_schema);
       return new PythonTypedDictAttr(
         col.name,
         type,
@@ -221,6 +231,9 @@ class PythonContext {
     );
   }
 }
+
+const qualifiedTypeName = (schema: string, name: string): string =>
+  `${schema}.${name}`;
 
 class PythonEnum implements Serializable {
   name: string;

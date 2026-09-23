@@ -20,7 +20,7 @@ import {
   type PostgresView,
 } from "../../src/types.ts";
 
-const baseSchema: PostgresSchema = {
+export const baseSchema: PostgresSchema = {
   id: 1,
   name: "public",
   owner: "postgres",
