@@ -4,7 +4,6 @@
  * project modules its contract imports, and normalizes the result.
  */
 import { posix } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import type { DenoRunner } from "./deno.ts";
 import { discoverFunctions, type DiscoveredFunction } from "./discovery.ts";
@@ -171,10 +170,10 @@ async function documentFunction(
       if (entrypointUrl === undefined) {
         return { error: `deno doc did not document ${fn.entrypoint}.` };
       }
-      entryDirectoryPath = posix.dirname(fileURLToPath(entrypointUrl));
+      entryDirectoryPath = posix.dirname(urlPath(entrypointUrl));
     }
     targets = missingProjectModules(modules).map((url) =>
-      posix.relative(entryDirectoryPath!, fileURLToPath(url)),
+      posix.relative(entryDirectoryPath!, urlPath(url)),
     );
   }
   if (entrypointUrl === undefined || entryDirectoryPath === undefined) {
@@ -269,11 +268,21 @@ function importedTypeNames(
   return names;
 }
 
+/**
+ * POSIX-style path of a `file:` URL, the same on every host. `fileURLToPath`
+ * would return a backslash path on Windows, which the `posix` functions used
+ * throughout cannot split; the URL pathname (`/C:/project/...`) works with them
+ * everywhere, and only relative paths derived from it ever reach Deno.
+ */
+function urlPath(url: string): string {
+  return decodeURIComponent(new URL(url).pathname);
+}
+
 /** Show a module as a project-relative path when it lives under the project root. */
 function describeModule(url: string, projectRootPath: string): string {
   if (!url.startsWith("file:")) {
     return url;
   }
-  const relativePath = posix.relative(projectRootPath, fileURLToPath(url));
+  const relativePath = posix.relative(projectRootPath, urlPath(url));
   return relativePath.startsWith("..") ? url : relativePath;
 }

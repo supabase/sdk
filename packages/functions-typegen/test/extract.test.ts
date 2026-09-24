@@ -131,6 +131,105 @@ describe("extractEdgeFunctionsMetadata", () => {
     ]);
   });
 
+  test("follows imports through URL paths, so a Windows file URL still yields a relative target", async () => {
+    const entry = "file:///C:/project/supabase/functions/greet/index.ts";
+    const shared = "file:///C:/project/supabase/functions/_shared/types.ts";
+    const requests: (readonly string[])[] = [];
+    const windowsRunner: DenoRunner = {
+      run(request) {
+        requests.push(request.args);
+        const nodes =
+          requests.length === 1
+            ? {
+                [entry]: {
+                  imports: [
+                    {
+                      importedName: "Shared",
+                      originalName: "Shared",
+                      src: shared,
+                    },
+                  ],
+                  symbols: [
+                    {
+                      name: "RequestBody",
+                      declarations: [
+                        {
+                          kind: "typeAlias",
+                          declarationKind: "export",
+                          def: {
+                            tsType: {
+                              kind: "typeRef",
+                              repr: "Shared",
+                              value: {
+                                typeName: "Shared",
+                                resolution: {
+                                  kind: "import",
+                                  specifier: "../_shared/types.ts",
+                                  name: "Shared",
+                                },
+                              },
+                            },
+                          },
+                          location: { filename: entry, line: 1, col: 0 },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              }
+            : {
+                [shared]: {
+                  symbols: [
+                    {
+                      name: "Shared",
+                      declarations: [
+                        {
+                          kind: "typeAlias",
+                          declarationKind: "export",
+                          def: {
+                            tsType: {
+                              kind: "keyword",
+                              repr: "string",
+                              value: "string",
+                            },
+                          },
+                          location: { filename: shared, line: 1, col: 0 },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              };
+        return Promise.resolve({
+          exitCode: 0,
+          stdout: JSON.stringify({ version: 2, nodes }),
+          stderr: "",
+        });
+      },
+    };
+    const document = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: windowsRunner,
+      functions: [
+        {
+          slug: "greet",
+          entrypoint: "supabase/functions/greet/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+      ],
+    });
+    expect(requests[1]?.at(-1)).toBe("../_shared/types.ts");
+    expect(document.functions[0]?.requestBody).toEqual({
+      kind: "reference",
+      name: "Shared",
+    });
+    expect(document.functions[0]?.types).toEqual([
+      { name: "Shared", type: { kind: "string" } },
+    ]);
+    expect(document.diagnostics).toEqual([]);
+  });
+
   test("an unexpected deno doc document becomes a diagnostic instead of an exception", async () => {
     const wrongShape: DenoRunner = {
       run: () =>
