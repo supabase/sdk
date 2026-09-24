@@ -3,7 +3,8 @@
 Extracts the request and response contracts of the
 [Supabase Edge Functions](https://supabase.com/docs/guides/functions) of a
 project into `EdgeFunctionsMetadata`, a language-neutral JSON document that SDK
-type generators turn into typed function descriptors.
+type generators turn into typed functions, for example a generated
+`supabase.functions.greet(name: 'Ada')` in Dart.
 
 > **Status:** alpha. The document shape and the contract convention are
 > settling while the first consumer, the Dart `supabase_typegen` package, is
@@ -35,7 +36,7 @@ Deno.serve(async (request) => {
 
 `RequestBody` describes the JSON body the function accepts and `ResponseBody`
 the JSON body it answers with. Either may be left out; a function without
-them still appears in the document by name, so a generated descriptor can at
+them still appears in the document by name, so a generated method can at
 least check the function exists. Both must be exported type aliases,
 interfaces or enums without type parameters. The names avoid `Request` and
 `Response` on purpose: those are globals in Deno, and shadowing them in type

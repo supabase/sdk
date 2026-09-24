@@ -5,7 +5,7 @@
 Extracts the contracts of a Supabase project's Edge Functions into
 `EdgeFunctionsMetadata`, a versioned, language-neutral JSON document. SDK
 type generators (the Dart `supabase_typegen` package first) consume the
-document to emit typed function descriptors. The package is meant to be
+document to emit typed functions (a generated method per function). The package is meant to be
 self-sufficient: an SDK generator runs it directly (through `npx`, `bunx` or
 `deno run npm:`) without going through the Supabase CLI. A CLI command can
 wrap it later, but nothing waits on that.
