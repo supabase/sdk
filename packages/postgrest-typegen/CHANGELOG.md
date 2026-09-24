@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.2...postgrest-typegen/v0.2.3) (2026-09-24)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** order the view copies of a foreign key deterministically ([#207](https://github.com/supabase/sdk/issues/207)) ([7ce6f25](https://github.com/supabase/sdk/commit/7ce6f2527ee425bb1c641a7440585a063187a51c))
+
 ## [0.2.2](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.1...postgrest-typegen-v0.2.2) (2026-09-15)
 
 
