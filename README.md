@@ -14,6 +14,7 @@ Shared tooling and specifications for the Supabase client SDKs. This repository 
 | [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor) | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                                                                                     |
 | [`packages/go-symbol-extractor`](./packages/go-symbol-extractor)     | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                                                                                         |
 | [`packages/postgrest-typegen`](./packages/postgrest-typegen)         | TypeScript | Introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, Python, and Swift.                                                                           |
+| [`packages/typegen`](./packages/typegen)                             | TypeScript | Language registry for `supabase gen types --lang`: maps each language to its generator (in-process or an external tool) so new languages need no CLI change.                                                        |
 
 ## Repository layout
 
