@@ -60,12 +60,22 @@ export interface Host {
   readonly format?: (code: string, fileName: string) => Promise<string>;
 }
 
+/**
+ * Who sets an option. `user` options are the language's CLI flags. `consumer`
+ * options are set by the calling program from its own configuration, for
+ * example postgres-meta passing the project's PostgREST version, and are never
+ * shown to users; a consumer renders `options` filtered to `user`.
+ */
+export type OptionAudience = "user" | "consumer";
+
 interface OptionSpecBase {
   /**
    * The flag name exactly as the CLI exposes it, without the leading dashes,
    * for example `swift-access-control`. Also the key in `OptionValues`.
+   * Consumer options use the same form so one can become a flag later.
    */
   readonly name: string;
+  readonly audience: OptionAudience;
   /** One-line help text for the flag. */
   readonly help: string;
 }

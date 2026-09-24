@@ -6,15 +6,16 @@ import {
 } from "../src/index.ts";
 
 const specs: readonly OptionSpec[] = [
-  { name: "flag", kind: "boolean", default: false, help: "" },
+  { name: "flag", audience: "user", kind: "boolean", default: false, help: "" },
   {
     name: "level",
+    audience: "user",
     kind: "choice",
     choices: ["a", "b"],
     default: "a",
     help: "",
   },
-  { name: "label", kind: "string", help: "" },
+  { name: "label", audience: "consumer", kind: "string", help: "" },
 ];
 
 describe("resolveOptions", () => {

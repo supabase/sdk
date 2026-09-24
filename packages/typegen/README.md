@@ -51,7 +51,7 @@ both does not.
 
 | `--lang`     | Runs               | How                                                                        | Flags                                    |
 | ------------ | ------------------ | -------------------------------------------------------------------------- | ---------------------------------------- |
-| `typescript` | in-process         | `generateTypescript` from `@supabase/postgrest-typegen`                    | `--postgrest-v9-compat`                  |
+| `typescript` | in-process         | `generateTypescript` from `@supabase/postgrest-typegen`                    | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
 | `go`         | in-process         | `generateGo` from `@supabase/postgrest-typegen`                            |                                          |
 | `python`     | in-process         | `generatePython` from `@supabase/postgrest-typegen`                        |                                          |
 | `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public` |
@@ -80,11 +80,20 @@ process.stdout.write(code);
 ```
 
 `languages` is the full list in display order, and each entry's `options`
-describes its flags declaratively (`name`, `kind`, `default`, `help`,
-`choices`), so a consumer can render every language's flags without knowing
-the languages. Option names are the flag names without dashes and are also
-the keys of the values passed to `generate`. Missing values take the defaults;
-unknown names and values outside a choice raise an `InvalidOptionError`.
+describes its flags declaratively (`name`, `audience`, `kind`, `default`,
+`help`, `choices`), so a consumer can render every language's flags without
+knowing the languages. Option names are the flag names without dashes and are
+also the keys of the values passed to `generate`. Missing values take the
+defaults; unknown names and values outside a choice raise an
+`InvalidOptionError`.
+
+`audience` says who sets an option. `user` options are the CLI flags; render
+`options.filter((option) => option.audience === "user")`. `consumer` options
+are set by the calling program from its own configuration and never shown to
+users: postgres-meta's hosted route passes the project's PostgREST version as
+`postgrest-version` (emitted as `__InternalSupabase.PostgrestVersion`) and its
+`GENERATE_TYPES_DEFAULT_SCHEMA` as `default-schema`. The Supabase CLI passes
+neither today, which is what its output has always been.
 
 `generate` sorts the metadata with `sortGeneratorMetadata` itself, so callers
 may pass `introspect()`'s output directly. It returns the complete contents of
@@ -97,11 +106,7 @@ what makes `supabase gen types --lang dart` match `dart run supabase_typegen`
 byte for byte.
 
 Hosted consumers that cannot spawn processes, such as postgres-meta's
-`/generators/*` routes, filter on `language.inProcess`. That route also passes
-`postgrestVersion` and `defaultSchema` to the TypeScript generator; those are
-consumer settings rather than user flags, and the registry does not carry them
-yet. When the route moves over, add a consumer-level field for them instead of
-exposing them as options.
+`/generators/*` routes, filter on `language.inProcess`.
 
 ### The `Host`
 
@@ -173,7 +178,8 @@ code. The tool's contract:
   `ToolNotInstalledError` with a `dart pub add` hint.
 
 Language flags are declared as `OptionSpec`s on the entry and reach `generate`
-as validated values. Keep names identical to the flags users already know.
+as validated values. Keep names identical to the flags users already know, and
+mark settings that only a calling program supplies as `audience: "consumer"`.
 
 Testing splits by ownership: this package unit-tests each entry against a fake
 host (arguments, working directory, stdin document, error classification), the

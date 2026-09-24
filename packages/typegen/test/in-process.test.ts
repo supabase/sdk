@@ -35,6 +35,31 @@ describe("in-process languages", () => {
     expect(output).not.toBe(await generate("typescript", {}));
   });
 
+  test("typescript emits the PostgREST version a consumer passes", async () => {
+    const output = await generate("typescript", { "postgrest-version": "12" });
+    expect(output).toBe(
+      `${await generateTypescript(sorted, {
+        detectOneToOneRelationships: true,
+        postgrestVersion: "12",
+      })}\n`,
+    );
+    expect(output).toContain('PostgrestVersion: "12"');
+    expect(await generate("typescript", {})).not.toContain("PostgrestVersion");
+  });
+
+  test("typescript defaults the helper types to public unless a consumer says otherwise", async () => {
+    const output = await generate("typescript", {
+      "default-schema": "inventory",
+    });
+    expect(output).toBe(
+      `${await generateTypescript(sorted, {
+        detectOneToOneRelationships: true,
+        defaultSchema: "inventory",
+      })}\n`,
+    );
+    expect(output).not.toBe(await generate("typescript", {}));
+  });
+
   test("typescript formats through the host when it offers a formatter", async () => {
     const calls: string[] = [];
     const host = createFakeHost(undefined, {

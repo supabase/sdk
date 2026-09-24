@@ -2,6 +2,7 @@ export type {
   BooleanOptionSpec,
   ChoiceOptionSpec,
   Host,
+  OptionAudience,
   OptionSpec,
   OptionValue,
   OptionValues,

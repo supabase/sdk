@@ -35,14 +35,17 @@ lives in supabase-js.
   stdin already holds the schemas the consumer introspected.
 - `src/languages/index.ts` -- the four in-process entries and the `languages`
   list. `typescript` exposes `postgrest-v9-compat` (inverse of
-  `detectOneToOneRelationships`) and honors `host.format`; `swift` exposes
-  `swift-access-control` limited to `internal|public` like the CLI always did.
+  `detectOneToOneRelationships`) as a user option, `postgrest-version` and
+  `default-schema` as consumer options (what postgres-meta's hosted route
+  passes), and honors `host.format`; `swift` exposes `swift-access-control`
+  limited to `internal|public` like the CLI always did.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`.
 
 ## Invariants
 
 - Option `name`s are the CLI flag names verbatim. Existing users must see no
-  change in flags.
+  change in flags. `audience: "user"` options are flags; `"consumer"` options
+  are set by the calling program and never rendered.
 - `generate` always sorts before generating and returns complete file
   contents for every language. In-process entries append the final newline
   the CLI has always emitted (pg-meta's `console.log`); out-of-process

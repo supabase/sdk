@@ -32,17 +32,23 @@ describe("languages", () => {
   });
 
   test("keeps the flag names supabase gen types already exposes", () => {
-    expect(findLanguage("typescript")?.options).toEqual([
+    const userOptions = (name: string) =>
+      findLanguage(name)?.options.filter(
+        (option) => option.audience === "user",
+      );
+    expect(userOptions("typescript")).toEqual([
       {
         name: "postgrest-v9-compat",
+        audience: "user",
         kind: "boolean",
         default: false,
         help: "Generate types compatible with PostgREST v9 and below.",
       },
     ]);
-    expect(findLanguage("swift")?.options).toEqual([
+    expect(userOptions("swift")).toEqual([
       {
         name: "swift-access-control",
+        audience: "user",
         kind: "choice",
         choices: ["internal", "public"],
         default: "internal",
@@ -52,6 +58,17 @@ describe("languages", () => {
     expect(findLanguage("go")?.options).toEqual([]);
     expect(findLanguage("python")?.options).toEqual([]);
     expect(findLanguage("dart")?.options).toEqual([]);
+  });
+
+  test("typescript carries postgres-meta's settings as consumer options", () => {
+    expect(
+      findLanguage("typescript")
+        ?.options.filter((option) => option.audience === "consumer")
+        .map((option) => [option.name, option.kind]),
+    ).toEqual([
+      ["postgrest-version", "string"],
+      ["default-schema", "string"],
+    ]);
   });
 
   test("findLanguage returns undefined for an unknown name", () => {
