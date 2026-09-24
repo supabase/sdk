@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.13.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.12.0...capability-matrix/v1.13.0) (2026-09-24)
+
+
+### Features
+
+* **capability-matrix:** move the package and its CI onto bun ([#199](https://github.com/supabase/sdk/issues/199)) ([24609fc](https://github.com/supabase/sdk/commit/24609fc83957963951a3c690a1d1fde756fea44d))
+
+
+### Bug Fixes
+
+* tag releases as package/vX.Y.Z so dependabot can track them ([#209](https://github.com/supabase/sdk/issues/209)) ([04b2dc1](https://github.com/supabase/sdk/commit/04b2dc1e399098e08daa67c76d19cecafe4a68d2))
+
 ## [1.12.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.11.0...capability-matrix-v1.12.0) (2026-09-17)
 
 
