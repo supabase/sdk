@@ -1,6 +1,7 @@
 name: Release capability-matrix
 
-# packages/postgrest-typegen is released on demand, see release-postgrest-typegen.yml
+# packages/postgrest-typegen and packages/typegen are released on demand, see
+# release-postgrest-typegen.yml and release-typegen.yml
 on:
   workflow_run:
     workflows: ["Validate Capabilities"]

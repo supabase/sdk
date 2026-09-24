@@ -1,0 +1,66 @@
+{
+  "name": "@supabase/typegen",
+  "version": "0.0.0",
+  "description": "Language registry for supabase gen types: maps each --lang to its generator",
+  "keywords": [
+    "codegen",
+    "postgres",
+    "postgrest",
+    "supabase",
+    "typegen",
+    "types"
+  ],
+  "homepage": "https://github.com/supabase/sdk",
+  "bugs": "https://github.com/supabase/sdk/issues",
+  "license": "MIT",
+  "author": "Supabase",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/supabase/sdk.git",
+    "directory": "packages/typegen"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "check-types": "tsc --noEmit",
+    "format-and-lint": "oxfmt --check . && oxlint --deny-warnings src test",
+    "format-and-lint:fix": "oxfmt . && oxlint --fix src test",
+    "knip": "knip",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@supabase/postgrest-typegen": "^0.2.3"
+  },
+  "devDependencies": {
+    "@tsconfig/node-ts": "^23.6.4",
+    "@tsconfig/node24": "^24.0.5",
+    "@types/bun": "^1.4.0",
+    "@types/node": "^26.3.0",
+    "knip": "^6.32.3",
+    "oxfmt": "0.66.0",
+    "oxlint": "1.83.0",
+    "oxlint-tsgolint": "7.0.2002",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
