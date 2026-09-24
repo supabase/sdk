@@ -2,9 +2,8 @@
  * How this package reaches Deno. `deno doc --json` does the heavy lifting of
  * resolving a function's module graph and describing its exported types, so
  * the extractor only needs something that can run the `deno` binary. The
- * Supabase CLI runs it inside the pinned edge-runtime container, the tests and
- * a plain checkout run the binary on the host; both implement
- * {@link DenoRunner}.
+ * tests and a plain checkout run the binary found on `PATH`; a caller with a
+ * pinned download or a container supplies its own {@link DenoRunner}.
  */
 import { execFile } from "node:child_process";
 import { join } from "node:path";

@@ -6,8 +6,8 @@ project into `EdgeFunctionsMetadata`, a language-neutral JSON document that SDK
 type generators turn into typed function descriptors.
 
 > **Status:** alpha. The document shape and the contract convention are
-> settling while the first consumers (the Supabase CLI and the Dart
-> `supabase_typegen` package) are built against them.
+> settling while the first consumer, the Dart `supabase_typegen` package, is
+> built against them.
 
 ## The contract convention
 
@@ -100,22 +100,28 @@ const json = serializeEdgeFunctionsMetadata(metadata);
 ### Bring your own Deno
 
 The extractor only needs something that can run `deno`. `createLocalDenoRunner`
-runs the binary on the host; a consumer such as the Supabase CLI runs it
-inside the pinned edge-runtime container by implementing `DenoRunner`:
+runs the binary found on `PATH`. Anything else that can run Deno, a pinned
+binary the caller downloaded, the current process when it is itself Deno, or
+a `denoland/deno` container, plugs in by implementing `DenoRunner`:
 
 ```ts
 import type { DenoRunner } from "@supabase/functions-typegen";
 
-const containerRunner: DenoRunner = {
+const runner: DenoRunner = {
   async run({ args, cwd, projectRoot }) {
-    // Mount `projectRoot` into the container and run `deno ${args}` with the
-    // working directory at `<mount>/${cwd}`. Every path in `args` is relative
-    // to `cwd`, so the container never sees a host path.
+    // Run `deno ${args}` with the working directory at `${projectRoot}/${cwd}`.
+    // Every path in `args` is relative to `cwd`, so a runner that executes
+    // somewhere else (a container, another machine) only has to map the root.
     ...
     return { exitCode, stdout, stderr };
   },
 };
 ```
+
+Planned next: a managed runner that downloads a pinned, checksum-verified
+Deno release when none is installed, and a `functions-typegen` command so the
+package can be run directly with `npx`, `bunx` or `deno run npm:`, which is
+how SDK generators without a Node toolchain are expected to call it.
 
 ### Discovery and normalization on their own
 

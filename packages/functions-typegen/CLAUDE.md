@@ -5,8 +5,10 @@
 Extracts the contracts of a Supabase project's Edge Functions into
 `EdgeFunctionsMetadata`, a versioned, language-neutral JSON document. SDK
 type generators (the Dart `supabase_typegen` package first) consume the
-document to emit typed function descriptors; the Supabase CLI is the
-intended host that runs the extraction.
+document to emit typed function descriptors. The package is meant to be
+self-sufficient: an SDK generator runs it directly (through `npx`, `bunx` or
+`deno run npm:`) without going through the Supabase CLI. A CLI command can
+wrap it later, but nothing waits on that.
 
 A function declares its contract by exporting `RequestBody` and
 `ResponseBody` types from its entrypoint (`src/normalize.ts` holds the two
@@ -21,9 +23,13 @@ names). The names deliberately avoid the `Request` and `Response` globals.
   `enabled`). Disabled functions are dropped. Paths in the result are
   project-relative POSIX paths.
 - `src/deno.ts` -- the `DenoRunner` seam. `createLocalDenoRunner` runs the
-  host binary; the CLI supplies a container-backed runner. Requests carry
-  `cwd` relative to `projectRoot` and args relative to `cwd`, so a runner
-  never has to translate host paths.
+  `deno` binary on `PATH`. Planned next: a managed runner that downloads a
+  pinned, checksum-verified Deno release into a cache directory when none is
+  installed, and a `bin` command that prints the document. Note that the
+  `supabase/edge-runtime` image embeds Deno as a library only and ships no
+  `deno` executable, so a container-based runner would need the
+  `denoland/deno` image, not edge-runtime. Requests carry `cwd` relative to
+  `projectRoot` and args relative to `cwd`, so any runner can map paths.
 - `src/extract.ts` -- the producer. Per function: `deno doc --json --private
   --no-lock` from the entrypoint's directory with `--config` (deno.json) or
   `--import-map` (anything else) or `--no-config`; then follows `file:`
