@@ -26,31 +26,13 @@ describe("dart", () => {
     expect(host.requests).toHaveLength(1);
     const request = host.requests[0]!;
     expect(request.command).toBe("dart");
-    expect(request.args).toEqual([
-      "run",
-      "supabase_typegen",
-      "--output",
-      "-",
-      "--schema",
-      "inventory,public",
-    ]);
+    expect(request.args).toEqual(["run", "supabase_typegen", "--output", "-"]);
     expect(request.cwd).toBe(host.cwd);
     expect(request.env).toBe(host.env);
     expect(request.signal).toBe(controller.signal);
     expect(request.stdin).toBe(
       serializeGeneratorMetadata(sortGeneratorMetadata(unsortedMetadata)),
     );
-  });
-
-  test("omits --schema when the document lists no schemas", async () => {
-    const host = createFakeHost(() => success(""));
-    await dart.generate({ ...unsortedMetadata, schemas: [] }, {}, host);
-    expect(host.requests[0]!.args).toEqual([
-      "run",
-      "supabase_typegen",
-      "--output",
-      "-",
-    ]);
   });
 
   test("returns stdout verbatim and ignores the summary on stderr", async () => {
@@ -94,6 +76,9 @@ describe("dart", () => {
       "dart pub add --dev supabase_typegen",
     );
     expect(notInstalled.message).toContain("/projects/app");
+    expect(notInstalled.message).toContain(
+      "Could not find package `supabase_typegen`",
+    );
   });
 
   test("reports a directory without a pubspec as a missing package", async () => {
@@ -129,8 +114,6 @@ describe("dart", () => {
       "supabase_typegen",
       "--output",
       "-",
-      "--schema",
-      "inventory,public",
     ]);
     expect(rejected.message).toContain("version 1");
     expect(rejected.message).toContain("unsupported version 7.");
@@ -149,7 +132,7 @@ describe("dart", () => {
     const failed = error as ToolFailedError;
     expect(failed.exitCode).toBe(78);
     expect(failed.message).toBe(
-      "`dart run supabase_typegen --output - --schema inventory,public` exited with code 78.\nThe project is on Dart 3.0.0, but the generated code needs Dart 3.6.0 or newer.",
+      "`dart run supabase_typegen --output -` exited with code 78.\nThe project is on Dart 3.0.0, but the generated code needs Dart 3.6.0 or newer.",
     );
   });
 

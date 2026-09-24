@@ -29,4 +29,10 @@ export {
   TYPESCRIPT_FILE_NAME,
 } from "./languages/index.ts";
 export { dart } from "./languages/dart.ts";
-export { createNodeHost, type NodeHostOptions } from "./node-host.ts";
+export {
+  createNodeHost,
+  type NodeHostOptions,
+  planSpawn,
+  resolveWindowsCommand,
+  type SpawnPlan,
+} from "./node-host.ts";

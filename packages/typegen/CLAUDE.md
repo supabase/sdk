@@ -31,7 +31,8 @@ lives in supabase-js.
   host's `cwd` with `serializeGeneratorMetadata(sortGeneratorMetadata(m))` on
   stdin, returns stdout, classifies failures through the entry's `classify`.
 - `src/languages/dart.ts` -- the first out-of-process entry:
-  `dart run supabase_typegen --output - --schema <schemas>`.
+  `dart run supabase_typegen --output -`. No `--schema` flag: the document on
+  stdin already holds the schemas the consumer introspected.
 - `src/languages/index.ts` -- the four in-process entries and the `languages`
   list. `typescript` exposes `postgrest-v9-compat` (inverse of
   `detectOneToOneRelationships`) and honors `host.format`; `swift` exposes

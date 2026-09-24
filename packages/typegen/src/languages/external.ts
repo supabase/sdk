@@ -102,7 +102,7 @@ export function externalLanguage(
             language: name,
             tool: failure.tool,
             installHint: failure.installHint,
-            message: `Generating ${name} types needs ${failure.tool}, which \`${commandLine}\` could not find in ${host.cwd}. ${failure.installHint}`,
+            message: `Generating ${name} types needs ${failure.tool}, which \`${commandLine}\` could not find in ${host.cwd}. ${failure.installHint}${stderr ? `\n${stderr}` : ""}`,
           });
         case "metadata-rejected":
           throw new MetadataRejectedError({

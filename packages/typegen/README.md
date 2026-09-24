@@ -12,21 +12,40 @@ bump in the Supabase CLI, with no per-language code in the CLI itself.
 ## Where it sits
 
 ```
-@supabase/postgrest-typegen   introspection and the GeneratorMetadata contract
-        ↑
-   generators                  bundled in postgrest-typegen today, per SDK repo tomorrow
-        ↑
-@supabase/typegen              this package: language name → generator
-        ↑
-  Supabase CLI                 --lang, flags, database connection, output
+Supabase CLI          connects to the database, introspects it with
+                      @supabase/postgrest-typegen, looks --lang up here
+      |
+@supabase/typegen     this package: language name to generator
+      |
+      +-- in-process entry      imports a generator function and calls it
+      |                         with the GeneratorMetadata object
+      |
+      +-- out-of-process entry  runs the language's own tool in the user's
+                                project with the GeneratorMetadata JSON
+                                document on stdin, reads the code from stdout
 ```
 
 Introspection is not part of this package. The consumer runs `introspect()`
 from `@supabase/postgrest-typegen` and hands the resulting `GeneratorMetadata`
-to the language it looked up here. The registry lives above both
-`postgrest-typegen` and the future per-SDK generator packages so that, once
-the TypeScript generator moves into supabase-js and is published to npm, no
-dependency cycle appears: `postgrest-typegen` ← generators ← registry ← CLI.
+to the language it looked up here. The registry itself depends on
+`postgrest-typegen` for the contract types, `sortGeneratorMetadata` and
+`serializeGeneratorMetadata`.
+
+The two kinds of generator relate to `postgrest-typegen` differently:
+
+- In-process generators import its types, so they depend on it. Today those
+  are the four bundled inside `postgrest-typegen`; permanently it will be the
+  TypeScript generator once it lives in supabase-js and is published to npm.
+- Out-of-process generators depend on nothing here. They read the JSON
+  document, whose shape is published as `generatorMetadataJsonSchema` and
+  versioned by `GENERATOR_METADATA_VERSION`, and can be written in any
+  language. `supabase_typegen` for Dart is the first.
+
+This is why the registry is its own package rather than part of
+`postgrest-typegen`: once the TypeScript generator is imported from
+supabase-js, which itself imports `postgrest-typegen`'s types, a registry
+inside `postgrest-typegen` would close a dependency cycle. A registry above
+both does not.
 
 ## Languages
 
@@ -36,7 +55,7 @@ dependency cycle appears: `postgrest-typegen` ← generators ← registry ← CL
 | `go`         | in-process         | `generateGo` from `@supabase/postgrest-typegen`                            |                                          |
 | `python`     | in-process         | `generatePython` from `@supabase/postgrest-typegen`                        |                                          |
 | `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public` |
-| `dart`       | out-of-process     | `dart run supabase_typegen --output - --schema <schemas>` in the project   |                                          |
+| `dart`       | out-of-process     | `dart run supabase_typegen --output -` in the project                      |                                          |
 
 The four in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
@@ -78,7 +97,11 @@ what makes `supabase gen types --lang dart` match `dart run supabase_typegen`
 byte for byte.
 
 Hosted consumers that cannot spawn processes, such as postgres-meta's
-`/generators/*` routes, filter on `language.inProcess`.
+`/generators/*` routes, filter on `language.inProcess`. That route also passes
+`postgrestVersion` and `defaultSchema` to the TypeScript generator; those are
+consumer settings rather than user flags, and the registry does not carry them
+yet. When the route moves over, add a consumer-level field for them instead of
+exposing them as options.
 
 ### The `Host`
 
@@ -99,7 +122,12 @@ A `Host` is what the consumer knows and the registry does not:
   out of its bundle; leave it out to get each generator's default.
 
 `createNodeHost({ cwd, env, signal, format })` is a ready-made `Host` on
-`node:child_process` for consumers without their own process runner.
+`node:child_process` for consumers without their own process runner. On
+Windows it resolves the command through `PATH` and `PATHEXT` and runs `.bat`
+and `.cmd` scripts through the command interpreter, since Flutter ships `dart`
+as `dart.bat` there and `spawn` cannot start those directly; a command it
+cannot find is reported as `ENOENT` like everywhere else. A host built on
+another process runner needs the same treatment.
 
 ### Errors
 

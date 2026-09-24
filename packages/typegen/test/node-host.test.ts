@@ -16,6 +16,8 @@ import {
 import {
   createNodeHost,
   dart,
+  planSpawn,
+  resolveWindowsCommand,
   ToolFailedError,
   ToolNotInstalledError,
 } from "../src/index.ts";
@@ -62,7 +64,7 @@ describe("createNodeHost", () => {
       sortGeneratorMetadata(unsortedMetadata),
     );
     expect(output).toBe(
-      `args: run supabase_typegen --output - --schema inventory,public\ncwd: ${dir}\n${document}`,
+      `args: run supabase_typegen --output -\ncwd: ${dir}\n${document}`,
     );
   });
 
@@ -99,5 +101,78 @@ describe("createNodeHost", () => {
     expect(host.signal).toBe(controller.signal);
     expect(host.format).toBe(format);
     expect(createNodeHost({ cwd: dir }).format).toBeUndefined();
+  });
+});
+
+describe("planSpawn", () => {
+  const args = ["run", "supabase_typegen", "--output", "-"];
+  const env = { Path: "C:\\tools;C:\\flutter\\bin", HOME: "C:\\Users\\dev" };
+  const files = new Set(["c:\\flutter\\bin\\dart.bat", "c:\\tools\\go.exe"]);
+  // Windows file names are case-insensitive, and PATHEXT is upper case.
+  const exists = (path: string) => files.has(path.toLowerCase());
+
+  test("passes the command through unchanged off Windows", () => {
+    expect(planSpawn("dart", args, env, "darwin", exists)).toEqual({
+      command: "dart",
+      args,
+    });
+    expect(planSpawn("dart", args, env, "linux", () => false)).toEqual({
+      command: "dart",
+      args,
+    });
+  });
+
+  test("runs a .bat found through PATH and PATHEXT via cmd.exe", () => {
+    expect(planSpawn("dart", args, env, "win32", exists)).toEqual({
+      command: "cmd.exe",
+      args: [
+        "/d",
+        "/s",
+        "/c",
+        '"C:\\flutter\\bin\\dart.BAT run supabase_typegen --output -"',
+      ],
+      windowsVerbatimArguments: true,
+    });
+  });
+
+  test("honors ComSpec and quotes arguments with spaces", () => {
+    const plan = planSpawn(
+      "dart",
+      ["--import", "my package"],
+      { ...env, ComSpec: "C:\\Windows\\System32\\cmd.exe" },
+      "win32",
+      exists,
+    );
+    expect(plan?.command).toBe("C:\\Windows\\System32\\cmd.exe");
+    expect(plan?.args[3]).toBe(
+      '"C:\\flutter\\bin\\dart.BAT --import "my package""',
+    );
+  });
+
+  test("starts an .exe directly", () => {
+    expect(planSpawn("go", ["version"], env, "win32", exists)).toEqual({
+      command: "C:\\tools\\go.EXE",
+      args: ["version"],
+    });
+  });
+
+  test("reports a command PATH does not hold as not found", () => {
+    expect(planSpawn("swift", args, env, "win32", exists)).toBeUndefined();
+  });
+
+  test("resolves an explicit path and extension without searching PATH", () => {
+    expect(
+      resolveWindowsCommand("C:\\flutter\\bin\\dart.bat", {}, exists),
+    ).toBe("C:\\flutter\\bin\\dart.bat");
+    expect(resolveWindowsCommand("dart.bat", env, exists)).toBe(
+      "C:\\flutter\\bin\\dart.bat",
+    );
+    expect(resolveWindowsCommand("dart.exe", env, exists)).toBeUndefined();
+  });
+
+  test("respects a custom PATHEXT", () => {
+    expect(
+      resolveWindowsCommand("dart", { ...env, PATHEXT: ".EXE" }, exists),
+    ).toBeUndefined();
   });
 });

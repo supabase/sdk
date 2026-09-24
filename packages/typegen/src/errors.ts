@@ -10,7 +10,7 @@ export class TypegenError extends Error {
 
   constructor({ language, message, cause }: TypegenErrorInit) {
     super(message, cause === undefined ? undefined : { cause });
-    this.name = new.target.name;
+    this.name = "TypegenError";
     this.language = language;
   }
 }
@@ -21,6 +21,7 @@ export class InvalidOptionError extends TypegenError {
 
   constructor(init: TypegenErrorInit & { readonly option: string }) {
     super(init);
+    this.name = "InvalidOptionError";
     this.option = init.option;
   }
 }
@@ -40,6 +41,7 @@ export class ToolNotInstalledError extends TypegenError {
     },
   ) {
     super(init);
+    this.name = "ToolNotInstalledError";
     this.tool = init.tool;
     this.installHint = init.installHint;
   }
@@ -59,6 +61,7 @@ export class ToolFailedError extends TypegenError {
     },
   ) {
     super(init);
+    this.name = "ToolFailedError";
     this.command = init.command;
     this.exitCode = init.exitCode;
     this.stderr = init.stderr;
@@ -79,6 +82,7 @@ export class MetadataRejectedError extends ToolFailedError {
     },
   ) {
     super(init);
+    this.name = "MetadataRejectedError";
     this.version = init.version;
   }
 }
