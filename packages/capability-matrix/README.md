@@ -136,10 +136,10 @@ a target branch for comparison. Compliance-file validation still runs.
 
 ### Pinning
 
-This repo is tagged (`v1`, `v1.2.3`, ...) via [release-please](../../.github/workflows/release.yml). Pin `uses:` references to a release tag's commit SHA, with the tag as a comment, the same way this repo pins its own third-party actions:
+The compliance workflows are released as `capability-matrix/vX.Y.Z` tags (for example `capability-matrix/v1.13.0`) via [release-please](../../.github/workflows/release.yml). Dependabot only understands tags in the `package/vX.Y.Z` form, so older `capability-matrix-vX.Y.Z` and `vX.Y.Z` tags are not picked up by it. Pin `uses:` references to a release tag's commit SHA, with the tag as a comment, the same way this repo pins its own third-party actions:
 
 ```yaml
-uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@<sha> # v1.2.3
+uses: supabase/sdk/.github/workflows/validate-sdk-compliance-swift.yml@<sha> # capability-matrix/v1.13.0
 ```
 
 Dependabot picks up new tags automatically and opens a PR to bump the pin — see each SDK repo's `dependabot.yml` (`package-ecosystem: github-actions`). Avoid pinning to `@main`: it floats, so every consumer would pick up a change the moment it lands on this repo, without going through that consumer's own review.
