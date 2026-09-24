@@ -131,6 +131,38 @@ describe("extractEdgeFunctionsMetadata", () => {
     ]);
   });
 
+  test("an unexpected deno doc document becomes a diagnostic instead of an exception", async () => {
+    const wrongShape: DenoRunner = {
+      run: () =>
+        Promise.resolve({
+          exitCode: 0,
+          stdout: '{"version":3,"nodes":[]}',
+          stderr: "",
+        }),
+    };
+    const document = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: wrongShape,
+      functions: [
+        {
+          slug: "x",
+          entrypoint: "supabase/functions/x/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+      ],
+    });
+    expect(document.functions[0]?.requestBody).toBeNull();
+    expect(document.diagnostics).toEqual([
+      {
+        slug: "x",
+        path: "",
+        message:
+          "deno doc produced an unsupported document for supabase/functions/x/index.ts; version 2 with modules keyed by URL is expected.",
+      },
+    ]);
+  });
+
   test("a runner failure becomes a diagnostic on the function instead of an exception", async () => {
     const failing: DenoRunner = {
       run: () =>

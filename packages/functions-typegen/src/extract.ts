@@ -156,6 +156,11 @@ async function documentFunction(
         error: `deno doc produced no JSON for ${fn.entrypoint}:\n${result.stderr.trim()}`,
       };
     }
+    if (!isDocOutput(output)) {
+      return {
+        error: `deno doc produced an unsupported document for ${fn.entrypoint}; version 2 with modules keyed by URL is expected.`,
+      };
+    }
     for (const [url, module] of Object.entries(output.nodes)) {
       modules.set(url, module);
     }
@@ -181,6 +186,22 @@ async function documentFunction(
     ...Array<string>(depth).fill(".."),
   );
   return { entrypointUrl, modules, projectRootPath };
+}
+
+/** The document version this package reads; another version needs a look at `doc-nodes.ts` first. */
+const DOC_OUTPUT_VERSION = 2;
+
+function isDocOutput(value: unknown): value is DocOutput {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const record = value as { version?: unknown; nodes?: unknown };
+  return (
+    record.version === DOC_OUTPUT_VERSION &&
+    typeof record.nodes === "object" &&
+    record.nodes !== null &&
+    !Array.isArray(record.nodes)
+  );
 }
 
 function importMapArguments(fn: DiscoveredFunction, cwd: string): string[] {

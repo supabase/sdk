@@ -75,6 +75,8 @@ export function normalizeContract(
   const diagnostics: Diagnostic[] = [];
   const declarations = new Map<string, ContractDeclaration | null>();
   const namesByKey = new Map<string, string>();
+  /** Generic declarations being inlined right now, to stop a recursive one from inlining forever. */
+  const instantiating = new Set<string>();
 
   const reported = new Set<string>();
 
@@ -651,20 +653,33 @@ export function normalizeContract(
     }
     const typeParams = typeParamsOf(declaration) ?? [];
     if (typeParams.length > 0) {
-      return convertDeclaration(
-        declaration,
-        {
-          url,
-          typeParams: bindTypeParams(
-            typeParams,
-            typeArgs,
-            callerScope,
+      const key = `${url}#${symbolName}`;
+      if (instantiating.has(key)) {
+        return unsupported(
+          path,
+          display,
+          `${display} is a recursive generic type; give the recursion a non-generic name to include it.`,
+        );
+      }
+      instantiating.add(key);
+      try {
+        return convertDeclaration(
+          declaration,
+          {
             url,
-            path,
-          ),
-        },
-        path,
-      );
+            typeParams: bindTypeParams(
+              typeParams,
+              typeArgs,
+              callerScope,
+              url,
+              path,
+            ),
+          },
+          path,
+        );
+      } finally {
+        instantiating.delete(key);
+      }
     }
     if (typeArgs.length > 0) {
       report(path, `${display} takes no type arguments; they are ignored.`);

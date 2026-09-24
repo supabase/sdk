@@ -116,6 +116,53 @@ describe("discoverFunctions", () => {
     expect(byslug.get("explicit")?.importMap).toBe("supabase/import_map.json");
   });
 
+  test("falls back to a deprecated import_map.json next to the entrypoint, then to the shared one", async () => {
+    const root = await mkdtemp(join(tmpdir(), "functions-typegen-"));
+    const functionsDirectory = join(root, "supabase", "functions");
+    for (const slug of ["local-map", "shared-map"]) {
+      await mkdir(join(functionsDirectory, slug), { recursive: true });
+      await writeFile(join(functionsDirectory, slug, "index.ts"), "");
+    }
+    await writeFile(
+      join(functionsDirectory, "local-map", "import_map.json"),
+      "{}",
+    );
+    await writeFile(join(functionsDirectory, "import_map.json"), "{}");
+    await mkdir(join(root, "supabase", "custom"), { recursive: true });
+    await writeFile(join(root, "supabase", "custom", "handler.ts"), "");
+    await writeFile(join(root, "supabase", "custom", "deno.json"), "{}");
+    await writeFile(
+      join(root, "supabase", "config.toml"),
+      '[functions.custom]\nentrypoint = "./custom/handler.ts"\n',
+    );
+
+    const byslug = new Map(
+      (await discoverFunctions({ projectRoot: root })).map((fn) => [
+        fn.slug,
+        fn.importMap,
+      ]),
+    );
+    expect(byslug.get("local-map")).toBe(
+      "supabase/functions/local-map/import_map.json",
+    );
+    expect(byslug.get("shared-map")).toBe("supabase/functions/import_map.json");
+    // A config-only entrypoint looks next to itself, not under functions/<slug>/.
+    expect(byslug.get("custom")).toBe("supabase/custom/deno.json");
+  });
+
+  test("throws when the functions directory exists but cannot be read", async () => {
+    const root = await mkdtemp(join(tmpdir(), "functions-typegen-"));
+    await mkdir(join(root, "supabase"), { recursive: true });
+    await writeFile(join(root, "supabase", "functions"), "not a directory");
+    let error: unknown;
+    try {
+      await discoverFunctions({ projectRoot: root });
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(Error);
+  });
+
   test("throws on an unreadable config.toml instead of guessing", async () => {
     const root = await mkdtemp(join(tmpdir(), "functions-typegen-"));
     await mkdir(join(root, "supabase"), { recursive: true });

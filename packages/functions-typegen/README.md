@@ -73,7 +73,10 @@ Discovery follows `supabase functions deploy`: every directory under
 `supabase/functions/` with an `index.ts`, merged with the `[functions.<slug>]`
 tables of `config.toml`, which can point `entrypoint` and `import_map`
 elsewhere (relative to the `supabase/` directory), turn `verify_jwt` off or
-set `enabled = false`, in which case the function is left out.
+set `enabled = false`, in which case the function is left out. When
+`config.toml` names no import map, the CLI's lookup order applies:
+`deno.json`, `deno.jsonc` or the deprecated `import_map.json` next to the
+entrypoint, then the shared `supabase/functions/import_map.json`.
 
 `deno doc` resolves the module graph of the entrypoint, so it needs whatever
 the function imports to be resolvable: a warm Deno cache or network access
@@ -81,6 +84,8 @@ for `npm:` and `jsr:` specifiers. It never writes the project's lockfile
 (`--no-lock`), never type-checks and never runs the function.
 
 ## Usage
+
+The package is ES modules only.
 
 ```ts
 import {

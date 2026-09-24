@@ -16,7 +16,14 @@ export const SUPABASE_DIRECTORY = "supabase";
 const FUNCTIONS_DIRECTORY = "functions";
 const CONFIG_FILE = "config.toml";
 const ENTRYPOINT_FILE = "index.ts";
-const DENO_CONFIG_FILES = ["deno.json", "deno.jsonc"];
+/** Import maps looked for next to the entrypoint, in order; the last one is deprecated in the CLI. */
+const FUNCTION_IMPORT_MAP_FILES = [
+  "deno.json",
+  "deno.jsonc",
+  "import_map.json",
+];
+/** The shared map the CLI falls back to when a function has none of its own. */
+const SHARED_IMPORT_MAP_FILE = "import_map.json";
 
 /** What the CLI accepts as a function slug. */
 const SLUG_PATTERN = /^[a-zA-Z0-9_-]+$/;
@@ -56,7 +63,7 @@ export async function discoverFunctions(
   );
   const onDisk = await listFunctionDirectories(functionsDirectory);
 
-  const slugs = [...new Set([...onDisk.keys(), ...configured.keys()])].sort(
+  const slugs = [...new Set([...onDisk, ...configured.keys()])].sort(
     compareStrings,
   );
   const functions: DiscoveredFunction[] = [];
@@ -85,7 +92,7 @@ export async function discoverFunctions(
           );
     const importMap =
       configuredImportMap === null
-        ? (onDisk.get(slug) ?? null)
+        ? await defaultImportMap(options.projectRoot, entrypoint)
         : resolveConfigPath(
             options.projectRoot,
             supabaseDirectory,
@@ -102,42 +109,56 @@ export async function discoverFunctions(
 }
 
 /**
- * Slugs of the directories that hold an `index.ts`, mapped to their Deno
- * config file when they have one (the CLI's default import map).
+ * Slugs of the directories under `supabase/functions/` that hold an
+ * `index.ts`. A missing directory means no functions; any other error is a
+ * real failure and is thrown.
  */
 async function listFunctionDirectories(
   functionsDirectory: string,
-): Promise<Map<string, string | null>> {
-  const result = new Map<string, string | null>();
+): Promise<Set<string>> {
+  const result = new Set<string>();
   let entries: string[];
   try {
     entries = await readdir(functionsDirectory);
-  } catch {
-    return result;
+  } catch (error) {
+    if (isMissingFile(error)) {
+      return result;
+    }
+    throw error;
   }
   for (const slug of entries) {
-    if (!SLUG_PATTERN.test(slug)) {
-      continue;
+    if (
+      SLUG_PATTERN.test(slug) &&
+      (await isFile(join(functionsDirectory, slug, ENTRYPOINT_FILE)))
+    ) {
+      result.add(slug);
     }
-    const directory = join(functionsDirectory, slug);
-    if (!(await isFile(join(directory, ENTRYPOINT_FILE)))) {
-      continue;
-    }
-    let importMap: string | null = null;
-    for (const candidate of DENO_CONFIG_FILES) {
-      if (await isFile(join(directory, candidate))) {
-        importMap = posix.join(
-          SUPABASE_DIRECTORY,
-          FUNCTIONS_DIRECTORY,
-          slug,
-          candidate,
-        );
-        break;
-      }
-    }
-    result.set(slug, importMap);
   }
   return result;
+}
+
+/**
+ * The import map the CLI uses when `config.toml` names none: `deno.json`,
+ * `deno.jsonc` or the deprecated `import_map.json` next to the entrypoint,
+ * then the shared `supabase/functions/import_map.json`, then nothing.
+ */
+async function defaultImportMap(
+  projectRoot: string,
+  entrypoint: string,
+): Promise<string | null> {
+  const entrypointDirectory = posix.dirname(entrypoint);
+  for (const candidate of FUNCTION_IMPORT_MAP_FILES) {
+    const relativePath = posix.join(entrypointDirectory, candidate);
+    if (await isFile(join(projectRoot, relativePath))) {
+      return relativePath;
+    }
+  }
+  const shared = posix.join(
+    SUPABASE_DIRECTORY,
+    FUNCTIONS_DIRECTORY,
+    SHARED_IMPORT_MAP_FILE,
+  );
+  return (await isFile(join(projectRoot, shared))) ? shared : null;
 }
 
 async function isFile(path: string): Promise<boolean> {

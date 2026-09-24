@@ -524,6 +524,67 @@ describe("normalizeContract", () => {
     expect(result.types).toEqual([]);
   });
 
+  test("a recursive generic type stops at the re-entry with an unsupported node", () => {
+    const nodeParam = ref("T", {
+      kind: "typeParam",
+      declaringName: "Node",
+      declaringKind: "interface",
+    });
+    const result = normalize({
+      symbols: [
+        {
+          name: "Node",
+          declarations: [
+            {
+              kind: "interface",
+              declarationKind: "private",
+              def: {
+                typeParams: [{ name: "T" }],
+                properties: [
+                  { name: "value", tsType: nodeParam },
+                  {
+                    name: "children",
+                    tsType: {
+                      kind: "array",
+                      value: ref("Node", { kind: "local" }, [nodeParam]),
+                    },
+                  },
+                ],
+              },
+              location: { filename: ENTRY, line: 1, col: 0 },
+            },
+          ],
+        },
+        typeAlias(
+          "RequestBody",
+          ref("Node", { kind: "local" }, [keyword("string")]),
+        ),
+      ],
+    });
+    expect(result.requestBody).toEqual({
+      kind: "object",
+      properties: [
+        { name: "value", type: { kind: "string" }, optional: false },
+        {
+          name: "children",
+          type: {
+            kind: "array",
+            element: { kind: "unsupported", repr: "Node" },
+          },
+          optional: false,
+        },
+      ],
+    });
+    expect(result.diagnostics).toEqual([
+      {
+        slug: "fn",
+        path: "RequestBody.children[]",
+        message:
+          "Node is a recursive generic type; give the recursion a non-generic name to include it.",
+      },
+    ]);
+  });
+
   test("enums become unions of their literal values, numbering implicit members", () => {
     const result = normalize({
       symbols: [
