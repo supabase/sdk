@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.3...postgrest-typegen/v0.2.4) (2026-09-25)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** require Node 22.12 or newer ([#214](https://github.com/supabase/sdk/issues/214)) ([c6de214](https://github.com/supabase/sdk/commit/c6de2140c2b94687921a33cae2967d47299f2e22))
+
 ## [0.2.3](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.2...postgrest-typegen/v0.2.3) (2026-09-24)
 
 
