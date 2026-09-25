@@ -74,7 +74,7 @@
     "@types/pg": "^8.23.1",
     "knip": "^6.32.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.83.0",
+    "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2002",
     "pg": "^8.23.0",
     "testcontainers": "^12.1.0",
