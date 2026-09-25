@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/supabase/sdk/compare/typegen/v0.1.0...typegen/v0.1.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **typegen:** pin @supabase/postgrest-typegen to 0.2.5 ([#222](https://github.com/supabase/sdk/issues/222)) ([ecca7f2](https://github.com/supabase/sdk/commit/ecca7f28fad242c02a6996c207eb9c309d022cb8))
+
 ## 0.1.0 (2026-09-25)
 
 
