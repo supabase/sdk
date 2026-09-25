@@ -66,7 +66,8 @@ lives in supabase-js.
 - Keep the dependency list minimal; everything here lands in the CLI bundle.
 - `@supabase/postgrest-typegen` is pinned exactly, not a caret range: the
   registry promises consumers one postgrest-typegen version for introspection
-  and generation alike. Dependabot bumps the pin.
+  and generation alike. The `Release postgrest-typegen` workflow opens the
+  bump pull request after each release; dependabot ignores this dependency.
 
 ## Commands
 
