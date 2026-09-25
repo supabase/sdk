@@ -12,8 +12,8 @@ bump in the Supabase CLI, with no per-language code in the CLI itself.
 ## Where it sits
 
 ```
-Supabase CLI          connects to the database, introspects it with
-                      @supabase/postgrest-typegen, looks --lang up here
+Supabase CLI          connects to the database, introspects it with the
+                      introspect() re-exported here, looks --lang up here
       |
 @supabase/typegen     this package: language name to generator
       |
@@ -25,11 +25,15 @@ Supabase CLI          connects to the database, introspects it with
                                 document on stdin, reads the code from stdout
 ```
 
-Introspection is not part of this package. The consumer runs `introspect()`
-from `@supabase/postgrest-typegen` and hands the resulting `GeneratorMetadata`
-to the language it looked up here. The registry itself depends on
-`postgrest-typegen` for the contract types, `sortGeneratorMetadata` and
-`serializeGeneratorMetadata`.
+Introspection is not part of this package's logic. The consumer runs
+`introspect()` and hands the resulting `GeneratorMetadata` to the language it
+looked up here. `introspect`, `Queryable`, `IntrospectOptions`,
+`GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are re-exported from
+`@supabase/postgrest-typegen`, so a consumer depends on this package alone:
+one dependency to bump, and the document is always produced by the same
+`postgrest-typegen` version the in-process generators were built against.
+Depending on both packages directly would let a lockfile resolve two
+versions, introspecting with one and generating with the other.
 
 The two kinds of generator relate to `postgrest-typegen` differently:
 
@@ -49,13 +53,13 @@ both does not.
 
 ## Languages
 
-| `--lang`     | Runs               | How                                                                        | Flags                                    |
-| ------------ | ------------------ | -------------------------------------------------------------------------- | ---------------------------------------- |
-| `typescript` | in-process         | `generateTypescript` from `@supabase/postgrest-typegen`                    | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
-| `go`         | in-process         | `generateGo` from `@supabase/postgrest-typegen`                            |                                          |
-| `python`     | in-process         | `generatePython` from `@supabase/postgrest-typegen`                        |                                          |
-| `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public` |
-| `dart`       | out-of-process     | `dart run supabase_typegen --output -` in the project                      |                                          |
+| `--lang`     | Runs           | How                                                     | Flags                                                                              |
+| ------------ | -------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
+| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
+| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
+| `swift`      | in-process     | `generateSwift` from `@supabase/postgrest-typegen`      | `--swift-access-control internal\|public\|private\|package`                        |
+| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
 The four in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
@@ -65,8 +69,12 @@ notice nothing but a dependency bump.
 ## Using the registry
 
 ```ts
-import { introspect } from "@supabase/postgrest-typegen";
-import { createNodeHost, findLanguage, TypegenError } from "@supabase/typegen";
+import {
+  createNodeHost,
+  findLanguage,
+  introspect,
+  TypegenError,
+} from "@supabase/typegen";
 
 const language = findLanguage(lang);
 if (!language) {
@@ -89,11 +97,17 @@ defaults; unknown names and values outside a choice raise an
 
 `audience` says who sets an option. `user` options are the CLI flags; render
 `options.filter((option) => option.audience === "user")`. `consumer` options
-are set by the calling program from its own configuration and never shown to
-users: postgres-meta's hosted route passes the project's PostgREST version as
-`postgrest-version` (emitted as `__InternalSupabase.PostgrestVersion`) and its
-`GENERATE_TYPES_DEFAULT_SCHEMA` as `default-schema`. The Supabase CLI passes
-neither today, which is what its output has always been.
+are set by the calling program from what it knows about the target and never
+shown to users. TypeScript has three: `detect-one-to-one-relationships`
+(default on; the consumer turns it off for PostgREST 9 and below, where
+one-to-one joins come back as arrays), `postgrest-version` (emitted as
+`__InternalSupabase.PostgrestVersion`) and `default-schema` (default
+`public`). postgres-meta's hosted route sets them from its
+`detect_one_to_one_relationships` query parameter, `POSTGREST_VERSION` and
+`GENERATE_TYPES_DEFAULT_SCHEMA`. The Supabase CLI already sniffs the local
+stack's PostgREST version and used to expose the first one inverted as
+`--postgrest-v9-compat`, usable only with `--db-url`; its adapter keeps that
+flag as a deprecated alias that sets the option to `false`.
 
 `generate` sorts the metadata with `sortGeneratorMetadata` itself, so callers
 may pass `introspect()`'s output directly. It returns the complete contents of
@@ -117,9 +131,12 @@ A `Host` is what the consumer knows and the registry does not:
 - `env`: environment for spawned tools, usually `process.env`.
 - `signal`: optional `AbortSignal`; aborting cancels the generation and kills a
   spawned tool.
-- `spawn(request)`: runs a command to completion and resolves with its exit
-  code, stdout and stderr. It must reject with an error whose `code` is
-  `"ENOENT"` when the executable is not found, as Node's `child_process` does.
+- `spawn(request)`: optional. Runs a command to completion and resolves with
+  its exit code, stdout and stderr. It must reject with an error whose `code`
+  is `"ENOENT"` when the executable is not found, as Node's `child_process`
+  does. A host that cannot run processes leaves it out; an out-of-process
+  language then fails with `SpawnUnavailableError`, so hosted consumers offer
+  only `inProcess` languages.
 - `format(code, fileName)`: optional. Replaces the formatter of in-process
   generators that format their own output. Only TypeScript does today, through
   `oxfmt`, with the file name `output.ts`. The CLI passes an identity function
@@ -140,6 +157,8 @@ Every failure the registry raises extends `TypegenError` and carries the
 `language`, so a consumer maps them to its own error model once:
 
 - `InvalidOptionError` (`option`): a value the language's option spec rejects.
+- `SpawnUnavailableError` (`tool`): an out-of-process language was asked to
+  generate through a host without `spawn`.
 - `ToolNotInstalledError` (`tool`, `installHint`): the executable or package an
   out-of-process generator needs is missing in `cwd`. For Dart that is either
   the Dart SDK or the `supabase_typegen` dev dependency of the project.

@@ -11,6 +11,7 @@ import type {
 } from "../contract.ts";
 import {
   MetadataRejectedError,
+  SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,
 } from "../errors.ts";
@@ -68,9 +69,17 @@ export function externalLanguage(
       const sorted = sortGeneratorMetadata(metadata);
       const args = tool.args(sorted, resolved);
       const command = [tool.command, ...args];
+      const { spawn } = host;
+      if (spawn === undefined) {
+        throw new SpawnUnavailableError({
+          language: name,
+          tool: tool.command,
+          message: `Generating ${name} types runs \`${command.join(" ")}\`, but this host cannot run processes. Offer only languages whose \`inProcess\` is true here.`,
+        });
+      }
       let result: SpawnResult;
       try {
-        result = await host.spawn({
+        result = await spawn({
           command: tool.command,
           args,
           cwd: host.cwd,

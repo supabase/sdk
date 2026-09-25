@@ -1,3 +1,10 @@
+export {
+  GENERATOR_METADATA_VERSION,
+  type GeneratorMetadata,
+  introspect,
+  type IntrospectOptions,
+  type Queryable,
+} from "@supabase/postgrest-typegen";
 export type {
   BooleanOptionSpec,
   ChoiceOptionSpec,
@@ -15,6 +22,7 @@ export type {
 export {
   InvalidOptionError,
   MetadataRejectedError,
+  SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,
   TypegenError,

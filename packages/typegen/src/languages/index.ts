@@ -1,4 +1,5 @@
 import {
+  type AccessControl,
   generateGo,
   generatePython,
   generateSwift,
@@ -15,25 +16,26 @@ import { inProcessLanguage } from "./in-process.ts";
 /** File name handed to `Host.format` for TypeScript output. */
 export const TYPESCRIPT_FILE_NAME = "output.ts";
 
-const POSTGREST_V9_COMPAT = "postgrest-v9-compat";
+const DETECT_ONE_TO_ONE_RELATIONSHIPS = "detect-one-to-one-relationships";
 const POSTGREST_VERSION = "postgrest-version";
 const DEFAULT_SCHEMA = "default-schema";
 const SWIFT_ACCESS_CONTROL = "swift-access-control";
 
 /**
- * `supabase gen types` exposes the generator's `detectOneToOneRelationships`
- * inverted, as compatibility with PostgREST v9 and below, so the flag keeps
- * that name and polarity. The two consumer options are what postgres-meta's
- * hosted route passes from `POSTGREST_VERSION` and
- * `GENERATE_TYPES_DEFAULT_SCHEMA`.
+ * All three are consumer options: the calling program knows the target's
+ * PostgREST version, so it decides whether one-to-one relationships can be
+ * detected (PostgREST 10 and later), which version to emit and which schema
+ * the helper types default to. `supabase gen types` used to expose the first
+ * inverted as `--postgrest-v9-compat`, usable only with `--db-url`; its
+ * adapter maps that deprecated flag onto this option.
  */
 const typescriptOptions: readonly OptionSpec[] = [
   {
-    name: POSTGREST_V9_COMPAT,
-    audience: "user",
+    name: DETECT_ONE_TO_ONE_RELATIONSHIPS,
+    audience: "consumer",
     kind: "boolean",
-    default: false,
-    help: "Generate types compatible with PostgREST v9 and below.",
+    default: true,
+    help: "Mark one-to-one relationships so supabase-js types those joins as objects. Turn off for PostgREST 9 and below, which return them as arrays.",
   },
   {
     name: POSTGREST_VERSION,
@@ -57,7 +59,8 @@ export const typescript = inProcessLanguage(
     const { format } = host;
     const postgrestVersion = options[POSTGREST_VERSION];
     return generateTypescript(metadata, {
-      detectOneToOneRelationships: options[POSTGREST_V9_COMPAT] !== true,
+      detectOneToOneRelationships:
+        options[DETECT_ONE_TO_ONE_RELATIONSHIPS] === true,
       ...(typeof postgrestVersion === "string" ? { postgrestVersion } : {}),
       defaultSchema: options[DEFAULT_SCHEMA] as string,
       ...(format
@@ -78,14 +81,15 @@ export const python = inProcessLanguage("python", [], (metadata) =>
 );
 
 /**
- * The Swift generator also accepts `private` and `package`; the flag keeps
- * the two levels `supabase gen types` has always offered.
+ * All four levels the generator accepts. `supabase gen types` used to offer
+ * only `internal` and `public`; postgres-meta's route has always accepted
+ * all four, and adding choices changes nothing for existing users.
  */
 const swiftAccessControl = {
   name: SWIFT_ACCESS_CONTROL,
   audience: "user",
   kind: "choice",
-  choices: ["internal", "public"],
+  choices: ["internal", "public", "private", "package"],
   default: "internal",
   help: "Access control for Swift generated types.",
 } satisfies ChoiceOptionSpec;
@@ -95,7 +99,7 @@ export const swift = inProcessLanguage(
   [swiftAccessControl],
   (metadata, options) =>
     generateSwift(metadata, {
-      accessControl: options[SWIFT_ACCESS_CONTROL] as "internal" | "public",
+      accessControl: options[SWIFT_ACCESS_CONTROL] as AccessControl,
     }),
 );
 

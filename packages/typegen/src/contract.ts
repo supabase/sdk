@@ -29,7 +29,7 @@ export interface SpawnResult {
 /**
  * The environment a consumer (the Supabase CLI, postgres-meta, a test) hands
  * to every `generate` call. Introspection is deliberately not part of it:
- * the caller runs `introspect()` from `@supabase/postgrest-typegen` itself and
+ * the caller runs the `introspect()` this package re-exports itself and
  * passes the resulting metadata in.
  */
 export interface Host {
@@ -48,8 +48,12 @@ export interface Host {
    * is what Node's `child_process` reports; the registry turns that into a
    * `ToolNotInstalledError` carrying the language's install hint. Any other
    * outcome, including a non-zero exit, resolves normally.
+   *
+   * Leave it out on a host that cannot run processes, such as a hosted
+   * service that only offers `inProcess` languages; an out-of-process entry
+   * then fails with a `SpawnUnavailableError` instead of needing a stub.
    */
-  spawn(request: SpawnRequest): Promise<SpawnResult>;
+  readonly spawn?: (request: SpawnRequest) => Promise<SpawnResult>;
   /**
    * Replaces the formatter of in-process generators that format their own
    * output. Today only TypeScript does, through `oxfmt`, and the file name is

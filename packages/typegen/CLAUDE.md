@@ -8,8 +8,11 @@ generator that renders it, so new languages need a pull request here and a
 dependency bump in the CLI, never CLI code. See SDK-1955 for the decision and
 SDK-1956 for the CLI adapter that replaces the CLI's hardcoded switch.
 
-Introspection is NOT here: the consumer calls `introspect()` from
-`@supabase/postgrest-typegen` and passes the `GeneratorMetadata` in. The
+Introspection is NOT implemented here: the consumer calls `introspect()` and
+passes the `GeneratorMetadata` in. `introspect`, `Queryable`,
+`IntrospectOptions`, `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are
+re-exported from `@supabase/postgrest-typegen` so the CLI depends on this
+package alone and cannot end up with two postgrest-typegen versions. The
 registry sits above `postgrest-typegen` and the future per-SDK generator
 packages (SDK-1641) to avoid a dependency cycle once TypeScript's generator
 lives in supabase-js.
@@ -17,10 +20,11 @@ lives in supabase-js.
 ## Architecture
 
 - `src/contract.ts` -- the public contract with the CLI: `Host` (cwd, env,
-  signal, `spawn`, optional `format`), `OptionSpec`/`OptionValues`,
+  signal, optional `spawn`, optional `format`), `OptionSpec`/`OptionValues`,
   `TypegenLanguage`. Changing these is a semver-relevant change for the CLI.
 - `src/errors.ts` -- `TypegenError` and its subclasses (`InvalidOptionError`,
-  `ToolNotInstalledError`, `ToolFailedError`, `MetadataRejectedError`). The
+  `SpawnUnavailableError`, `ToolNotInstalledError`, `ToolFailedError`,
+  `MetadataRejectedError`). The
   CLI maps these to its actionability model generically; keep the fields
   stable.
 - `src/options.ts` -- `resolveOptions`: defaults plus validation, run at the
@@ -34,18 +38,22 @@ lives in supabase-js.
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
 - `src/languages/index.ts` -- the four in-process entries and the `languages`
-  list. `typescript` exposes `postgrest-v9-compat` (inverse of
-  `detectOneToOneRelationships`) as a user option, `postgrest-version` and
-  `default-schema` as consumer options (what postgres-meta's hosted route
-  passes), and honors `host.format`; `swift` exposes `swift-access-control`
-  limited to `internal|public` like the CLI always did.
+  list. `typescript` has no user options; `detect-one-to-one-relationships`
+  (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
+  `postgrest-version` and `default-schema` are consumer options that the CLI
+  and postgres-meta's hosted route set from what they know about the target.
+  It honors `host.format`; `swift` exposes `swift-access-control`
+  with all four generator levels, since postgres-meta's route always accepted
+  them and extra choices change nothing for existing CLI users.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`.
 
 ## Invariants
 
-- Option `name`s are the CLI flag names verbatim. Existing users must see no
-  change in flags. `audience: "user"` options are flags; `"consumer"` options
-  are set by the calling program and never rendered.
+- User option `name`s are the CLI flag names verbatim (`swift-access-control`).
+  `audience: "user"` options are flags; `"consumer"` options are set by the
+  calling program and never rendered. `--postgrest-v9-compat` stopped being a
+  registry option on purpose: it targets PostgREST 9 (2022) and only ever
+  worked with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
 - `generate` always sorts before generating and returns complete file
   contents for every language. In-process entries append the final newline
   the CLI has always emitted (pg-meta's `console.log`); out-of-process
