@@ -1,3 +1,16 @@
+/**
+ * Everything a consumer needs from `@supabase/postgrest-typegen` to produce
+ * the metadata the registry generates from, re-exported so the consumer
+ * depends on this package alone and always introspects with the same
+ * postgrest-typegen version the in-process generators were built against.
+ */
+export {
+  GENERATOR_METADATA_VERSION,
+  type GeneratorMetadata,
+  introspect,
+  type IntrospectOptions,
+  type Queryable,
+} from "@supabase/postgrest-typegen";
 export type {
   BooleanOptionSpec,
   ChoiceOptionSpec,

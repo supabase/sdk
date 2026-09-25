@@ -8,8 +8,11 @@ generator that renders it, so new languages need a pull request here and a
 dependency bump in the CLI, never CLI code. See SDK-1955 for the decision and
 SDK-1956 for the CLI adapter that replaces the CLI's hardcoded switch.
 
-Introspection is NOT here: the consumer calls `introspect()` from
-`@supabase/postgrest-typegen` and passes the `GeneratorMetadata` in. The
+Introspection is NOT implemented here: the consumer calls `introspect()` and
+passes the `GeneratorMetadata` in. `introspect`, `Queryable`,
+`IntrospectOptions`, `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are
+re-exported from `@supabase/postgrest-typegen` so the CLI depends on this
+package alone and cannot end up with two postgrest-typegen versions. The
 registry sits above `postgrest-typegen` and the future per-SDK generator
 packages (SDK-1641) to avoid a dependency cycle once TypeScript's generator
 lives in supabase-js.

@@ -25,11 +25,15 @@ Supabase CLI          connects to the database, introspects it with
                                 document on stdin, reads the code from stdout
 ```
 
-Introspection is not part of this package. The consumer runs `introspect()`
-from `@supabase/postgrest-typegen` and hands the resulting `GeneratorMetadata`
-to the language it looked up here. The registry itself depends on
-`postgrest-typegen` for the contract types, `sortGeneratorMetadata` and
-`serializeGeneratorMetadata`.
+Introspection is not part of this package's logic. The consumer runs
+`introspect()` and hands the resulting `GeneratorMetadata` to the language it
+looked up here. `introspect`, `Queryable`, `IntrospectOptions`,
+`GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are re-exported from
+`@supabase/postgrest-typegen`, so a consumer depends on this package alone:
+one dependency to bump, and the document is always produced by the same
+`postgrest-typegen` version the in-process generators were built against.
+Depending on both packages directly would let a lockfile resolve two
+versions, introspecting with one and generating with the other.
 
 The two kinds of generator relate to `postgrest-typegen` differently:
 
@@ -65,8 +69,12 @@ notice nothing but a dependency bump.
 ## Using the registry
 
 ```ts
-import { introspect } from "@supabase/postgrest-typegen";
-import { createNodeHost, findLanguage, TypegenError } from "@supabase/typegen";
+import {
+  createNodeHost,
+  findLanguage,
+  introspect,
+  TypegenError,
+} from "@supabase/typegen";
 
 const language = findLanguage(lang);
 if (!language) {
