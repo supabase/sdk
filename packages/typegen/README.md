@@ -143,7 +143,10 @@ A `Host` is what the consumer knows and the registry does not:
   generators that format their own output. Only TypeScript does today, through
   `oxfmt`, with the file name `output.ts`. The CLI passes an identity function
   so its output stays byte-identical to what it emits today and `oxfmt` stays
-  out of its bundle; leave it out to get each generator's default.
+  out of its bundle. Leave it out to get each generator's default, which for
+  TypeScript needs `oxfmt` installed: it is an optional peer dependency, loaded
+  only when the default formatter runs, so hosts that always pass `format`
+  never need it.
 
 `createNodeHost({ cwd, env, signal, format })` is a ready-made `Host` on
 `node:child_process` for consumers without their own process runner. On
