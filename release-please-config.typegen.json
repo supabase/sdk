@@ -7,8 +7,7 @@
       "release-type": "node",
       "package-name": "@supabase/typegen",
       "component": "typegen",
-      "bump-minor-pre-major": true,
-      "release-as": "0.1.0"
+      "bump-minor-pre-major": true
     }
   }
 }
