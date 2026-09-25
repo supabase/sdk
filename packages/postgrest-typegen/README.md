@@ -148,7 +148,7 @@ npm install oxfmt@0.66.0
 
 ## Releasing
 
-Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm.
+Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm. Once npm serves the new version, the same workflow opens a pull request that bumps the exact pin in `packages/typegen`.
 
 ## License
 

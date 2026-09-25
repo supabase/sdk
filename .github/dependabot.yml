@@ -26,6 +26,7 @@ updates:
       include: scope
     ignore:
       - dependency-name: oxfmt
+      - dependency-name: "@supabase/postgrest-typegen"
     groups:
       bun:
         update-types:
