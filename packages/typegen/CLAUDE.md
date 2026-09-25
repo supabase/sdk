@@ -64,6 +64,9 @@ lives in supabase-js.
   success. `dart run` keeps stdout clean when it is not a terminal.
 - `inProcess` must be accurate: hosted consumers (postgres-meta) filter on it.
 - Keep the dependency list minimal; everything here lands in the CLI bundle.
+- `@supabase/postgrest-typegen` is pinned exactly, not a caret range: the
+  registry promises consumers one postgrest-typegen version for introspection
+  and generation alike. Dependabot bumps the pin.
 
 ## Commands
 

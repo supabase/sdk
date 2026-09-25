@@ -32,6 +32,8 @@ looked up here. `introspect`, `Queryable`, `IntrospectOptions`,
 `@supabase/postgrest-typegen`, so a consumer depends on this package alone:
 one dependency to bump, and the document is always produced by the same
 `postgrest-typegen` version the in-process generators were built against.
+That is why the dependency is pinned to an exact version rather than a
+range; dependabot bumps it, and each bump is a registry release.
 Depending on both packages directly would let a lockfile resolve two
 versions, introspecting with one and generating with the other.
 
