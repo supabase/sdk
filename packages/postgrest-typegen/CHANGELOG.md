@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.5...postgrest-typegen/v0.3.0) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **postgrest-typegen:** make oxfmt an optional peer dependency loaded only by the default formatter ([#225](https://github.com/supabase/sdk/issues/225))
+
+### Features
+
+* **postgrest-typegen:** make oxfmt an optional peer dependency loaded only by the default formatter ([#225](https://github.com/supabase/sdk/issues/225)) ([73deb6e](https://github.com/supabase/sdk/commit/73deb6e6a99f4a75105620827db0e101fd8a422b))
+
 ## [0.2.5](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.4...postgrest-typegen/v0.2.5) (2026-09-25)
 
 
