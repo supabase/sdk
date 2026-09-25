@@ -53,13 +53,13 @@ both does not.
 
 ## Languages
 
-| `--lang`     | Runs               | How                                                                        | Flags                                    |
-| ------------ | ------------------ | -------------------------------------------------------------------------- | ---------------------------------------- |
-| `typescript` | in-process         | `generateTypescript` from `@supabase/postgrest-typegen`                    | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
-| `go`         | in-process         | `generateGo` from `@supabase/postgrest-typegen`                            |                                          |
-| `python`     | in-process         | `generatePython` from `@supabase/postgrest-typegen`                        |                                          |
-| `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public\|private\|package` |
-| `dart`       | out-of-process     | `dart run supabase_typegen --output -` in the project                      |                                          |
+| `--lang`     | Runs           | How                                                     | Flags                                                                    |
+| ------------ | -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
+| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                          |
+| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                          |
+| `swift`      | in-process     | `generateSwift` from `@supabase/postgrest-typegen`      | `--swift-access-control internal\|public\|private\|package`              |
+| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                          |
 
 The four in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
