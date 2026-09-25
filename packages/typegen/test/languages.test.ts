@@ -50,7 +50,7 @@ describe("languages", () => {
         name: "swift-access-control",
         audience: "user",
         kind: "choice",
-        choices: ["internal", "public"],
+        choices: ["internal", "public", "private", "package"],
         default: "internal",
         help: "Access control for Swift generated types.",
       },

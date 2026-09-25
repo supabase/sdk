@@ -1,4 +1,5 @@
 import {
+  type AccessControl,
   generateGo,
   generatePython,
   generateSwift,
@@ -78,14 +79,15 @@ export const python = inProcessLanguage("python", [], (metadata) =>
 );
 
 /**
- * The Swift generator also accepts `private` and `package`; the flag keeps
- * the two levels `supabase gen types` has always offered.
+ * All four levels the generator accepts. `supabase gen types` used to offer
+ * only `internal` and `public`; postgres-meta's route has always accepted
+ * all four, and adding choices changes nothing for existing users.
  */
 const swiftAccessControl = {
   name: SWIFT_ACCESS_CONTROL,
   audience: "user",
   kind: "choice",
-  choices: ["internal", "public"],
+  choices: ["internal", "public", "private", "package"],
   default: "internal",
   help: "Access control for Swift generated types.",
 } satisfies ChoiceOptionSpec;
@@ -95,7 +97,7 @@ export const swift = inProcessLanguage(
   [swiftAccessControl],
   (metadata, options) =>
     generateSwift(metadata, {
-      accessControl: options[SWIFT_ACCESS_CONTROL] as "internal" | "public",
+      accessControl: options[SWIFT_ACCESS_CONTROL] as AccessControl,
     }),
 );
 

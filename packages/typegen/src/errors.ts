@@ -47,6 +47,20 @@ export class ToolNotInstalledError extends TypegenError {
   }
 }
 
+/**
+ * An out-of-process language was asked to generate through a `Host` without
+ * `spawn`. Hosted consumers avoid this by offering only `inProcess` languages.
+ */
+export class SpawnUnavailableError extends TypegenError {
+  readonly tool: string;
+
+  constructor(init: TypegenErrorInit & { readonly tool: string }) {
+    super(init);
+    this.name = "SpawnUnavailableError";
+    this.tool = init.tool;
+  }
+}
+
 /** An out-of-process generator exited unsuccessfully. */
 export class ToolFailedError extends TypegenError {
   readonly command: readonly string[];

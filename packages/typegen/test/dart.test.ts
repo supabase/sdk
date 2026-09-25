@@ -6,6 +6,7 @@ import {
 import {
   dart,
   MetadataRejectedError,
+  SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,
 } from "../src/index.ts";
@@ -148,6 +149,16 @@ describe("dart", () => {
     expect((error as ToolFailedError).message).toContain(
       "was terminated by a signal",
     );
+  });
+
+  test("fails clearly on a host without a process runner", async () => {
+    const { spawn: _spawn, ...hostWithoutSpawn } = createFakeHost();
+    const error = await rejection(
+      dart.generate(unsortedMetadata, {}, hostWithoutSpawn),
+    );
+    expect(error).toBeInstanceOf(SpawnUnavailableError);
+    expect((error as SpawnUnavailableError).tool).toBe("dart");
+    expect((error as SpawnUnavailableError).message).toContain("inProcess");
   });
 
   test("passes through errors the host raises for other reasons", async () => {

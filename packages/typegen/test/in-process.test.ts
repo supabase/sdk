@@ -113,10 +113,34 @@ describe("in-process languages", () => {
     }
   });
 
-  test("rejects the private and package access levels the CLI never offered", async () => {
+  test("swift accepts every access level the generator knows", async () => {
+    for (const accessControl of ["private", "package"] as const) {
+      expect(
+        await generate("swift", { "swift-access-control": accessControl }),
+      ).toBe(`${generateSwift(sorted, { accessControl })}\n`);
+    }
     expect(
-      await rejection(generate("swift", { "swift-access-control": "private" })),
+      await rejection(generate("swift", { "swift-access-control": "open" })),
     ).toBeInstanceOf(InvalidOptionError);
+  });
+
+  test("runs without a process runner on the host", async () => {
+    const { spawn: _spawn, ...hostWithoutSpawn } = createFakeHost();
+    for (const name of ["typescript", "go", "python", "swift"]) {
+      expect(
+        await findLanguage(name)!.generate(
+          unsortedMetadata,
+          {},
+          hostWithoutSpawn,
+        ),
+      ).toBe(
+        await findLanguage(name)!.generate(
+          unsortedMetadata,
+          {},
+          createFakeHost(),
+        ),
+      );
+    }
   });
 
   test("never spawns a process", async () => {

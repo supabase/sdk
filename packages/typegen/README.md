@@ -58,7 +58,7 @@ both does not.
 | `typescript` | in-process         | `generateTypescript` from `@supabase/postgrest-typegen`                    | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
 | `go`         | in-process         | `generateGo` from `@supabase/postgrest-typegen`                            |                                          |
 | `python`     | in-process         | `generatePython` from `@supabase/postgrest-typegen`                        |                                          |
-| `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public` |
+| `swift`      | in-process         | `generateSwift` from `@supabase/postgrest-typegen`                         | `--swift-access-control internal\|public\|private\|package` |
 | `dart`       | out-of-process     | `dart run supabase_typegen --output -` in the project                      |                                          |
 
 The four in-process entries are a transition: as each generator relocates to
@@ -125,9 +125,12 @@ A `Host` is what the consumer knows and the registry does not:
 - `env`: environment for spawned tools, usually `process.env`.
 - `signal`: optional `AbortSignal`; aborting cancels the generation and kills a
   spawned tool.
-- `spawn(request)`: runs a command to completion and resolves with its exit
-  code, stdout and stderr. It must reject with an error whose `code` is
-  `"ENOENT"` when the executable is not found, as Node's `child_process` does.
+- `spawn(request)`: optional. Runs a command to completion and resolves with
+  its exit code, stdout and stderr. It must reject with an error whose `code`
+  is `"ENOENT"` when the executable is not found, as Node's `child_process`
+  does. A host that cannot run processes leaves it out; an out-of-process
+  language then fails with `SpawnUnavailableError`, so hosted consumers offer
+  only `inProcess` languages.
 - `format(code, fileName)`: optional. Replaces the formatter of in-process
   generators that format their own output. Only TypeScript does today, through
   `oxfmt`, with the file name `output.ts`. The CLI passes an identity function
@@ -148,6 +151,8 @@ Every failure the registry raises extends `TypegenError` and carries the
 `language`, so a consumer maps them to its own error model once:
 
 - `InvalidOptionError` (`option`): a value the language's option spec rejects.
+- `SpawnUnavailableError` (`tool`): an out-of-process language was asked to
+  generate through a host without `spawn`.
 - `ToolNotInstalledError` (`tool`, `installHint`): the executable or package an
   out-of-process generator needs is missing in `cwd`. For Dart that is either
   the Dart SDK or the `supabase_typegen` dev dependency of the project.

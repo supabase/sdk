@@ -20,10 +20,11 @@ lives in supabase-js.
 ## Architecture
 
 - `src/contract.ts` -- the public contract with the CLI: `Host` (cwd, env,
-  signal, `spawn`, optional `format`), `OptionSpec`/`OptionValues`,
+  signal, optional `spawn`, optional `format`), `OptionSpec`/`OptionValues`,
   `TypegenLanguage`. Changing these is a semver-relevant change for the CLI.
 - `src/errors.ts` -- `TypegenError` and its subclasses (`InvalidOptionError`,
-  `ToolNotInstalledError`, `ToolFailedError`, `MetadataRejectedError`). The
+  `SpawnUnavailableError`, `ToolNotInstalledError`, `ToolFailedError`,
+  `MetadataRejectedError`). The
   CLI maps these to its actionability model generically; keep the fields
   stable.
 - `src/options.ts` -- `resolveOptions`: defaults plus validation, run at the
@@ -41,7 +42,8 @@ lives in supabase-js.
   `detectOneToOneRelationships`) as a user option, `postgrest-version` and
   `default-schema` as consumer options (what postgres-meta's hosted route
   passes), and honors `host.format`; `swift` exposes `swift-access-control`
-  limited to `internal|public` like the CLI always did.
+  with all four generator levels, since postgres-meta's route always accepted
+  them and extra choices change nothing for existing CLI users.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`.
 
 ## Invariants

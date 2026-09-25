@@ -48,8 +48,12 @@ export interface Host {
    * is what Node's `child_process` reports; the registry turns that into a
    * `ToolNotInstalledError` carrying the language's install hint. Any other
    * outcome, including a non-zero exit, resolves normally.
+   *
+   * Leave it out on a host that cannot run processes, such as a hosted
+   * service that only offers `inProcess` languages; an out-of-process entry
+   * then fails with a `SpawnUnavailableError` instead of needing a stub.
    */
-  spawn(request: SpawnRequest): Promise<SpawnResult>;
+  readonly spawn?: (request: SpawnRequest) => Promise<SpawnResult>;
   /**
    * Replaces the formatter of in-process generators that format their own
    * output. Today only TypeScript does, through `oxfmt`, and the file name is
