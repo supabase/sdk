@@ -60,10 +60,17 @@ compiled JS from `dist/`.
 ```bash
 bun run build           # tsc --project tsconfig.build.json (emits dist/)
 bun run check-types     # tsc --noEmit
+bun run check-types:consumer # tsc --project tsconfig.consumer.json
 bun run test            # bun:test (Docker required for integration/parity tests)
 bun run format-and-lint # oxfmt + oxlint check
 bun run knip            # unused-code/deps check
 ```
+
+`check-types:consumer` compiles `src/` with `@tsconfig/bun` plus
+`customConditions: ["bun"]`, which is how the Supabase CLI type-checks this
+package: its `bun` exports condition hands the CLI `src/*.ts` rather than
+`dist/*.d.ts`, so `src/` must also pass stricter flags such as
+`noUncheckedIndexedAccess` that the package's own base config does not set.
 
 ## Relationship to postgres-meta
 

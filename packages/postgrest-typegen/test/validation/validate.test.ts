@@ -301,7 +301,7 @@ describe("parseGeneratorMetadata", () => {
 
   test("rejects a relationship missing referenced_columns", () => {
     const { referenced_columns: _dropped, ...badRel } =
-      validMetadata.relationships[0];
+      validMetadata.relationships[0]!;
     const bad = { ...validMetadata, relationships: [badRel] };
     expect(() => parseGeneratorMetadata(bad)).toThrow(TypeError);
   });

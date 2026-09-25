@@ -189,7 +189,7 @@ describe("sortGeneratorMetadata", () => {
     );
     // RPC args are addressed by name, so the generated type is order-insensitive
     // and we sort them (matches TypeScript).
-    expect(result.functions[0].args.map((a) => a.name)).toEqual(["a", "z"]);
+    expect(result.functions[0]?.args.map((a) => a.name)).toEqual(["a", "z"]);
     // Enum values and composite attribute order are semantic → left untouched.
     const e = result.types.find((t) => t.name === userStatusEnum.name)!;
     expect(e.enums).toEqual(["INACTIVE", "ACTIVE"]);
