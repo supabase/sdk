@@ -71,12 +71,12 @@ lives in supabase-js.
 ## Commands
 
 ```bash
-bun run test            # bun:test with a fake host; the node-host test spawns a shell script
+bun run test                 # bun:test with a fake host; the node-host test spawns a shell script
 bun run check-types
 bun run check-types:consumer # tsc --project tsconfig.consumer.json
 bun run format-and-lint
 bun run knip
-bun run build           # tsc --project tsconfig.build.json, emits dist/
+bun run build                # tsc --project tsconfig.build.json, emits dist/
 ```
 
 `check-types:consumer` compiles `src/` with `@tsconfig/bun` plus
