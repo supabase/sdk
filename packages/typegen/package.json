@@ -48,7 +48,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@supabase/postgrest-typegen": "0.2.5"
+    "@supabase/postgrest-typegen": "0.3.0"
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.11",
@@ -61,6 +61,14 @@
     "oxlint": "1.83.0",
     "oxlint-tsgolint": "7.0.2002",
     "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "oxfmt": "0.66.0"
+  },
+  "peerDependenciesMeta": {
+    "oxfmt": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.12.0"

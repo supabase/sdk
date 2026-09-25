@@ -57,8 +57,9 @@ export interface Host {
   /**
    * Replaces the formatter of in-process generators that format their own
    * output. Today only TypeScript does, through `oxfmt`, and the file name is
-   * `output.ts`. Leave it out to keep each generator's default formatter;
-   * pass an identity function to receive the unformatted template output,
+   * `output.ts`. Leave it out to keep each generator's default formatter,
+   * which for TypeScript needs the optional peer dependency `oxfmt` installed.
+   * Pass an identity function to receive the unformatted template output,
    * which is what the Supabase CLI does to keep `oxfmt` out of its bundle.
    */
   readonly format?: (code: string, fileName: string) => Promise<string>;
