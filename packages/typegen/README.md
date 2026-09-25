@@ -12,8 +12,8 @@ bump in the Supabase CLI, with no per-language code in the CLI itself.
 ## Where it sits
 
 ```
-Supabase CLI          connects to the database, introspects it with
-                      @supabase/postgrest-typegen, looks --lang up here
+Supabase CLI          connects to the database, introspects it with the
+                      introspect() re-exported here, looks --lang up here
       |
 @supabase/typegen     this package: language name to generator
       |

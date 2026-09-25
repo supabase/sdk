@@ -29,7 +29,7 @@ export interface SpawnResult {
 /**
  * The environment a consumer (the Supabase CLI, postgres-meta, a test) hands
  * to every `generate` call. Introspection is deliberately not part of it:
- * the caller runs `introspect()` from `@supabase/postgrest-typegen` itself and
+ * the caller runs the `introspect()` this package re-exports itself and
  * passes the resulting metadata in.
  */
 export interface Host {
