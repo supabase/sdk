@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.4...postgrest-typegen/v0.2.5) (2026-09-25)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** compile under noUncheckedIndexedAccess ([#217](https://github.com/supabase/sdk/issues/217)) ([a8a4927](https://github.com/supabase/sdk/commit/a8a4927577e0c4a62d032cff026c857a4ce69d68))
+
 ## [0.2.4](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.3...postgrest-typegen/v0.2.4) (2026-09-25)
 
 
