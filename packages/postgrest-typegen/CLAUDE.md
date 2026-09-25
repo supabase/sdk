@@ -58,12 +58,12 @@ compiled JS from `dist/`.
 ## Commands
 
 ```bash
-bun run build           # tsc --project tsconfig.build.json (emits dist/)
-bun run check-types     # tsc --noEmit
+bun run build                # tsc --project tsconfig.build.json (emits dist/)
+bun run check-types          # tsc --noEmit
 bun run check-types:consumer # tsc --project tsconfig.consumer.json
-bun run test            # bun:test (Docker required for integration/parity tests)
-bun run format-and-lint # oxfmt + oxlint check
-bun run knip            # unused-code/deps check
+bun run test                 # bun:test (Docker required for integration/parity tests)
+bun run format-and-lint      # oxfmt + oxlint check
+bun run knip                 # unused-code/deps check
 ```
 
 `check-types:consumer` compiles `src/` with `@tsconfig/bun` plus
