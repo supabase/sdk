@@ -1,0 +1,39 @@
+name: Validate functions-typegen
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/functions-typegen/**"
+      - ".github/workflows/functions-typegen-validate.yml"
+  pull_request:
+    paths:
+      - "packages/functions-typegen/**"
+      - ".github/workflows/functions-typegen-validate.yml"
+
+defaults:
+  run:
+    working-directory: packages/functions-typegen
+
+jobs:
+  test:
+    name: Types, lint, build, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+      # The end-to-end test runs `deno doc` on the fixture project.
+      - name: Install Deno
+        run: curl -fsSL https://deno.land/install.sh | sh -s -- --yes
+      - name: Add Deno to PATH
+        run: echo "$HOME/.deno/bin" >> "$GITHUB_PATH"
+      - run: bun install --frozen-lockfile
+      - run: bun run check-types
+      - run: bun run check-types:consumer
+      - run: bun run format-and-lint
+      - run: bun run knip
+      - run: bun run build
+      - run: bun run test
