@@ -62,8 +62,7 @@
     "test": "bun scripts/run-tests.ts test/"
   },
   "dependencies": {
-    "arktype": "2.2.3",
-    "oxfmt": "0.66.0"
+    "arktype": "2.2.3"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",
@@ -74,11 +73,20 @@
     "@types/node": "^26.3.0",
     "@types/pg": "^8.23.1",
     "knip": "^6.32.3",
+    "oxfmt": "0.66.0",
     "oxlint": "1.83.0",
     "oxlint-tsgolint": "7.0.2002",
     "pg": "^8.23.0",
     "testcontainers": "^12.1.0",
     "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "oxfmt": "0.66.0"
+  },
+  "peerDependenciesMeta": {
+    "oxfmt": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=22.12.0"

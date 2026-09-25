@@ -113,19 +113,27 @@ breaks at read time.
 
 ```ts
 import {
-  generateTypescript, // async (uses prettier)
+  generateTypescript, // async (formats its output)
   generateGo,
   generatePython,
   generateSwift,
 } from "@supabase/postgrest-typegen/generation";
 ```
 
-| Function             | Options                                                                 |
-| -------------------- | ----------------------------------------------------------------------- |
-| `generateTypescript` | `{ detectOneToOneRelationships?, postgrestVersion?, defaultSchema? }`    |
-| `generateGo`         | —                                                                       |
-| `generatePython`     | —                                                                       |
-| `generateSwift`      | `{ accessControl?: 'internal' \| 'public' \| 'private' \| 'package' }`   |
+| Function             | Options                                                                        |
+| -------------------- | ------------------------------------------------------------------------------ |
+| `generateTypescript` | `{ detectOneToOneRelationships?, postgrestVersion?, defaultSchema?, format? }` |
+| `generateGo`         | —                                                                              |
+| `generatePython`     | —                                                                              |
+| `generateSwift`      | `{ accessControl?: 'internal' \| 'public' \| 'private' \| 'package' }`         |
+
+`generateTypescript` formats its output with `oxfmt` unless `format` is
+supplied. `oxfmt` is an optional peer dependency, imported only when that
+default runs: install it to use the default formatter, or pass your own
+`format` (an identity function, for byte-identical unformatted output, or a
+worker-pool-backed formatter) and it is never loaded or needed. Calling
+`generateTypescript` without `format` when `oxfmt` is missing throws an error
+saying so.
 
 ## Installation
 
@@ -134,6 +142,8 @@ Not yet published; consumed in-repo for now (`packages/postgrest-typegen`).
 ```bash
 # pg is a peer of your application, not bundled here
 npm install pg
+# only if you rely on generateTypescript's default formatter
+npm install oxfmt@0.66.0
 ```
 
 ## Releasing

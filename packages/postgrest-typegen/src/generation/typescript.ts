@@ -3,7 +3,6 @@
 // literals (relying on Array#toString) to build the output. Preserving that is required for
 // byte-parity, and the offending expressions sit inside template literals where a targeted
 // disable comment would corrupt the emitted string.
-import { format as oxfmtFormat } from "oxfmt";
 import type {
   GeneratorMetadata,
   PostgresColumn,
@@ -39,16 +38,30 @@ export interface GenerateTypescriptOptions {
    */
   defaultSchema?: string;
   /**
-   * Formatter used on the generated output. Defaults to `oxfmt`, called
-   * inline. Callers on a latency-sensitive request path (e.g. postgres-meta's
-   * hosted `/generators/typescript` route) can substitute a worker-pool-backed
+   * Formatter used on the generated output. Defaults to `oxfmt`, an optional
+   * peer dependency that is imported only when this default runs, so callers
+   * that always pass their own formatter need not install it. Callers on a
+   * latency-sensitive request path (e.g. postgres-meta's hosted
+   * `/generators/typescript` route) can substitute a worker-pool-backed
    * formatter here instead of blocking the event loop on every call.
    */
   format?: (code: string) => Promise<string>;
 }
 
+const loadOxfmt = async () => {
+  try {
+    return await import("oxfmt");
+  } catch (error) {
+    throw new Error(
+      "oxfmt is not installed. It is an optional peer dependency that only the default formatter needs: install it, or pass a `format` option to generateTypescript.",
+      { cause: error },
+    );
+  }
+};
+
 const defaultFormat = async (code: string): Promise<string> => {
-  const { code: formatted, errors } = await oxfmtFormat("output.ts", code, {
+  const { format } = await loadOxfmt();
+  const { code: formatted, errors } = await format("output.ts", code, {
     semi: false,
     printWidth: 80,
   });

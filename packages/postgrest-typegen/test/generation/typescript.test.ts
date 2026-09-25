@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { cp, mkdir, mkdtemp, readdir, rm, symlink } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import {
   generateTypescript as rawGenerateTypescript,
@@ -1995,5 +1998,73 @@ describe("typescript typegen", () => {
 
     expect(calls).toHaveLength(1);
     expect(result).toBe("// formatted by custom formatter\n");
+  });
+});
+
+describe("oxfmt loading", () => {
+  const packageRoot = join(import.meta.dir, "..", "..");
+
+  const runProbe = async (root: string) => {
+    const proc = Bun.spawn({
+      cmd: [
+        "bun",
+        "--no-install",
+        join(root, "test", "generation", "oxfmt-load-probe.ts"),
+      ],
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      proc.stdout.text(),
+      proc.stderr.text(),
+      proc.exited,
+    ]);
+    expect(stderr).toBe("");
+    expect(exitCode).toBe(0);
+    return JSON.parse(stdout) as {
+      afterCallerFormat: string[];
+      afterDefaultFormat: string[];
+      defaultFormatError: string | null;
+    };
+  };
+
+  // A copy of the package whose node_modules links to every installed
+  // package except oxfmt, so only that import fails to resolve.
+  const copyPackageWithoutOxfmt = async () => {
+    const root = await mkdtemp(join(tmpdir(), "postgrest-typegen-no-oxfmt-"));
+    await cp(join(packageRoot, "src"), join(root, "src"), { recursive: true });
+    for (const file of ["fixtures.ts", "oxfmt-load-probe.ts"]) {
+      await cp(
+        join(packageRoot, "test", "generation", file),
+        join(root, "test", "generation", file),
+      );
+    }
+    const realModules = join(packageRoot, "node_modules");
+    const linkedModules = join(root, "node_modules");
+    await mkdir(linkedModules);
+    for (const entry of await readdir(realModules)) {
+      if (entry === "oxfmt" || entry === "@oxfmt") continue;
+      await symlink(join(realModules, entry), join(linkedModules, entry));
+    }
+    return root;
+  };
+
+  test("oxfmt is loaded only when the caller supplies no format", async () => {
+    const { afterCallerFormat, afterDefaultFormat, defaultFormatError } =
+      await runProbe(packageRoot);
+    expect(afterCallerFormat).toEqual([]);
+    expect(afterDefaultFormat).not.toEqual([]);
+    expect(defaultFormatError).toBeNull();
+  });
+
+  test("a caller-supplied format works without oxfmt installed, and the default explains what is missing", async () => {
+    const root = await copyPackageWithoutOxfmt();
+    try {
+      const { afterCallerFormat, defaultFormatError } = await runProbe(root);
+      expect(afterCallerFormat).toEqual([]);
+      expect(defaultFormatError).toContain("oxfmt is not installed");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });
