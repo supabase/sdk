@@ -240,6 +240,7 @@ branch on.
 ```bash
 bun install
 bun run check-types      # tsc --noEmit
+bun run check-types:consumer # the types a consumer bundling this package sees
 bun run format-and-lint  # oxfmt + oxlint
 bun run knip             # unused code and dependencies
 bun run build            # emits dist/

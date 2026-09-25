@@ -60,6 +60,7 @@ names). The names deliberately avoid the `Request` and `Response` globals.
 ```bash
 bun run build            # tsc --project tsconfig.build.json (emits dist/)
 bun run check-types      # tsc --noEmit
+bun run check-types:consumer # tsc --project tsconfig.consumer.json, the types a bundler sees
 bun run test             # bun:test; needs `deno` on PATH
 bun run format-and-lint  # oxfmt + oxlint check
 bun run knip             # unused-code/deps check
