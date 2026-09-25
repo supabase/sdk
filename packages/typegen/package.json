@@ -58,7 +58,7 @@
     "@types/node": "^26.3.0",
     "knip": "^6.32.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.83.0",
+    "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2002",
     "typescript": "7.0.2"
   },
