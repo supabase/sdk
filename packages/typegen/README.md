@@ -213,11 +213,12 @@ same file as `dart run supabase_typegen --local`).
 
 ```bash
 bun install
-bun run test            # bun:test, no Docker needed
-bun run check-types     # tsc --noEmit
-bun run format-and-lint # oxfmt + oxlint check
-bun run knip            # unused code and dependencies
-bun run build           # emits dist/
+bun run test                 # bun:test, no Docker needed
+bun run check-types          # tsc --noEmit
+bun run check-types:consumer # type-check the way the CLI does, through @tsconfig/bun
+bun run format-and-lint      # oxfmt + oxlint check
+bun run knip                 # unused code and dependencies
+bun run build                # emits dist/
 ```
 
 ## Releases
