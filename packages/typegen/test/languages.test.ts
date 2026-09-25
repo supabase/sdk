@@ -31,20 +31,12 @@ describe("languages", () => {
     });
   });
 
-  test("keeps the flag names supabase gen types already exposes", () => {
+  test("keeps the flag name supabase gen types already exposes", () => {
     const userOptions = (name: string) =>
       findLanguage(name)?.options.filter(
         (option) => option.audience === "user",
       );
-    expect(userOptions("typescript")).toEqual([
-      {
-        name: "postgrest-v9-compat",
-        audience: "user",
-        kind: "boolean",
-        default: false,
-        help: "Generate types compatible with PostgREST v9 and below.",
-      },
-    ]);
+    expect(userOptions("typescript")).toEqual([]);
     expect(userOptions("swift")).toEqual([
       {
         name: "swift-access-control",
@@ -60,14 +52,15 @@ describe("languages", () => {
     expect(findLanguage("dart")?.options).toEqual([]);
   });
 
-  test("typescript carries postgres-meta's settings as consumer options", () => {
+  test("typescript carries the consumers' settings as consumer options", () => {
     expect(
       findLanguage("typescript")
         ?.options.filter((option) => option.audience === "consumer")
-        .map((option) => [option.name, option.kind]),
+        .map((option) => [option.name, option.kind, option.default]),
     ).toEqual([
-      ["postgrest-version", "string"],
-      ["default-schema", "string"],
+      ["detect-one-to-one-relationships", "boolean", true],
+      ["postgrest-version", "string", undefined],
+      ["default-schema", "string", "public"],
     ]);
   });
 

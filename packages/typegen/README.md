@@ -53,13 +53,13 @@ both does not.
 
 ## Languages
 
-| `--lang`     | Runs           | How                                                     | Flags                                                                    |
-| ------------ | -------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | `--postgrest-v9-compat`; consumer: `postgrest-version`, `default-schema` |
-| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                          |
-| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                          |
-| `swift`      | in-process     | `generateSwift` from `@supabase/postgrest-typegen`      | `--swift-access-control internal\|public\|private\|package`              |
-| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                          |
+| `--lang`     | Runs           | How                                                     | Flags                                                                              |
+| ------------ | -------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
+| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
+| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
+| `swift`      | in-process     | `generateSwift` from `@supabase/postgrest-typegen`      | `--swift-access-control internal\|public\|private\|package`                        |
+| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
 The four in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
@@ -97,11 +97,17 @@ defaults; unknown names and values outside a choice raise an
 
 `audience` says who sets an option. `user` options are the CLI flags; render
 `options.filter((option) => option.audience === "user")`. `consumer` options
-are set by the calling program from its own configuration and never shown to
-users: postgres-meta's hosted route passes the project's PostgREST version as
-`postgrest-version` (emitted as `__InternalSupabase.PostgrestVersion`) and its
-`GENERATE_TYPES_DEFAULT_SCHEMA` as `default-schema`. The Supabase CLI passes
-neither today, which is what its output has always been.
+are set by the calling program from what it knows about the target and never
+shown to users. TypeScript has three: `detect-one-to-one-relationships`
+(default on; the consumer turns it off for PostgREST 9 and below, where
+one-to-one joins come back as arrays), `postgrest-version` (emitted as
+`__InternalSupabase.PostgrestVersion`) and `default-schema` (default
+`public`). postgres-meta's hosted route sets them from its
+`detect_one_to_one_relationships` query parameter, `POSTGREST_VERSION` and
+`GENERATE_TYPES_DEFAULT_SCHEMA`. The Supabase CLI already sniffs the local
+stack's PostgREST version and used to expose the first one inverted as
+`--postgrest-v9-compat`, usable only with `--db-url`; its adapter keeps that
+flag as a deprecated alias that sets the option to `false`.
 
 `generate` sorts the metadata with `sortGeneratorMetadata` itself, so callers
 may pass `introspect()`'s output directly. It returns the complete contents of

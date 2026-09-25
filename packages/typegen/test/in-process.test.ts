@@ -25,9 +25,9 @@ describe("in-process languages", () => {
     );
   });
 
-  test("typescript turns one-to-one detection off for --postgrest-v9-compat", async () => {
+  test("typescript lets a consumer turn one-to-one detection off", async () => {
     const output = await generate("typescript", {
-      "postgrest-v9-compat": true,
+      "detect-one-to-one-relationships": false,
     });
     expect(output).toBe(
       `${await generateTypescript(sorted, { detectOneToOneRelationships: false })}\n`,

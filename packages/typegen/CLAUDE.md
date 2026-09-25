@@ -38,19 +38,22 @@ lives in supabase-js.
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
 - `src/languages/index.ts` -- the four in-process entries and the `languages`
-  list. `typescript` exposes `postgrest-v9-compat` (inverse of
-  `detectOneToOneRelationships`) as a user option, `postgrest-version` and
-  `default-schema` as consumer options (what postgres-meta's hosted route
-  passes), and honors `host.format`; `swift` exposes `swift-access-control`
+  list. `typescript` has no user options; `detect-one-to-one-relationships`
+  (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
+  `postgrest-version` and `default-schema` are consumer options that the CLI
+  and postgres-meta's hosted route set from what they know about the target.
+  It honors `host.format`; `swift` exposes `swift-access-control`
   with all four generator levels, since postgres-meta's route always accepted
   them and extra choices change nothing for existing CLI users.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`.
 
 ## Invariants
 
-- Option `name`s are the CLI flag names verbatim. Existing users must see no
-  change in flags. `audience: "user"` options are flags; `"consumer"` options
-  are set by the calling program and never rendered.
+- User option `name`s are the CLI flag names verbatim (`swift-access-control`).
+  `audience: "user"` options are flags; `"consumer"` options are set by the
+  calling program and never rendered. `--postgrest-v9-compat` stopped being a
+  registry option on purpose: it targets PostgREST 9 (2022) and only ever
+  worked with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
 - `generate` always sorts before generating and returns complete file
   contents for every language. In-process entries append the final newline
   the CLI has always emitted (pg-meta's `console.log`); out-of-process
