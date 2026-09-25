@@ -22,20 +22,24 @@ names). The names deliberately avoid the `Request` and `Response` globals.
   (`entrypoint`/`import_map` relative to `supabase/`, `verify_jwt`,
   `enabled`). Disabled functions are dropped. Paths in the result are
   project-relative POSIX paths.
-- `src/deno.ts` -- the `DenoRunner` seam. `createLocalDenoRunner` runs the
-  `deno` binary on `PATH`. Planned next: a managed runner that downloads a
-  pinned, checksum-verified Deno release into a cache directory when none is
-  installed, and a `bin` command that prints the document. Note that the
-  `supabase/edge-runtime` image embeds Deno as a library only and ships no
-  `deno` executable, so a container-based runner would need the
-  `denoland/deno` image, not edge-runtime. Requests carry `cwd` relative to
-  `projectRoot` and args relative to `cwd`, so any runner can map paths.
-- `src/extract.ts` -- the producer. Per function: `deno doc --json --private
-  --no-lock` from the entrypoint's directory with `--config` (deno.json) or
-  `--import-map` (anything else) or `--no-config`; then follows `file:`
-  imports that contract types reference until every referenced project
-  module is documented; then normalizes. A function whose `deno doc` fails
-  stays in the result with `null` bodies and a diagnostic.
+- `src/deno.ts` -- the `DenoRunner` seam. `createSpawnDenoRunner(spawn,
+  { command })` wraps any process runner whose request/result shapes match
+  `@supabase/typegen`'s `Host.spawn` (declared structurally here, no
+  dependency on the registry); `createLocalDenoRunner` is that runner over
+  `node:child_process`. Requests carry `args` relative to `projectRoot`, and
+  every command runs from the project root, so the registry's "spawn in
+  `host.cwd`" rule holds. Planned next: a managed runner that downloads a
+  pinned, checksum-verified Deno release, and a `bin` command (SDK-1967).
+- `src/extract.ts` -- the producer. One `deno --version` probe first: when
+  it fails, every function is listed without a contract and one
+  project-level diagnostic (empty `slug`) explains why; nothing throws. Per
+  function: `deno doc --json --private --no-lock --no-config` from the
+  project root with `--import-map <path>` when the function has one (a
+  `deno.json` is a valid import map, and `--import-map` works from any
+  directory where `--config` did not); then follows `file:` imports that
+  contract types reference until every referenced project module is
+  documented; then normalizes. A function whose `deno doc` fails stays in
+  the result with `null` bodies and a diagnostic.
 - `src/normalize.ts` -- `deno doc` nodes to `ContractType`. Roots are
   inlined; every other named type becomes a declaration in `types`,
   referenced by name (so recursion works). Generics are instantiated

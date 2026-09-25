@@ -2,7 +2,11 @@ import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { createLocalDenoRunner, type DenoRunner } from "../src/deno.ts";
+import {
+  createLocalDenoRunner,
+  createSpawnDenoRunner,
+  type DenoRunner,
+} from "../src/deno.ts";
 import { extractEdgeFunctionsMetadata } from "../src/extract.ts";
 import {
   parseEdgeFunctionsMetadata,
@@ -56,11 +60,11 @@ describe("extractEdgeFunctionsMetadata", () => {
     ).toEqual(document);
   });
 
-  test("runs deno from the function directory with the import map the CLI would use", async () => {
-    const requests: { args: readonly string[]; cwd: string }[] = [];
+  test("runs deno from the project root with the import map the CLI would use", async () => {
+    const requests: (readonly string[])[] = [];
     const recording: DenoRunner = {
       run(request) {
-        requests.push({ args: request.args, cwd: request.cwd });
+        requests.push(request.args);
         return Promise.resolve({
           exitCode: 0,
           stdout: '{"version":2,"nodes":{}}',
@@ -92,42 +96,22 @@ describe("extractEdgeFunctionsMetadata", () => {
         },
       ],
     });
+    const doc = ["doc", "--json", "--private", "--no-lock", "--no-config"];
     expect(requests).toEqual([
-      {
-        cwd: "supabase/functions/greet",
-        args: [
-          "doc",
-          "--json",
-          "--private",
-          "--no-lock",
-          "--config",
-          "deno.json",
-          "index.ts",
-        ],
-      },
-      {
-        cwd: "supabase/custom",
-        args: [
-          "doc",
-          "--json",
-          "--private",
-          "--no-lock",
-          "--import-map",
-          "import_map.json",
-          "handler.ts",
-        ],
-      },
-      {
-        cwd: "supabase/functions/plain",
-        args: [
-          "doc",
-          "--json",
-          "--private",
-          "--no-lock",
-          "--no-config",
-          "index.ts",
-        ],
-      },
+      ["--version"],
+      [
+        ...doc,
+        "--import-map",
+        "supabase/functions/greet/deno.json",
+        "supabase/functions/greet/index.ts",
+      ],
+      [
+        ...doc,
+        "--import-map",
+        "supabase/custom/import_map.json",
+        "supabase/custom/handler.ts",
+      ],
+      [...doc, "supabase/functions/plain/index.ts"],
     ]);
   });
 
@@ -137,6 +121,13 @@ describe("extractEdgeFunctionsMetadata", () => {
     const requests: (readonly string[])[] = [];
     const windowsRunner: DenoRunner = {
       run(request) {
+        if (request.args[0] === "--version") {
+          return Promise.resolve({
+            exitCode: 0,
+            stdout: "deno 2.9.6",
+            stderr: "",
+          });
+        }
         requests.push(request.args);
         const nodes =
           requests.length === 1
@@ -219,7 +210,7 @@ describe("extractEdgeFunctionsMetadata", () => {
         },
       ],
     });
-    expect(requests[1]?.at(-1)).toBe("../_shared/types.ts");
+    expect(requests[1]?.at(-1)).toBe("supabase/functions/_shared/types.ts");
     expect(document.functions[0]?.requestBody).toEqual({
       kind: "reference",
       name: "Shared",
@@ -262,10 +253,57 @@ describe("extractEdgeFunctionsMetadata", () => {
     ]);
   });
 
-  test("a runner failure becomes a diagnostic on the function instead of an exception", async () => {
-    const failing: DenoRunner = {
+  test("a machine without Deno yields one project-level diagnostic and name-only functions", async () => {
+    const noDeno: DenoRunner = {
       run: () =>
-        Promise.resolve({ exitCode: 1, stdout: "", stderr: "error: boom\n" }),
+        Promise.resolve({
+          exitCode: 1,
+          stdout: "",
+          stderr: "spawn deno ENOENT\n",
+        }),
+    };
+    const document = await extractEdgeFunctionsMetadata({
+      projectRoot,
+      deno: noDeno,
+      functions: [
+        {
+          slug: "x",
+          entrypoint: "supabase/functions/x/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+        {
+          slug: "y",
+          entrypoint: "supabase/functions/y/index.ts",
+          importMap: null,
+          verifyJwt: true,
+        },
+      ],
+    });
+    expect(
+      document.functions.map((fn) => [fn.slug, fn.requestBody, fn.types]),
+    ).toEqual([
+      ["x", null, []],
+      ["y", null, []],
+    ]);
+    expect(document.diagnostics).toEqual([
+      {
+        slug: "",
+        path: "",
+        message:
+          "Deno is needed to read Edge Function contracts, but `deno --version` failed, so every function is listed without one:\nspawn deno ENOENT",
+      },
+    ]);
+  });
+
+  test("a deno doc failure becomes a diagnostic on the function instead of an exception", async () => {
+    const failing: DenoRunner = {
+      run: (request) =>
+        Promise.resolve(
+          request.args[0] === "--version"
+            ? { exitCode: 0, stdout: "deno 2.9.6", stderr: "" }
+            : { exitCode: 1, stdout: "", stderr: "error: boom\n" },
+        ),
     };
     const document = await extractEdgeFunctionsMetadata({
       projectRoot,
@@ -298,6 +336,55 @@ describe("extractEdgeFunctionsMetadata", () => {
           "deno doc failed for supabase/functions/x/index.ts:\nerror: boom",
       },
     ]);
+  });
+
+  test("createSpawnDenoRunner turns an unstartable command into a failed result", async () => {
+    const runner = createSpawnDenoRunner(() =>
+      Promise.reject(
+        Object.assign(new Error("spawn deno ENOENT"), { code: "ENOENT" }),
+      ),
+    );
+    expect(await runner.run({ args: ["--version"], projectRoot })).toEqual({
+      exitCode: 1,
+      stdout: "",
+      stderr: "spawn deno ENOENT",
+    });
+  });
+
+  test("createSpawnDenoRunner runs the command from the project root with colours off", async () => {
+    const seen: {
+      command: string;
+      cwd: string;
+      args: readonly string[];
+      noColor: string | undefined;
+    }[] = [];
+    const escape = String.fromCharCode(27);
+    const runner = createSpawnDenoRunner(
+      (request) => {
+        seen.push({
+          command: request.command,
+          cwd: request.cwd,
+          args: request.args,
+          noColor: request.env["NO_COLOR"],
+        });
+        return Promise.resolve({
+          exitCode: null,
+          stdout: "",
+          stderr: `${escape}[33mWarning${escape}[0m x`,
+        });
+      },
+      { command: "/opt/deno/bin/deno" },
+    );
+    const result = await runner.run({ args: ["doc", "a.ts"], projectRoot });
+    expect(seen).toEqual([
+      {
+        command: "/opt/deno/bin/deno",
+        cwd: projectRoot,
+        args: ["doc", "a.ts"],
+        noColor: "1",
+      },
+    ]);
+    expect(result).toEqual({ exitCode: 1, stdout: "", stderr: "Warning x" });
   });
 });
 

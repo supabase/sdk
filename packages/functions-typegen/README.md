@@ -59,8 +59,8 @@ supabase/config.toml + supabase/functions/*   discovery (same rules as the CLI)
                  │
                  ▼
      deno doc --json --private <entrypoint>   one run per function, from the
-                 │                            function directory, with its
-                 │                            deno.json or import map
+                 │                            project root, with the function's
+                 │                            import map (deno.json or other)
                  ▼
    normalize exported RequestBody/ResponseBody
    and every project type they reach
@@ -105,29 +105,29 @@ const json = serializeEdgeFunctionsMetadata(metadata);
 
 ### Bring your own Deno
 
-The extractor only needs something that can run `deno`. `createLocalDenoRunner`
-runs the binary found on `PATH`. Anything else that can run Deno, a pinned
-binary the caller downloaded, the current process when it is itself Deno, or
-a `denoland/deno` container, plugs in by implementing `DenoRunner`:
+The extractor only needs something that can run `deno` from the project root.
+`createLocalDenoRunner` runs the binary found on `PATH` through
+`node:child_process`. A consumer that already owns a process runner wraps it
+with `createSpawnDenoRunner`; the request and result shapes are the same as
+the `Host.spawn` of `@supabase/typegen`, so the registry passes its host's
+`spawn` straight in:
 
 ```ts
-import type { DenoRunner } from "@supabase/functions-typegen";
+import { createSpawnDenoRunner } from "@supabase/functions-typegen";
 
-const runner: DenoRunner = {
-  async run({ args, cwd, projectRoot }) {
-    // Run `deno ${args}` with the working directory at `${projectRoot}/${cwd}`.
-    // Every path in `args` is relative to `cwd`, so a runner that executes
-    // somewhere else (a container, another machine) only has to map the root.
-    ...
-    return { exitCode, stdout, stderr };
-  },
-};
+const deno = createSpawnDenoRunner(host.spawn, { env: host.env, signal: host.signal });
+// Or point it at a specific executable, such as a downloaded release:
+const pinned = createSpawnDenoRunner(host.spawn, { command: "/path/to/deno" });
 ```
+
+Before the first `deno doc`, the extractor runs `deno --version` once. When
+that fails, the document lists every function without a contract and carries
+one project-level diagnostic (empty `slug`) saying so, and nothing is thrown,
+so a consumer that also generates database types still gets those.
 
 Planned next: a managed runner that downloads a pinned, checksum-verified
 Deno release when none is installed, and a `functions-typegen` command so the
-package can be run directly with `npx`, `bunx` or `deno run npm:`, which is
-how SDK generators without a Node toolchain are expected to call it.
+package can be run directly with `npx`, `bunx` or `deno run npm:`.
 
 ### Discovery and normalization on their own
 

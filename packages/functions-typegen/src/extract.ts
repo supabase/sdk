@@ -47,16 +47,55 @@ export async function extractEdgeFunctionsMetadata(
     (await discoverFunctions({ projectRoot: options.projectRoot }));
   const extracted: EdgeFunction[] = [];
   const diagnostics: Diagnostic[] = [];
+  const denoProblem =
+    functions.length === 0 ? undefined : await probeDeno(options);
   for (const fn of functions) {
+    if (denoProblem !== undefined) {
+      extracted.push(withoutContract(fn));
+      continue;
+    }
     const result = await extractFunction(fn, options);
     extracted.push(result.function);
     diagnostics.push(...result.diagnostics);
+  }
+  if (denoProblem !== undefined) {
+    diagnostics.push({ slug: "", path: "", message: denoProblem });
   }
   return sortEdgeFunctionsMetadata({
     version: EDGE_FUNCTIONS_METADATA_VERSION,
     functions: extracted,
     diagnostics,
   });
+}
+
+/**
+ * One `deno --version` before any `deno doc`, so a machine without Deno gets
+ * a single project-level diagnostic and every function listed by name,
+ * instead of the same failure repeated per function.
+ */
+async function probeDeno(
+  options: ExtractEdgeFunctionsMetadataOptions,
+): Promise<string | undefined> {
+  const result = await options.deno.run({
+    args: ["--version"],
+    projectRoot: options.projectRoot,
+  });
+  if (result.exitCode === 0) {
+    return undefined;
+  }
+  return `Deno is needed to read Edge Function contracts, but \`deno --version\` failed, so every function is listed without one:\n${result.stderr.trim()}`;
+}
+
+function withoutContract(fn: DiscoveredFunction): EdgeFunction {
+  return {
+    slug: fn.slug,
+    entrypoint: fn.entrypoint,
+    importMap: fn.importMap,
+    verifyJwt: fn.verifyJwt,
+    requestBody: null,
+    responseBody: null,
+    types: [],
+  };
 }
 
 interface FunctionResult {
@@ -68,15 +107,7 @@ async function extractFunction(
   fn: DiscoveredFunction,
   options: ExtractEdgeFunctionsMetadataOptions,
 ): Promise<FunctionResult> {
-  const base: EdgeFunction = {
-    slug: fn.slug,
-    entrypoint: fn.entrypoint,
-    importMap: fn.importMap,
-    verifyJwt: fn.verifyJwt,
-    requestBody: null,
-    responseBody: null,
-    types: [],
-  };
+  const base = withoutContract(fn);
   const documented = await documentFunction(fn, options);
   if ("error" in documented) {
     return {
@@ -104,34 +135,34 @@ async function extractFunction(
 interface DocumentedFunction {
   readonly entrypointUrl: string;
   readonly modules: Map<string, DocModule>;
-  /** Path of the project root as the Deno runner sees it. */
+  /** POSIX path of the project root as it appears in the documented URLs. */
   readonly projectRootPath: string;
 }
 
 /**
- * Run `deno doc` on the entrypoint from its own directory, so a `deno.json`
- * next to it resolves the way it does for the edge runtime, then keep
- * documenting the project modules that contract types are imported from
- * until none are missing.
+ * Run `deno doc` on the entrypoint from the project root, with the function's
+ * import map passed as `--import-map` (a `deno.json` is a valid import map)
+ * and `--no-config`, so no other configuration on disk changes resolution.
+ * Then keep documenting the project modules that contract types are imported
+ * from until none are missing.
  */
 async function documentFunction(
   fn: DiscoveredFunction,
   options: ExtractEdgeFunctionsMetadataOptions,
 ): Promise<DocumentedFunction | { error: string }> {
-  const cwd = posix.dirname(fn.entrypoint);
-  const entryFile = posix.basename(fn.entrypoint);
   const args = [
     "doc",
     "--json",
     "--private",
     "--no-lock",
-    ...importMapArguments(fn, cwd),
+    "--no-config",
+    ...(fn.importMap === null ? [] : ["--import-map", fn.importMap]),
   ];
 
   const modules = new Map<string, DocModule>();
-  let targets = [entryFile];
+  let targets = [fn.entrypoint];
   let entrypointUrl: string | undefined;
-  let entryDirectoryPath: string | undefined;
+  let projectRootPath: string | undefined;
   for (
     let round = 0;
     round < MAX_IMPORT_ROUNDS && targets.length > 0;
@@ -139,7 +170,6 @@ async function documentFunction(
   ) {
     const result = await options.deno.run({
       args: [...args, ...targets],
-      cwd,
       projectRoot: options.projectRoot,
     });
     if (result.exitCode !== 0) {
@@ -147,9 +177,9 @@ async function documentFunction(
         error: `deno doc failed for ${fn.entrypoint}:\n${result.stderr.trim()}`,
       };
     }
-    let output: DocOutput;
+    let output: unknown;
     try {
-      output = JSON.parse(result.stdout) as DocOutput;
+      output = JSON.parse(result.stdout);
     } catch {
       return {
         error: `deno doc produced no JSON for ${fn.entrypoint}:\n${result.stderr.trim()}`,
@@ -165,25 +195,24 @@ async function documentFunction(
     }
     if (entrypointUrl === undefined) {
       entrypointUrl = Object.keys(output.nodes).find((url) =>
-        url.endsWith(`/${entryFile}`),
+        url.endsWith(`/${fn.entrypoint}`),
       );
       if (entrypointUrl === undefined) {
         return { error: `deno doc did not document ${fn.entrypoint}.` };
       }
-      entryDirectoryPath = posix.dirname(urlPath(entrypointUrl));
+      const entrypointPath = urlPath(entrypointUrl);
+      projectRootPath = entrypointPath.slice(
+        0,
+        entrypointPath.length - fn.entrypoint.length - 1,
+      );
     }
     targets = missingProjectModules(modules).map((url) =>
-      posix.relative(entryDirectoryPath!, urlPath(url)),
+      posix.relative(projectRootPath!, urlPath(url)),
     );
   }
-  if (entrypointUrl === undefined || entryDirectoryPath === undefined) {
+  if (entrypointUrl === undefined || projectRootPath === undefined) {
     return { error: `deno doc did not document ${fn.entrypoint}.` };
   }
-  const depth = cwd.split("/").length;
-  const projectRootPath = posix.join(
-    entryDirectoryPath,
-    ...Array<string>(depth).fill(".."),
-  );
   return { entrypointUrl, modules, projectRootPath };
 }
 
@@ -201,15 +230,6 @@ function isDocOutput(value: unknown): value is DocOutput {
     record.nodes !== null &&
     !Array.isArray(record.nodes)
   );
-}
-
-function importMapArguments(fn: DiscoveredFunction, cwd: string): string[] {
-  if (fn.importMap === null) {
-    return ["--no-config"];
-  }
-  const relativePath = posix.relative(cwd, fn.importMap);
-  const isDenoConfig = /deno\.jsonc?$/.test(fn.importMap);
-  return [isDenoConfig ? "--config" : "--import-map", relativePath];
 }
 
 /**
