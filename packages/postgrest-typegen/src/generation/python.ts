@@ -93,8 +93,7 @@ class PythonContext {
     );
     this.columns = columns.reduce(
       (acc, curr) => {
-        acc[curr.table_id] ??= [];
-        acc[curr.table_id].push(curr);
+        (acc[curr.table_id] ??= []).push(curr);
         return acc;
       },
       {} as Record<number, PostgresColumn[]>,
@@ -109,16 +108,28 @@ class PythonContext {
     );
   }
 
+  getSchema(name: string): PostgresSchema {
+    const schema = this.schemas[name];
+    if (!schema) {
+      throw new Error(
+        `Schema ${JSON.stringify(name)} is missing from the generator metadata`,
+      );
+    }
+    return schema;
+  }
+
   resolveTypeName(name: string, typeSchema: string): string {
     const qualified = qualifiedTypeName(typeSchema, name);
-    if (qualified in this.user_enums) {
-      return this.user_enums[qualified].name;
+    const userEnum = this.user_enums[qualified];
+    if (userEnum) {
+      return userEnum.name;
     }
-    if (name in PY_TYPE_MAP) {
-      return PY_TYPE_MAP[name];
+    const mappedType = PY_TYPE_MAP[name];
+    if (mappedType !== undefined) {
+      return mappedType;
     }
-    if (qualified in this.types) {
-      const type = this.types[qualified];
+    const type = this.types[qualified];
+    if (type) {
       return `${formatForPyClassName(type.schema)}${formatForPyClassName(type.name)}`;
     }
     return "Any";
@@ -158,7 +169,7 @@ class PythonContext {
       },
     );
 
-    const schema = this.schemas[type.schema];
+    const schema = this.getSchema(type.schema);
     return new PythonBaseModel(type.name, schema, attributeEntries);
   }
 
@@ -192,7 +203,7 @@ class PythonContext {
   tableToClass(
     table: PostgresTable,
   ): [PythonBaseModel, PythonTypedDict, PythonTypedDict] {
-    const schema = this.schemas[table.schema];
+    const schema = this.getSchema(table.schema);
     const select = new PythonBaseModel(
       table.name,
       schema,
@@ -217,7 +228,7 @@ class PythonContext {
     const attributes = this.columnsToClassAttrs(view.id);
     return new PythonBaseModel(
       view.name,
-      this.schemas[view.schema],
+      this.getSchema(view.schema),
       attributes,
     );
   }
@@ -226,7 +237,7 @@ class PythonContext {
     const attributes = this.columnsToClassAttrs(matview.id);
     return new PythonBaseModel(
       matview.name,
-      this.schemas[matview.schema],
+      this.getSchema(matview.schema),
       attributes,
     );
   }
@@ -463,7 +474,7 @@ function formatForPyClassName(name: string): string {
     .split(/[^a-zA-Z0-9]/)
     .map((word) => {
       if (word) {
-        return `${word[0].toUpperCase()}${word.slice(1)}`;
+        return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
       } else {
         return "";
       }

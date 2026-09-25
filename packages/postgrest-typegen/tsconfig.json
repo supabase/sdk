@@ -5,7 +5,8 @@
   ],
   "compilerOptions": {
     "noEmit": true,
-    "types": ["node", "bun"]
+    "types": ["node", "bun"],
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src", "test", "scripts"]
 }

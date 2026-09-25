@@ -55,6 +55,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "check-types": "tsc --noEmit",
+    "check-types:consumer": "tsc --project tsconfig.consumer.json",
     "format-and-lint": "oxfmt --check . && oxlint --deny-warnings src test scripts",
     "format-and-lint:fix": "oxfmt . && oxlint --fix src test scripts",
     "knip": "knip",
@@ -66,6 +67,7 @@
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",
+    "@tsconfig/bun": "^1.0.11",
     "@tsconfig/node-ts": "^23.6.4",
     "@tsconfig/node24": "^24.0.5",
     "@types/bun": "^1.4.0",

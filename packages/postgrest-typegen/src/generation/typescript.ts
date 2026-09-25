@@ -162,10 +162,26 @@ export const generateTypescript = async (
     tablesNamesByTableId[tableLike.id] = tableLike.name;
   }
   for (const column of columns) {
-    if (column.table_id in columnsByTableId) {
-      columnsByTableId[column.table_id].push(column);
-    }
+    columnsByTableId[column.table_id]?.push(column);
   }
+  const getColumns = (tableId: number): PostgresColumn[] => {
+    const tableColumns = columnsByTableId[tableId];
+    if (!tableColumns) {
+      throw new Error(
+        `Relation ${tableId} is missing from the generator metadata`,
+      );
+    }
+    return tableColumns;
+  };
+  const getSchemaIntrospection = (schemaName: string) => {
+    const schemaIntrospection = introspectionBySchema[schemaName];
+    if (!schemaIntrospection) {
+      throw new Error(
+        `Schema ${JSON.stringify(schemaName)} is missing from the generator metadata`,
+      );
+    }
+    return schemaIntrospection;
+  };
 
   for (const type of types) {
     typesById.set(type.id, type);
@@ -173,13 +189,11 @@ export const generateTypescript = async (
     if (type.type_relation_id) {
       relationTypeByIds.set(type.id, type);
     }
-    if (type.schema in introspectionBySchema) {
-      if (type.enums.length > 0) {
-        introspectionBySchema[type.schema].enums.push(type);
-      }
-      if (type.attributes.length > 0) {
-        introspectionBySchema[type.schema].compositeTypes.push(type);
-      }
+    if (type.enums.length > 0) {
+      introspectionBySchema[type.schema]?.enums.push(type);
+    }
+    if (type.attributes.length > 0) {
+      introspectionBySchema[type.schema]?.compositeTypes.push(type);
     }
   }
 
@@ -233,41 +247,33 @@ export const generateTypescript = async (
   }
 
   for (const table of tables) {
-    if (table.schema in introspectionBySchema) {
-      introspectionBySchema[table.schema].tables.push({
-        table,
-        relationships: getRelationships(table),
-      });
-    }
+    introspectionBySchema[table.schema]?.tables.push({
+      table,
+      relationships: getRelationships(table),
+    });
   }
   for (const table of foreignTables) {
-    if (table.schema in introspectionBySchema) {
-      introspectionBySchema[table.schema].tables.push({
-        table,
-        relationships: getRelationships(table),
-      });
-    }
+    introspectionBySchema[table.schema]?.tables.push({
+      table,
+      relationships: getRelationships(table),
+    });
   }
   for (const view of views) {
-    if (view.schema in introspectionBySchema) {
-      introspectionBySchema[view.schema].views.push({
-        view,
-        relationships: getRelationships(view),
-      });
-    }
+    introspectionBySchema[view.schema]?.views.push({
+      view,
+      relationships: getRelationships(view),
+    });
   }
   for (const materializedView of materializedViews) {
-    if (materializedView.schema in introspectionBySchema) {
-      introspectionBySchema[materializedView.schema].views.push({
-        view: {
-          ...materializedView,
-          is_updatable: false,
-          is_insert_enabled: false,
-          is_update_enabled: false,
-        },
-        relationships: getRelationships(materializedView),
-      });
-    }
+    introspectionBySchema[materializedView.schema]?.views.push({
+      view: {
+        ...materializedView,
+        is_updatable: false,
+        is_insert_enabled: false,
+        is_update_enabled: false,
+      },
+      relationships: getRelationships(materializedView),
+    });
   }
   // Helper function to get table/view name from relation id
   const getTableNameFromRelationId = (
@@ -276,20 +282,22 @@ export const generateTypescript = async (
   ): string | null => {
     if (!relationId) return null;
 
-    if (tablesNamesByTableId[relationId])
-      return tablesNamesByTableId[relationId];
+    const tableName = tablesNamesByTableId[relationId];
+    if (tableName) return tableName;
     // if it's a composite type we use the type name as relation name to allow sub-selecting fields of the composite type
     const reltype = returnTypeId ? relationTypeByIds.get(returnTypeId) : null;
     return reltype ? reltype.name : null;
   };
 
   for (const func of functions) {
-    if (func.schema in introspectionBySchema) {
+    const schemaIntrospection = introspectionBySchema[func.schema];
+    if (schemaIntrospection) {
       // Get all input args (in, inout, variadic modes)
       const inArgs = func.args.filter(({ mode }) =>
         VALID_FUNCTION_ARGS_MODE.has(mode),
       );
 
+      const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
       if (
         // Case 1: Function has no parameters
         inArgs.length === 0 ||
@@ -308,23 +316,23 @@ export const generateTypescript = async (
         // Case 4: Single unnamed parameter of valid type (json, jsonb, text)
         // Exclude all functions definitions that have only one single argument unnamed argument that isn't
         // a json/jsonb/text as it won't be considered by PostgREST
-        (inArgs.length === 1 &&
-          inArgs[0].name === "" &&
-          (VALID_UNNAMED_FUNCTION_ARG_TYPES.has(inArgs[0].type_id) ||
+        (soleInArg &&
+          soleInArg.name === "" &&
+          (VALID_UNNAMED_FUNCTION_ARG_TYPES.has(soleInArg.type_id) ||
             // OR if the function have a single unnamed args which is another table (embeded function)
-            (relationTypeByIds.get(inArgs[0].type_id) &&
+            (relationTypeByIds.get(soleInArg.type_id) &&
               getTableNameFromRelationId(
                 func.return_type_relation_id,
                 func.return_type_id,
               )) ||
             // OR if the function takes a table row but doesn't qualify as embedded (for error reporting)
-            (relationTypeByIds.get(inArgs[0].type_id) &&
+            (relationTypeByIds.get(soleInArg.type_id) &&
               !getTableNameFromRelationId(
                 func.return_type_relation_id,
                 func.return_type_id,
               ))))
       ) {
-        introspectionBySchema[func.schema].functions.push({ fn: func, inArgs });
+        schemaIntrospection.functions.push({ fn: func, inArgs });
       }
     }
   }
@@ -332,20 +340,18 @@ export const generateTypescript = async (
   // combines tables + foreign tables, `.views` combines views + materialized
   // views — so the cross-collection name sort can't be expressed by the
   // single-collection `sortGeneratorMetadata` pass and stays here.
-  for (const schema in introspectionBySchema) {
-    introspectionBySchema[schema].tables.sort((a, b) =>
+  for (const schemaIntrospection of Object.values(introspectionBySchema)) {
+    schemaIntrospection.tables.sort((a, b) =>
       compareStrings(a.table.name, b.table.name),
     );
-    introspectionBySchema[schema].views.sort((a, b) =>
+    schemaIntrospection.views.sort((a, b) =>
       compareStrings(a.view.name, b.view.name),
     );
-    introspectionBySchema[schema].functions.sort((a, b) =>
+    schemaIntrospection.functions.sort((a, b) =>
       compareStrings(a.fn.name, b.fn.name),
     );
-    introspectionBySchema[schema].enums.sort((a, b) =>
-      compareStrings(a.name, b.name),
-    );
-    introspectionBySchema[schema].compositeTypes.sort((a, b) =>
+    schemaIntrospection.enums.sort((a, b) => compareStrings(a.name, b.name));
+    schemaIntrospection.compositeTypes.sort((a, b) =>
       compareStrings(a.name, b.name),
     );
   }
@@ -376,8 +382,9 @@ export const generateTypescript = async (
     }
     // Case 2: if the function has a single table argument, we need to add SetofOptions to allow selecting sub fields of the table
     // and set the right "from" and "to" values to allow selecting from a table row
-    if (fn.args.length === 1) {
-      const relationType = relationTypeByIds.get(fn.args[0].type_id);
+    const soleArg = fn.args.length === 1 ? fn.args[0] : undefined;
+    if (soleArg) {
+      const relationType = relationTypeByIds.get(soleArg.type_id);
 
       // Only add SetofOptions for functions with table arguments (embedded functions)
       // or specific functions that RETURNS table-name
@@ -445,7 +452,7 @@ export const generateTypescript = async (
       )?.view;
     if (relation) {
       return `{
-              ${columnsByTableId[relation.id]
+              ${getColumns(relation.id)
                 .map((column) =>
                   generateColumnTsDefinition(
                     schema,
@@ -476,10 +483,11 @@ export const generateTypescript = async (
     fn: PostgresFunction,
     inArgs: PostgresFunction["args"],
   ) => {
+    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
     if (
-      inArgs.length === 1 &&
-      inArgs[0].name === "" &&
-      relationTypeByIds.get(inArgs[0].type_id) &&
+      soleInArg &&
+      soleInArg.name === "" &&
+      relationTypeByIds.get(soleInArg.type_id) &&
       !getTableNameFromRelationId(fn.return_type_relation_id, fn.return_type_id)
     ) {
       return true;
@@ -496,6 +504,7 @@ export const generateTypescript = async (
   ) => {
     // If there is a single function definition, there is no conflict
     if (fns.length <= 1) return null;
+    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
 
     // Generic conflict detection patterns
     // Pattern 1: No-args vs default-args conflicts
@@ -503,16 +512,18 @@ export const generateTypescript = async (
       const conflictingFns = fns.filter(
         ({ fn: otherFn, inArgs: otherInArgs }) => {
           if (otherFn === fn) return false;
+          const otherSoleInArg =
+            otherInArgs.length === 1 ? otherInArgs[0] : undefined;
           return (
-            otherInArgs.length === 1 &&
-            otherInArgs[0].name === "" &&
-            otherInArgs[0].has_default
+            otherSoleInArg &&
+            otherSoleInArg.name === "" &&
+            otherSoleInArg.has_default
           );
         },
       );
 
-      if (conflictingFns.length > 0) {
-        const conflictingFn = conflictingFns[0];
+      const conflictingFn = conflictingFns[0];
+      if (conflictingFn) {
         const returnTypeName =
           typesById.get(conflictingFn.fn.return_type_id)?.name || "unknown";
         return `Could not choose the best candidate function between: ${schema.name}.${fn.name}(), ${schema.name}.${fn.name}( => ${returnTypeName}). Try renaming the parameters or the function itself in the database so function overloading can be resolved`;
@@ -520,14 +531,16 @@ export const generateTypescript = async (
     }
 
     // Pattern 2: Same parameter name but different types (unresolvable overloads)
-    if (inArgs.length === 1 && inArgs[0].name !== "") {
+    if (soleInArg && soleInArg.name !== "") {
       const conflictingFns = fns.filter(
         ({ fn: otherFn, inArgs: otherInArgs }) => {
           if (otherFn === fn) return false;
+          const otherSoleInArg =
+            otherInArgs.length === 1 ? otherInArgs[0] : undefined;
           return (
-            otherInArgs.length === 1 &&
-            otherInArgs[0].name === inArgs[0].name &&
-            otherInArgs[0].type_id !== inArgs[0].type_id
+            otherSoleInArg &&
+            otherSoleInArg.name === soleInArg.name &&
+            otherSoleInArg.type_id !== soleInArg.type_id
           );
         },
       );
@@ -711,11 +724,12 @@ export const generateTypescript = async (
     inArgs: PostgresFunction["args"],
     relation: { id: number; name: string },
   ) => {
-    if (inArgs.length === 1) {
+    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
+    if (soleInArg) {
       // `relationTypeByIds` is already "types backed by a relation", so a hit
       // identifies the relation regardless of how the argument was spelled.
       // A `variadic` argument is an array type and never appears here.
-      const argType = relationTypeByIds.get(inArgs[0]!.type_id);
+      const argType = relationTypeByIds.get(soleInArg.type_id);
       if (argType) {
         return argType.type_relation_id === relation.id;
       }
@@ -738,7 +752,7 @@ export type Database = {
       functions: schemaFunctions,
       enums: schemaEnums,
       compositeTypes: schemaCompositeTypes,
-    } = introspectionBySchema[schema.name];
+    } = getSchemaIntrospection(schema.name);
     return `${JSON.stringify(schema.name)}: {
           Tables: {
             ${
@@ -751,7 +765,7 @@ export type Database = {
                     }) => `${JSON.stringify(table.name)}: {
                   Row: {
                     ${[
-                      ...columnsByTableId[table.id].map((column) =>
+                      ...getColumns(table.id).map((column) =>
                         generateColumnTsDefinition(
                           schema,
                           {
@@ -777,7 +791,7 @@ export type Database = {
                     ]}
                   }
                   Insert: {
-                    ${columnsByTableId[table.id].map((column) => {
+                    ${getColumns(table.id).map((column) => {
                       if (
                         column.identity_generation === "ALWAYS" ||
                         column.is_generated
@@ -801,7 +815,7 @@ export type Database = {
                     })}
                   }
                   Update: {
-                    ${columnsByTableId[table.id].map((column) => {
+                    ${getColumns(table.id).map((column) => {
                       if (
                         column.identity_generation === "ALWAYS" ||
                         column.is_generated
@@ -840,7 +854,7 @@ export type Database = {
                     }) => `${JSON.stringify(view.name)}: {
                   Row: {
                     ${[
-                      ...columnsByTableId[view.id].map((column) =>
+                      ...getColumns(view.id).map((column) =>
                         generateColumnTsDefinition(
                           schema,
                           {
@@ -871,7 +885,7 @@ export type Database = {
                     // version 1 documents) falls back to the old gate.
                     (view.is_insert_enabled ?? view.is_updatable)
                       ? `Insert: {
-                           ${columnsByTableId[view.id].map((column) => {
+                           ${getColumns(view.id).map((column) => {
                              if (!column.is_updatable) {
                                return `${JSON.stringify(column.name)}?: never`;
                              }
@@ -893,7 +907,7 @@ export type Database = {
                   }${
                     (view.is_update_enabled ?? view.is_updatable)
                       ? `Update: {
-                           ${columnsByTableId[view.id].map((column) => {
+                           ${getColumns(view.id).map((column) => {
                              if (!column.is_updatable) {
                                return `${JSON.stringify(column.name)}?: never`;
                              }
@@ -926,14 +940,13 @@ export type Database = {
               }
               const schemaFunctionsGroupedByName = schemaFunctions.reduce(
                 (acc, curr) => {
-                  acc[curr.fn.name] ??= [];
-                  acc[curr.fn.name].push(curr);
+                  (acc[curr.fn.name] ??= []).push(curr);
                   return acc;
                 },
                 {} as Record<string, typeof schemaFunctions>,
               );
-              for (const fnName in schemaFunctionsGroupedByName) {
-                schemaFunctionsGroupedByName[fnName].sort(
+              for (const fns of Object.values(schemaFunctionsGroupedByName)) {
+                fns.sort(
                   (a, b) =>
                     compareStrings(a.fn.argument_types, b.fn.argument_types) ||
                     compareStrings(a.fn.return_type, b.fn.return_type),
@@ -1100,7 +1113,7 @@ export type CompositeTypes<
 
 export const Constants = {
   ${schemas.map((schema) => {
-    const schemaEnums = introspectionBySchema[schema.name].enums;
+    const schemaEnums = getSchemaIntrospection(schema.name).enums;
     return `${JSON.stringify(schema.name)}: {
           Enums: {
             ${schemaEnums.map(
@@ -1176,10 +1189,9 @@ export const pgTypeToTsType = (
     const enumTypes = types.filter(
       (type) => type.name === pgType && type.enums.length > 0,
     );
-    if (enumTypes.length > 0) {
-      const enumType =
-        enumTypes.find((type) => type.schema === preferredSchema) ||
-        enumTypes[0];
+    const enumType =
+      enumTypes.find((type) => type.schema === preferredSchema) ?? enumTypes[0];
+    if (enumType) {
       if (schemas.some(({ name }) => name === enumType.schema)) {
         return `Database[${JSON.stringify(enumType.schema)}]['Enums'][${JSON.stringify(
           enumType.name,
@@ -1191,10 +1203,10 @@ export const pgTypeToTsType = (
     const compositeTypes = types.filter(
       (type) => type.name === pgType && type.attributes.length > 0,
     );
-    if (compositeTypes.length > 0) {
-      const compositeType =
-        compositeTypes.find((type) => type.schema === preferredSchema) ||
-        compositeTypes[0];
+    const compositeType =
+      compositeTypes.find((type) => type.schema === preferredSchema) ??
+      compositeTypes[0];
+    if (compositeType) {
       if (schemas.some(({ name }) => name === compositeType.schema)) {
         return `Database[${JSON.stringify(
           compositeType.schema,

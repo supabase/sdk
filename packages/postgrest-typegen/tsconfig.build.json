@@ -6,7 +6,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "declaration": true,
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "noUncheckedIndexedAccess": true
   },
   "include": ["./src"],
   "exclude": ["**/*.test.ts"]

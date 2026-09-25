@@ -24,8 +24,7 @@ export const generateGo = ({
 }: GeneratorMetadata): string => {
   const columnsByTableId = columns.reduce(
     (acc, curr) => {
-      acc[curr.table_id] ??= [];
-      acc[curr.table_id].push(curr);
+      (acc[curr.table_id] ??= []).push(curr);
       return acc;
     },
     {} as Record<string, PostgresColumn[]>,
@@ -110,7 +109,7 @@ function formatForGoTypeName(name: string): string {
     .split(/[^a-zA-Z0-9]/)
     .map((word) => {
       if (word) {
-        return `${word[0].toUpperCase()}${word.slice(1)}`;
+        return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
       } else {
         return "";
       }

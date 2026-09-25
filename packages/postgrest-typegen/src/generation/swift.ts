@@ -303,9 +303,9 @@ export const generateSwift = (
     ]),
   );
 
-  columns
-    .filter((c) => c.table_id in columnsByTableId)
-    .forEach((c) => columnsByTableId[c.table_id].push(c));
+  for (const column of columns) {
+    columnsByTableId[column.table_id]?.push(column);
+  }
 
   let output = [
     "import Foundation",
@@ -492,7 +492,7 @@ function formatForSwiftTypeName(name: string): string {
       .split(/[^a-zA-Z0-9]+/)
       .map((word) => {
         if (word) {
-          return `${word[0].toUpperCase()}${word.slice(1)}`;
+          return `${word.charAt(0).toUpperCase()}${word.slice(1)}`;
         } else {
           return "";
         }
