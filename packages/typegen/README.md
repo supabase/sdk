@@ -155,7 +155,10 @@ Windows it resolves the command through `PATH` and `PATHEXT` and runs `.bat`
 and `.cmd` scripts through the command interpreter, since Flutter ships `dart`
 as `dart.bat` there and `spawn` cannot start those directly; a command it
 cannot find is reported as `ENOENT` like everywhere else. A host built on
-another process runner needs the same treatment.
+another process runner needs the same treatment; `resolveWindowsCommand`,
+`isWindowsScript` and `quoteForCmd` are exported so it builds the same command
+line. A path holding `%` cannot be passed to `cmd.exe` reliably, since `%VAR%`
+expands even inside quotes.
 
 ### Errors
 

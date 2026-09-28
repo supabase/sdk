@@ -37,7 +37,8 @@ const hasDirectory = (command: string): boolean =>
   command.includes("\\") ||
   command.includes("/");
 
-const isWindowsScript = (file: string): boolean =>
+/** Whether `file` is a `.bat` or `.cmd` script, which only the command interpreter can start. */
+export const isWindowsScript = (file: string): boolean =>
   WINDOWS_SCRIPT_EXTENSIONS.has(windowsPath.extname(file).toLowerCase());
 
 /**
@@ -70,8 +71,15 @@ export function resolveWindowsCommand(
   return undefined;
 }
 
-const quoteForCmd = (argument: string): string =>
-  /\s/.test(argument) ? `"${argument}"` : argument;
+/**
+ * Quotes one token of a `cmd.exe /c` command line. Whitespace and the
+ * interpreter's metacharacters are safe inside double quotes; `%VAR%` still
+ * expands there and cmd.exe offers no escape for it on a command line, so a
+ * path holding `%` cannot be passed reliably. Hosts that run a Windows script
+ * through a shell should quote with this so every host builds the same line.
+ */
+export const quoteForCmd = (token: string): string =>
+  /[\s&|<>^()!"]/.test(token) ? `"${token}"` : token;
 
 /**
  * Decides how to start `command`. Everywhere but Windows that is the command
