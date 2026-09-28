@@ -45,7 +45,10 @@ lives in supabase-js.
   It honors `host.format`; `swift` exposes `swift-access-control`
   with all four generator levels, since postgres-meta's route always accepted
   them and extra choices change nothing for existing CLI users.
-- `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`.
+- `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`,
+  plus the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
+  `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts
+  start a `.bat` through cmd.exe with the same command line.
 
 ## Invariants
 

@@ -16,7 +16,9 @@ import {
 import {
   createNodeHost,
   dart,
+  isWindowsScript,
   planSpawn,
+  quoteForCmd,
   resolveWindowsCommand,
   ToolFailedError,
   ToolNotInstalledError,
@@ -174,5 +176,53 @@ describe("planSpawn", () => {
     expect(
       resolveWindowsCommand("dart", { ...env, PATHEXT: ".EXE" }, exists),
     ).toBeUndefined();
+  });
+});
+
+describe("quoteForCmd", () => {
+  test("leaves plain tokens alone", () => {
+    expect(quoteForCmd("run")).toBe("run");
+    expect(quoteForCmd("--output")).toBe("--output");
+    expect(quoteForCmd("C:\\flutter\\bin\\dart.bat")).toBe(
+      "C:\\flutter\\bin\\dart.bat",
+    );
+  });
+
+  test("quotes whitespace and cmd.exe metacharacters", () => {
+    expect(quoteForCmd("C:\\Users\\Jane Doe\\dart.bat")).toBe(
+      '"C:\\Users\\Jane Doe\\dart.bat"',
+    );
+    expect(quoteForCmd("C:\\tools & more\\dart.bat")).toBe(
+      '"C:\\tools & more\\dart.bat"',
+    );
+    expect(quoteForCmd("a|b")).toBe('"a|b"');
+    expect(quoteForCmd("(x)")).toBe('"(x)"');
+  });
+
+  test("keeps an empty token as an empty argument", () => {
+    expect(quoteForCmd("")).toBe('""');
+  });
+
+  test("refuses a token holding a double quote or a line break", () => {
+    expect(() => quoteForCmd('say "hi"')).toThrow(/cannot be escaped/);
+    expect(() => quoteForCmd("a\nb")).toThrow(/cannot be escaped/);
+    expect(() => quoteForCmd("a\rb")).toThrow(/cannot be escaped/);
+  });
+
+  test("doubles a trailing backslash only when it would escape the closing quote", () => {
+    expect(quoteForCmd("C:\\my dir\\")).toBe('"C:\\my dir\\\\"');
+    expect(quoteForCmd("C:\\dir\\")).toBe("C:\\dir\\");
+  });
+
+  test("leaves percent signs alone, since cmd.exe expands them even inside quotes", () => {
+    expect(quoteForCmd("%PATH%")).toBe("%PATH%");
+  });
+});
+
+describe("isWindowsScript", () => {
+  test("recognizes .bat and .cmd regardless of case", () => {
+    expect(isWindowsScript("C:\\flutter\\bin\\dart.bat")).toBe(true);
+    expect(isWindowsScript("C:\\flutter\\bin\\dart.CMD")).toBe(true);
+    expect(isWindowsScript("C:\\tools\\go.exe")).toBe(false);
   });
 });

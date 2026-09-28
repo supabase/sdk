@@ -40,8 +40,10 @@ export {
 export { dart } from "./languages/dart.ts";
 export {
   createNodeHost,
+  isWindowsScript,
   type NodeHostOptions,
   planSpawn,
+  quoteForCmd,
   resolveWindowsCommand,
   type SpawnPlan,
 } from "./node-host.ts";
