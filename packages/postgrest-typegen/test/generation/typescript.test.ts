@@ -1371,6 +1371,22 @@ describe("typescript typegen", () => {
     expect(result).not.toContain("mv: unknown");
   });
 
+  test("interval maps to string", () => {
+    const schema = {
+      id: 1,
+      name: "public",
+      owner: "postgres",
+    } as PostgresSchema;
+    expect(
+      pgTypeToTsType(schema, "interval", {
+        types: [],
+        schemas: [schema],
+        tables: [],
+        views: [],
+      }),
+    ).toBe("string");
+  });
+
   test("a relation-typed value resolves in its own schema before its own kind", async () => {
     // Relation-typed values carry a bare type name, so the resolver has to pick
     // between same-named relations using `preferredSchema`. It used to settle
