@@ -258,6 +258,77 @@ describe("symbols field", () => {
   });
 });
 
+describe("no_public_symbols field", () => {
+  it("accepts an entry with a note and no symbols", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          note: "Exposed through a logger hierarchy.",
+          no_public_symbols: true,
+        },
+      },
+    };
+    expect(validateCompliance(raw, knownIds)).toEqual([]);
+  });
+
+  it("errors when no_public_symbols is not a boolean", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "auth.sign_up": {
+          status: "implemented",
+          note: "n",
+          no_public_symbols: "yes",
+        } as any,
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("no_public_symbols must be a boolean"),
+      ),
+    ).toBe(true);
+  });
+
+  it("errors when no_public_symbols has no note", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": { status: "implemented", no_public_symbols: true },
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("no_public_symbols requires a note"),
+      ),
+    ).toBe(true);
+  });
+
+  it("errors when no_public_symbols is combined with symbols", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          note: "n",
+          no_public_symbols: true,
+          symbols: ["AuthClient.signUp"],
+        },
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("cannot be combined with symbols"),
+      ),
+    ).toBe(true);
+  });
+});
+
 describe("supporting_symbols field", () => {
   it("accepts per-feature and top-level supporting_symbols", () => {
     const raw = {

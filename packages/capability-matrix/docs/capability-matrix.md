@@ -57,6 +57,15 @@ storage.analytics.create_table:
     - CreateTableRequest.schema
 ```
 
+Some capabilities are implemented without any public symbol of their own, for example when the SDK exposes them through a language-standard mechanism such as a logger hierarchy. Mark such an entry with `no_public_symbols: true` and explain in `note` how the capability is reached. The drift check then skips it instead of warning that it cannot be verified. The flag requires a `note` and cannot be combined with `symbols`.
+
+```yaml
+client.observability.diagnostic_logging:
+  status: implemented
+  note: "Records go through the `supabase` logger hierarchy of `package:logging`."
+  no_public_symbols: true
+```
+
 Types shared across several features can be listed once in a top-level `supporting_symbols` list instead of being attributed to whichever feature happens to use them:
 
 ```yaml
