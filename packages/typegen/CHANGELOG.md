@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/supabase/sdk/compare/typegen/v0.1.2...typegen/v0.2.0) (2026-09-28)
+
+
+### Features
+
+* **typegen:** export the Windows command-line pieces so every host quotes alike ([#231](https://github.com/supabase/sdk/issues/231)) ([9d17b58](https://github.com/supabase/sdk/commit/9d17b58d8feb260d74f262e4bd5fe603865fef75))
+
 ## [0.1.2](https://github.com/supabase/sdk/compare/typegen/v0.1.1...typegen/v0.1.2) (2026-09-25)
 
 
