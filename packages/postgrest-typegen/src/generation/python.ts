@@ -67,7 +67,7 @@ ${concatLines(composite_types)}
 
 `.trim();
 
-  return output;
+  return `${output}\n`;
 };
 
 interface Serializable {

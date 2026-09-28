@@ -375,7 +375,7 @@ export const generateSwift = (
     }),
   ];
 
-  return output.join("\n");
+  return `${output.join("\n")}\n`;
 };
 
 // TODO: Make this more robust. Currently doesn't handle range types - returns them as string.

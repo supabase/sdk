@@ -17,11 +17,13 @@ import { unsortedMetadata } from "./fixtures.ts";
 const sorted = sortGeneratorMetadata(unsortedMetadata);
 const generate = (name: string, options: Record<string, string | boolean>) =>
   findLanguage(name)!.generate(unsortedMetadata, options, createFakeHost());
+/** The pinned postgrest-typegen still returns Go, Python and Swift without their final newline. */
+const asFile = (code: string) => (code.endsWith("\n") ? code : `${code}\n`);
 
 describe("in-process languages", () => {
   test("typescript matches the generator with one-to-one detection on by default", async () => {
     expect(await generate("typescript", {})).toBe(
-      `${await generateTypescript(sorted, { detectOneToOneRelationships: true })}\n`,
+      await generateTypescript(sorted, { detectOneToOneRelationships: true }),
     );
   });
 
@@ -30,7 +32,9 @@ describe("in-process languages", () => {
       "detect-one-to-one-relationships": false,
     });
     expect(output).toBe(
-      `${await generateTypescript(sorted, { detectOneToOneRelationships: false })}\n`,
+      await generateTypescript(sorted, {
+        detectOneToOneRelationships: false,
+      }),
     );
     expect(output).not.toBe(await generate("typescript", {}));
   });
@@ -38,10 +42,10 @@ describe("in-process languages", () => {
   test("typescript emits the PostgREST version a consumer passes", async () => {
     const output = await generate("typescript", { "postgrest-version": "12" });
     expect(output).toBe(
-      `${await generateTypescript(sorted, {
+      await generateTypescript(sorted, {
         detectOneToOneRelationships: true,
         postgrestVersion: "12",
-      })}\n`,
+      }),
     );
     expect(output).toContain('PostgrestVersion: "12"');
     expect(await generate("typescript", {})).not.toContain("PostgrestVersion");
@@ -52,10 +56,10 @@ describe("in-process languages", () => {
       "default-schema": "inventory",
     });
     expect(output).toBe(
-      `${await generateTypescript(sorted, {
+      await generateTypescript(sorted, {
         detectOneToOneRelationships: true,
         defaultSchema: "inventory",
-      })}\n`,
+      }),
     );
     expect(output).not.toBe(await generate("typescript", {}));
   });
@@ -78,46 +82,59 @@ describe("in-process languages", () => {
       `// formatted by host\n${await generateTypescript(sorted, {
         detectOneToOneRelationships: true,
         format: async (code) => code,
-      })}\n`,
+      })}`,
     );
   });
 
   test("go matches the generator", async () => {
-    expect(await generate("go", {})).toBe(`${generateGo(sorted)}\n`);
+    expect(await generate("go", {})).toBe(asFile(generateGo(sorted)));
   });
 
   test("python matches the generator", async () => {
-    expect(await generate("python", {})).toBe(`${generatePython(sorted)}\n`);
+    expect(await generate("python", {})).toBe(asFile(generatePython(sorted)));
   });
 
   test("swift matches the generator for each access control", async () => {
     expect(await generate("swift", {})).toBe(
-      `${generateSwift(sorted, { accessControl: "internal" })}\n`,
+      asFile(generateSwift(sorted, { accessControl: "internal" })),
     );
     expect(await generate("swift", { "swift-access-control": "public" })).toBe(
-      `${generateSwift(sorted, { accessControl: "public" })}\n`,
+      asFile(generateSwift(sorted, { accessControl: "public" })),
     );
   });
 
   test("sorts the metadata before generating", async () => {
     expect(await generate("go", {})).not.toBe(
-      `${generateGo(unsortedMetadata)}\n`,
+      asFile(generateGo(unsortedMetadata)),
     );
   });
 
-  test("ends every file with the single newline supabase gen types always emitted", async () => {
+  test("ends every file with exactly one newline", async () => {
     for (const name of ["typescript", "go", "python", "swift"]) {
       const output = await generate(name, {});
       expect(output.endsWith("\n")).toBe(true);
-      expect(output.endsWith("\n\n\n")).toBe(false);
+      expect(output.endsWith("\n\n")).toBe(false);
     }
+  });
+
+  test("restores the final newline when the host formatter drops it", async () => {
+    const host = createFakeHost(undefined, {
+      format: async (code) => code.trimEnd(),
+    });
+    const output = await findLanguage("typescript")!.generate(
+      unsortedMetadata,
+      {},
+      host,
+    );
+    expect(output.endsWith("\n")).toBe(true);
+    expect(output.endsWith("\n\n")).toBe(false);
   });
 
   test("swift accepts every access level the generator knows", async () => {
     for (const accessControl of ["private", "package"] as const) {
       expect(
         await generate("swift", { "swift-access-control": accessControl }),
-      ).toBe(`${generateSwift(sorted, { accessControl })}\n`);
+      ).toBe(asFile(generateSwift(sorted, { accessControl })));
     }
     expect(
       await rejection(generate("swift", { "swift-access-control": "open" })),

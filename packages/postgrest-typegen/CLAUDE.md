@@ -30,8 +30,8 @@ Hard split between **introspection** and **generation**:
   structural `Queryable` (`pg.Pool`/`pg.Client` satisfy it; postgres-meta
   injects its forked-pg pool). Runs SQL builders ported from postgres-meta.
 - `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython` /
-  `generateSwift`. Pure functions: `GeneratorMetadata` in, source string out.
-  No database access.
+  `generateSwift`. Pure functions: `GeneratorMetadata` in, the complete source
+  file (ending in a single newline) out. No database access.
 - `src/types.ts` -- `GeneratorMetadata` + `Postgres*` types. This is the public,
   pluggable contract: any source that can produce `GeneratorMetadata` can feed
   the generators. **ArkType is the single source of truth here**: each shape is

@@ -90,7 +90,7 @@ ${compositeTypes
   .join("\n\n")}
 `.trim();
 
-  return output;
+  return `${output}\n`;
 };
 
 /**
