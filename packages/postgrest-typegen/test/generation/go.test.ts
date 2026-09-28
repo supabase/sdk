@@ -78,7 +78,8 @@ describe("go typegen", () => {
         Label       *string \`json:"label"\`
         Status      *string \`json:"status"\`
         WithDefault *int32  \`json:"with_default"\`
-      }"
+      }
+      "
     `);
   });
 
@@ -127,7 +128,8 @@ describe("go typegen", () => {
 
       type PublicTicketsMvSelect struct {
         C bool \`json:"c"\`
-      }"
+      }
+      "
     `);
   });
 
@@ -150,7 +152,8 @@ describe("go typegen", () => {
       type PublicAddress struct {
         Street string \`json:"street"\`
         City   string \`json:"city"\`
-      }"
+      }
+      "
     `);
   });
 });

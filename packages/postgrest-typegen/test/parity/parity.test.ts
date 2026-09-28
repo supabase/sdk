@@ -26,9 +26,8 @@ import type { GeneratorMetadata } from "../../src/types.ts";
  *
  * The metadata is passed through `sortGeneratorMetadata` first (as every
  * consumer must), so the golden files reflect the canonical, deterministic
- * ordering rather than the database's heap order. Consumers print the
- * generator's return value with `console.log`, which appends exactly one
- * trailing newline, hence the `+ "\n"` below.
+ * ordering rather than the database's heap order. Each generator returns the
+ * complete file, final newline included, so the goldens are compared verbatim.
  *
  * The goldens were originally captured from postgres-meta's own templates
  * before it cut over to this package; since then they are regenerated from
@@ -66,20 +65,18 @@ afterAll(async () => {
 
 describe("generator parity vs postgres-meta CLI", () => {
   test("typescript", async () => {
-    expect((await generateTypescript(metadata)) + "\n").toBe(
-      golden("typescript.txt"),
-    );
+    expect(await generateTypescript(metadata)).toBe(golden("typescript.txt"));
   });
 
   test("go", () => {
-    expect(generateGo(metadata) + "\n").toBe(golden("go.txt"));
+    expect(generateGo(metadata)).toBe(golden("go.txt"));
   });
 
   test("python", () => {
-    expect(generatePython(metadata) + "\n").toBe(golden("python.txt"));
+    expect(generatePython(metadata)).toBe(golden("python.txt"));
   });
 
   test("swift", () => {
-    expect(generateSwift(metadata) + "\n").toBe(golden("swift.txt"));
+    expect(generateSwift(metadata)).toBe(golden("swift.txt"));
   });
 });

@@ -115,12 +115,12 @@ flag as a deprecated alias that sets the option to `false`.
 `generate` sorts the metadata with `sortGeneratorMetadata` itself, so callers
 may pass `introspect()`'s output directly. It returns the complete contents of
 the generated file for every language, so the consumer writes the result as-is
-with no per-language handling. For the in-process entries that means the
-generator's template plus the final newline `supabase gen types` has always
-emitted (pg-meta printed through `console.log`), which keeps the four existing
-languages byte-identical; for Dart it is the tool's stdout verbatim, which is
-what makes `supabase gen types --lang dart` match `dart run supabase_typegen`
-byte for byte.
+with no per-language handling. The in-process entries return the generator's
+output verbatim: every bundled generator ends its file with a single newline,
+and the registry adds one only when a `Host.format` implementation dropped it.
+For Dart it is the tool's stdout verbatim, which is what makes
+`supabase gen types --lang dart` match `dart run supabase_typegen` byte for
+byte.
 
 Hosted consumers that cannot spawn processes, such as postgres-meta's
 `/generators/*` routes, filter on `language.inProcess`.

@@ -58,8 +58,9 @@ lives in supabase-js.
   registry option on purpose: it targets PostgREST 9 (2022) and only ever
   worked with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
 - `generate` always sorts before generating and returns complete file
-  contents for every language. In-process entries append the final newline
-  the CLI has always emitted (pg-meta's `console.log`); out-of-process
+  contents for every language. The bundled generators end their output with
+  a single newline and in-process entries pass it on verbatim, adding a
+  newline only when a `Host.format` implementation dropped it; out-of-process
   entries return the tool's stdout verbatim. The CLI writes the result as-is.
 - In-process TypeScript formats through `host.format` when given. The CLI
   passes identity to keep `oxfmt` out of its bundle and its output unchanged.

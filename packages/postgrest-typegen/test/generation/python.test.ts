@@ -93,7 +93,8 @@ describe("python typegen", () => {
           id: NotRequired[Annotated[int, Field(alias="id")]]
           label: NotRequired[Annotated[str, Field(alias="label")]]
           status: NotRequired[Annotated[Optional[PublicUserStatus], Field(alias="status")]]
-          with_default: NotRequired[Annotated[int, Field(alias="with_default")]]"
+          with_default: NotRequired[Annotated[int, Field(alias="with_default")]]
+      "
     `);
   });
 
@@ -150,7 +151,8 @@ describe("python typegen", () => {
           b: Optional[int] = Field(alias="b")
 
       class PublicTicketsMv(BaseModel):
-          c: bool = Field(alias="c")"
+          c: bool = Field(alias="c")
+      "
     `);
   });
 
@@ -192,7 +194,8 @@ describe("python typegen", () => {
 
       class PublicAddress(BaseModel):
           street: Optional[str] = Field(alias="street")
-          city: Optional[str] = Field(alias="city")"
+          city: Optional[str] = Field(alias="city")
+      "
     `);
   });
 
@@ -359,7 +362,8 @@ describe("python typegen", () => {
       class PublicTicketsUpdate(TypedDict):
           names: NotRequired[Annotated[Optional[List[str]], Field(alias="names")]]
           tags: NotRequired[Annotated[List[PublicUserStatus], Field(alias="tags")]]
-          victory_road: NotRequired[Annotated[str, Field(alias="victory road")]]"
+          victory_road: NotRequired[Annotated[str, Field(alias="victory road")]]
+      "
     `);
   });
 });

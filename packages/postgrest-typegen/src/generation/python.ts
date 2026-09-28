@@ -38,8 +38,7 @@ export const generatePython = ({
     ctx.matViewToClass(matview),
   );
 
-  let output = `
-from __future__ import annotations
+  let output = `from __future__ import annotations
 
 import datetime
 import uuid
@@ -65,9 +64,9 @@ ${concatLines(py_matviews)}
 
 ${concatLines(composite_types)}
 
-`.trim();
+`.trimEnd();
 
-  return output;
+  return `${output}\n`;
 };
 
 interface Serializable {

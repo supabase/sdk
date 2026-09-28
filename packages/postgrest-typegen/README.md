@@ -127,6 +127,9 @@ import {
 | `generatePython`     | —                                                                              |
 | `generateSwift`      | `{ accessControl?: 'internal' \| 'public' \| 'private' \| 'package' }`         |
 
+Every generator returns the complete contents of the generated file, ending
+with a single newline, so consumers write the result as-is.
+
 `generateTypescript` formats its output with `oxfmt` unless `format` is
 supplied. `oxfmt` is an optional peer dependency, imported only when that
 default runs: install it to use the default formatter, or pass your own

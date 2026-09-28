@@ -81,7 +81,8 @@ describe("swift typegen", () => {
             case status = "status"
           }
         }
-      }"
+      }
+      "
     `);
   });
 
@@ -124,7 +125,8 @@ describe("swift typegen", () => {
             case City = "city"
           }
         }
-      }"
+      }
+      "
     `);
   });
 
@@ -164,7 +166,8 @@ describe("swift typegen", () => {
             case id = "id"
           }
         }
-      }"
+      }
+      "
     `);
   });
 
@@ -239,7 +242,8 @@ describe("swift typegen", () => {
             case quoteCol = "quote\\"col"
           }
         }
-      }"
+      }
+      "
     `);
   });
 
@@ -353,7 +357,8 @@ describe("swift typegen", () => {
             case tags = "tags"
           }
         }
-      }"
+      }
+      "
     `);
   });
 });

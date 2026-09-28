@@ -32,8 +32,7 @@ export const generateGo = ({
 
   const compositeTypes = types.filter((type) => type.attributes.length > 0);
 
-  let output = `
-package database
+  let output = `package database
 
 ${tables
   .filter((table) => schemas.some((schema) => schema.name === table.schema))
@@ -88,9 +87,9 @@ ${compositeTypes
     ),
   )
   .join("\n\n")}
-`.trim();
+`.trimEnd();
 
-  return output;
+  return `${output}\n`;
 };
 
 /**
