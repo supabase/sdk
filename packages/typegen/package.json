@@ -48,7 +48,7 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@supabase/postgrest-typegen": "0.3.0"
+    "@supabase/postgrest-typegen": "0.3.1"
   },
   "devDependencies": {
     "@tsconfig/bun": "^1.0.11",
