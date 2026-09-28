@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/supabase/sdk/compare/typegen/v0.2.0...typegen/v0.2.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **typegen:** generators emit the final newline themselves, registry passes it through ([#233](https://github.com/supabase/sdk/issues/233)) ([9bf2dc8](https://github.com/supabase/sdk/commit/9bf2dc8ee2d3603a016a4085fffdc6234b0737c7))
+* **typegen:** quote batch parameter delimiters and document planSpawn as the shared entry point ([#234](https://github.com/supabase/sdk/issues/234)) ([28e251d](https://github.com/supabase/sdk/commit/28e251d0ac3243c2740610cf78da5f3f2405702e))
+
 ## [0.2.0](https://github.com/supabase/sdk/compare/typegen/v0.1.2...typegen/v0.2.0) (2026-09-28)
 
 
