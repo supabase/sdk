@@ -157,8 +157,9 @@ as `dart.bat` there and `spawn` cannot start those directly; a command it
 cannot find is reported as `ENOENT` like everywhere else. A host built on
 another process runner needs the same treatment; `resolveWindowsCommand`,
 `isWindowsScript` and `quoteForCmd` are exported so it builds the same command
-line. A path holding `%` cannot be passed to `cmd.exe` reliably, since `%VAR%`
-expands even inside quotes.
+line. A token holding a double quote or a line break is refused, since cmd.exe
+toggles quoting on every `"` and nothing can escape it; a path holding `%`
+cannot be passed reliably either, since `%VAR%` expands even inside quotes.
 
 ### Errors
 

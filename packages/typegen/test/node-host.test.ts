@@ -198,6 +198,25 @@ describe("quoteForCmd", () => {
     expect(quoteForCmd("a|b")).toBe('"a|b"');
     expect(quoteForCmd("(x)")).toBe('"(x)"');
   });
+
+  test("keeps an empty token as an empty argument", () => {
+    expect(quoteForCmd("")).toBe('""');
+  });
+
+  test("refuses a token holding a double quote or a line break", () => {
+    expect(() => quoteForCmd('say "hi"')).toThrow(/cannot be escaped/);
+    expect(() => quoteForCmd("a\nb")).toThrow(/cannot be escaped/);
+    expect(() => quoteForCmd("a\rb")).toThrow(/cannot be escaped/);
+  });
+
+  test("doubles a trailing backslash only when it would escape the closing quote", () => {
+    expect(quoteForCmd("C:\\my dir\\")).toBe('"C:\\my dir\\\\"');
+    expect(quoteForCmd("C:\\dir\\")).toBe("C:\\dir\\");
+  });
+
+  test("leaves percent signs alone, since cmd.exe expands them even inside quotes", () => {
+    expect(quoteForCmd("%PATH%")).toBe("%PATH%");
+  });
 });
 
 describe("isWindowsScript", () => {

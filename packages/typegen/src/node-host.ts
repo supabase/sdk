@@ -73,13 +73,26 @@ export function resolveWindowsCommand(
 
 /**
  * Quotes one token of a `cmd.exe /c` command line. Whitespace and the
- * interpreter's metacharacters are safe inside double quotes; `%VAR%` still
- * expands there and cmd.exe offers no escape for it on a command line, so a
- * path holding `%` cannot be passed reliably. Hosts that run a Windows script
- * through a shell should quote with this so every host builds the same line.
+ * interpreter's metacharacters are literal inside double quotes; a trailing
+ * backslash is doubled so it cannot escape the closing quote. A token holding
+ * a double quote or a line break is refused: cmd.exe toggles quoting on every
+ * `"` whatever precedes it, so the rest of the line would become command
+ * syntax, and no escape exists. `%VAR%` (and `!VAR!` under delayed expansion)
+ * still expands inside quotes, so a path holding `%` cannot be passed
+ * reliably. Hosts that run a Windows script through a shell should quote with
+ * this so every host builds the same line.
  */
-export const quoteForCmd = (token: string): string =>
-  /[\s&|<>^()!"]/.test(token) ? `"${token}"` : token;
+export const quoteForCmd = (token: string): string => {
+  if (/["\r\n]/.test(token)) {
+    throw new Error(
+      `cannot pass ${JSON.stringify(token)} to cmd.exe: a double quote or line break in a command-line token cannot be escaped`,
+    );
+  }
+  if (token !== "" && !/[\s&|<>^()!]/.test(token)) {
+    return token;
+  }
+  return `"${token.replace(/(\\+)$/, "$1$1")}"`;
+};
 
 /**
  * Decides how to start `command`. Everywhere but Windows that is the command
