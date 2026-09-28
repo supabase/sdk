@@ -199,6 +199,11 @@ describe("quoteForCmd", () => {
     expect(quoteForCmd("(x)")).toBe('"(x)"');
   });
 
+  test("quotes the batch parameter delimiters so %1 keeps the whole token", () => {
+    expect(quoteForCmd("--output=a,b")).toBe('"--output=a,b"');
+    expect(quoteForCmd("a;b")).toBe('"a;b"');
+  });
+
   test("keeps an empty token as an empty argument", () => {
     expect(quoteForCmd("")).toBe('""');
   });
