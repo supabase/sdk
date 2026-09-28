@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.0...postgrest-typegen/v0.3.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **typegen:** generators emit the final newline themselves, registry passes it through ([#233](https://github.com/supabase/sdk/issues/233)) ([9bf2dc8](https://github.com/supabase/sdk/commit/9bf2dc8ee2d3603a016a4085fffdc6234b0737c7))
+
 ## [0.3.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.5...postgrest-typegen/v0.3.0) (2026-09-25)
 
 
