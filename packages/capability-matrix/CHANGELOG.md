@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.13.0...capability-matrix/v1.14.0) (2026-09-29)
+
+
+### Features
+
+* **capability-matrix:** let an implemented entry declare it has no public symbols ([#239](https://github.com/supabase/sdk/issues/239)) ([ed6d632](https://github.com/supabase/sdk/commit/ed6d6327997f42c4572dc4f9ba5ff96f2548339c))
+
 ## [1.13.0](https://github.com/supabase/sdk/compare/capability-matrix-v1.12.0...capability-matrix/v1.13.0) (2026-09-24)
 
 
