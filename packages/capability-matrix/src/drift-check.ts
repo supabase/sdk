@@ -16,15 +16,17 @@ export function checkDrift(
   for (const [featureId, value] of Object.entries(compliance.features ?? {})) {
     let status: string | undefined;
     let symbols: string[] | undefined;
+    let noPublicSymbols = false;
 
     if (typeof value === "string") {
       status = value;
     } else if (typeof value === "object" && value !== null) {
       status = value.status;
       symbols = value.symbols;
+      noPublicSymbols = value.no_public_symbols === true;
     }
 
-    if (status !== "implemented") continue;
+    if (status !== "implemented" || noPublicSymbols) continue;
 
     if (!symbols || symbols.length === 0) {
       findings.push({ featureId });

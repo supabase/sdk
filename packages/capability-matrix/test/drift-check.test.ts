@@ -87,6 +87,20 @@ describe("checkDrift", () => {
     ]);
   });
 
+  it("skips an implemented entry marked no_public_symbols", () => {
+    const compliance = {
+      sdk: "flutter",
+      features: {
+        "auth.mfa.enroll": {
+          status: "implemented",
+          note: "Exposed through a logger hierarchy.",
+          no_public_symbols: true,
+        },
+      },
+    };
+    expect(checkDrift([], compliance)).toEqual([]);
+  });
+
   it("reports an unverifiable finding for the string status shorthand", () => {
     const compliance = {
       sdk: "javascript",

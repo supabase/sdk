@@ -13,6 +13,7 @@ type RawValue =
       note?: string;
       symbols?: string[];
       supporting_symbols?: string[];
+      no_public_symbols?: boolean;
     };
 
 export interface RawCompliance {
@@ -48,6 +49,35 @@ function checkSymbolList(
     findings.push({
       level: "error",
       message: `${context}: ${label} must be an array of strings`,
+    });
+  }
+}
+
+function checkNoPublicSymbols(
+  id: string,
+  value: Exclude<RawValue, string>,
+  findings: ComplianceFinding[],
+): void {
+  const flag: unknown = value.no_public_symbols;
+  if (flag === undefined) return;
+  if (typeof flag !== "boolean") {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols must be a boolean`,
+    });
+    return;
+  }
+  if (!flag) return;
+  if (!value.note) {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols requires a note explaining how the capability is exposed`,
+    });
+  }
+  if (Array.isArray(value.symbols) && value.symbols.length > 0) {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols cannot be combined with symbols`,
     });
   }
 }
@@ -116,6 +146,7 @@ export function validateCompliance(
     }
 
     if (typeof value === "object" && value !== null) {
+      checkNoPublicSymbols(id, value, findings);
       checkSymbolList(value.symbols, "symbols", `"${id}"`, findings);
       checkSymbolList(
         value.supporting_symbols,
