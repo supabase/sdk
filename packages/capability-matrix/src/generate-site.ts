@@ -125,7 +125,7 @@ function renderArea(
       const nameHtml = specs.has(f.id)
         ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
-      rows += `      <tr>
+      rows += `      <tr data-id="${esc(f.id)}">
         <td class="feature-name">
           <div class="feature-name-text">${nameHtml}</div>
           <div class="feature-desc">${esc(f.description)}</div>
@@ -338,6 +338,22 @@ export function renderHtml(
       transition: color 0.15s, border-color 0.15s;
     }
     .nav-link:hover { color: #171717; border-bottom-color: #3ECF8E; }
+    .nav-search {
+      margin-left: auto;
+      align-self: center;
+      flex-shrink: 0;
+      width: 220px;
+      padding: 0.3rem 0.6rem;
+      font: inherit;
+      font-size: 0.8rem;
+      color: #171717;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    .nav-search:focus { outline: none; border-color: #3ECF8E; }
+    .search-empty { color: #666; font-size: 0.9rem; }
+    [hidden] { display: none !important; }
 
     /* ── Main content ──────────────────────────────────────── */
     .site-main { padding: 2rem; }
@@ -507,9 +523,11 @@ export function renderHtml(
 
 <nav class="site-nav">
   ${navLinks}
+  <input type="search" id="feature-search" class="nav-search" placeholder="Search features…" aria-label="Search features" autocomplete="off">
 </nav>
 
 <main class="site-main">
+  <p id="search-empty" class="search-empty" hidden>No features match your search.</p>
   ${areaSections}
 </main>
 
@@ -540,6 +558,35 @@ export function renderHtml(
     { rootMargin: '-40px 0px -60% 0px', threshold: 0 }
   );
   sections.forEach(s => observer.observe(s));
+
+  // Filter feature rows by search query
+  const search = document.getElementById('feature-search');
+  const empty = document.getElementById('search-empty');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    let total = 0;
+    sections.forEach(section => {
+      let sectionHits = 0;
+      let group = null;
+      let groupHits = 0;
+      section.querySelectorAll('tbody tr').forEach(row => {
+        if (row.classList.contains('group-row')) {
+          if (group) group.hidden = groupHits === 0;
+          group = row;
+          groupHits = 0;
+          return;
+        }
+        const text = (row.dataset.id + ' ' + row.querySelector('.feature-name').textContent).toLowerCase();
+        const hit = !q || text.includes(q);
+        row.hidden = !hit;
+        if (hit) { groupHits++; sectionHits++; }
+      });
+      if (group) group.hidden = groupHits === 0;
+      section.hidden = sectionHits === 0;
+      total += sectionHits;
+    });
+    empty.hidden = total > 0;
+  });
 </script>
 
 </body>
