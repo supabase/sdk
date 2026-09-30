@@ -720,7 +720,9 @@ export const generateTypescript = async (
    *
    * A computed field is a function taking a single argument of the relation's
    * own composite type, so it is selectable as if it were a column and belongs
-   * in `Row`.
+   * in `Row`. A function of that shape returning a table or view row is a
+   * computed relationship instead: it is embedded like a foreign table, never
+   * returned by `*`, and reaches postgrest-js through `SetofOptions`.
    *
    * Matching on the argument's type OID rather than on `argument_types` is what
    * makes named parameters work. `argument_types` is
@@ -737,6 +739,12 @@ export const generateTypescript = async (
     inArgs: PostgresFunction["args"],
     relation: { id: number; name: string },
   ) => {
+    if (
+      fn.return_type_relation_id !== null &&
+      tablesNamesByTableId[fn.return_type_relation_id] !== undefined
+    ) {
+      return false;
+    }
     const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
     if (soleInArg) {
       // `relationTypeByIds` is already "types backed by a relation", so a hit

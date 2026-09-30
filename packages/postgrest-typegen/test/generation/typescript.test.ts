@@ -1300,6 +1300,72 @@ describe("typescript typegen", () => {
     expect(variadic).not.toContain("name_translated: string | null");
   });
 
+  test("computed relationship stays out of Row but keeps its SetofOptions", async () => {
+    // A function taking a row and returning a table's rows is embedded like a
+    // foreign table, `category_items(*)`, and never returned by `*`. In `Row`
+    // it would make postgrest-js infer it for `select("*")`.
+    const rowType = (id: number, name: string, relationId: number) =>
+      ({
+        id,
+        name,
+        schema: "public",
+        format: name,
+        enums: [],
+        attributes: [],
+        comment: null,
+        type_relation_id: relationId,
+      }) satisfies PostgresType;
+    const metadata = (isSetReturning: boolean) =>
+      buildMetadata({
+        tables: [
+          baseTable({ id: 1, name: "category" }),
+          baseTable({ id: 2, name: "items" }),
+        ],
+        columns: [
+          baseColumn({ table_id: 1, name: "name", format: "text" }),
+          baseColumn({ table_id: 2, name: "label", format: "text" }),
+        ],
+        functions: [
+          baseFunction({
+            name: "category_items",
+            args: [
+              {
+                mode: "in",
+                name: "category",
+                type_id: 500,
+                has_default: false,
+              },
+            ],
+            argument_types: "category category",
+            identity_argument_types: "category",
+            return_type_id: 501,
+            return_type: "items",
+            return_type_relation_id: 2,
+            is_set_returning_function: isSetReturning,
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          rowType(500, "category", 1),
+          rowType(501, "items", 2),
+        ],
+      });
+
+    for (const isSetReturning of [true, false]) {
+      const output = databaseSection(
+        await generateTypescript(metadata(isSetReturning)),
+      );
+      const categoryRow = output.slice(
+        output.indexOf("category: {"),
+        output.indexOf("Insert: {"),
+      );
+      expect(categoryRow).not.toContain("category_items");
+      expect(output).toContain('from: "category"');
+      expect(output).toContain('to: "items"');
+    }
+  });
+
   test("composite args on foreign tables and materialized views resolve to their Row", async () => {
     // `pgTypeToTsType` used to resolve a relation-typed value against `tables`
     // and `views` only, so an argument typed as a foreign table or as a
