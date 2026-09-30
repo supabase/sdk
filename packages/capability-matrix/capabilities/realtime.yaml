@@ -98,6 +98,10 @@ features:
     name: Multiple Postgres Changes Row Filters
     description: Apply more than one PostgREST-style filter expression to a single Postgres changes subscription, combined with AND, to receive events only for rows matching all of them.
     group: subscriptions
+  - id: realtime.subscriptions.postgres_changes_wait
+    name: Wait for Postgres Changes Confirmation
+    description: Delay reporting the subscription as active until the server confirms the postgres_changes subscription is actually streaming, avoiding a race where changes are missed if the channel joins before replication catches up, via the postgres_changes_options.wait channel option (with a configurable timeout).
+    group: subscriptions
   - id: realtime.subscriptions.private_channel
     name: Private Channel (RLS)
     description: Mark a channel as private to enforce Row Level Security on Postgres change events and restrict broadcast and presence access to authorized users.
