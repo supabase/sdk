@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.1...postgrest-typegen/v0.4.0) (2026-09-30)
+
+
+### Features
+
+* **postgrest-typegen:** declare computed fields next to Row and type named row parameters without them ([#243](https://github.com/supabase/sdk/issues/243)) ([233066b](https://github.com/supabase/sdk/commit/233066b722627dcae2922372c933ea73821147d9))
+
 ## [0.3.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.0...postgrest-typegen/v0.3.1) (2026-09-28)
 
 
