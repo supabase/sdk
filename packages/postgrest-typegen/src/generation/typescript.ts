@@ -584,6 +584,43 @@ export const generateTypescript = async (
     return null;
   };
 
+  const getArgTsType = (
+    schema: PostgresSchema,
+    { name, type_id }: PostgresFunction["args"][number],
+  ) => {
+    const type = typesById.get(type_id);
+    if (!type) {
+      return "unknown";
+    }
+    const tsType = pgTypeToTsType(schema, type.name, typeContext, type.schema);
+    // A row-typed parameter takes the relation's columns: PostgREST fills the
+    // keys it does not receive with NULL, and the computed fields are never
+    // input. A named parameter is typed without them. An unnamed one keeps the
+    // plain `Row` reference, which is how postgrest-js versions predating
+    // `ComputedFields` recognise the function as a computed field.
+    if (name === "") {
+      return tsType;
+    }
+    const relationReference = findRelationReference(
+      type.name,
+      typeContext,
+      type.schema,
+    );
+    if (relationReference && tsType === `${relationReference}['Row']`) {
+      return `Omit<${tsType}, ${relationReference}['ComputedFields']>`;
+    }
+    return tsType;
+  };
+
+  const getArgsTsType = (
+    schema: PostgresSchema,
+    inArgs: PostgresFunction["args"],
+  ) =>
+    `{ ${inArgs.map(
+      (arg) =>
+        `${JSON.stringify(arg.name)}${arg.has_default ? "?" : ""}: ${getArgTsType(schema, arg)}`,
+    )} }`;
+
   const getFunctionSignatures = (
     schema: PostgresSchema,
     fns: Array<{ fn: PostgresFunction; inArgs: PostgresFunction["args"] }>,
@@ -596,80 +633,21 @@ export const generateTypescript = async (
         // `never` property is uninhabited for any tool doing sound type math on the
         // generated types. `Record<PropertyKey, never>` is the accurate type for
         // "callable with no arguments".
-        let argsType = "Record<PropertyKey, never>";
+        const argsType =
+          inArgs.length > 0
+            ? getArgsTsType(schema, inArgs)
+            : "Record<PropertyKey, never>";
         let returnType = getFunctionReturnType(schema, fn);
 
         // Check for specific error cases
         const conflictError = getConflictError(schema, fns, fn, inArgs);
         if (conflictError) {
-          if (inArgs.length > 0) {
-            const argsNameAndType = inArgs.map(
-              ({ name, type_id, has_default }) => {
-                const type = typesById.get(type_id);
-                let tsType = "unknown";
-                if (type) {
-                  tsType = pgTypeToTsType(
-                    schema,
-                    type.name,
-                    typeContext,
-                    type.schema,
-                  );
-                }
-                return { name, type: tsType, has_default };
-              },
-            );
-            argsType = `{ ${argsNameAndType.map(
-              ({ name, type, has_default }) =>
-                `${JSON.stringify(name)}${has_default ? "?" : ""}: ${type}`,
-            )} }`;
-          }
           returnType = `{ error: true } & ${JSON.stringify(conflictError)}`;
         } else if (hasTableRowError(fn, inArgs)) {
           // Special case for computed fields returning scalars functions
-          if (inArgs.length > 0) {
-            const argsNameAndType = inArgs.map(
-              ({ name, type_id, has_default }) => {
-                const type = typesById.get(type_id);
-                let tsType = "unknown";
-                if (type) {
-                  tsType = pgTypeToTsType(
-                    schema,
-                    type.name,
-                    typeContext,
-                    type.schema,
-                  );
-                }
-                return { name, type: tsType, has_default };
-              },
-            );
-            argsType = `{ ${argsNameAndType.map(
-              ({ name, type, has_default }) =>
-                `${JSON.stringify(name)}${has_default ? "?" : ""}: ${type}`,
-            )} }`;
-          }
           returnType = `{ error: true } & ${JSON.stringify(
             `the function ${schema.name}.${fn.name} with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache`,
           )}`;
-        } else if (inArgs.length > 0) {
-          const argsNameAndType = inArgs.map(
-            ({ name, type_id, has_default }) => {
-              const type = typesById.get(type_id);
-              let tsType = "unknown";
-              if (type) {
-                tsType = pgTypeToTsType(
-                  schema,
-                  type.name,
-                  typeContext,
-                  type.schema,
-                );
-              }
-              return { name, type: tsType, has_default };
-            },
-          );
-          argsType = `{ ${argsNameAndType.map(
-            ({ name, type, has_default }) =>
-              `${JSON.stringify(name)}${has_default ? "?" : ""}: ${type}`,
-          )} }`;
         }
 
         return `{ Args: ${argsType}; Returns: ${getFunctionTsReturnType(fn, returnType)} }`;
@@ -753,6 +731,51 @@ export const generateTypescript = async (
     return fn.argument_types === relation.name;
   };
 
+  /**
+   * The computed fields of a relation, in `schemaFunctions` order. A function
+   * named like one of the relation's columns is left out: PostgREST resolves
+   * the name to the column, so it is neither selectable nor part of `Row`.
+   */
+  const computedFieldsOf = (
+    schemaFunctions: {
+      fn: PostgresFunction;
+      inArgs: PostgresFunction["args"];
+    }[],
+    relation: { id: number; name: string },
+  ) => {
+    const columnNames = new Set(
+      getColumns(relation.id).map((column) => column.name),
+    );
+    const seen = new Set<string>();
+    return schemaFunctions.filter(({ fn, inArgs }) => {
+      if (
+        !isComputedFieldOf(fn, inArgs, relation) ||
+        columnNames.has(fn.name) ||
+        seen.has(fn.name)
+      ) {
+        return false;
+      }
+      seen.add(fn.name);
+      return true;
+    });
+  };
+
+  const computedFieldTsDefinition = (
+    schema: PostgresSchema,
+    { fn }: { fn: PostgresFunction },
+  ) =>
+    `${JSON.stringify(fn.name)}: ${generateNullableUnionTsType(
+      getFunctionReturnType(schema, fn),
+      true,
+    )}`;
+
+  // `ComputedFields` names the `Row` keys PostgREST leaves out of `select('*')`,
+  // so postgrest-js does not have to infer them from `Functions`.
+  const computedFieldsTsType = (computedFields: { fn: PostgresFunction }[]) =>
+    computedFields.length === 0
+      ? "never"
+      : computedFields.map(({ fn }) => JSON.stringify(fn.name)).join(" | ");
+
   let output = `
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
@@ -771,11 +794,12 @@ export type Database = {
             ${
               schemaTables.length === 0
                 ? "[_ in never]: never"
-                : schemaTables.map(
-                    ({
+                : schemaTables.map(({ table, relationships }) => {
+                    const computedFields = computedFieldsOf(
+                      schemaFunctions,
                       table,
-                      relationships,
-                    }) => `${JSON.stringify(table.name)}: {
+                    );
+                    return `${JSON.stringify(table.name)}: {
                   Row: {
                     ${[
                       ...getColumns(table.id).map((column) =>
@@ -791,18 +815,12 @@ export type Database = {
                           typeContext,
                         ),
                       ),
-                      ...schemaFunctions
-                        .filter(({ fn, inArgs }) =>
-                          isComputedFieldOf(fn, inArgs, table),
-                        )
-                        .map(({ fn }) => {
-                          return `${JSON.stringify(fn.name)}: ${generateNullableUnionTsType(
-                            getFunctionReturnType(schema, fn),
-                            true,
-                          )}`;
-                        }),
+                      ...computedFields.map((computedField) =>
+                        computedFieldTsDefinition(schema, computedField),
+                      ),
                     ]}
                   }
+                  ComputedFields: ${computedFieldsTsType(computedFields)}
                   Insert: {
                     ${getColumns(table.id).map((column) => {
                       if (
@@ -852,19 +870,20 @@ export type Database = {
                   Relationships: [
                     ${relationships.map(generateRelationshiptTsDefinition)}
                   ]
-                }`,
-                  )
+                }`;
+                  })
             }
           }
           Views: {
             ${
               schemaViews.length === 0
                 ? "[_ in never]: never"
-                : schemaViews.map(
-                    ({
+                : schemaViews.map(({ view, relationships }) => {
+                    const computedFields = computedFieldsOf(
+                      schemaFunctions,
                       view,
-                      relationships,
-                    }) => `${JSON.stringify(view.name)}: {
+                    );
+                    return `${JSON.stringify(view.name)}: {
                   Row: {
                     ${[
                       ...getColumns(view.id).map((column) =>
@@ -880,19 +899,12 @@ export type Database = {
                           typeContext,
                         ),
                       ),
-                      ...schemaFunctions
-                        .filter(({ fn, inArgs }) =>
-                          isComputedFieldOf(fn, inArgs, view),
-                        )
-                        .map(
-                          ({ fn }) =>
-                            `${JSON.stringify(fn.name)}: ${generateNullableUnionTsType(
-                              getFunctionReturnType(schema, fn),
-                              true,
-                            )}`,
-                        ),
+                      ...computedFields.map((computedField) =>
+                        computedFieldTsDefinition(schema, computedField),
+                      ),
                     ]}
                   }
+                  ComputedFields: ${computedFieldsTsType(computedFields)}
                   ${
                     // Metadata predating the trigger-aware flags (still valid
                     // version 1 documents) falls back to the old gate.
@@ -942,8 +954,8 @@ export type Database = {
                   }Relationships: [
                     ${relationships.map(generateRelationshiptTsDefinition)}
                   ]
-                }`,
-                  )
+                }`;
+                  })
             }
           }
           Functions: {
@@ -1157,14 +1169,7 @@ export const pgTypeToTsType = (
   // it whenever the owning schema is known.
   typeSchema?: string,
 ): string => {
-  const {
-    types,
-    schemas,
-    tables,
-    views,
-    foreignTables = [],
-    materializedViews = [],
-  } = context;
+  const { types, schemas } = context;
   if (pgType === "bool") {
     return "boolean";
   } else if (
@@ -1228,42 +1233,63 @@ export const pgTypeToTsType = (
       return "unknown";
     }
 
-    // A relation-typed value carries only a bare type name, so several relations
-    // can share it and `preferredSchema` is what disambiguates them. Match on
-    // the schema across every relation kind before falling back to kind order,
-    // otherwise a relation in an unrelated schema outranks the one the caller
-    // meant. Foreign tables are generated under `Tables` and materialized views
-    // under `Views`, alongside their plain counterparts.
-    const relationKinds = [
-      ["Tables", tables],
-      ["Tables", foreignTables],
-      ["Views", views],
-      ["Views", materializedViews],
-    ] as const;
-    const findRelation = (
-      matches: (relation: { name: string; schema: string }) => boolean,
-    ) => {
-      for (const [kind, relations] of relationKinds) {
-        const relation = relations.find(matches);
-        if (relation) return { kind, relation };
-      }
-      return undefined;
-    };
-    const match =
-      findRelation(
-        ({ name, schema: relationSchema }) =>
-          name === pgType && relationSchema === preferredSchema,
-      ) ?? findRelation(({ name }) => name === pgType);
-    if (match) {
-      const { kind, relation } = match;
-      if (schemas.some(({ name }) => name === relation.schema)) {
-        return `Database[${JSON.stringify(relation.schema)}]['${kind}'][${JSON.stringify(
-          relation.name,
-        )}]['Row']`;
-      }
-      return "unknown";
-    }
-
-    return "unknown";
+    const relationReference = findRelationReference(
+      pgType,
+      context,
+      preferredSchema,
+    );
+    return relationReference ? `${relationReference}['Row']` : "unknown";
   }
+};
+
+/**
+ * The `Database[schema][kind][name]` reference of the relation whose row type
+ * is `pgType`, or `undefined` when no generated relation has that type.
+ *
+ * A relation-typed value carries only a bare type name, so several relations
+ * can share it and `preferredSchema` is what disambiguates them. Match on the
+ * schema across every relation kind before falling back to kind order,
+ * otherwise a relation in an unrelated schema outranks the one the caller
+ * meant. Foreign tables are generated under `Tables` and materialized views
+ * under `Views`, alongside their plain counterparts.
+ */
+const findRelationReference = (
+  pgType: string,
+  context: TypeResolutionContext,
+  preferredSchema: string,
+): string | undefined => {
+  const {
+    schemas,
+    tables,
+    views,
+    foreignTables = [],
+    materializedViews = [],
+  } = context;
+  const relationKinds = [
+    ["Tables", tables],
+    ["Tables", foreignTables],
+    ["Views", views],
+    ["Views", materializedViews],
+  ] as const;
+  const findRelation = (
+    matches: (relation: { name: string; schema: string }) => boolean,
+  ) => {
+    for (const [kind, relations] of relationKinds) {
+      const relation = relations.find(matches);
+      if (relation) return { kind, relation };
+    }
+    return undefined;
+  };
+  const match =
+    findRelation(
+      ({ name, schema: relationSchema }) =>
+        name === pgType && relationSchema === preferredSchema,
+    ) ?? findRelation(({ name }) => name === pgType);
+  if (!match || !schemas.some(({ name }) => name === match.relation.schema)) {
+    return undefined;
+  }
+  const { kind, relation } = match;
+  return `Database[${JSON.stringify(relation.schema)}]['${kind}'][${JSON.stringify(
+    relation.name,
+  )}]`;
 };

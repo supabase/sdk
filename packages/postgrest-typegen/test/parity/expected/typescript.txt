@@ -15,6 +15,7 @@ export type Database = {
           owner_id: number
           status: Database["inventory"]["Enums"]["user_status"]
         }
+        ComputedFields: never
         Insert: {
           id?: number
           owner_id: number
@@ -40,6 +41,7 @@ export type Database = {
           public_user_id: number | null
           status: Database["inventory"]["Enums"]["user_status"] | null
         }
+        ComputedFields: never
         Insert: {
           id?: number
           public_user_id?: number | null
@@ -73,6 +75,7 @@ export type Database = {
           id: number
           name: string
         }
+        ComputedFields: never
         Insert: {
           id?: number
           name: string
@@ -85,6 +88,7 @@ export type Database = {
       }
       empty: {
         Row: {}
+        ComputedFields: never
         Insert: {}
         Update: {}
         Relationships: []
@@ -97,6 +101,7 @@ export type Database = {
           id: number
           days_since_event: number | null
         }
+        ComputedFields: "days_since_event"
         Insert: {
           created_at?: string
           data?: Json | null
@@ -118,6 +123,7 @@ export type Database = {
           event_type: string | null
           id: number
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           data?: Json | null
@@ -139,6 +145,7 @@ export type Database = {
           event_type: string | null
           id: number
         }
+        ComputedFields: never
         Insert: {
           created_at?: string
           data?: Json | null
@@ -160,6 +167,7 @@ export type Database = {
           status: Database["public"]["Enums"]["user_status"] | null
           foreign_table_label: string | null
         }
+        ComputedFields: "foreign_table_label"
         Insert: {
           id: number
           name?: string | null
@@ -179,6 +187,7 @@ export type Database = {
           id: number
           double_duration: string | null
         }
+        ComputedFields: "double_duration"
         Insert: {
           duration_optional?: string | null
           duration_required: string
@@ -200,6 +209,7 @@ export type Database = {
           name: string
           status: Database["public"]["Enums"]["meme_status"] | null
         }
+        ComputedFields: never
         Insert: {
           category?: number | null
           created_at: string
@@ -233,6 +243,7 @@ export type Database = {
           single_precision: number | null
           small_int: number | null
         }
+        ComputedFields: never
         Insert: {
           double_precision?: number | null
           flag: boolean
@@ -254,6 +265,7 @@ export type Database = {
           col1: Database["public"]["Tables"]["user_details"]["Row"] | null
           col2: Database["public"]["Views"]["a_view"]["Row"] | null
         }
+        ComputedFields: never
         Insert: {
           col1?: Database["public"]["Tables"]["user_details"]["Row"] | null
           col2?: Database["public"]["Views"]["a_view"]["Row"] | null
@@ -269,6 +281,7 @@ export type Database = {
           name: string | null
           other_id: number
         }
+        ComputedFields: never
         Insert: {
           name?: string | null
           other_id?: number
@@ -308,6 +321,16 @@ export type Database = {
             "user-id": number
           } | null
         }
+        ComputedFields:
+          | "blurb"
+          | "blurb_varchar"
+          | "details_is_long"
+          | "details_length"
+          | "details_words"
+          | "function_returning_single_row"
+          | "get_todos_setof_rows"
+          | "test_unnamed_row_scalar"
+          | "test_unnamed_row_setof"
         Insert: {
           details?: string | null
           id?: number
@@ -362,6 +385,7 @@ export type Database = {
           details: string | null
           user_id: number
         }
+        ComputedFields: never
         Insert: {
           details?: string | null
           user_id: number
@@ -463,6 +487,16 @@ export type Database = {
             "user-id": number
           } | null
         }
+        ComputedFields:
+          | "function_using_setof_rows_one"
+          | "function_using_table_returns"
+          | "get_single_user_summary_from_view"
+          | "get_todos_from_user"
+          | "get_todos_setof_rows"
+          | "get_user_audit_setof_single_row"
+          | "postgrest_resolvable_with_override_function"
+          | "test_unnamed_row_composite"
+          | "test_unnamed_row_setof"
         Insert: {
           decimal?: number | null
           id?: number
@@ -487,6 +521,7 @@ export type Database = {
           user_id: number | null
           created_ago: number | null
         }
+        ComputedFields: "created_ago"
         Insert: {
           created_at?: string | null
           id?: number
@@ -507,6 +542,7 @@ export type Database = {
         Row: {
           id: number | null
         }
+        ComputedFields: never
         Insert: {
           id?: number | null
         }
@@ -527,6 +563,7 @@ export type Database = {
           } | null
           todos_matview_label: string | null
         }
+        ComputedFields: "get_todos_by_matview" | "todos_matview_label"
         Relationships: [
           {
             foreignKeyName: "todos_user-id_fkey"
@@ -578,6 +615,7 @@ export type Database = {
             "user-id": number
           } | null
         }
+        ComputedFields: "blurb_varchar" | "test_unnamed_view_row"
         Insert: {
           details?: string | null
           id?: number | null
@@ -635,6 +673,7 @@ export type Database = {
           user_name: string | null
           user_status: Database["public"]["Enums"]["user_status"] | null
         }
+        ComputedFields: never
         Relationships: []
       }
       users_view: {
@@ -657,6 +696,9 @@ export type Database = {
             "user-id": number
           } | null
         }
+        ComputedFields:
+          | "get_single_user_summary_from_view"
+          | "get_todos_from_user"
         Insert: {
           decimal?: number | null
           id?: number | null
@@ -680,6 +722,7 @@ export type Database = {
           second_id: number | null
           second_name: string | null
         }
+        ComputedFields: never
         Relationships: []
       }
     }
@@ -739,12 +782,20 @@ export type Database = {
       }
       double_duration: {
         Args: {
-          interval_test_row: Database["public"]["Tables"]["interval_test"]["Row"]
+          interval_test_row: Omit<
+            Database["public"]["Tables"]["interval_test"]["Row"],
+            Database["public"]["Tables"]["interval_test"]["ComputedFields"]
+          >
         }
         Returns: string
       }
       foreign_table_label: {
-        Args: { ft: Database["public"]["Tables"]["foreign_table"]["Row"] }
+        Args: {
+          ft: Omit<
+            Database["public"]["Tables"]["foreign_table"]["Row"],
+            Database["public"]["Tables"]["foreign_table"]["ComputedFields"]
+          >
+        }
         Returns: string
       }
       function_returning_row: {
@@ -780,7 +831,12 @@ export type Database = {
         }
       }
       function_returning_single_row: {
-        Args: { todos: Database["public"]["Tables"]["todos"]["Row"] }
+        Args: {
+          todos: Omit<
+            Database["public"]["Tables"]["todos"]["Row"],
+            Database["public"]["Tables"]["todos"]["ComputedFields"]
+          >
+        }
         Returns: {
           decimal: number | null
           id: number
@@ -810,7 +866,12 @@ export type Database = {
         }[]
       }
       function_using_setof_rows_one: {
-        Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+        Args: {
+          user_row: Omit<
+            Database["public"]["Tables"]["users"]["Row"],
+            Database["public"]["Tables"]["users"]["ComputedFields"]
+          >
+        }
         Returns: {
           details: string | null
           id: number
@@ -824,7 +885,12 @@ export type Database = {
         }
       }
       function_using_table_returns: {
-        Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+        Args: {
+          user_row: Omit<
+            Database["public"]["Tables"]["users"]["Row"],
+            Database["public"]["Tables"]["users"]["ComputedFields"]
+          >
+        }
         Returns: {
           details: string | null
           id: number
@@ -865,7 +931,12 @@ export type Database = {
             }
           }
         | {
-            Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+            Args: {
+              user_row: Omit<
+                Database["public"]["Tables"]["users"]["Row"],
+                Database["public"]["Tables"]["users"]["ComputedFields"]
+              >
+            }
             Returns: {
               todo_count: number | null
               todo_details: string[] | null
@@ -882,7 +953,10 @@ export type Database = {
           }
         | {
             Args: {
-              userview_row: Database["public"]["Views"]["users_view"]["Row"]
+              userview_row: Omit<
+                Database["public"]["Views"]["users_view"]["Row"],
+                Database["public"]["Views"]["users_view"]["ComputedFields"]
+              >
             }
             Returns: {
               todo_count: number | null
@@ -928,7 +1002,12 @@ export type Database = {
             }
           }
         | {
-            Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+            Args: {
+              user_row: Omit<
+                Database["public"]["Tables"]["users"]["Row"],
+                Database["public"]["Tables"]["users"]["ComputedFields"]
+              >
+            }
             Returns: {
               details: string | null
               id: number
@@ -943,7 +1022,10 @@ export type Database = {
           }
         | {
             Args: {
-              userview_row: Database["public"]["Views"]["users_view"]["Row"]
+              userview_row: Omit<
+                Database["public"]["Views"]["users_view"]["Row"],
+                Database["public"]["Views"]["users_view"]["ComputedFields"]
+              >
             }
             Returns: {
               details: string | null
@@ -959,7 +1041,12 @@ export type Database = {
           }
       get_todos_setof_rows:
         | {
-            Args: { todo_row: Database["public"]["Tables"]["todos"]["Row"] }
+            Args: {
+              todo_row: Omit<
+                Database["public"]["Tables"]["todos"]["Row"],
+                Database["public"]["Tables"]["todos"]["ComputedFields"]
+              >
+            }
             Returns: {
               details: string | null
               id: number
@@ -973,7 +1060,12 @@ export type Database = {
             }
           }
         | {
-            Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+            Args: {
+              user_row: Omit<
+                Database["public"]["Tables"]["users"]["Row"],
+                Database["public"]["Tables"]["users"]["ComputedFields"]
+              >
+            }
             Returns: {
               details: string | null
               id: number
@@ -987,7 +1079,12 @@ export type Database = {
             }
           }
       get_user_audit_setof_single_row: {
-        Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+        Args: {
+          user_row: Omit<
+            Database["public"]["Tables"]["users"]["Row"],
+            Database["public"]["Tables"]["users"]["ComputedFields"]
+          >
+        }
         Returns: {
           created_at: string | null
           id: number
@@ -1090,7 +1187,12 @@ export type Database = {
             }
           }
         | {
-            Args: { user_row: Database["public"]["Tables"]["users"]["Row"] }
+            Args: {
+              user_row: Omit<
+                Database["public"]["Tables"]["users"]["Row"],
+                Database["public"]["Tables"]["users"]["ComputedFields"]
+              >
+            }
             Returns: {
               details: string | null
               id: number
@@ -1205,7 +1307,12 @@ export type Database = {
         }
       }
       todos_matview_label: {
-        Args: { mv: Database["public"]["Views"]["todos_matview"]["Row"] }
+        Args: {
+          mv: Omit<
+            Database["public"]["Views"]["todos_matview"]["Row"],
+            Database["public"]["Views"]["todos_matview"]["ComputedFields"]
+          >
+        }
         Returns: string
       }
     }

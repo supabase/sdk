@@ -96,6 +96,7 @@ describe("typescript typegen", () => {
                 score: number
                 status: Database["public"]["Enums"]["user_status"] | null
               }
+              ComputedFields: never
               Insert: {
                 id?: never
                 label: string
@@ -299,6 +300,7 @@ describe("typescript typegen", () => {
                 height_cm: number | null
                 height_in: number | null
               }
+              ComputedFields: never
               Insert: {
                 height_cm?: number | null
                 height_in?: never
@@ -369,6 +371,7 @@ describe("typescript typegen", () => {
                 optional_metadata: Json | null
                 required_metadata: NonNullable<Json>
               }
+              ComputedFields: never
               Insert: {
                 optional_metadata?: Json | null
                 required_metadata: NonNullable<Json>
@@ -465,6 +468,7 @@ describe("typescript typegen", () => {
               Row: {
                 owner_id: number
               }
+              ComputedFields: never
               Insert: {
                 owner_id: number
               }
@@ -653,6 +657,7 @@ describe("typescript typegen", () => {
               Row: {
                 owner_id: number
               }
+              ComputedFields: never
               Insert: {
                 owner_id: number
               }
@@ -844,6 +849,7 @@ describe("typescript typegen", () => {
               Row: {
                 id: number
               }
+              ComputedFields: never
               Insert: {
                 id: number
               }
@@ -1300,6 +1306,227 @@ describe("typescript typegen", () => {
     expect(variadic).not.toContain("name_translated: string | null");
   });
 
+  test("relations declare their computed fields next to Row", async () => {
+    // PostgREST leaves computed fields out of `select('*')`. postgrest-js used
+    // to infer which `Row` keys those are from `Functions`, which fails once a
+    // `Row`'s column types are overridden. `ComputedFields` names them
+    // explicitly, `never` when there are none. A named row parameter is typed
+    // without the computed fields, since PostgREST never takes them as input
+    // and fills the keys it does not receive with NULL. An unnamed one keeps
+    // the plain `Row` reference, which postgrest-js versions predating
+    // `ComputedFields` match on to recognise a computed field.
+    const rowType = (
+      id: number,
+      name: string,
+      relationId: number,
+    ): PostgresType => ({
+      id,
+      name,
+      schema: "public",
+      format: name,
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: relationId,
+    });
+    const rowArg = (name: string, typeId: number) => ({
+      mode: "in" as const,
+      name,
+      type_id: typeId,
+      has_default: false,
+    });
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [
+          baseTable({ id: 1, name: "category" }),
+          baseTable({ id: 2, name: "tag" }),
+        ],
+        views: [baseView({ id: 3, name: "category_view" })],
+        columns: [1, 2, 3].map((tableId) =>
+          baseColumn({
+            table_id: tableId,
+            name: "name",
+            format: "text",
+            is_nullable: false,
+            ordinal_position: 1,
+          }),
+        ),
+        functions: [
+          baseFunction({
+            id: 301,
+            name: "name_translated",
+            args: [rowArg("", 500)],
+            argument_types: "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+          baseFunction({
+            id: 302,
+            name: "slug",
+            args: [rowArg("cat", 500)],
+            argument_types: "cat category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+          baseFunction({
+            id: 303,
+            name: "label",
+            args: [rowArg("v", 502)],
+            argument_types: "v category_view",
+            identity_argument_types: "category_view",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          rowType(500, "category", 1),
+          rowType(502, "category_view", 3),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            category: {
+              Row: {
+                name: string
+                name_translated: string | null
+                slug: string | null
+              }
+              ComputedFields: "name_translated" | "slug"
+              Insert: {
+                name: string
+              }
+              Update: {
+                name?: string
+              }
+              Relationships: []
+            }
+            tag: {
+              Row: {
+                name: string
+              }
+              ComputedFields: never
+              Insert: {
+                name: string
+              }
+              Update: {
+                name?: string
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            category_view: {
+              Row: {
+                name: string
+                label: string | null
+              }
+              ComputedFields: "label"
+              Relationships: []
+            }
+          }
+          Functions: {
+            label: {
+              Args: {
+                v: Omit<
+                  Database["public"]["Views"]["category_view"]["Row"],
+                  Database["public"]["Views"]["category_view"]["ComputedFields"]
+                >
+              }
+              Returns: string
+            }
+            name_translated: {
+              Args: { "": Database["public"]["Tables"]["category"]["Row"] }
+              Returns: {
+                error: true
+              } & "the function public.name_translated with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
+            }
+            slug: {
+              Args: {
+                cat: Omit<
+                  Database["public"]["Tables"]["category"]["Row"],
+                  Database["public"]["Tables"]["category"]["ComputedFields"]
+                >
+              }
+              Returns: string
+            }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("a function named like a column is neither in Row nor a computed field", async () => {
+    // PostgREST resolves the name to the column, so the function is not
+    // selectable through it. Emitting it anyway declared the key twice in
+    // `Row`, once with the column's type and once nullable.
+    const categoryRowType: PostgresType = {
+      id: 500,
+      name: "category",
+      schema: "public",
+      format: "category",
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: 1,
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "category" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            name: "name",
+            format: "text",
+            is_nullable: false,
+            ordinal_position: 1,
+          }),
+        ],
+        functions: [
+          baseFunction({
+            name: "name",
+            args: [{ mode: "in", name: "", type_id: 500, has_default: false }],
+            argument_types: "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [userStatusEnum, textType, categoryRowType],
+      }),
+    );
+
+    expect(result).toContain("name: string\n");
+    expect(result).not.toContain("name: string | null");
+    expect(result).toContain("ComputedFields: never");
+    // The function itself is still callable through rpc.
+    expect(result).toMatch(
+      /name: \{\s+Args: \{ "": Database\["public"\]\["Tables"\]\["category"\]\["Row"\] \}/,
+    );
+  });
+
   test("composite args on foreign tables and materialized views resolve to their Row", async () => {
     // `pgTypeToTsType` used to resolve a relation-typed value against `tables`
     // and `views` only, so an argument typed as a foreign table or as a
@@ -1361,11 +1588,12 @@ describe("typescript typegen", () => {
       }),
     );
 
-    expect(result).toContain(
-      'ft: Database["public"]["Tables"]["remote_tickets"]["Row"]',
+    // Named row parameters are typed without the relation's computed fields.
+    expect(result).toMatch(
+      /ft: Omit<\s*Database\["public"\]\["Tables"\]\["remote_tickets"\]\["Row"\],\s*Database\["public"\]\["Tables"\]\["remote_tickets"\]\["ComputedFields"\]\s*>/,
     );
-    expect(result).toContain(
-      'mv: Database["public"]["Views"]["tickets_matview"]["Row"]',
+    expect(result).toMatch(
+      /mv: Omit<\s*Database\["public"\]\["Views"\]\["tickets_matview"\]\["Row"\],\s*Database\["public"\]\["Views"\]\["tickets_matview"\]\["ComputedFields"\]\s*>/,
     );
     expect(result).not.toContain("ft: unknown");
     expect(result).not.toContain("mv: unknown");
@@ -1485,10 +1713,10 @@ describe("typescript typegen", () => {
       }),
     );
 
-    expect(result).toContain('a: Database["other"]["Tables"]["foo"]["Row"]');
-    expect(result).not.toContain(
-      'a: Database["public"]["Views"]["foo"]["Row"]',
+    expect(result).toMatch(
+      /a: Omit<\s*Database\["other"\]\["Tables"\]\["foo"\]\["Row"\],\s*Database\["other"\]\["Tables"\]\["foo"\]\["ComputedFields"\]\s*>/,
     );
+    expect(result).not.toContain('Database["public"]["Views"]["foo"]["Row"]');
   });
 
   test("types owned by a schema that is not generated fall back rather than dangle", async () => {
@@ -1673,6 +1901,7 @@ describe("typescript typegen", () => {
               Row: {
                 id: number | null
               }
+              ComputedFields: never
               Insert: {
                 id?: number | null
               }
@@ -1686,6 +1915,7 @@ describe("typescript typegen", () => {
                 derived: string | null
                 id: number | null
               }
+              ComputedFields: never
               Insert: {
                 derived?: never
                 id?: number | null
@@ -1696,12 +1926,14 @@ describe("typescript typegen", () => {
               Row: {
                 id: number | null
               }
+              ComputedFields: never
               Relationships: []
             }
             update_only_view: {
               Row: {
                 id: number | null
               }
+              ComputedFields: never
               Update: {
                 id?: number | null
               }
@@ -1782,12 +2014,14 @@ describe("typescript typegen", () => {
               Row: {
                 id: number | null
               }
+              ComputedFields: never
               Relationships: []
             }
             legacy_updatable: {
               Row: {
                 id: number | null
               }
+              ComputedFields: never
               Insert: {
                 id?: number | null
               }
@@ -1847,6 +2081,7 @@ describe("typescript typegen", () => {
               Row: {
                 id: number
               }
+              ComputedFields: never
               Insert: {
                 id: number
               }
