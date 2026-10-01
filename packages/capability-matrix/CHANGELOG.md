@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.14.0...capability-matrix/v1.15.0) (2026-10-01)
+
+
+### Features
+
+* **capability-matrix:** add search to the rendered matrix site ([#247](https://github.com/supabase/sdk/issues/247)) ([927e401](https://github.com/supabase/sdk/commit/927e401210bc87c57b2b988b0a4e1dc7fb630637))
+
 ## [1.14.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.13.0...capability-matrix/v1.14.0) (2026-09-29)
 
 
