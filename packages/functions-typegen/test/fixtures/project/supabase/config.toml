@@ -1,0 +1,19 @@
+project_id = "fixture"
+
+[api]
+enabled = true
+port = 54321
+
+[functions.disabled-fn]
+enabled = false
+
+[functions.custom-entry]
+entrypoint = "./custom/handler.ts"
+import_map = "./custom/import_map.json"
+verify_jwt = false
+
+[functions.public-greet]
+verify_jwt = false
+
+[functions.ghost]
+verify_jwt = false

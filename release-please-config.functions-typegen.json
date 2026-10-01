@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "tag-separator": "/",
+  "packages": {
+    "packages/functions-typegen": {
+      "release-type": "node",
+      "package-name": "@supabase/functions-typegen",
+      "component": "functions-typegen",
+      "bump-minor-pre-major": true
+    }
+  }
+}
