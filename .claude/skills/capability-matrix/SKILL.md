@@ -83,16 +83,28 @@ its siblings in the same `group`:
 
 ## Step 5: spec suggestion
 
-Spec files (`specs/<area>/<group_namespace>/<method_stem>.md`) are optional,
-but valuable when a feature has real behavioral complexity: multiple named
-error conditions, branching behavior, side effects, or prerequisites. The
-directory always mirrors the feature `id`'s own segments — e.g.
-`auth.mfa.challenge` lives at `auth/mfa/challenge.md` — regardless of what
-that feature's optional `group` field currently says; the two can diverge
-when a feature has been regrouped for display without renaming its `id`.
-If the new feature's `description` hints at real complexity and no spec
-exists, suggest creating one from `specs/TEMPLATE.md`. Don't suggest a spec
-for a simple getter/setter with an already-complete one-line description.
+Spec files (`specs/<area>/<group_namespace>/<method_stem>.md`) are optional
+and additive. The service's API spec owns the wire: paths, request and
+response shapes, status codes, and error codes. A spec file earns its place
+only when the SDK layer has something to say that the API spec cannot:
+defaults the SDK fills in, state it keeps, validation it should do before
+the wire, how it reshapes the response, sequencing across capabilities, or
+server behavior that would surprise someone who has read the API spec
+alone. The number of fields or error codes an operation has is not a reason
+for a spec, because they are in the API spec already. The directory always
+mirrors the feature `id`'s own segments, so `auth.mfa.challenge` lives at
+`auth/mfa/challenge.md`, regardless of what that feature's optional `group`
+field currently says. The two can diverge when a feature has been regrouped
+for display without renaming its `id`. If the new feature's `description`
+hints at SDK-layer complexity and no spec exists, suggest creating one from
+`specs/TEMPLATE.md`. Don't suggest a spec for a feature whose API spec entry
+already tells an implementer everything.
+
+When a spec file is being added or edited, read it against the API spec it
+links and flag every sentence that restates it: field lists, status code
+tables, error code catalogs, descriptions of what the service does
+internally. Each one is a candidate for deletion with a link in its place.
+If that removal leaves only the API section, suggest dropping the file.
 
 ## Step 6: platform-scope notes
 

@@ -34,7 +34,7 @@ CI workflows live at the repository root under `.github/` (see [CI](#ci)).
 
 1. Open the YAML for the relevant area under `capabilities/` (or create a new file matching the schema).
 2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, and an optional `group`.
-3. Optionally add a spec file at `specs/<area>/<feature>.md` documenting the expected behavior. The validator enforces that every spec file has a matching feature ID.
+3. Optionally add a spec file at `specs/<area>/<group>/<method>.md` covering what the SDK layer adds beyond the service's API spec (see `specs/TEMPLATE.md`). The validator enforces that every spec file has a matching feature ID.
 4. Validate locally and open a PR. CI runs structural checks (including spec file validation) on every PR.
 
 The full schema lives in `schema/capability-matrix.schema.json`.
