@@ -78,6 +78,10 @@ features:
     name: Admin Sign Out
     description: Revoke a user's session server-side by their access token. Requires admin/service role.
     group: admin
+  - id: auth.admin.update_mfa_factor
+    name: Admin Update MFA Factor
+    description: Update the mutable settings of a specific MFA factor on a user's account, such as its friendly name or the phone number of a phone factor. Requires admin/service role.
+    group: mfa_admin
   - id: auth.admin.update_provider
     name: Admin Update Provider
     description: Update an existing custom provider. Requires admin/service role.
