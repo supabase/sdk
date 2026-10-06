@@ -106,4 +106,4 @@ The `symbols` field is optional but enables the public API check in CI: when a P
 
 ## Commit Style
 
-Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`. Use `feat!:` for breaking changes to feature IDs (which affect all SDK compliance files referencing those IDs).
+Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`. Scope is the registry area for capability and spec changes (`feat(auth)`, `docs(storage)`), the package directory name for a package's own tooling or docs (`fix(postgrest-typegen)`), and absent for anything outside a package. A new capability and its spec go in one `feat` commit. A spec on its own is `docs`. Use `feat(<area>)!:` for breaking changes to feature IDs (which affect all SDK compliance files referencing those IDs).

@@ -26,7 +26,7 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          # Keep the types in sync with the commit types documented in CONTRIBUTING.md.
+          # Keep the types and examples in sync with the commit types and scopes documented in CONTRIBUTING.md.
           pattern='^(feat|fix|docs|chore|refactor|test|ci)(\([^)]+\))?!?: .+'
           if [[ "$PR_TITLE" =~ $pattern ]]; then
             echo "PR title is valid: $PR_TITLE"
@@ -35,8 +35,9 @@ jobs:
             echo "Expected format: type(optional scope)!: description"
             echo "Allowed types: feat, fix, docs, chore, refactor, test, ci"
             echo "Examples:"
-            echo "  feat: add storage.list_buckets capability"
-            echo "  fix(schema): correct status enum"
-            echo "  feat!: rename auth.signup to auth.sign_up"
+            echo "  feat(storage): add file_buckets.list_file_buckets with spec"
+            echo "  docs(auth): clarify the session.get_claims spec"
+            echo "  fix(capability-matrix): correct the status enum in the schema"
+            echo "  feat(auth)!: rename auth.sign_in.signup to auth.sign_in.sign_up"
             exit 1
           fi
