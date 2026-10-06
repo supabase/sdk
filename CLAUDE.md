@@ -76,7 +76,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 
 ## Feature IDs
 
-Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.email`, `storage.buckets.create`). The area must match the file's `area` field. IDs must be globally unique across all capability files.
+Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.sign_in_with_password`, `storage.file_buckets.create_file_bucket`). The area must match the file's `area` field. IDs must be globally unique across all capability files.
 
 ## SDK Compliance Format
 
@@ -84,13 +84,13 @@ Each SDK repo hosts a `sdk-compliance.yaml` at a known path. Format:
 ```yaml
 sdk: javascript
 features:
-  auth.sign_in.email: implemented
+  auth.sign_in.sign_in_with_password: implemented
   auth.mfa.enroll:
     status: partially_implemented
     note: "TOTP only"
     symbols:
       - GoTrueClient.mfaEnroll   # optional: public symbol names implementing this feature
-  storage.objects.upload: not_implemented
+  storage.file_buckets.upload: not_implemented
 ```
 
 Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.

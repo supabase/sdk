@@ -26,7 +26,7 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 1. Open the YAML for the relevant area under `packages/capability-matrix/capabilities/` (or create a new area file matching `packages/capability-matrix/schema/capability-matrix.schema.json`).
 2. Add or edit a feature entry. Required fields:
-   - `id` — `<area>.<snake_case>` (e.g. `auth.sign_in_with_password`). Must be unique and stable.
+   - `id` — `<area>.<group_namespace>.<method_stem>` (e.g. `auth.sign_in.sign_in_with_password`). Must be unique and stable.
    - `name` — human-readable title.
    - `description` — one or two sentences explaining what the feature does.
    - `group` (optional) — the group ID this feature belongs to within the area.
@@ -35,7 +35,7 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 ### Choosing a feature ID
 
-- Lowercase, snake_case, prefixed with the area: `auth.mfa_enroll`, `storage.upload`.
+- Three lowercase snake_case segments, `<area>.<group_namespace>.<method_stem>`: `auth.mfa.enroll`, `storage.file_buckets.upload`. The schema rejects anything else.
 - Prefer the verb-object pattern users will recognize from the docs.
 - For admin or scoped variants, namespace explicitly: `auth.admin.delete_user`.
 - Once a feature ID ships, treat it as a public contract. Renames require coordinated updates in every SDK's `sdk-compliance.yaml`.
@@ -92,7 +92,7 @@ Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate
 | `test`     | Adding or updating tests in `packages/capability-matrix/test/`.                         |
 | `ci`       | Changes to GitHub Actions workflows under `.github/workflows/`.                         |
 
-Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.signup → auth.sign_up`.
+Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.sign_in.signup → auth.sign_in.sign_up`.
 
 ## Code of conduct
 
