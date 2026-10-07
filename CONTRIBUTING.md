@@ -75,7 +75,7 @@ Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate
 
 ## Pull requests
 
-- Keep PRs focused — capability additions, spec additions, and tooling changes are best split into separate PRs.
+- Keep PRs focused on one concern. A new capability and its spec belong in the same PR and the same `feat` commit. A spec on its own, new or changed, is `docs`. Unrelated capabilities and tooling changes get their own PRs.
 - Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages and PR titles.
 - Describe the user-visible change in the PR body. For new features, link the relevant Supabase docs or upstream server endpoint when applicable.
 - CI must pass before merge. Reviews are routed via [CODEOWNERS](./CODEOWNERS).
@@ -84,15 +84,25 @@ Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate
 
 | Type       | When to use                                                                             |
 | ---------- | --------------------------------------------------------------------------------------- |
-| `feat`     | A new capability, new spec, or a new feature in the validator/site.                     |
+| `feat`     | A new capability, or a new feature in the validator/site.                               |
 | `fix`      | A bug fix in the validator, site, schema, or a correction to capability data.           |
-| `docs`     | Documentation-only changes (README, CONTRIBUTING, spec files).                          |
+| `docs`     | Documentation-only changes: spec files, README, CONTRIBUTING, CLAUDE.md, skills.        |
 | `chore`    | Maintenance that doesn't change behavior — deps, tooling config, repo housekeeping.     |
 | `refactor` | Code change in a package under `packages/` that neither fixes a bug nor adds a feature. |
 | `test`     | Adding or updating tests in `packages/capability-matrix/test/`.                         |
 | `ci`       | Changes to GitHub Actions workflows under `.github/workflows/`.                         |
 
-Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.sign_in.signup → auth.sign_in.sign_up`.
+Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type and scope: `feat(auth)!: rename auth.sign_in.signup → auth.sign_in.sign_up`.
+
+### Scopes
+
+The scope names the part of the repository a change touches:
+
+- Registry content (`capabilities/<area>.yaml` and `specs/<area>/`): the area, as in `feat(auth)` or `docs(storage)`. The changelog is per package, so the area is what tells its reader which part of the registry moved.
+- A package's own tooling, tests, or documentation: the package directory name, as in `fix(postgrest-typegen)` or `docs(capability-matrix)`.
+- Anything outside a package (root documentation, workflows): no scope, as in `docs:` or `ci:`.
+
+Use one scope, and do not coin sub-package scopes such as `site`, `parsers`, or `schema`: they drift into synonyms and mean nothing in a changelog. Dependabot's `chore(deps)` is its own convention and stays.
 
 ## Code of conduct
 
