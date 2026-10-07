@@ -53,7 +53,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 
 - `capabilities/` — YAML files, one per product area (auth, database, storage, realtime, functions, client). These are the source of truth for feature IDs and definitions.
 - `schema/capability-matrix.schema.json` — JSON Schema that validates capability YAML files. Feature IDs must follow three-segment format: `area.group_namespace.feature`.
-- `specs/` — Optional Markdown specs for individual features. Referenced by feature ID stem.
+- `specs/` — Optional Markdown specs for individual features, at `specs/{area}/{group}/{method}.md`. A spec is additive: it covers only what the SDK layer adds on top of the service's API spec, never the wire itself.
 - `src/` — TypeScript source for validation, aggregation, and site generation.
 - `test/` — `bun:test` suite with fixtures in `test/fixtures/`.
 
@@ -76,7 +76,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 
 ## Feature IDs
 
-Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.email`, `storage.buckets.create`). The area must match the file's `area` field. IDs must be globally unique across all capability files.
+Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.sign_in_with_password`, `storage.file_buckets.create_file_bucket`). The area must match the file's `area` field. IDs must be globally unique across all capability files.
 
 ## SDK Compliance Format
 
@@ -84,13 +84,13 @@ Each SDK repo hosts a `sdk-compliance.yaml` at a known path. Format:
 ```yaml
 sdk: javascript
 features:
-  auth.sign_in.email: implemented
+  auth.sign_in.sign_in_with_password: implemented
   auth.mfa.enroll:
     status: partially_implemented
     note: "TOTP only"
     symbols:
       - GoTrueClient.mfaEnroll   # optional: public symbol names implementing this feature
-  storage.objects.upload: not_implemented
+  storage.file_buckets.upload: not_implemented
 ```
 
 Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
@@ -102,7 +102,7 @@ The `symbols` field is optional but enables the public API check in CI: when a P
 1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for the relevant area.
 2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally unique.
 3. Run `bun run validate` — catches schema errors and duplicate IDs.
-4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`.
+4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`, following `specs/TEMPLATE.md`: only what an SDK implementer cannot get from the API spec.
 
 ## Commit Style
 

@@ -33,8 +33,8 @@ CI workflows live at the repository root under `.github/` (see [CI](#ci)).
 ## Adding or updating a capability
 
 1. Open the YAML for the relevant area under `capabilities/` (or create a new file matching the schema).
-2. Add or edit a feature entry. Each feature needs `id` (`<area>.<snake_case>`), `name`, `description`, and an optional `group`.
-3. Optionally add a spec file at `specs/<area>/<feature>.md` documenting the expected behavior. The validator enforces that every spec file has a matching feature ID.
+2. Add or edit a feature entry. Each feature needs `id` (`<area>.<group_namespace>.<method_stem>`), `name`, `description`, and an optional `group`.
+3. Optionally add a spec file at `specs/<area>/<group>/<method>.md` covering what the SDK layer adds beyond the service's API spec (see `specs/TEMPLATE.md`). The validator enforces that every spec file has a matching feature ID.
 4. Validate locally and open a PR. CI runs structural checks (including spec file validation) on every PR.
 
 The full schema lives in `schema/capability-matrix.schema.json`.
@@ -48,10 +48,10 @@ sdk: javascript   # one of: javascript, flutter, python, swift, csharp, go, kotl
 api_coverage: additions # optional: additions (default) or full
 
 features:
-  auth.sign_up:                implemented
-  auth.sign_in_with_password:  implemented
+  auth.sign_in.sign_up:                implemented
+  auth.sign_in.sign_in_with_password:  implemented
 
-  auth.mfa_enroll:
+  auth.mfa.enroll:
     status: partially_implemented
     note: "TOTP only — phone factor not yet supported"
     symbols:

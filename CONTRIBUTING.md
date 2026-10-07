@@ -11,7 +11,7 @@ Thanks for your interest in contributing. This repo is the canonical, machine-re
 ## Ways to contribute
 
 - **Add or update a capability** in `packages/capability-matrix/capabilities/<area>.yaml`
-- **Document a feature's behavior** by adding a spec file under `packages/capability-matrix/specs/<area>/<feature>.md`
+- **Document what the SDK layer adds** to a feature with a spec file under `packages/capability-matrix/specs/<area>/<group_namespace>/<method_stem>.md`
 - **Improve the validator or site generator** in `packages/capability-matrix/`
 - **Report a bug or request a change** via [GitHub Issues](https://github.com/supabase/sdk/issues)
 
@@ -26,7 +26,7 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 1. Open the YAML for the relevant area under `packages/capability-matrix/capabilities/` (or create a new area file matching `packages/capability-matrix/schema/capability-matrix.schema.json`).
 2. Add or edit a feature entry. Required fields:
-   - `id` — `<area>.<snake_case>` (e.g. `auth.sign_in_with_password`). Must be unique and stable.
+   - `id` — `<area>.<group_namespace>.<method_stem>` (e.g. `auth.sign_in.sign_in_with_password`). Must be unique and stable.
    - `name` — human-readable title.
    - `description` — one or two sentences explaining what the feature does.
    - `group` (optional) — the group ID this feature belongs to within the area.
@@ -35,20 +35,20 @@ For security issues, please follow [SECURITY.md](./SECURITY.md) instead of filin
 
 ### Choosing a feature ID
 
-- Lowercase, snake_case, prefixed with the area: `auth.mfa_enroll`, `storage.upload`.
+- Three lowercase snake_case segments, `<area>.<group_namespace>.<method_stem>`: `auth.mfa.enroll`, `storage.file_buckets.upload`. The schema rejects anything else.
 - Prefer the verb-object pattern users will recognize from the docs.
 - For admin or scoped variants, namespace explicitly: `auth.admin.delete_user`.
 - Once a feature ID ships, treat it as a public contract. Renames require coordinated updates in every SDK's `sdk-compliance.yaml`.
 
 ## Adding a spec file
 
-Spec files are optional but encouraged for any feature with non-trivial behavior. They are free-form prose for humans and LLMs.
+Spec files are optional. They are free-form prose for humans and LLMs, and they are additive: the service's API spec is the source of truth for the wire (paths, request and response shapes, status codes, and error codes), and a spec file adds only what an SDK implementer cannot get from it. That means what the SDK layer does between the app and the wire, and what would surprise someone who has read the API spec and nothing else.
 
-1. Create `packages/capability-matrix/specs/<area>/<feature_id_stem>.md` — e.g. `auth.sign_up` → `specs/auth/sign_up.md`.
+1. Create `packages/capability-matrix/specs/<area>/<group_namespace>/<method_stem>.md`, mirroring the three segments of the feature ID: `auth.sign_in.sign_up` → `specs/auth/sign_in/sign_up.md`. The validator and the site only see files at that depth.
 2. Use [`specs/TEMPLATE.md`](./packages/capability-matrix/specs/TEMPLATE.md) as the starting point. Remove sections that don't apply.
 3. The validator enforces that every spec file maps to a real feature ID. Orphaned spec files fail CI.
 
-Focus on what is observable: inputs, outputs, side effects, error conditions. Avoid language-specific function signatures.
+Write what the SDK adds: defaults it fills in, state it keeps, validation it should do before the wire, how it reshapes the response, what must happen first, and server behavior that surprises. Do not restate request or response fields, status codes, or error codes. Link the API spec instead. Avoid language-specific function signatures. Before opening the PR, delete every sentence an implementer could reconstruct from the linked API spec. If only the API section is left, the feature does not need a spec file.
 
 ## SDK compliance (not in this repo)
 
@@ -92,7 +92,7 @@ Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate
 | `test`     | Adding or updating tests in `packages/capability-matrix/test/`.                         |
 | `ci`       | Changes to GitHub Actions workflows under `.github/workflows/`.                         |
 
-Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.signup → auth.sign_up`.
+Breaking changes (e.g. renaming a feature ID, changing the schema in an incompatible way) must be flagged with `!` after the type: `feat!: rename auth.sign_in.signup → auth.sign_in.sign_up`.
 
 ## Code of conduct
 
