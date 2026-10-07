@@ -6,7 +6,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 - `GET /admin/sso/providers`
 
-The OpenAPI entry documents no query parameters. The handler, [`adminSSOProvidersList`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), reads `resource_id` and `resource_id_prefix` filters, until the entry is corrected.
+The OpenAPI entry documents no query parameters. The handler, [`adminSSOProvidersList`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), reads `resource_id` and `resource_id_prefix` filters, until the entry is corrected ([supabase/auth#2859](https://github.com/supabase/auth/issues/2859)).
 
 ## Behavior
 

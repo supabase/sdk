@@ -6,7 +6,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 - `PUT /admin/users/{userId}/factors/{factorId}`
 
-The OpenAPI entry documents the request body as an object with no properties. The accepted fields are in the handler, [`adminUserUpdateFactor`](https://github.com/supabase/auth/blob/master/internal/api/admin.go), until the entry is corrected.
+The OpenAPI entry documents the request body as an object with no properties. The accepted fields are in the handler, [`adminUserUpdateFactor`](https://github.com/supabase/auth/blob/master/internal/api/admin.go), until the entry is corrected ([supabase/auth#2859](https://github.com/supabase/auth/issues/2859)).
 
 ## Behavior
 

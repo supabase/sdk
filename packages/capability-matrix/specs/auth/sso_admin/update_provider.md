@@ -6,7 +6,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 - `PUT /admin/sso/providers/{ssoProviderId}`
 
-The OpenAPI entry lags the handler, [`adminSSOProvidersUpdate`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), in its request fields and path addressing, in the same ways as [Admin Create SSO Provider](create_provider.md), until it is corrected.
+The OpenAPI entry lags the handler, [`adminSSOProvidersUpdate`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), in its request fields and path addressing, in the same ways as [Admin Create SSO Provider](create_provider.md), until it is corrected ([supabase/auth#2859](https://github.com/supabase/auth/issues/2859)).
 
 ## Behavior
 
