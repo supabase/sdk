@@ -25,6 +25,8 @@ groups:
     title: Admin — Passkeys
   - id: mfa_admin
     title: Admin — Multi-Factor Authentication
+  - id: sso_admin
+    title: Admin — SSO Providers
 features:
   - id: auth.admin.create_provider
     name: Admin Create Provider
@@ -318,3 +320,23 @@ features:
     name: Verify OTP
     description: Verify a one-time password or token hash to complete sign-in or email confirmation.
     group: sign_in
+  - id: auth.sso_admin.create_provider
+    name: Admin Create SSO Provider
+    description: Register a single sign-on identity provider from its SAML 2.0 metadata URL or metadata XML, with optional email domains, attribute mapping, and NameID format. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.delete_provider
+    name: Admin Delete SSO Provider
+    description: Remove a registered single sign-on identity provider together with its domain assignments. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.get_provider
+    name: Admin Get SSO Provider
+    description: Fetch a registered single sign-on identity provider by its ID or resource ID, including its SAML metadata and domains. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.list_providers
+    name: Admin List SSO Providers
+    description: List the registered single sign-on identity providers, optionally filtered by resource ID or resource ID prefix. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.update_provider
+    name: Admin Update SSO Provider
+    description: Update a registered single sign-on identity provider's SAML metadata, domains, attribute mapping, NameID format, resource ID, or disabled state. Requires admin/service role.
+    group: sso_admin
