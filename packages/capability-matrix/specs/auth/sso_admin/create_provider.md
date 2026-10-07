@@ -6,7 +6,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 - `POST /admin/sso/providers`
 
-The OpenAPI entry lags the handler, [`adminSSOProvidersCreate`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), in its response code, request fields, and response field names, until it is corrected.
+The OpenAPI entry lags the handler, [`adminSSOProvidersCreate`](https://github.com/supabase/auth/blob/master/internal/api/ssoadmin.go), in its response code, request fields, and response field names, until it is corrected ([supabase/auth#2859](https://github.com/supabase/auth/issues/2859)).
 
 ## Behavior
 
