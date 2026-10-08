@@ -62,7 +62,7 @@
     "test": "bun scripts/run-tests.ts test/"
   },
   "dependencies": {
-    "arktype": "2.2.5"
+    "arktype": "2.2.7"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "^12.1.0",
@@ -74,7 +74,7 @@
     "@types/pg": "^8.23.1",
     "knip": "^6.32.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.85.0",
+    "oxlint": "1.86.0",
     "oxlint-tsgolint": "7.0.2003",
     "pg": "^8.23.0",
     "testcontainers": "^12.1.0",
