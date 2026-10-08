@@ -149,6 +149,20 @@ npm install pg
 npm install oxfmt@0.66.0
 ```
 
+## postgrest-js type tests
+
+Every pull request that touches this package also runs postgrest-js's type tests against the TypeScript this pull request generates. The `postgrest-js type tests` job in `postgrest-typegen-validate.yml` checks out supabase-js, starts the database fixture in `packages/core/postgrest-js/test/supabase`, writes `test/types.generated.ts` with `bun run generate:postgrest-js-types`, and runs `test:types:ci` over every TypeScript version postgrest-js supports. The assertions are the hand-written `*.test-d.ts` files in supabase-js, so the generated file is allowed to change as long as they keep passing.
+
+To run it locally, start that fixture with `supabase --workdir packages/core/postgrest-js/test db start` in a supabase-js checkout, then:
+
+```bash
+bun run generate:postgrest-js-types postgresql://postgres:postgres@127.0.0.1:54322/postgres <supabase-js>/packages/core/postgrest-js/test/types.generated.ts
+```
+
+Then run `node scripts/update-json-type.js`, `pnpm exec prettier --write test/types.generated.ts` and `pnpm run test:types:ci` in `packages/core/postgrest-js`.
+
+This job covers TypeScript only. Findings in the Go, Python and Swift generators stay with their own unit tests here, and move with those generators to their SDK repositories (SDK-1641).
+
 ## Releasing
 
 Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm. Once npm serves the new version, the same workflow opens a pull request that bumps the exact pin in `packages/typegen`.
