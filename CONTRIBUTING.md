@@ -48,7 +48,25 @@ Spec files are optional. They are free-form prose for humans and LLMs, and they 
 2. Use [`specs/TEMPLATE.md`](./packages/capability-matrix/specs/TEMPLATE.md) as the starting point. Remove sections that don't apply.
 3. The validator enforces that every spec file maps to a real feature ID. Orphaned spec files fail CI.
 
-Write what the SDK adds: defaults it fills in, state it keeps, validation it should do before the wire, how it reshapes the response, what must happen first, and server behavior that surprises. Do not restate request or response fields, status codes, or error codes. Link the API spec instead. Avoid language-specific function signatures. Before opening the PR, delete every sentence an implementer could reconstruct from the linked API spec. If only the API section is left, the feature does not need a spec file.
+Write what the SDK adds: defaults it fills in, state it keeps, checks it makes before the wire, how it reshapes the response, what must happen first, and server behavior that surprises. Do not restate request or response fields, status codes, or error codes. Link the API spec instead. Avoid language-specific function signatures.
+
+A spec is normative. It states what an SDK does, in the present tense, for every SDK at once, and it never names an SDK or records what any SDK does today. A snapshot of current behavior rots the day one SDK changes, and it tells an implementer nothing about what to build. Kinds of SDK are fine, such as "SDKs that hold a session", but instances are not. When a named SDK diverges from a spec, open an issue in that SDK's repository that cites the spec as the source of truth, and leave the spec alone.
+
+Every sentence is precise enough that two implementers would build the same thing. Name the input, the exact server answer (HTTP status, `error_code`, and the message when it carries meaning), the form a check accepts, and the body a response carries. Words like "malformed", "invalid", "clear", "appropriate", and "handles" usually mark a sentence that names none of those. This sentence, from an earlier version of a spec in this repository, fails both rules:
+
+> The server answers a malformed path id with 404 rather than 400. The existing SDKs validate the id as a UUID before sending, which turns that into a clear client-side error.
+
+It names no input, no error, and no form, and what it does say about SDKs is a snapshot. The same fact as a contract:
+
+> A user id that is not a UUID is rejected before any request is sent, as the SDK's own argument error and never as the server error type. The server's answer to such an id is HTTP 404 with error code `validation_failed` and the message `user_id must be an UUID`, the same status an unknown user gets with `user_not_found`, so code that branches on the status would read a typo as a missing user. SDKs accept at least the canonical hyphenated form, 32 hexadecimal digits in groups of 8, 4, 4, 4, and 12, in either case.
+
+A check the SDK makes before the wire is defined under `## Errors`, not `## Behavior`, in those terms: the input, the form it accepts, the error the SDK raises, and the server answer it pre-empts.
+
+The service's behavior is not the spec's subject. A sentence about the service earns its place only as the premise of what the SDK does, in the same sentence as the obligation: "the body is an empty object, so the SDK returns nothing". What the service does beyond that is linked, never described: the guide on [supabase.com/docs](https://supabase.com/docs) when one covers it, otherwise the handler in the service's source. A spec that explained what a hard delete removes, what blocks it, and how a soft delete obfuscates the email was describing the service, and an implementer who needs those facts reads the guide, which owns them and is maintained by the people who change them.
+
+When the API spec is wrong or incomplete for an operation, the `## API` section says so in one line, as a fact, and links the handler in the service's source. The condition that retires that line goes in an HTML comment directly below it, with the upstream issue URL, never in the prose: "until it is corrected" is noise to the reader and undermines the sentence it hangs off. When the API spec is fixed, delete the line and its comment together.
+
+Before opening the PR, apply four tests to every sentence. Removal: delete it if an implementer could reconstruct it from the linked API spec, and if only the API section is left, the feature does not need a spec file. Snapshot: delete it if it names an SDK or describes what SDKs do today. Precision: rewrite it if two implementers could read it and build different things. Service: delete it if it describes the service and removing it changes nothing about what the SDK does, linking the guide or the handler if a reader would still need the fact. Then search `specs/` for the same wording in sibling files, because specs copy from each other and a fix to one is a fix to all of them.
 
 ## SDK compliance (not in this repo)
 
