@@ -34,7 +34,8 @@ export interface GenerateTypescriptOptions {
   /**
    * Schema treated as the default for the generated `Tables`/`Enums`/etc.
    * helper types. Replaces postgres-meta's `GENERATE_TYPES_DEFAULT_SCHEMA`
-   * env read. Default `'public'`.
+   * env read. Default `'public'`. When it is not among the generated schemas,
+   * the first generated schema is used instead, so the helpers keep resolving.
    */
   defaultSchema?: string;
   /**
@@ -128,6 +129,10 @@ export const generateTypescript = async (
     defaultSchema = "public",
     format = defaultFormat,
   } = opts;
+  const resolvedDefaultSchema =
+    schemas.some(({ name }) => name === defaultSchema) || !schemas[0]
+      ? defaultSchema
+      : schemas[0].name;
   // Every relation-typed value resolves against the same collections, so build
   // the lookup context once rather than reassembling it at each call site.
   const typeContext: TypeResolutionContext = {
@@ -1032,7 +1037,7 @@ export type Database = {
 type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, ${JSON.stringify(
-    defaultSchema,
+    resolvedDefaultSchema,
   )}>]
 
 export type Tables<
