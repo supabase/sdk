@@ -102,7 +102,7 @@ The `symbols` field is optional but enables the public API check in CI: when a P
 1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for the relevant area.
 2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally unique.
 3. Run `bun run validate` — catches schema errors and duplicate IDs.
-4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`, following `specs/TEMPLATE.md`: only what an SDK implementer cannot get from the API spec.
+4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`, following `specs/TEMPLATE.md`: only what an SDK implementer cannot get from the API spec, written as a contract that names no SDK and is precise enough that two implementers would build the same thing. See "Adding a spec file" in `CONTRIBUTING.md` for the three tests every sentence passes before a PR.
 
 ## Commit Style
 

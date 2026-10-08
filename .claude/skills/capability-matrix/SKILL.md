@@ -1,6 +1,6 @@
 ---
 name: capability-matrix
-description: Helps maintain the Supabase SDK capability matrix in packages/capability-matrix/capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `bun run validate`, it doesn't replace it.
+description: Helps maintain the Supabase SDK capability matrix in packages/capability-matrix/capabilities/*.yaml and specs/ — naming a new feature ID, picking or creating a group, checking for duplicate or semantically-overlapping capabilities, spotting naming drift within a group, suggesting when a spec file is warranted, reviewing a spec for normative voice and precision, and noting platform-specific behavior. Use whenever a capability YAML or spec file is being added or edited, before opening a PR that touches capabilities/, or when asked to review/audit the matrix, check for duplicates, or suggest groupings. This is an advisory pass, not a gate — it complements `bun run validate`, it doesn't replace it.
 ---
 
 # Capability Matrix Maintenance
@@ -105,6 +105,16 @@ links and flag every sentence that restates it: field lists, status code
 tables, error code catalogs, descriptions of what the service does
 internally. Each one is a candidate for deletion with a link in its place.
 If that removal leaves only the API section, suggest dropping the file.
+
+Then read what survives for voice and precision, which no validator can see. These checks exist because specs in this repository have failed each of them before, and the failures read plausibly until someone tried to implement from them.
+
+- Snapshot test. A spec is normative: it states what an SDK does, in the present tense, for every SDK at once. Flag every sentence that names an SDK (`supabase-js`, `JS`, `Swift`, `Dart`, `Python`) or describes what SDKs do today ("the existing SDKs", "currently", "most SDKs"). Kinds are fine ("SDKs that hold a session"), instances are not. A sentence describing how one SDK diverges is never spec content: suggest an issue in that SDK's repository that cites the spec, and delete the sentence.
+- Precision test. Flag every sentence two implementers could read and build differently. Server behavior names the HTTP status, the `error_code`, and the message when it carries meaning. A check before the wire names its input, the form it accepts, the error the SDK raises, and the server answer it pre-empts. "Malformed", "invalid", "clear", "appropriate", "properly", and "handles" are the usual tells: "a malformed id gets a clear client-side error" names no input, no form, and no error.
+- Expiry test. Flag any sentence whose truth has a date on it ("until it is corrected", "not yet", "currently"). The fact stays in the prose and the condition that retires it moves to an HTML comment directly below, with the upstream issue URL, which is the form the template gives for API drift pointers.
+- Service test. Flag every sentence that describes the service rather than what the SDK does with it. Service behavior is spec content only as the premise of an SDK obligation, in the same sentence ("the body is an empty object, so the SDK returns nothing"). If deleting the sentence changes nothing about what the SDK does, it goes, and if a reader would still need the fact, a link to the guide on supabase.com/docs, or to the handler when no guide covers it, takes its place. What a delete removes, what blocks it, and how a soft delete obfuscates a row are the guide's to own.
+- Placement. A check the SDK makes before the wire is defined under `## Errors`, not `## Behavior`.
+- Evidence. For every status, code, message, and server behavior the spec names, find the line in the service's handler that produces it, at a commit, before accepting the sentence. Do not take the API spec's word for a response body: "the server returns the deleted user" is the kind of claim that reads plausibly, is documented upstream, and is false.
+- Siblings. When a sentence fails any test, search `specs/` for the same wording. Specs copy from each other, and the fix is one PR for all of them, not a fix to the file in front of you.
 
 ## Step 6: platform-scope notes
 
