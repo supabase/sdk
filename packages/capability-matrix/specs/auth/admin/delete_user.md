@@ -13,13 +13,9 @@ The OpenAPI entry documents no request body and documents the deleted user as th
 
 ## Behavior
 
-The call deletes the user outright unless the caller asks for a soft delete. The choice is made per call, not per client, and the default is the hard delete.
+The call deletes the user outright unless the caller asks for a soft delete, which keeps the user row with `deleted_at` set and the account disabled. The choice is made per call, not per client, and the default is the hard delete. What a delete does to the user's other data, what blocks it, and why a signed-in user's token outlives it are the service's behavior, documented in [Managing user data](https://supabase.com/docs/guides/auth/managing-user-data#deleting-users), not here.
 
-A hard delete removes the user and every row that references it, so get and list no longer know the id.
-
-A soft delete keeps the user row with `deleted_at` set, so get and list still return the user. It replaces the email and phone with a hash of the old value (base64 of the SHA-256 of the user id and the value, cut to 15 characters for the phone), so the address is free for a new account and cannot be read back from the row. It deletes the user's sessions, factors, and passkeys outright rather than soft deleting them, so refresh stops working and the server rejects the user's access tokens with `session_not_found`. An access token verified locally against the project's keys still passes until it expires, as [Get Claims](../session/get_claims.md) describes. A second soft delete of the same user succeeds and changes nothing.
-
-The success response body is an empty JSON object in both modes. SDKs return success and nothing else. An SDK should not type the result as the deleted user, because the server does not send one. A caller who wants a record of what was deleted reads the user before this call.
+The success response body is an empty JSON object in both modes, so SDKs return success and nothing else. An SDK should not type the result as the deleted user, because the server does not send one. A caller who wants a record of what was deleted reads the user before this call.
 
 ## Errors
 
