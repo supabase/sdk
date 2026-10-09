@@ -2,22 +2,17 @@ import { describe, expect, test } from "bun:test";
 import {
   generateGo,
   generatePython,
-  generateSwift,
   generateTypescript,
   sortGeneratorMetadata,
 } from "@supabase/postgrest-typegen";
-import {
-  findLanguage,
-  InvalidOptionError,
-  TYPESCRIPT_FILE_NAME,
-} from "../src/index.ts";
-import { createFakeHost, rejection } from "./helpers.ts";
+import { findLanguage, TYPESCRIPT_FILE_NAME } from "../src/index.ts";
+import { createFakeHost } from "./helpers.ts";
 import { unsortedMetadata } from "./fixtures.ts";
 
 const sorted = sortGeneratorMetadata(unsortedMetadata);
 const generate = (name: string, options: Record<string, string | boolean>) =>
   findLanguage(name)!.generate(unsortedMetadata, options, createFakeHost());
-/** The pinned postgrest-typegen still returns Go, Python and Swift without their final newline. */
+/** The pinned postgrest-typegen still returns Go and Python without their final newline. */
 const asFile = (code: string) => (code.endsWith("\n") ? code : `${code}\n`);
 
 describe("in-process languages", () => {
@@ -94,15 +89,6 @@ describe("in-process languages", () => {
     expect(await generate("python", {})).toBe(asFile(generatePython(sorted)));
   });
 
-  test("swift matches the generator for each access control", async () => {
-    expect(await generate("swift", {})).toBe(
-      asFile(generateSwift(sorted, { accessControl: "internal" })),
-    );
-    expect(await generate("swift", { "swift-access-control": "public" })).toBe(
-      asFile(generateSwift(sorted, { accessControl: "public" })),
-    );
-  });
-
   test("sorts the metadata before generating", async () => {
     expect(await generate("go", {})).not.toBe(
       asFile(generateGo(unsortedMetadata)),
@@ -110,7 +96,7 @@ describe("in-process languages", () => {
   });
 
   test("ends every file with exactly one newline", async () => {
-    for (const name of ["typescript", "go", "python", "swift"]) {
+    for (const name of ["typescript", "go", "python"]) {
       const output = await generate(name, {});
       expect(output.endsWith("\n")).toBe(true);
       expect(output.endsWith("\n\n")).toBe(false);
@@ -130,20 +116,9 @@ describe("in-process languages", () => {
     expect(output.endsWith("\n\n")).toBe(false);
   });
 
-  test("swift accepts every access level the generator knows", async () => {
-    for (const accessControl of ["private", "package"] as const) {
-      expect(
-        await generate("swift", { "swift-access-control": accessControl }),
-      ).toBe(asFile(generateSwift(sorted, { accessControl })));
-    }
-    expect(
-      await rejection(generate("swift", { "swift-access-control": "open" })),
-    ).toBeInstanceOf(InvalidOptionError);
-  });
-
   test("runs without a process runner on the host", async () => {
     const { spawn: _spawn, ...hostWithoutSpawn } = createFakeHost();
-    for (const name of ["typescript", "go", "python", "swift"]) {
+    for (const name of ["typescript", "go", "python"]) {
       expect(
         await findLanguage(name)!.generate(
           unsortedMetadata,
@@ -162,7 +137,7 @@ describe("in-process languages", () => {
 
   test("never spawns a process", async () => {
     const host = createFakeHost();
-    for (const name of ["typescript", "go", "python", "swift"]) {
+    for (const name of ["typescript", "go", "python"]) {
       await findLanguage(name)!.generate(unsortedMetadata, {}, host);
     }
     expect(host.requests).toEqual([]);

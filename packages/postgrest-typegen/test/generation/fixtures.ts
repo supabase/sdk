@@ -1,7 +1,7 @@
 /**
  * Fixture builders for generation unit tests, ported from the pattern in
- * `postgres-meta/test/server/templates/go.test.ts` and generalized so the Go
- * and Python (and later TypeScript/Swift) generators can share one set of
+ * `postgres-meta/test/server/templates/go.test.ts` and generalized so the Go,
+ * Python and TypeScript generators can share one set of
  * inputs.
  *
  * These produce the `GeneratorMetadata` contract directly — no database — so

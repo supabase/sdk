@@ -4,7 +4,6 @@ import * as pkg from "../src/index.ts";
 import {
   generateGo,
   generatePython,
-  generateSwift,
   generateTypescript,
 } from "../src/generation/index.ts";
 import { introspect } from "../src/introspection/index.ts";
@@ -15,7 +14,7 @@ import {
 
 /**
  * Surface smoke test. It pins the public API shape so the subpath exports and
- * barrel stay wired up. All four generators (PGMETA-106/107) and `introspect`
+ * barrel stay wired up. The three bundled generators (PGMETA-106/107) and `introspect`
  * (PGMETA-108/109/110) are implemented; the focused behavior lives in
  * `test/generation/` and `test/introspection/`.
  */
@@ -25,7 +24,6 @@ describe("public API surface", () => {
     expect(typeof pkg.generateTypescript).toBe("function");
     expect(typeof pkg.generateGo).toBe("function");
     expect(typeof pkg.generatePython).toBe("function");
-    expect(typeof pkg.generateSwift).toBe("function");
   });
 
   test("introspect assembles an empty GeneratorMetadata from empty results", async () => {
@@ -67,7 +65,6 @@ describe("public API surface", () => {
     expect(generatePython(emptyMetadata)).toContain(
       "from pydantic import BaseModel",
     );
-    expect(generateSwift(emptyMetadata)).toContain("import Foundation");
     expect(await generateTypescript(emptyMetadata)).toContain(
       "export type Database",
     );

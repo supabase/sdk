@@ -37,14 +37,20 @@ lives in supabase-js.
 - `src/languages/dart.ts` -- the first out-of-process entry:
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
-- `src/languages/index.ts` -- the four in-process entries and the `languages`
+- `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, a
+  prebuilt binary from supabase-swift's releases (SDK-2199). It downloads the
+  release the nearest `Package.resolved` pins into the user cache, then falls
+  back to PATH; `SUPABASE_TYPEGEN` overrides both. The only entry that touches
+  the network or the file system; `createSwift` takes `fetch` and the platform
+  so tests stay offline.
+  `swift-access-control` maps to `--access-control` and accepts only
+  `internal` and `public`. Exit `65` is a rejected document.
+- `src/languages/index.ts` -- the three in-process entries and the `languages`
   list. `typescript` has no user options; `detect-one-to-one-relationships`
   (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
   `postgrest-version` and `default-schema` are consumer options that the CLI
   and postgres-meta's hosted route set from what they know about the target.
-  It honors `host.format`; `swift` exposes `swift-access-control`
-  with all four generator levels, since postgres-meta's route always accepted
-  them and extra choices change nothing for existing CLI users.
+  It honors `host.format`.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`,
   plus the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
   `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts
@@ -97,7 +103,7 @@ postgrest-typegen fix.
 `test/fixtures.ts` holds a deliberately unsorted `GeneratorMetadata` validated
 with `parseGeneratorMetadata`. `test/in-process.test.ts` asserts each bundled
 language's output equals the direct generator call on sorted input (the
-byte-identity acceptance criterion, without Docker). `test/dart.test.ts`
-covers the handoff and every error classification with the fake host from
+byte-identity acceptance criterion, without Docker). `test/dart.test.ts` and `test/swift.test.ts`
+cover the handoff and every error classification with the fake host from
 `test/helpers.ts`; `test/node-host.test.ts` runs a fake `dart` shell script
 on PATH.

@@ -4,13 +4,13 @@
 
 Type generation for PostgREST from a PostgreSQL schema. Introspects a database
 into a normalized `GeneratorMetadata` shape, then renders language types
-(TypeScript, Go, Python, Swift) from it. This is the engine extracted from
+(TypeScript, Go, Python) from it. This is the engine extracted from
 postgres-meta (the one behind `supabase gen types`), repackaged as a small,
 driver-agnostic library.
 
 **IMPORTANT — scope, read before adding a language here.** Introspection and
 the `GeneratorMetadata`/JSON contract are this package's permanent job. The
-four bundled generators (TypeScript/Go/Python/Swift) are a **deliberate
+three bundled generators (TypeScript/Go/Python) are a **deliberate
 transition**, not the pattern for new languages: they exist to let
 `supabase gen types` keep working unchanged while postgres-meta's own copies
 of these templates get deprecated in favor of this package (see SDK-1617).
@@ -18,7 +18,7 @@ of these templates get deprecated in favor of this package (see SDK-1617).
 that language's own SDK repo, consuming `introspect()`'s JSON output via
 `serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
 `supabase_typegen` package in `supabase/supabase-flutter` for the pattern).
-It's decided (not open) that all four eventually move out too, tracked in
+It's decided (not open) that all three eventually move out too, tracked in
 SDK-1641 — not yet scheduled, sequenced after postgres-meta's cutover to this
 package settles.
 
@@ -29,8 +29,7 @@ Hard split between **introspection** and **generation**:
 - `src/introspection/` -- `introspect(db, opts) => GeneratorMetadata`. Takes a
   structural `Queryable` (`pg.Pool`/`pg.Client` satisfy it; postgres-meta
   injects its forked-pg pool). Runs SQL builders ported from postgres-meta.
-- `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython` /
-  `generateSwift`. Pure functions: `GeneratorMetadata` in, the complete source
+- `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`. Pure functions: `GeneratorMetadata` in, the complete source
   file (ending in a single newline) out. No database access.
 - `src/types.ts` -- `GeneratorMetadata` + `Postgres*` types. This is the public,
   pluggable contract: any source that can produce `GeneratorMetadata` can feed
@@ -74,7 +73,7 @@ package: its `bun` exports condition hands the CLI `src/*.ts` rather than
 
 ## Relationship to postgres-meta
 
-postgres-meta deleted its own templates and consumes this package for all four
+postgres-meta deleted its own templates and consumes this package for its
 languages (supabase/postgres-meta#1084, shipped in postgres-meta v0.99.0 on
 2026-08-31), and so does the CLI (supabase/cli#6404). This package is the
 single source of truth for generator output: there is no upstream to stay
@@ -103,7 +102,7 @@ unquoted numbers.
 a global int8 type parser. `src/introspection/normalize.ts` coerces known
 numeric id fields after each query so output is identical under any driver.
 
-**Deterministic ordering:** the Go/Python/Swift generators emit objects in
+**Deterministic ordering:** the Go/Python generators emit objects in
 `GeneratorMetadata` order (only TypeScript sorts internally), so output is
 sensitive to however the producer ordered its collections. Do NOT rely on
 introspection query order (heap/aggregate-plan order is environment- and
@@ -117,11 +116,11 @@ never oid — equivalent databases assign different oids, so an oid sort would
 still churn output across environments.
 
 **TypeScript is the source of truth for ordering.** `sortGeneratorMetadata`
-replicates the sorts `generateTypescript` used to apply internally, so all four
+replicates the sorts `generateTypescript` used to apply internally, so all three
 generators now consume the single pass and TypeScript output stays
 byte-identical. The only sorts that remain inside generators are ones the
 single-collection pass cannot express: cross-collection *merge* sorts
-(TypeScript and Swift merge tables + foreign tables, and views + materialized
+(TypeScript merges tables + foreign tables, and views + materialized
 views, into one per-schema group then sort by name) and TypeScript's
 overload-resolution sorts. Don't reintroduce per-collection sorting in a
 generator — extend `sortGeneratorMetadata` instead.
