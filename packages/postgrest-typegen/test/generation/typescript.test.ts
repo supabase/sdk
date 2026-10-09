@@ -1185,12 +1185,22 @@ describe("typescript typegen", () => {
     // makes the whole Database type uninhabited for tools doing sound type
     // math on it. `Record<PropertyKey, never>` is the accurate type for a
     // function callable with no arguments.
+    //
+    // postgrest-js 1.21.1 through 2.100.0 (supabase-js 2.74.0 through
+    // 2.100.0) have no guard against `Args: never` and drop the column, so
+    // this is asserted directly as well: updating the snapshot alone must not
+    // be enough to go back.
     const result = await generateTypescript(
       buildMetadata({
         functions: [baseFunction()],
         types: [userStatusEnum, int4Type],
       }),
     );
+
+    expect(result).toContain(
+      "get_status: { Args: Record<PropertyKey, never>; Returns: number }",
+    );
+    expect(result).not.toContain("Args: never");
 
     expect(databaseSection(result)).toMatchInlineSnapshot(`
       "export type Json =
