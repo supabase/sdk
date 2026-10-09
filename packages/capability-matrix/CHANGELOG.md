@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.15.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.14.0...capability-matrix/v1.15.0) (2026-10-09)
+
+
+### Features
+
+* **auth:** add `admin.update_mfa_factor` with spec ([#255](https://github.com/supabase/sdk/issues/255)) ([4b93121](https://github.com/supabase/sdk/commit/4b931210b1d1a3d6a5ceca208e2dbf76378d7ecd))
+* **auth:** add the `sso_admin` group with specs ([#256](https://github.com/supabase/sdk/issues/256)) ([e055c18](https://github.com/supabase/sdk/commit/e055c185bea47d567a42efcabe4388156555faf3))
+* **capability-matrix:** add search to the rendered matrix site ([#247](https://github.com/supabase/sdk/issues/247)) ([927e401](https://github.com/supabase/sdk/commit/927e401210bc87c57b2b988b0a4e1dc7fb630637))
+
 ## [1.14.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.13.0...capability-matrix/v1.14.0) (2026-09-29)
 
 
