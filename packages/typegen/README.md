@@ -41,12 +41,13 @@ versions, introspecting with one and generating with the other.
 The two kinds of generator relate to `postgrest-typegen` differently:
 
 - In-process generators import its types, so they depend on it. Today those
-  are the four bundled inside `postgrest-typegen`; permanently it will be the
+  are the three bundled inside `postgrest-typegen`; permanently it will be the
   TypeScript generator once it lives in supabase-js and is published to npm.
 - Out-of-process generators depend on nothing here. They read the JSON
   document, whose shape is published as `generatorMetadataJsonSchema` and
   versioned by `GENERATOR_METADATA_VERSION`, and can be written in any
-  language. `supabase_typegen` for Dart is the first.
+  language. `supabase_typegen` for Dart was the first; `supabase-typegen` for
+  Swift is the second.
 
 This is why the registry is its own package rather than part of
 `postgrest-typegen`: once the TypeScript generator is imported from
@@ -61,13 +62,21 @@ both does not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
-| `swift`      | in-process     | `generateSwift` from `@supabase/postgrest-typegen`      | `--swift-access-control internal\|public\|private\|package`                        |
+| `swift`      | out-of-process | `supabase-typegen --access-control <level>` from PATH   | `--swift-access-control internal\|public`                                          |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
-The four in-process entries are a transition: as each generator relocates to
+The three in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
 command, or for TypeScript to an import of the new npm package, and consumers
 notice nothing but a dependency bump.
+
+Swift moved first. `supabase-typegen` is a prebuilt executable from the
+supabase-swift releases, not a package dependency: as a SwiftPM product its
+swift-format dependency would pin every app's swift-syntax, and an Xcode
+project without a `Package.swift` has nothing to `swift run` from. Use the
+release that matches the project's supabase-swift version, since the output
+targets that version's `@Table` macro. `--swift-access-control` lost
+`private` and `package`, which the new generator does not accept.
 
 ## Using the registry
 

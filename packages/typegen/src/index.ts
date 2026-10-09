@@ -33,11 +33,11 @@ export {
   go,
   languages,
   python,
-  swift,
   typescript,
   TYPESCRIPT_FILE_NAME,
 } from "./languages/index.ts";
 export { dart } from "./languages/dart.ts";
+export { swift } from "./languages/swift.ts";
 export {
   createNodeHost,
   isWindowsScript,

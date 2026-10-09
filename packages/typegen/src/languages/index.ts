@@ -1,17 +1,12 @@
 import {
-  type AccessControl,
   generateGo,
   generatePython,
-  generateSwift,
   generateTypescript,
 } from "@supabase/postgrest-typegen";
-import type {
-  ChoiceOptionSpec,
-  OptionSpec,
-  TypegenLanguage,
-} from "../contract.ts";
+import type { OptionSpec, TypegenLanguage } from "../contract.ts";
 import { dart } from "./dart.ts";
 import { inProcessLanguage } from "./in-process.ts";
+import { swift } from "./swift.ts";
 
 /** File name handed to `Host.format` for TypeScript output. */
 export const TYPESCRIPT_FILE_NAME = "output.ts";
@@ -19,7 +14,6 @@ export const TYPESCRIPT_FILE_NAME = "output.ts";
 const DETECT_ONE_TO_ONE_RELATIONSHIPS = "detect-one-to-one-relationships";
 const POSTGREST_VERSION = "postgrest-version";
 const DEFAULT_SCHEMA = "default-schema";
-const SWIFT_ACCESS_CONTROL = "swift-access-control";
 
 /**
  * All three are consumer options: the calling program knows the target's
@@ -78,29 +72,6 @@ export const go = inProcessLanguage("go", [], (metadata) =>
 
 export const python = inProcessLanguage("python", [], (metadata) =>
   generatePython(metadata),
-);
-
-/**
- * All four levels the generator accepts. `supabase gen types` used to offer
- * only `internal` and `public`; postgres-meta's route has always accepted
- * all four, and adding choices changes nothing for existing users.
- */
-const swiftAccessControl = {
-  name: SWIFT_ACCESS_CONTROL,
-  audience: "user",
-  kind: "choice",
-  choices: ["internal", "public", "private", "package"],
-  default: "internal",
-  help: "Access control for Swift generated types.",
-} satisfies ChoiceOptionSpec;
-
-export const swift = inProcessLanguage(
-  "swift",
-  [swiftAccessControl],
-  (metadata, options) =>
-    generateSwift(metadata, {
-      accessControl: options[SWIFT_ACCESS_CONTROL] as AccessControl,
-    }),
 );
 
 /**

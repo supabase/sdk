@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { findLanguage, languages } from "../src/index.ts";
 
 describe("languages", () => {
-  test("lists the four bundled generators followed by dart", () => {
+  test("lists the three bundled generators followed by swift and dart", () => {
     expect(languages.map((language) => language.name)).toEqual([
       "typescript",
       "go",
@@ -17,7 +17,7 @@ describe("languages", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  test("marks the bundled generators in-process and dart out-of-process", () => {
+  test("marks the bundled generators in-process and swift and dart out-of-process", () => {
     expect(
       Object.fromEntries(
         languages.map((language) => [language.name, language.inProcess]),
@@ -26,7 +26,7 @@ describe("languages", () => {
       typescript: true,
       go: true,
       python: true,
-      swift: true,
+      swift: false,
       dart: false,
     });
   });
@@ -42,7 +42,7 @@ describe("languages", () => {
         name: "swift-access-control",
         audience: "user",
         kind: "choice",
-        choices: ["internal", "public", "private", "package"],
+        choices: ["internal", "public"],
         default: "internal",
         help: "Access control for Swift generated types.",
       },
