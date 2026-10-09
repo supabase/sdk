@@ -12,7 +12,6 @@ import { Wait } from "testcontainers";
 import {
   generateGo,
   generatePython,
-  generateSwift,
   generateTypescript,
   sortGeneratorMetadata,
 } from "../../src/generation/index.ts";
@@ -20,7 +19,7 @@ import { introspect } from "../../src/introspection/index.ts";
 import type { GeneratorMetadata } from "../../src/types.ts";
 
 /**
- * End-to-end golden gate: introspect the shared fixture DB, run all four
+ * End-to-end golden gate: introspect the shared fixture DB, run all three
  * generators with their default options, and assert the output matches the
  * committed golden files in `expected/`.
  *
@@ -74,9 +73,5 @@ describe("generator parity vs postgres-meta CLI", () => {
 
   test("python", () => {
     expect(generatePython(metadata)).toBe(golden("python.txt"));
-  });
-
-  test("swift", () => {
-    expect(generateSwift(metadata)).toBe(golden("swift.txt"));
   });
 });

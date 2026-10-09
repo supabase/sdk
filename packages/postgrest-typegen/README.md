@@ -8,24 +8,27 @@ small, driver-agnostic library.
 > **Status:** alpha. The public API is settling as generators and introspection
 > are ported.
 
-## Scope: introspection is permanent, four generators are transitional
+## Scope: introspection is permanent, three generators are transitional
 
 This package's permanent job is introspection and the `GeneratorMetadata`
 contract (see "Out-of-process generators" below): any *new* language's
 generator lives in that language's own SDK repo, consuming this package's
 JSON output, not inside `postgrest-typegen`.
 
-The TypeScript, Go, Python, and Swift generators bundled here are a
+The TypeScript, Go, and Python generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
 They were ported byte-for-byte from postgres-meta's own templates so
 `supabase gen types` kept working unchanged; postgres-meta has since deleted
-its copies and consumes this package instead. It's decided that all four
+its copies and consumes this package instead. It's decided that all three
 eventually move out to their own SDK repos too (tracked in SDK-1641), not yet
 scheduled — sequenced after postgres-meta's cutover to this package settles.
+Swift was the first to move: its generator is the `supabase-typegen`
+executable in [supabase-swift](https://github.com/supabase/supabase-swift),
+which `supabase gen types --lang swift` runs (SDK-2199).
 
 > [!IMPORTANT]
 > **We are no longer accepting contributions that fix the bundled generators.**
-> Because each of the four is moving out to its own language's SDK repository,
+> Because each of the three is moving out to its own language's SDK repository,
 > a fix landed here would have to be made a second time in the destination
 > repository, and postgres-meta and the CLI only pick it up once they bump
 > their pinned version of this package. Please open an issue describing the
@@ -57,7 +60,7 @@ generators.
 
 ### Stable ordering (`sortGeneratorMetadata`)
 
-The Go/Python/Swift generators emit tables, views, and materialized views in
+The Go/Python generators emit tables, views, and materialized views in
 `GeneratorMetadata` order, so their output depends on how the producer ordered
 its collections (a SQL introspector returns rows in environment-dependent heap
 order). `sortGeneratorMetadata` is a pure pass that canonically sorts every
@@ -116,7 +119,6 @@ import {
   generateTypescript, // async (formats its output)
   generateGo,
   generatePython,
-  generateSwift,
 } from "@supabase/postgrest-typegen/generation";
 ```
 
@@ -125,7 +127,6 @@ import {
 | `generateTypescript` | `{ detectOneToOneRelationships?, postgrestVersion?, defaultSchema?, format? }` |
 | `generateGo`         | —                                                                              |
 | `generatePython`     | —                                                                              |
-| `generateSwift`      | `{ accessControl?: 'internal' \| 'public' \| 'private' \| 'package' }`         |
 
 Every generator returns the complete contents of the generated file, ending
 with a single newline, so consumers write the result as-is.

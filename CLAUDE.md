@@ -9,7 +9,7 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/capability-matrix/` — the **canonical feature registry** for all Supabase client SDKs — not the SDKs themselves. It defines what features exist (name, description, grouping) across 7 client SDKs (JavaScript, Flutter, Python, Swift, C#, Go, Kotlin). SDKs declare compliance separately in their own repos via `sdk-compliance.yaml` files. The output is a static capability matrix website at https://supabase.github.io/sdk/ showing which features each SDK implements.
 - `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by the Dart compliance workflow.
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
-- `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, Python, and Swift. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
+- `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
 - `packages/typegen/`: the language registry for `supabase gen types --lang`. `languages` maps each name to a generator, either in-process (the four bundled in postgrest-typegen) or an external tool run in the user's project (Dart via `dart run supabase_typegen`). The CLI dispatches through it, so adding a language is a pull request here plus a CLI dependency bump. See its own `CLAUDE.md`.
 
 ## Commands
