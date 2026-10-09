@@ -62,7 +62,7 @@ both does not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
-| `swift`      | out-of-process | `supabase-typegen --access-control <level>` from PATH   | `--swift-access-control internal\|public`                                          |
+| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, fetched    | `--swift-access-control internal\|public`                                          |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
 The three in-process entries are a transition: as each generator relocates to
@@ -73,10 +73,19 @@ notice nothing but a dependency bump.
 Swift moved first. `supabase-typegen` is a prebuilt executable from the
 supabase-swift releases, not a package dependency: as a SwiftPM product its
 swift-format dependency would pin every app's swift-syntax, and an Xcode
-project without a `Package.swift` has nothing to `swift run` from. Use the
-release that matches the project's supabase-swift version, since the output
-targets that version's `@Table` macro. `--swift-access-control` lost
-`private` and `package`, which the new generator does not accept.
+project without a `Package.swift` has nothing to `swift run` from.
+
+The output targets one version's `@Table` macro, so the binary must match the
+project's supabase-swift. The entry reads that version from the nearest
+`Package.resolved` (in `cwd` or a parent; SwiftPM's, or Xcode's inside the
+`.xcodeproj` or `.xcworkspace`), downloads that release's asset once into
+`$XDG_CACHE_HOME/supabase/typegen/<version>/` (default `~/Library/Caches` on
+macOS, `~/.cache` elsewhere) and runs it. Without a version pin, or on a
+platform with no asset (anything but macOS and Linux x86_64), it runs
+`supabase-typegen` from PATH. `SUPABASE_TYPEGEN=<path>` overrides both.
+
+`--swift-access-control` lost `private` and `package`, which the new
+generator does not accept.
 
 ## Using the registry
 

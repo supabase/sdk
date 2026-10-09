@@ -38,7 +38,11 @@ lives in supabase-js.
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
 - `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, a
-  prebuilt binary from supabase-swift's releases resolved on PATH (SDK-2199).
+  prebuilt binary from supabase-swift's releases (SDK-2199). It downloads the
+  release the nearest `Package.resolved` pins into the user cache, then falls
+  back to PATH; `SUPABASE_TYPEGEN` overrides both. The only entry that touches
+  the network or the file system; `createSwift` takes `fetch` and the platform
+  so tests stay offline.
   `swift-access-control` maps to `--access-control` and accepts only
   `internal` and `public`. Exit `65` is a rejected document.
 - `src/languages/index.ts` -- the three in-process entries and the `languages`
