@@ -32,3 +32,46 @@ jobs:
       - run: bun run knip
       - run: bun run build
       - run: bun run test
+
+  postgrest-js-type-tests:
+    name: postgrest-js type tests
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_JS_REF: lukasklingsbo/sdk-1735-playbook-type-cases
+      POSTGREST_JS_DIR: ${{ github.workspace }}/supabase-js/packages/core/postgrest-js
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: supabase/supabase-js
+          ref: ${{ env.SUPABASE_JS_REF }}
+          path: supabase-js
+          persist-credentials: false
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: supabase-js/.nvmrc
+      - run: bun install --frozen-lockfile
+      - name: Install supabase-js dependencies
+        working-directory: supabase-js
+        run: |
+          npm install --global "$(node -p "require('./package.json').packageManager.split('+')[0]")"
+          pnpm install --frozen-lockfile
+      - name: Start the postgrest-js fixture database
+        working-directory: supabase-js
+        run: pnpm exec supabase --workdir "$POSTGREST_JS_DIR/test" db start
+      - name: Generate types with this pull request's generator
+        run: bun run generate:postgrest-js-types postgresql://postgres:postgres@127.0.0.1:54322/postgres "$POSTGREST_JS_DIR/test/types.generated.ts"
+      - name: Post-process the generated types as supabase-js does
+        working-directory: ${{ env.POSTGREST_JS_DIR }}
+        run: |
+          node scripts/update-json-type.js
+          pnpm exec prettier --write test/types.generated.ts
+      - name: Run postgrest-js type tests
+        working-directory: ${{ env.POSTGREST_JS_DIR }}
+        run: pnpm run test:types:ci
