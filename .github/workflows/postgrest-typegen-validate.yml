@@ -1,10 +1,5 @@
 name: Validate postgrest-typegen
 
-# `postgrest-js type tests` is a required check on main. A required check has
-# to report on every pull request, and a workflow that path filtering skips
-# never reports, so pull requests trigger the workflow unconditionally and the
-# `changes` job decides whether the real jobs run. A job skipped by its `if`
-# counts as passed. Keep the push paths and the pattern in `changes` the same.
 on:
   push:
     branches: [main]
