@@ -8,6 +8,9 @@ on:
       - ".github/workflows/postgrest-typegen-validate.yml"
   pull_request:
 
+permissions:
+  contents: read
+
 defaults:
   run:
     working-directory: packages/postgrest-typegen
@@ -27,13 +30,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           PULL_REQUEST: ${{ github.event.pull_request.number }}
+        shell: bash
         run: |
           if [ "$EVENT_NAME" != "pull_request" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/files" --paginate --jq '.[].filename' \
-            | grep -qE '^(packages/postgrest-typegen/|\.github/workflows/postgrest-typegen-validate\.yml$)'; then
+          files=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/files" --paginate --jq '.[].filename')
+          if printf '%s\n' "$files" | grep -qE '^(packages/postgrest-typegen/|\.github/workflows/postgrest-typegen-validate\.yml$)'; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
