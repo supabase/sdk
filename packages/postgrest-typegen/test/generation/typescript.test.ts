@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { cp, mkdir, mkdtemp, readdir, rm, symlink } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -2230,6 +2238,93 @@ describe("typescript typegen", () => {
       } as const
       "
     `);
+  });
+
+  test("a default schema that is not generated falls back to the first generated schema", async () => {
+    // `DefaultSchema` used to resolve to `never` here, which made every helper
+    // without a `{ schema }` option `unknown`: any table name was accepted and
+    // no column could be read. Only the compiler can tell, so the generated
+    // file is typechecked, not only inspected.
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [
+          { id: 3, name: "personal", owner: "postgres" },
+          { id: 2, name: "audit", owner: "postgres" },
+        ],
+        tables: [
+          baseTable({ id: 1, schema: "audit", name: "users" }),
+          baseTable({ id: 4, schema: "personal", name: "notes" }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            schema: "audit",
+            name: "id",
+            format: "int8",
+          }),
+          baseColumn({
+            table_id: 4,
+            schema: "personal",
+            name: "body",
+            format: "text",
+          }),
+        ],
+        types: [],
+      }),
+    );
+
+    expect(result).toContain('Extract<keyof Database, "audit">');
+
+    const root = await mkdtemp(
+      join(tmpdir(), "postgrest-typegen-default-schema-"),
+    );
+    try {
+      await writeFile(join(root, "database.ts"), result);
+      await writeFile(
+        join(root, "usage.ts"),
+        `import type { Tables, TablesInsert, TablesUpdate } from "./database"
+
+declare const row: Tables<"users">
+declare const insert: TablesInsert<"users">
+declare const update: TablesUpdate<"users">
+declare const note: Tables<{ schema: "personal" }, "notes">
+const id: number = row.id
+const insertId: number = insert.id
+const updateId: number | undefined = update.id
+const body: string = note.body
+// @ts-expect-error a table outside the default schema needs the schema option
+type Notes = Tables<"notes">
+// @ts-expect-error a row needs its columns
+const wrongRow: Tables<"users"> = { nope: true }
+
+export type { Notes }
+export { id, insertId, updateId, body, wrongRow }
+`,
+      );
+      const proc = Bun.spawn({
+        cmd: [
+          join(import.meta.dir, "..", "..", "node_modules", ".bin", "tsc"),
+          "--noEmit",
+          "--strict",
+          "--module",
+          "esnext",
+          "--moduleResolution",
+          "bundler",
+          "usage.ts",
+        ],
+        cwd: root,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const [stdout, exitCode] = await Promise.all([
+        proc.stdout.text(),
+        proc.exited,
+      ]);
+      expect(stdout).toBe("");
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   test("format option substitutes the default oxfmt formatter", async () => {
