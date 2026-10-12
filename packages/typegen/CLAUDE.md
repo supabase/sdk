@@ -13,6 +13,9 @@ passes the `GeneratorMetadata` in. `introspect`, `Queryable`,
 `IntrospectOptions`, `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are
 re-exported from `@supabase/postgrest-typegen` so the CLI depends on this
 package alone and cannot end up with two postgrest-typegen versions. The
+contract's compatibility rule, how `GENERATOR_METADATA_VERSION` relates to the
+package version and who reviews contract changes are in
+`packages/postgrest-typegen/README.md` under "Contract compatibility". The
 registry sits above `postgrest-typegen` and the future per-SDK generator
 packages (SDK-1641) to avoid a dependency cycle once TypeScript's generator
 lives in supabase-js.

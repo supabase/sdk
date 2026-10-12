@@ -11,16 +11,16 @@ driver-agnostic library.
 **IMPORTANT — scope, read before adding a language here.** Introspection and
 the `GeneratorMetadata`/JSON contract are this package's permanent job. The
 three bundled generators (TypeScript/Go/Python) are a **deliberate
-transition**, not the pattern for new languages: they exist to let
-`supabase gen types` keep working unchanged while postgres-meta's own copies
-of these templates get deprecated in favor of this package (see SDK-1617).
+transition**, not the pattern for new languages: they move out one language
+at a time, TypeScript first into supabase-js, then Go and Python.
 **A new language's generator does NOT belong in this package** — it lives in
 that language's own SDK repo, consuming `introspect()`'s JSON output via
 `serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
-`supabase_typegen` package in `supabase/supabase-flutter` for the pattern).
-It's decided (not open) that all three eventually move out too, tracked in
-SDK-1641 — not yet scheduled, sequenced after postgres-meta's cutover to this
-package settles.
+`supabase_typegen` package in `supabase/supabase-flutter` and the Swift
+`supabase-typegen` executable in `supabase/supabase-swift` for the pattern).
+The compatibility rule for the contract, how `GENERATOR_METADATA_VERSION`
+relates to the package version and who reviews contract changes are in the
+README under "Contract compatibility".
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Hard split between **introspection** and **generation**:
 
 - `src/introspection/` -- `introspect(db, opts) => GeneratorMetadata`. Takes a
   structural `Queryable` (`pg.Pool`/`pg.Client` satisfy it; postgres-meta
-  injects its forked-pg pool). Runs SQL builders ported from postgres-meta.
+  injects its forked-pg pool). Runs the SQL builders in `src/introspection/sql/`.
 - `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`. Pure functions: `GeneratorMetadata` in, the complete source
   file (ending in a single newline) out. No database access.
 - `src/types.ts` -- `GeneratorMetadata` + `Postgres*` types. This is the public,
@@ -71,15 +71,14 @@ package: its `bun` exports condition hands the CLI `src/*.ts` rather than
 `dist/*.d.ts`, so `src/` must also pass stricter flags such as
 `noUncheckedIndexedAccess` that the package's own base config does not set.
 
-## Relationship to postgres-meta
+## Consumers
 
-postgres-meta deleted its own templates and consumes this package for its
-languages (supabase/postgres-meta#1084, shipped in postgres-meta v0.99.0 on
-2026-08-31), and so does the CLI (supabase/cli#6404). This package is the
-single source of truth for generator output: there is no upstream to stay
-byte-identical with, and there is no cross-check against postgres-meta (its
-output is whatever version of this package its lockfile pins, so such a check
-only ever measured release lag). Consequences:
+postgres-meta's hosted `/generators/*` routes and the Supabase CLI's
+`gen types` consume this package through `@supabase/typegen`
+(`packages/typegen`), which pins an exact version. This package is the single
+source of truth for generator output: there is no upstream to stay
+byte-identical with, and no cross-check against postgres-meta, whose output is
+whatever version its lockfile pins. Consequences:
 
 - Every generator output change is a behavior change for every consumer.
   Regenerate the inline snapshots (`bun test --update-snapshots`) and the
@@ -91,8 +90,8 @@ only ever measured release lag). Consequences:
 
 SQL literal quoting: the introspection queries use `literal()` from
 `src/introspection/sql/pg-format.ts`, an inlined port of `pg-format@1.0.4`
-(the package has no `pg-format` runtime dependency; it was CJS-only and painful
-for ESM/bundled consumers such as the CLI). It intentionally keeps pg-format's
+(the package has no `pg-format` runtime dependency: pg-format is CJS-only,
+which is painful for ESM and bundled consumers such as the CLI). It keeps pg-format's
 quirks — numbers are quoted (`literal(10)` is `'10'`) — so it stays a faithful
 port even though the introspection only quotes schema names today. Don't align
 it with `packages/pg-meta`'s variant in `supabase/supabase`, which emits
@@ -116,13 +115,12 @@ never oid — equivalent databases assign different oids, so an oid sort would
 still churn output across environments.
 
 **TypeScript is the source of truth for ordering.** `sortGeneratorMetadata`
-replicates the sorts `generateTypescript` used to apply internally, so all three
-generators now consume the single pass and TypeScript output stays
-byte-identical. The only sorts that remain inside generators are ones the
+applies the sorts `generateTypescript` defines, and all three generators
+consume that single pass. The only sorts that remain inside generators are ones the
 single-collection pass cannot express: cross-collection *merge* sorts
 (TypeScript merges tables + foreign tables, and views + materialized
 views, into one per-schema group then sort by name) and TypeScript's
-overload-resolution sorts. Don't reintroduce per-collection sorting in a
+overload-resolution sorts. Don't add per-collection sorting in a
 generator — extend `sortGeneratorMetadata` instead.
 
 ## Test Patterns
