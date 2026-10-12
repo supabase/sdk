@@ -7,17 +7,46 @@ on:
       - "packages/postgrest-typegen/**"
       - ".github/workflows/postgrest-typegen-validate.yml"
   pull_request:
-    paths:
-      - "packages/postgrest-typegen/**"
-      - ".github/workflows/postgrest-typegen-validate.yml"
+
+permissions:
+  contents: read
 
 defaults:
   run:
     working-directory: packages/postgrest-typegen
 
 jobs:
+  changes:
+    name: Detect postgrest-typegen changes
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      postgrest-typegen: ${{ steps.detect.outputs.changed }}
+    steps:
+      - id: detect
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PULL_REQUEST: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PULL_REQUEST/files" --paginate --jq '.[].filename')
+          if printf '%s\n' "$files" | grep -qE '^(packages/postgrest-typegen/|\.github/workflows/postgrest-typegen-validate\.yml$)'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   test:
     name: Types, lint, build, test
+    needs: changes
+    if: needs.changes.outputs.postgrest-typegen == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,9 +64,11 @@ jobs:
 
   postgrest-js-type-tests:
     name: postgrest-js type tests
+    needs: changes
+    if: needs.changes.outputs.postgrest-typegen == 'true'
     runs-on: ubuntu-latest
     env:
-      SUPABASE_JS_REF: lukasklingsbo/sdk-1735-playbook-type-cases
+      SUPABASE_JS_REF: master
       POSTGREST_JS_DIR: ${{ github.workspace }}/supabase-js/packages/core/postgrest-js
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
