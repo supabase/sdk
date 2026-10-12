@@ -1,12 +1,10 @@
 # @supabase/postgrest-typegen
 
 Type generation for [PostgREST](https://postgrest.org) from a PostgreSQL
-schema. This is the type-generation engine behind `supabase gen types`,
-extracted from [postgres-meta](https://github.com/supabase/postgres-meta) into a
-small, driver-agnostic library.
+schema: the type-generation engine behind `supabase gen types`, as a small,
+driver-agnostic library.
 
-> **Status:** alpha. The public API is settling as generators and introspection
-> are ported.
+> **Status:** alpha. The public API may still change between minor versions.
 
 ## Scope: introspection is permanent, three generators are transitional
 
@@ -17,17 +15,13 @@ JSON output, not inside `postgrest-typegen`.
 
 The TypeScript, Go, and Python generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
-They were ported byte-for-byte from postgres-meta's own templates so
-`supabase gen types` kept working unchanged; postgres-meta has since deleted
-its copies and consumes this package instead. The three remaining ones move
-out one at a time, each under its own ticket: TypeScript first, into
-supabase-js (SDK-2187), with Go and Python to follow; SDK-1641 is the umbrella.
-Swift was the first to move: its generator is the `supabase-typegen`
-executable in [supabase-swift](https://github.com/supabase/supabase-swift),
-which `supabase gen types --lang swift` runs (SDK-2199).
+They move out one language at a time, TypeScript first into supabase-js, then
+Go and Python. Swift's generator is the `supabase-typegen` executable in
+[supabase-swift](https://github.com/supabase/supabase-swift), which
+`supabase gen types --lang swift` runs.
 
 > [!IMPORTANT]
-> **We are no longer accepting contributions that fix the bundled generators.**
+> **We do not accept contributions that fix the bundled generators.**
 > Because each of the three is moving out to its own language's SDK repository,
 > a fix landed here would have to be made a second time in the destination
 > repository, and postgres-meta and the CLI only pick it up once they bump
@@ -119,13 +113,10 @@ therefore changes under one rule:
   released version still parses and generates what it generated before. The
   view flags `is_insert_enabled` and `is_update_enabled` are the model: they
   are optional, and the TypeScript generator, the only one that emits view
-  write types, falls back to `is_updatable` when they are absent. They were
-  first added as required fields, which made `parseGeneratorMetadata` reject
-  documents from released introspection code (supabase/sdk#125, corrected in
-  supabase/sdk#128).
+  write types, falls back to `is_updatable` when they are absent.
 - **Anything else moves `GENERATOR_METADATA_VERSION`:** removing or renaming a
   field, making one required, narrowing its type, or changing what an existing
-  value means. The version has been `1` since the first release.
+  value means. The version is `1`.
 
 `parseGeneratorMetadata` and `generatorMetadataJsonSchema` pin the exact
 version string, so a consumer on another version fails at parse time with a
@@ -139,8 +130,8 @@ The contract version and the package version are independent:
 - `GENERATOR_METADATA_VERSION` changes only with an incompatible shape change.
   A release that moves it is marked breaking in the changelog, and consumers
   that read the serialized document pin this number, not the npm version.
-- The package follows semantic versioning and stays on `0.x` for now
-  (SDK-1739). A minor release may change generated output or the TypeScript
+- The package follows semantic versioning and is on `0.x`. A minor release
+  may change generated output or the TypeScript
   API, with breaking changes called out in the changelog; a patch release
   changes neither on purpose. The four generators' output is part of the
   public surface: any change to it is described in the pull request so it
@@ -182,20 +173,17 @@ saying so.
 
 `GeneratorMetadata` is the pluggable contract, so generating types for a
 project without its database password means replacing the introspection
-producer, not touching any generator. That producer does not exist in this
-package. What is known:
+producer, not touching any generator. No such producer ships in this package.
 
-- An OpenAPI producer reached byte-for-byte parity with `introspect()` in
-  supabase/pg-toolbelt#303, but it targets a module layout that pg-toolbelt no
-  longer has, so it has to be ported into this repository rather than merged.
-- It depends on PostgREST serving an `x-postgrest-typegen-metadata` extension
-  in its OpenAPI output (supabase/postgrest#6, a draft on Supabase's fork, not
-  upstream) and on the Complete OpenAPI Introspection project. Without the
-  extension, a spike reproduced about 46% of the TypeScript types from the
-  standard OpenAPI document alone, which is why the extension exists.
-- Open blockers: upstream PostgREST's contribution policy, the maintainers'
-  request to split the change into several pull requests, and the fact that a
-  full schema dump cannot be exposed to anonymous callers.
+Generating from PostgREST's OpenAPI output needs PostgREST to include the
+introspection details the generators depend on: the standard OpenAPI document
+alone carries about half of what the TypeScript output needs. That is the
+`x-postgrest-typegen-metadata` extension proposed in
+[supabase/postgrest#6](https://github.com/supabase/postgrest/pull/6). A
+producer that reads it and matches `introspect()` byte for byte exists in
+[supabase/pg-toolbelt#303](https://github.com/supabase/pg-toolbelt/pull/303)
+and is the starting point for porting one here once the extension is
+available.
 
 ## Installation
 
@@ -220,7 +208,7 @@ bun run generate:postgrest-js-types postgresql://postgres:postgres@127.0.0.1:543
 
 Then run `node scripts/update-json-type.js`, `pnpm exec prettier --write test/types.generated.ts` and `pnpm run test:types:ci` in `packages/core/postgrest-js`.
 
-This job covers TypeScript only. Findings in the Go and Python generators stay with their own unit tests here, and move with those generators to their SDK repositories (SDK-1641).
+This job covers TypeScript only. Findings in the Go and Python generators stay with their own unit tests here, and move with those generators to their SDK repositories.
 
 ## Releasing
 
