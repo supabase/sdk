@@ -18,9 +18,11 @@ of these templates get deprecated in favor of this package (see SDK-1617).
 that language's own SDK repo, consuming `introspect()`'s JSON output via
 `serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
 `supabase_typegen` package in `supabase/supabase-flutter` for the pattern).
-It's decided (not open) that all three eventually move out too, tracked in
-SDK-1641 — not yet scheduled, sequenced after postgres-meta's cutover to this
-package settles.
+It's decided (not open) that all three move out too, one language at a time
+under SDK-1641: TypeScript first, into supabase-js (SDK-2187), then Go and
+Python. The compatibility rule for the contract, how
+`GENERATOR_METADATA_VERSION` relates to the package version and who reviews
+contract changes are in the README under "Contract compatibility".
 
 ## Architecture
 
