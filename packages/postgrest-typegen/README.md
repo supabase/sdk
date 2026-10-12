@@ -138,9 +138,9 @@ The contract version and the package version are independent:
   reaches the release notes that postgres-meta and the CLI read before bumping.
 
 Changes to `src/types.ts` and `src/introspection/` are reviewed by
-[@spydon](https://github.com/spydon), listed in `CODEOWNERS` for those paths
-in addition to the SDK team, so every contract change has one person who
-checks it against this rule.
+[@spydon](https://github.com/spydon), listed in `CODEOWNERS` for this package
+next to the SDK team, so every contract change has one person who checks it
+against this rule.
 
 ### Generators
 
