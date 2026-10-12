@@ -694,7 +694,7 @@ export const generateTypescript = async (
   ) {
     return `${JSON.stringify(column.name)}${column.is_optional ? "?" : ""}: ${generateNullableUnionTsType(
       pgTypeToTsType(schema, column.format, context, column.type_schema),
-      column.is_nullable,
+      true,
     )}`;
   }
 
