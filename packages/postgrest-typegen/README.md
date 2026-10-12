@@ -19,9 +19,9 @@ The TypeScript, Go, and Python generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
 They were ported byte-for-byte from postgres-meta's own templates so
 `supabase gen types` kept working unchanged; postgres-meta has since deleted
-its copies and consumes this package instead. It's decided that all three
-eventually move out to their own SDK repos too (tracked in SDK-1641), not yet
-scheduled — sequenced after postgres-meta's cutover to this package settles.
+its copies and consumes this package instead. The three remaining ones move
+out one at a time, each under its own ticket: TypeScript first, into
+supabase-js (SDK-2187), with Go and Python to follow; SDK-1641 is the umbrella.
 Swift was the first to move: its generator is the `supabase-typegen`
 executable in [supabase-swift](https://github.com/supabase/supabase-swift),
 which `supabase gen types --lang swift` runs (SDK-2199).
@@ -107,10 +107,48 @@ const json = serializeGeneratorMetadata(sortGeneratorMetadata(metadata));
 generatorMetadataJsonSchema;
 ```
 
-`GeneratorMetadata.version` is bumped whenever the shape changes in a way a
-consumer should branch on, since an out-of-process consumer only sees the
-serialized document and can't otherwise detect a shape change until something
-breaks at read time.
+### Contract compatibility (`GeneratorMetadata.version`)
+
+`GeneratorMetadata` is read by code that does not install this package: an
+out-of-process generator sees only the serialized document, and postgres-meta
+and the Supabase CLI consume it through a pinned registry version. The shape
+therefore changes under one rule:
+
+- **A new field is optional and has a documented fallback.** The fallback
+  lives in the consumers that read the field, so a document produced by any
+  released version still parses and generates what it generated before. The
+  view flags `is_insert_enabled` and `is_update_enabled` are the model: they
+  are optional, and every generator falls back to `is_updatable` when they are
+  absent. They were first added as required fields, which made
+  `parseGeneratorMetadata` reject documents from released introspection code
+  (supabase/sdk#125, corrected in supabase/sdk#128).
+- **Anything else moves `GENERATOR_METADATA_VERSION`:** removing or renaming a
+  field, making one required, narrowing its type, or changing what an existing
+  value means. The version has been `1` since the first release.
+
+`parseGeneratorMetadata` and `generatorMetadataJsonSchema` pin the exact
+version string, so a consumer on another version fails at parse time with a
+clear error instead of misreading the document. An out-of-process generator
+should do the same and exit distinctly when it meets a version it does not
+know; `@supabase/typegen` maps Dart's exit code 65 to `MetadataRejectedError`
+for that reason.
+
+The contract version and the package version are independent:
+
+- `GENERATOR_METADATA_VERSION` changes only with an incompatible shape change.
+  A release that moves it is marked breaking in the changelog, and consumers
+  that read the serialized document pin this number, not the npm version.
+- The package follows semantic versioning and stays on `0.x` for now
+  (SDK-1739). A minor release may change generated output or the TypeScript
+  API, with breaking changes called out in the changelog; a patch release
+  changes neither on purpose. The four generators' output is part of the
+  public surface: any change to it is described in the pull request so it
+  reaches the release notes that postgres-meta and the CLI read before bumping.
+
+Changes to `src/types.ts` and `src/introspection/` are reviewed by
+[@spydon](https://github.com/spydon), listed in `CODEOWNERS` for those paths
+in addition to the SDK team, so every contract change has one person who
+checks it against this rule.
 
 ### Generators
 
@@ -139,6 +177,25 @@ worker-pool-backed formatter) and it is never loaded or needed. Calling
 `generateTypescript` without `format` when `oxfmt` is missing throws an error
 saying so.
 
+## Generating types without database credentials
+
+`GeneratorMetadata` is the pluggable contract, so generating types for a
+project without its database password means replacing the introspection
+producer, not touching any generator. That producer does not exist in this
+package. What is known:
+
+- An OpenAPI producer reached byte-for-byte parity with `introspect()` in
+  supabase/pg-toolbelt#303, but it targets a module layout that pg-toolbelt no
+  longer has, so it has to be ported into this repository rather than merged.
+- It depends on PostgREST serving an `x-postgrest-typegen-metadata` extension
+  in its OpenAPI output (supabase/postgrest#6, a draft on Supabase's fork, not
+  upstream) and on the Complete OpenAPI Introspection project. Without the
+  extension, a spike reproduced about 46% of the TypeScript types from the
+  standard OpenAPI document alone, which is why the extension exists.
+- Open blockers: upstream PostgREST's contribution policy, the maintainers'
+  request to split the change into several pull requests, and the fact that a
+  full schema dump cannot be exposed to anonymous callers.
+
 ## Installation
 
 Not yet published; consumed in-repo for now (`packages/postgrest-typegen`).
@@ -162,7 +219,7 @@ bun run generate:postgrest-js-types postgresql://postgres:postgres@127.0.0.1:543
 
 Then run `node scripts/update-json-type.js`, `pnpm exec prettier --write test/types.generated.ts` and `pnpm run test:types:ci` in `packages/core/postgrest-js`.
 
-This job covers TypeScript only. Findings in the Go, Python and Swift generators stay with their own unit tests here, and move with those generators to their SDK repositories (SDK-1641).
+This job covers TypeScript only. Findings in the Go and Python generators stay with their own unit tests here, and move with those generators to their SDK repositories (SDK-1641).
 
 ## Releasing
 

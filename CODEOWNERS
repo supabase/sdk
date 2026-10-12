@@ -20,6 +20,10 @@
 /packages/dart-symbol-extractor/ @supabase/sdk
 /packages/go-symbol-extractor/ @supabase/sdk
 /packages/postgrest-typegen/ @supabase/sdk
+# The GeneratorMetadata contract and its producer: one named reviewer checks every change
+# against the compatibility rule in packages/postgrest-typegen/README.md.
+/packages/postgrest-typegen/src/types.ts @supabase/sdk @spydon
+/packages/postgrest-typegen/src/introspection/ @supabase/sdk @spydon
 /packages/typegen/ @supabase/sdk
 
 # 2. GENERAL SECURITY & SUPPLY CHAIN LAYER (High Risk)
