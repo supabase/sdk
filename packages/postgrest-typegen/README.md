@@ -118,10 +118,11 @@ therefore changes under one rule:
   lives in the consumers that read the field, so a document produced by any
   released version still parses and generates what it generated before. The
   view flags `is_insert_enabled` and `is_update_enabled` are the model: they
-  are optional, and every generator falls back to `is_updatable` when they are
-  absent. They were first added as required fields, which made
-  `parseGeneratorMetadata` reject documents from released introspection code
-  (supabase/sdk#125, corrected in supabase/sdk#128).
+  are optional, and the TypeScript generator, the only one that emits view
+  write types, falls back to `is_updatable` when they are absent. They were
+  first added as required fields, which made `parseGeneratorMetadata` reject
+  documents from released introspection code (supabase/sdk#125, corrected in
+  supabase/sdk#128).
 - **Anything else moves `GENERATOR_METADATA_VERSION`:** removing or renaming a
   field, making one required, narrowing its type, or changing what an existing
   value means. The version has been `1` since the first release.
