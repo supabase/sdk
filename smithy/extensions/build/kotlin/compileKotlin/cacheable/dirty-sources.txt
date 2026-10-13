@@ -1,0 +1,1 @@
+/Users/guilherme/src/github.com/supabase/sdk/.claude/worktrees/happy-brattain-ebac12/smithy/extensions/src/main/kotlin/io/supabase/smithy/MultipartFormOpenApiMapper.kt
