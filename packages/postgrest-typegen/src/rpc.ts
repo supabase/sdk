@@ -35,6 +35,9 @@ type InputArg = PostgresFunction["args"][number] & {
 
 type Candidate = { fn: PostgresFunction; inArgs: InputArg[] };
 
+/** A NUL separator cannot occur in an identifier, so names with dots never collide. */
+const qualifiedKey = (schema: string, name: string) => `${schema}\0${name}`;
+
 export function resolveRpcFunctions(
   metadata: GeneratorMetadata,
 ): RpcFunction[] {
@@ -48,13 +51,20 @@ export function resolveRpcFunctions(
       )
       .map((type) => [type.id, type]),
   );
+  const relations = [
+    ...metadata.tables,
+    ...metadata.foreignTables,
+    ...metadata.views,
+    ...metadata.materializedViews,
+  ];
   const relationsById = new Map(
-    [
-      ...metadata.tables,
-      ...metadata.foreignTables,
-      ...metadata.views,
-      ...metadata.materializedViews,
-    ].map((relation) => [relation.id, relation]),
+    relations.map((relation) => [relation.id, relation]),
+  );
+  const relationsBySchemaName = new Map(
+    relations.map((relation) => [
+      qualifiedKey(relation.schema, relation.name),
+      relation,
+    ]),
   );
   const columnNamesByRelationId = new Map<number, Set<string>>();
   for (const column of metadata.columns) {
@@ -96,14 +106,13 @@ export function resolveRpcFunctions(
   // the rendered argument list may still name the relation.
   const computedFieldOf = ({ fn, inArgs }: Candidate): number | null => {
     const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
-    const argType = soleInArg && relationTypesById.get(soleInArg.type_id);
+    if (!soleInArg) return null;
+    const argType = relationTypesById.get(soleInArg.type_id);
     const relation = argType
       ? relationsById.get(argType.type_relation_id)
-      : [...relationsById.values()].find(
-          (relation) =>
-            relation.schema === fn.schema &&
-            relation.name === fn.argument_types,
-        );
+      : typesById.has(soleInArg.type_id)
+        ? undefined
+        : relationsBySchemaName.get(qualifiedKey(fn.schema, fn.argument_types));
     if (!relation || relation.schema !== fn.schema) return null;
     if (columnNamesByRelationId.get(relation.id)?.has(fn.name)) return null;
     return relation.id;
@@ -206,9 +215,7 @@ export function resolveRpcFunctions(
           ...typeReference(arg.type_id),
           has_default: arg.has_default === true,
           relation_id:
-            relationId !== undefined &&
-            relationId !== null &&
-            relationsById.has(relationId)
+            relationId !== undefined && relationsById.has(relationId)
               ? relationId
               : null,
         };
@@ -267,7 +274,7 @@ export function resolveRpcFunctions(
     );
     const candidate = { fn, inArgs };
     if (!isCallable(candidate)) continue;
-    const key = `${fn.schema}.${fn.name}`;
+    const key = qualifiedKey(fn.schema, fn.name);
     let group = groups.get(key);
     if (!group) {
       group = [];

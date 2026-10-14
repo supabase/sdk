@@ -435,6 +435,42 @@ describe("resolveRpcFunctions", () => {
       ).toBe(1);
     });
 
+    test("not by the rendered argument list when the type is known", () => {
+      // A known scalar parameter never names a relation, even when a relation
+      // happens to share the type's name.
+      const metadata = metadataWith([
+        baseFunction({
+          name: "summary",
+          args: [arg("", 3802)],
+          argument_types: "jsonb",
+          return_type_id: 25,
+          return_type: "text",
+        }),
+      ]);
+      metadata.tables = [
+        ...metadata.tables,
+        baseTable({ id: 4, name: "jsonb" }),
+      ];
+      expect(
+        resolveRpcFunctions(metadata)[0]?.overloads[0]?.computed_field_of,
+      ).toBeNull();
+    });
+
+    test("never without exactly one input parameter", () => {
+      const metadata = metadataWith([
+        baseFunction({
+          name: "summary",
+          args: [arg("a", 9999), arg("b", 9999)],
+          argument_types: "todos",
+          return_type_id: 25,
+          return_type: "text",
+        }),
+      ]);
+      expect(
+        resolveRpcFunctions(metadata)[0]?.overloads[0]?.computed_field_of,
+      ).toBeNull();
+    });
+
     test("an unnamed computed field is never callable, whatever it returns", () => {
       const message =
         "the function public.summary with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache";
@@ -469,6 +505,28 @@ describe("resolveRpcFunctions", () => {
   });
 
   describe("overloads", () => {
+    test("names containing a dot do not share a group", () => {
+      const resolved = resolveRpcFunctions(
+        buildMetadata({
+          schemas: [
+            { id: 1, name: "a", owner: "postgres" },
+            { id: 2, name: "a.b", owner: "postgres" },
+          ],
+          functions: [
+            baseFunction({ id: 1, schema: "a", name: "b.c" }),
+            baseFunction({ id: 2, schema: "a.b", name: "c" }),
+          ],
+          types: [int4Type],
+        }),
+      );
+      expect(
+        resolved.map((fn) => [fn.schema, fn.name, fn.overloads.length]),
+      ).toEqual([
+        ["a", "b.c", 1],
+        ["a.b", "c", 1],
+      ]);
+    });
+
     test("group by schema and name, ordered by argument list then return type", () => {
       const resolved = resolveRpcFunctions(
         buildMetadata({

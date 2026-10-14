@@ -121,7 +121,6 @@ export const generateTypescript = async (
     relationships,
     types,
   } = metadata;
-  // Documents predating the collection (still valid version 1) resolve it here.
   const rpcFunctions = metadata.rpcFunctions ?? resolveRpcFunctions(metadata);
   const {
     detectOneToOneRelationships = false,
