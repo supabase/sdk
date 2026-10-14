@@ -12,17 +12,9 @@ cd packages/go-symbol-extractor
 go run . [-module <directory>]... <path-to-sdk-root>
 ```
 
-The JSON dump goes to stdout, sorted by name and deduplicated:
+The JSON dump goes to stdout, sorted by name and deduplicated.
 
-```json
-{
-  "symbols": [
-    { "name": "postgrest.FilterBuilder.Eq", "kind": "method", "file": "postgrest/filter.go", "line": 18 }
-  ]
-}
-```
-
-`kind` is one of `class`, `method`, `property`, `function` or `variable`.
+Each symbol has a `name`, a `kind`, a `file` and a `line`. `kind` is one of `class`, `method`, `property`, `function` or `variable`.
 Files that fail to parse are skipped with a warning on stderr, and any other
 failure exits with status 1.
 
