@@ -173,6 +173,99 @@ const postgresViewSchema = type({
 export type PostgresView = typeof postgresViewSchema.infer;
 
 /**
+ * A reference to a `types` entry by oid. `format` is the type's `name` (the
+ * same spelling `PostgresColumn.format` uses, `_` prefixed for arrays) and
+ * `type_schema` its schema; both are `null` when the type is not in `types`,
+ * which never happens in a document produced by `introspect()`.
+ */
+const rpcTypeReferenceSchema = type({
+  type_id: "number",
+  format: "string | null",
+  type_schema: "string | null",
+});
+export type RpcTypeReference = typeof rpcTypeReferenceSchema.infer;
+
+const rpcFunctionArgSchema = rpcTypeReferenceSchema.merge({
+  /** Empty for an unnamed parameter. */
+  name: "string",
+  mode: "'in' | 'inout' | 'variadic'",
+  has_default: "boolean",
+  /**
+   * The relation whose row type this parameter has, when that relation is in
+   * the metadata. A caller passes such a parameter as a row object.
+   */
+  relation_id: "number | null",
+});
+export type RpcFunctionArg = typeof rpcFunctionArgSchema.infer;
+
+const rpcFunctionReturnsSchema = rpcTypeReferenceSchema.merge({
+  /**
+   * The relation whose rows the function returns, when that relation is in
+   * the metadata; the row shape is the relation's `columns`.
+   */
+  relation_id: "number | null",
+  /**
+   * The columns of a `RETURNS TABLE (…)` or `OUT` parameter result, in name
+   * order; `null` for every other return type.
+   */
+  columns: rpcTypeReferenceSchema.merge({ name: "string" }).array().or("null"),
+});
+export type RpcFunctionReturns = typeof rpcFunctionReturnsSchema.infer;
+
+const rpcFunctionOverloadSchema = type({
+  /** The `functions` entry this overload was resolved from. */
+  function_id: "number",
+  /** The input parameters (`in`, `inout` and `variadic`), in name order. */
+  args: rpcFunctionArgSchema.array(),
+  returns: rpcFunctionReturnsSchema,
+  /** `true` when the response is an array of rows or values. */
+  is_set_returning: "boolean",
+  /** The planner's `ROWS` estimate of a set-returning function, else `null`. */
+  rows_estimate: "number | null",
+  /**
+   * Present when the result can be embedded and sub-selected like a relation.
+   * `to` names the relation (or composite type) whose rows come back, `from`
+   * the relation a sole row-typed parameter embeds from, or `*` when the
+   * function is called directly. `is_one_to_one` is `true` when at most one
+   * row comes back, so a client may unwrap the array. `is_setof_return`
+   * mirrors `is_set_returning`.
+   */
+  setof_options: type({
+    from: "string",
+    to: "string",
+    is_one_to_one: "boolean",
+    is_setof_return: "boolean",
+  }).or("null"),
+  /**
+   * The relation this function is a computed field of: its sole input
+   * parameter has that relation's row type, the relation is in the function's
+   * schema, and no column of the relation shares the function's name. Such a
+   * function is selectable as a nullable column of the relation.
+   */
+  computed_field_of: "number | null",
+  /**
+   * Why PostgREST cannot resolve a call to this overload, when it cannot: the
+   * function conflicts with another overload, or it is a computed field that
+   * returns no rows. Generators surface the message instead of a callable
+   * signature.
+   */
+  error: "string | null",
+});
+export type RpcFunctionOverload = typeof rpcFunctionOverloadSchema.infer;
+
+/**
+ * A function PostgREST exposes under `/rpc`, with its overloads resolved.
+ * Produced by `resolveRpcFunctions` from the raw `functions` collection.
+ */
+const rpcFunctionSchema = type({
+  schema: "string",
+  name: "string",
+  /** Ordered by argument list, then by return type. Never empty. */
+  overloads: rpcFunctionOverloadSchema.array(),
+});
+export type RpcFunction = typeof rpcFunctionSchema.infer;
+
+/**
  * Bumped whenever `GeneratorMetadata`'s shape changes in a way a consumer
  * should branch on. Out-of-process consumers (a generator in another
  * language's SDK repo, fed JSON over a process boundary) only see the
@@ -200,6 +293,14 @@ export const generatorMetadataSchema = type({
   relationships: postgresRelationshipSchema.array(),
   functions: postgresFunctionSchema.array(),
   types: postgresTypeSchema.array(),
+  /**
+   * The PostgREST view of `functions`: which are callable through `/rpc`, how
+   * their overloads group and what a call returns. Derived from the other
+   * collections by `resolveRpcFunctions`, which `introspect()` runs. Optional
+   * because version 1 documents predating the collection are still valid;
+   * a generator falls back to running `resolveRpcFunctions` itself.
+   */
+  "rpcFunctions?": rpcFunctionSchema.array(),
 });
 export type GeneratorMetadata = typeof generatorMetadataSchema.infer;
 

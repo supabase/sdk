@@ -10,6 +10,7 @@ import { Pool } from "pg";
 import { Wait } from "testcontainers";
 
 import { introspect } from "../../src/introspection/index.ts";
+import { resolveRpcFunctions } from "../../src/rpc.ts";
 import { parseGeneratorMetadata } from "../../src/types.ts";
 import type { GeneratorMetadata } from "../../src/types.ts";
 
@@ -166,6 +167,83 @@ describe("introspect (integration)", () => {
     expect(
       full.functions.some((f) => f.schema === "public" && f.name === "add"),
     ).toBe(true);
+  });
+
+  describe("rpcFunctions", () => {
+    test("is the resolved view of the other collections", () => {
+      expect(full.rpcFunctions).toEqual(resolveRpcFunctions(full));
+    });
+
+    test("leaves out functions PostgREST cannot call", () => {
+      // `add(integer, integer)`: two unnamed parameters of a type that is not
+      // json, jsonb or text.
+      expect(full.functions.some((f) => f.name === "add")).toBe(true);
+      expect(full.rpcFunctions?.some((f) => f.name === "add")).toBe(false);
+    });
+
+    test("resolves a row-typed parameter and a row return", () => {
+      const fn = full.rpcFunctions?.find(
+        (f) => f.name === "function_returning_single_row",
+      );
+      const todos = full.tables.find((t) => t.name === "todos");
+      const users = full.tables.find((t) => t.name === "users");
+      expect(fn?.overloads).toHaveLength(1);
+      const [overload] = fn?.overloads ?? [];
+      expect(overload?.args).toEqual([
+        expect.objectContaining({
+          name: "todos",
+          mode: "in",
+          format: "todos",
+          type_schema: "public",
+          has_default: false,
+          relation_id: todos?.id,
+        }),
+      ]);
+      expect(overload?.returns).toEqual(
+        expect.objectContaining({
+          format: "users",
+          relation_id: users?.id,
+          columns: null,
+        }),
+      );
+      expect(overload?.setof_options).toEqual({
+        from: "todos",
+        to: "users",
+        is_one_to_one: true,
+        is_setof_return: false,
+      });
+      expect(overload?.computed_field_of).toBe(todos?.id ?? -1);
+      expect(overload?.error).toBeNull();
+    });
+
+    test("resolves RETURNS TABLE into named columns", () => {
+      const fn = full.rpcFunctions?.find(
+        (f) => f.name === "function_returning_table",
+      );
+      expect(fn?.overloads[0]?.returns.columns?.map((c) => c.name)).toEqual([
+        "id",
+        "name",
+      ]);
+      expect(fn?.overloads[0]?.is_set_returning).toBe(true);
+    });
+
+    test("marks a computed field that returns no rows as not callable", () => {
+      const fn = full.rpcFunctions?.find((f) => f.name === "blurb");
+      const todos = full.tables.find((t) => t.name === "todos");
+      expect(fn?.overloads[0]?.computed_field_of).toBe(todos?.id ?? -1);
+      expect(fn?.overloads[0]?.error).toContain("no matches were found");
+    });
+
+    test("reports unresolvable overloads", () => {
+      const fn = full.rpcFunctions?.find(
+        (f) => f.name === "postgrest_unresolvable_function",
+      );
+      expect(fn?.overloads.map((o) => o.error)).toEqual([
+        null,
+        expect.stringContaining("Could not choose the best candidate function"),
+        expect.stringContaining("Could not choose the best candidate function"),
+      ]);
+    });
   });
 
   test("includes composite and enum types", () => {

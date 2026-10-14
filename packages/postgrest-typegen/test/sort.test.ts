@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { resolveRpcFunctions } from "../src/rpc.ts";
 import { sortGeneratorMetadata } from "../src/sort.ts";
 import type { PostgresType } from "../src/types.ts";
 import {
@@ -195,5 +196,59 @@ describe("sortGeneratorMetadata", () => {
     expect(e.enums).toEqual(["INACTIVE", "ACTIVE"]);
     const c = result.types.find((t) => t.name === addressCompositeType.name)!;
     expect(c.attributes.map((a) => a.name)).toEqual(["street", "city"]);
+  });
+
+  test("orders rpcFunctions by name and their args by name, keeping overload order", () => {
+    const metadata = buildMetadata({
+      functions: [
+        baseFunction({
+          id: 1,
+          name: "f_b",
+          args: [
+            { mode: "in", name: "z", type_id: 23, has_default: false },
+            { mode: "in", name: "a", type_id: 23, has_default: false },
+            { mode: "table", name: "y", type_id: 23, has_default: null },
+            { mode: "table", name: "b", type_id: 23, has_default: null },
+          ],
+          argument_types: "z integer, a integer",
+        }),
+        baseFunction({ id: 2, name: "f_a" }),
+      ],
+    });
+    const resolved = resolveRpcFunctions(metadata);
+    const shuffled = {
+      ...metadata,
+      rpcFunctions: [...resolved].reverse().map((fn) => ({
+        ...fn,
+        overloads: fn.overloads.map((overload) => ({
+          ...overload,
+          args: [...overload.args].reverse(),
+          returns: {
+            ...overload.returns,
+            columns: overload.returns.columns
+              ? [...overload.returns.columns].reverse()
+              : null,
+          },
+        })),
+      })),
+    };
+
+    const result = sortGeneratorMetadata(shuffled);
+    expect(result.rpcFunctions).toEqual(resolved);
+    expect(result.rpcFunctions?.map((f) => f.name)).toEqual(["f_a", "f_b"]);
+    expect(
+      result.rpcFunctions?.[1]?.overloads[0]?.args.map((a) => a.name),
+    ).toEqual(["a", "z"]);
+    expect(
+      result.rpcFunctions?.[1]?.overloads[0]?.returns.columns?.map(
+        (c) => c.name,
+      ),
+    ).toEqual(["b", "y"]);
+  });
+
+  test("leaves rpcFunctions out when the input has none", () => {
+    expect(sortGeneratorMetadata(buildMetadata())).not.toHaveProperty(
+      "rpcFunctions",
+    );
   });
 });

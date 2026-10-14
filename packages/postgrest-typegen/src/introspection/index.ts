@@ -2,6 +2,7 @@ import {
   GENERATOR_METADATA_VERSION,
   type GeneratorMetadata,
 } from "../types.ts";
+import { resolveRpcFunctions } from "../rpc.ts";
 import { normalizeRows } from "./normalize.ts";
 import { listRelationships } from "./relationships.ts";
 import { COLUMNS_SQL } from "./sql/columns.sql.ts";
@@ -84,7 +85,7 @@ export async function introspect(
     queryRows(TYPES_SQL),
   ]);
 
-  return {
+  const metadata = {
     version: GENERATOR_METADATA_VERSION,
     schemas,
     tables,
@@ -99,4 +100,5 @@ export async function introspect(
     ),
     types,
   } as GeneratorMetadata;
+  return { ...metadata, rpcFunctions: resolveRpcFunctions(metadata) };
 }

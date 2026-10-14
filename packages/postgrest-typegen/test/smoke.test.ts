@@ -35,6 +35,7 @@ describe("public API surface", () => {
       "materializedViews",
       "primaryKeys",
       "relationships",
+      "rpcFunctions",
       "schemas",
       "tables",
       "types",

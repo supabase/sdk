@@ -7,18 +7,17 @@ import type {
   GeneratorMetadata,
   PostgresColumn,
   PostgresForeignTable,
-  PostgresFunction,
   PostgresMaterializedView,
   PostgresSchema,
   PostgresTable,
   PostgresType,
   PostgresView,
+  RpcFunction,
+  RpcFunctionOverload,
+  RpcTypeReference,
 } from "../types.ts";
-import {
-  VALID_FUNCTION_ARGS_MODE,
-  VALID_UNNAMED_FUNCTION_ARG_TYPES,
-} from "./constants.ts";
 import { compareStrings } from "../collation.ts";
+import { resolveRpcFunctions } from "../rpc.ts";
 
 export interface GenerateTypescriptOptions {
   /**
@@ -120,9 +119,10 @@ export const generateTypescript = async (
     materializedViews,
     columns,
     relationships,
-    functions,
     types,
   } = metadata;
+  // Documents predating the collection (still valid version 1) resolve it here.
+  const rpcFunctions = metadata.rpcFunctions ?? resolveRpcFunctions(metadata);
   const {
     detectOneToOneRelationships = false,
     postgrestVersion,
@@ -154,7 +154,7 @@ export const generateTypescript = async (
       view: PostgresView;
       relationships: TsRelationship[];
     }[];
-    functions: { fn: PostgresFunction; inArgs: PostgresFunction["args"] }[];
+    functions: RpcFunction[];
     enums: PostgresType[];
     compositeTypes: PostgresType[];
   }>(
@@ -164,8 +164,7 @@ export const generateTypescript = async (
     ]),
   );
   const columnsByTableId: Record<number, PostgresColumn[]> = {};
-  const tablesNamesByTableId: Record<number, string> = {};
-  const relationTypeByIds = new Map<number, (typeof types)[number]>();
+  const relationsById = new Map<number, { id: number; schema: string }>();
   // group types by id for quicker lookup
   const typesById = new Map<number, (typeof types)[number]>();
   const tablesLike = [
@@ -177,7 +176,7 @@ export const generateTypescript = async (
 
   for (const tableLike of tablesLike) {
     columnsByTableId[tableLike.id] = [];
-    tablesNamesByTableId[tableLike.id] = tableLike.name;
+    relationsById.set(tableLike.id, tableLike);
   }
   for (const column of columns) {
     columnsByTableId[column.table_id]?.push(column);
@@ -203,10 +202,6 @@ export const generateTypescript = async (
 
   for (const type of types) {
     typesById.set(type.id, type);
-    // Save all the types that are relation types for quicker lookup
-    if (type.type_relation_id) {
-      relationTypeByIds.set(type.id, type);
-    }
     if (type.enums.length > 0) {
       introspectionBySchema[type.schema]?.enums.push(type);
     }
@@ -293,66 +288,8 @@ export const generateTypescript = async (
       relationships: getRelationships(materializedView),
     });
   }
-  // Helper function to get table/view name from relation id
-  const getTableNameFromRelationId = (
-    relationId: number | null,
-    returnTypeId: number | null,
-  ): string | null => {
-    if (!relationId) return null;
-
-    const tableName = tablesNamesByTableId[relationId];
-    if (tableName) return tableName;
-    // if it's a composite type we use the type name as relation name to allow sub-selecting fields of the composite type
-    const reltype = returnTypeId ? relationTypeByIds.get(returnTypeId) : null;
-    return reltype ? reltype.name : null;
-  };
-
-  for (const func of functions) {
-    const schemaIntrospection = introspectionBySchema[func.schema];
-    if (schemaIntrospection) {
-      // Get all input args (in, inout, variadic modes)
-      const inArgs = func.args.filter(({ mode }) =>
-        VALID_FUNCTION_ARGS_MODE.has(mode),
-      );
-
-      const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
-      if (
-        // Case 1: Function has no parameters
-        inArgs.length === 0 ||
-        // Case 2: All input args are named
-        !inArgs.some(({ name }) => name === "") ||
-        // Case 3: All unnamed args have default values AND are valid types
-        inArgs.every((arg) => {
-          if (arg.name === "") {
-            return (
-              arg.has_default &&
-              VALID_UNNAMED_FUNCTION_ARG_TYPES.has(arg.type_id)
-            );
-          }
-          return true;
-        }) ||
-        // Case 4: Single unnamed parameter of valid type (json, jsonb, text)
-        // Exclude all functions definitions that have only one single argument unnamed argument that isn't
-        // a json/jsonb/text as it won't be considered by PostgREST
-        (soleInArg &&
-          soleInArg.name === "" &&
-          (VALID_UNNAMED_FUNCTION_ARG_TYPES.has(soleInArg.type_id) ||
-            // OR if the function have a single unnamed args which is another table (embeded function)
-            (relationTypeByIds.get(soleInArg.type_id) &&
-              getTableNameFromRelationId(
-                func.return_type_relation_id,
-                func.return_type_id,
-              )) ||
-            // OR if the function takes a table row but doesn't qualify as embedded (for error reporting)
-            (relationTypeByIds.get(soleInArg.type_id) &&
-              !getTableNameFromRelationId(
-                func.return_type_relation_id,
-                func.return_type_id,
-              ))))
-      ) {
-        schemaIntrospection.functions.push({ fn: func, inArgs });
-      }
-    }
+  for (const fn of rpcFunctions) {
+    introspectionBySchema[fn.schema]?.functions.push(fn);
   }
   // These per-schema groups MERGE multiple metadata collections — `.tables`
   // combines tables + foreign tables, `.views` combines views + materialized
@@ -365,110 +302,62 @@ export const generateTypescript = async (
     schemaIntrospection.views.sort((a, b) =>
       compareStrings(a.view.name, b.view.name),
     );
-    schemaIntrospection.functions.sort((a, b) =>
-      compareStrings(a.fn.name, b.fn.name),
-    );
     schemaIntrospection.enums.sort((a, b) => compareStrings(a.name, b.name));
     schemaIntrospection.compositeTypes.sort((a, b) =>
       compareStrings(a.name, b.name),
     );
   }
 
+  const referencedTsType = (
+    schema: PostgresSchema,
+    { format, type_schema }: RpcTypeReference,
+  ) =>
+    format === null || type_schema === null
+      ? "unknown"
+      : pgTypeToTsType(schema, format, typeContext, type_schema);
+
   const getFunctionTsReturnType = (
-    fn: PostgresFunction,
+    overload: RpcFunctionOverload,
     returnType: string,
   ) => {
-    // Determine if this function should have SetofOptions
-    let setofOptionsInfo = "";
-
-    const returnTableName = getTableNameFromRelationId(
-      fn.return_type_relation_id,
-      fn.return_type_id,
-    );
-    const returnsSetOfTable =
-      fn.is_set_returning_function && fn.return_type_relation_id !== null;
-    const returnsMultipleRows = fn.prorows !== null && fn.prorows > 1;
-    // Case 1: if the function returns a table, we need to add SetofOptions to allow selecting sub fields of the table
-    // Those can be used in rpc to select sub fields of a table
-    if (returnTableName) {
-      setofOptionsInfo = `SetofOptions: {
-        from: "*"
-        to: ${JSON.stringify(returnTableName)}
-        isOneToOne: ${Boolean(!returnsMultipleRows)}
-        isSetofReturn: ${fn.is_set_returning_function}
-      }`;
-    }
-    // Case 2: if the function has a single table argument, we need to add SetofOptions to allow selecting sub fields of the table
-    // and set the right "from" and "to" values to allow selecting from a table row
-    const soleArg = fn.args.length === 1 ? fn.args[0] : undefined;
-    if (soleArg) {
-      const relationType = relationTypeByIds.get(soleArg.type_id);
-
-      // Only add SetofOptions for functions with table arguments (embedded functions)
-      // or specific functions that RETURNS table-name
-      if (relationType) {
-        const sourceTable = relationType.format;
-        // Case 1: Standard embedded function with proper setof detection
-        if (returnsSetOfTable && returnTableName) {
-          setofOptionsInfo = `SetofOptions: {
-          from: ${JSON.stringify(sourceTable)}
-          to: ${JSON.stringify(returnTableName)}
-          isOneToOne: ${Boolean(!returnsMultipleRows)}
-          isSetofReturn: true
-        }`;
-        } // Case 2: Handle RETURNS table-name those are always a one to one relationship
-        else if (returnTableName && !returnsSetOfTable) {
-          const targetTable = returnTableName;
-          setofOptionsInfo = `SetofOptions: {
-            from: ${JSON.stringify(sourceTable)}
-            to: ${JSON.stringify(targetTable)}
-            isOneToOne: true
-            isSetofReturn: false
-          }`;
-        }
-      }
-    }
-
-    // A ROWS 1 estimate may only collapse the array type when SetofOptions is also emitted
-    // (returnTableName resolved): postgrest-js relies on isOneToOne to restore the array shape
-    // for direct RPC calls. Without that metadata PostgREST still returns an array, so the
-    // collapse would make the type diverge from the actual response.
-    const collapsibleSingleRow =
-      !returnsMultipleRows && returnTableName !== null;
-    return `${returnType}${fn.is_set_returning_function && !collapsibleSingleRow ? "[]" : ""}
-                          ${setofOptionsInfo ? `${setofOptionsInfo}` : ""}`;
+    const { setof_options } = overload;
+    const setofOptionsInfo = setof_options
+      ? `SetofOptions: {
+        from: ${JSON.stringify(setof_options.from)}
+        to: ${JSON.stringify(setof_options.to)}
+        isOneToOne: ${setof_options.is_one_to_one}
+        isSetofReturn: ${setof_options.is_setof_return}
+      }`
+      : "";
+    // A ROWS 1 estimate may only collapse the array type when SetofOptions is also emitted:
+    // postgrest-js relies on isOneToOne to restore the array shape for direct RPC calls.
+    // Without that metadata PostgREST still returns an array, so the collapse would make
+    // the type diverge from the actual response.
+    const collapsibleSingleRow = setof_options?.is_one_to_one === true;
+    return `${returnType}${overload.is_set_returning && !collapsibleSingleRow ? "[]" : ""}
+                          ${setofOptionsInfo}`;
   };
 
   const getFunctionReturnType = (
     schema: PostgresSchema,
-    fn: PostgresFunction,
+    { returns }: RpcFunctionOverload,
   ): string => {
     // Case 1: `returns table`.
-    const tableArgs = fn.args.filter(({ mode }) => mode === "table");
-    if (tableArgs.length > 0) {
-      const argsNameAndType = tableArgs.map(({ name, type_id }) => {
-        const type = typesById.get(type_id);
-        let tsType = "unknown";
-        if (type) {
-          tsType = pgTypeToTsType(schema, type.name, typeContext, type.schema);
-        }
-        return { name, type: tsType };
-      });
-
+    if (returns.columns) {
       return `{
-              ${argsNameAndType.map(({ name, type }) => `${JSON.stringify(name)}: ${type}`)}
+              ${returns.columns.map(
+                (column) =>
+                  `${JSON.stringify(column.name)}: ${referencedTsType(schema, column)}`,
+              )}
             }`;
     }
 
-    // Case 2: returns a relation's row type.
+    // Case 2: returns a row type of a relation in this schema.
     const relation =
-      introspectionBySchema[schema.name]?.tables.find(
-        ({ table: { id } }) => id === fn.return_type_relation_id,
-      )?.table ||
-      introspectionBySchema[schema.name]?.views.find(
-        ({ view: { id } }) => id === fn.return_type_relation_id,
-      )?.view;
-    if (relation) {
+      returns.relation_id === null
+        ? undefined
+        : relationsById.get(returns.relation_id);
+    if (relation && relation.schema === schema.name) {
       return `{
               ${getColumns(relation.id)
                 .map((column) =>
@@ -489,127 +378,26 @@ export const generateTypescript = async (
     }
 
     // Case 3: returns base/array/composite/enum type.
-    const type = typesById.get(fn.return_type_id);
-    if (type) {
-      return pgTypeToTsType(schema, type.name, typeContext, type.schema);
-    }
-
-    return "unknown";
-  };
-  // Special error case for functions that take table row but don't qualify as embedded functions
-  const hasTableRowError = (
-    fn: PostgresFunction,
-    inArgs: PostgresFunction["args"],
-  ) => {
-    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
-    if (
-      soleInArg &&
-      soleInArg.name === "" &&
-      relationTypeByIds.get(soleInArg.type_id) &&
-      !getTableNameFromRelationId(fn.return_type_relation_id, fn.return_type_id)
-    ) {
-      return true;
-    }
-    return false;
-  };
-
-  // Check for generic conflict cases that need error reporting
-  const getConflictError = (
-    schema: PostgresSchema,
-    fns: Array<{ fn: PostgresFunction; inArgs: PostgresFunction["args"] }>,
-    fn: PostgresFunction,
-    inArgs: PostgresFunction["args"],
-  ) => {
-    // If there is a single function definition, there is no conflict
-    if (fns.length <= 1) return null;
-    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
-
-    // Generic conflict detection patterns
-    // Pattern 1: No-args vs default-args conflicts
-    if (inArgs.length === 0) {
-      const conflictingFns = fns.filter(
-        ({ fn: otherFn, inArgs: otherInArgs }) => {
-          if (otherFn === fn) return false;
-          const otherSoleInArg =
-            otherInArgs.length === 1 ? otherInArgs[0] : undefined;
-          return (
-            otherSoleInArg &&
-            otherSoleInArg.name === "" &&
-            otherSoleInArg.has_default
-          );
-        },
-      );
-
-      const conflictingFn = conflictingFns[0];
-      if (conflictingFn) {
-        const returnTypeName =
-          typesById.get(conflictingFn.fn.return_type_id)?.name || "unknown";
-        return `Could not choose the best candidate function between: ${schema.name}.${fn.name}(), ${schema.name}.${fn.name}( => ${returnTypeName}). Try renaming the parameters or the function itself in the database so function overloading can be resolved`;
-      }
-    }
-
-    // Pattern 2: Same parameter name but different types (unresolvable overloads)
-    if (soleInArg && soleInArg.name !== "") {
-      const conflictingFns = fns.filter(
-        ({ fn: otherFn, inArgs: otherInArgs }) => {
-          if (otherFn === fn) return false;
-          const otherSoleInArg =
-            otherInArgs.length === 1 ? otherInArgs[0] : undefined;
-          return (
-            otherSoleInArg &&
-            otherSoleInArg.name === soleInArg.name &&
-            otherSoleInArg.type_id !== soleInArg.type_id
-          );
-        },
-      );
-
-      if (conflictingFns.length > 0) {
-        const allConflictingFunctions = [{ fn, inArgs }, ...conflictingFns];
-        const conflictList = allConflictingFunctions
-          .sort((a, b) => {
-            const aArgs = a.inArgs;
-            const bArgs = b.inArgs;
-            return (aArgs[0]?.type_id || 0) - (bArgs[0]?.type_id || 0);
-          })
-          .map((f) => {
-            const args = f.inArgs;
-            return `${schema.name}.${fn.name}(${args
-              .map(
-                (a) =>
-                  `${a.name || ""} => ${typesById.get(a.type_id)?.name || "unknown"}`,
-              )
-              .join(", ")})`;
-          })
-          .join(", ");
-
-        return `Could not choose the best candidate function between: ${conflictList}. Try renaming the parameters or the function itself in the database so function overloading can be resolved`;
-      }
-    }
-
-    return null;
+    return referencedTsType(schema, returns);
   };
 
   const getArgTsType = (
     schema: PostgresSchema,
-    { name, type_id }: PostgresFunction["args"][number],
+    arg: RpcFunctionOverload["args"][number],
   ) => {
-    const type = typesById.get(type_id);
-    if (!type) {
-      return "unknown";
-    }
-    const tsType = pgTypeToTsType(schema, type.name, typeContext, type.schema);
+    const tsType = referencedTsType(schema, arg);
     // A row-typed parameter takes the relation's columns: PostgREST fills the
     // keys it does not receive with NULL, and the computed fields are never
     // input. A named parameter is typed without them. An unnamed one keeps the
     // plain `Row` reference, which is how postgrest-js versions predating
     // `ComputedFields` recognise the function as a computed field.
-    if (name === "") {
+    if (arg.name === "" || arg.format === null || arg.type_schema === null) {
       return tsType;
     }
     const relationReference = findRelationReference(
-      type.name,
+      arg.format,
       typeContext,
-      type.schema,
+      arg.type_schema,
     );
     if (relationReference && tsType === `${relationReference}['Row']`) {
       return `Omit<${tsType}, ${relationReference}['ComputedFields']>`;
@@ -619,19 +407,16 @@ export const generateTypescript = async (
 
   const getArgsTsType = (
     schema: PostgresSchema,
-    inArgs: PostgresFunction["args"],
+    args: RpcFunctionOverload["args"],
   ) =>
-    `{ ${inArgs.map(
+    `{ ${args.map(
       (arg) =>
         `${JSON.stringify(arg.name)}${arg.has_default ? "?" : ""}: ${getArgTsType(schema, arg)}`,
     )} }`;
 
-  const getFunctionSignatures = (
-    schema: PostgresSchema,
-    fns: Array<{ fn: PostgresFunction; inArgs: PostgresFunction["args"] }>,
-  ) => {
-    return fns
-      .map(({ fn, inArgs }) => {
+  const getFunctionSignatures = (schema: PostgresSchema, fn: RpcFunction) => {
+    return fn.overloads
+      .map((overload) => {
         // `never` would be wrong here: postgrest-js treats `Args extends { '': Row }`
         // as a computed field (`never extends T` is always true, so same-named table
         // columns get omitted from select results), and an object type with a required
@@ -639,23 +424,15 @@ export const generateTypescript = async (
         // generated types. `Record<PropertyKey, never>` is the accurate type for
         // "callable with no arguments".
         const argsType =
-          inArgs.length > 0
-            ? getArgsTsType(schema, inArgs)
+          overload.args.length > 0
+            ? getArgsTsType(schema, overload.args)
             : "Record<PropertyKey, never>";
-        let returnType = getFunctionReturnType(schema, fn);
+        const returnType =
+          overload.error === null
+            ? getFunctionReturnType(schema, overload)
+            : `{ error: true } & ${JSON.stringify(overload.error)}`;
 
-        // Check for specific error cases
-        const conflictError = getConflictError(schema, fns, fn, inArgs);
-        if (conflictError) {
-          returnType = `{ error: true } & ${JSON.stringify(conflictError)}`;
-        } else if (hasTableRowError(fn, inArgs)) {
-          // Special case for computed fields returning scalars functions
-          returnType = `{ error: true } & ${JSON.stringify(
-            `the function ${schema.name}.${fn.name} with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache`,
-          )}`;
-        }
-
-        return `{ Args: ${argsType}; Returns: ${getFunctionTsReturnType(fn, returnType)} }`;
+        return `{ Args: ${argsType}; Returns: ${getFunctionTsReturnType(overload, returnType)} }`;
       })
       .join(" |\n");
   };
@@ -699,87 +476,37 @@ export const generateTypescript = async (
   }
 
   /**
-   * Is `fn` a PostgREST computed field on `relation` (a table or view)?
-   *
-   * A computed field is a function taking a single argument of the relation's
-   * own composite type, so it is selectable as if it were a column and belongs
-   * in `Row`.
-   *
-   * Matching on the argument's type OID rather than on `argument_types` is what
-   * makes named parameters work. `argument_types` is
-   * `pg_get_function_arguments()`, which renders the parameter *name* when the
-   * parameter has one — `category category` rather than `category` — and
-   * schema-qualifies the type when it is not visible in `search_path`. Both
-   * forms failed a bare string comparison against the relation name, so
-   * `create function name_translated(category category)` silently lost its
-   * computed field while the unnamed `name_translated(category)` kept it.
-   * See supabase/postgres-meta#1034.
-   */
-  const isComputedFieldOf = (
-    fn: PostgresFunction,
-    inArgs: PostgresFunction["args"],
-    relation: { id: number; name: string },
-  ) => {
-    const soleInArg = inArgs.length === 1 ? inArgs[0] : undefined;
-    if (soleInArg) {
-      // `relationTypeByIds` is already "types backed by a relation", so a hit
-      // identifies the relation regardless of how the argument was spelled.
-      // A `variadic` argument is an array type and never appears here.
-      const argType = relationTypeByIds.get(soleInArg.type_id);
-      if (argType) {
-        return argType.type_relation_id === relation.id;
-      }
-    }
-    // Fall back to the historical comparison when the argument's type is not in
-    // the metadata (callers may pass a reduced `types` list), so a computed
-    // field that resolved before keeps resolving.
-    return fn.argument_types === relation.name;
-  };
-
-  /**
-   * The computed fields of a relation, in `schemaFunctions` order. A function
-   * named like one of the relation's columns is left out: PostgREST resolves
-   * the name to the column, so it is neither selectable nor part of `Row`.
+   * The computed fields of a relation, in function name order. A computed
+   * field is a function taking a single argument of the relation's own
+   * composite type, so it is selectable as if it were a column and belongs in
+   * `Row`; `resolveRpcFunctions` marks them with `computed_field_of`.
    */
   const computedFieldsOf = (
-    schemaFunctions: {
-      fn: PostgresFunction;
-      inArgs: PostgresFunction["args"];
-    }[],
-    relation: { id: number; name: string },
-  ) => {
-    const columnNames = new Set(
-      getColumns(relation.id).map((column) => column.name),
-    );
-    const seen = new Set<string>();
-    return schemaFunctions.filter(({ fn, inArgs }) => {
-      if (
-        !isComputedFieldOf(fn, inArgs, relation) ||
-        columnNames.has(fn.name) ||
-        seen.has(fn.name)
-      ) {
-        return false;
-      }
-      seen.add(fn.name);
-      return true;
+    schemaFunctions: RpcFunction[],
+    relation: { id: number },
+  ) =>
+    schemaFunctions.flatMap((fn) => {
+      const overload = fn.overloads.find(
+        ({ computed_field_of }) => computed_field_of === relation.id,
+      );
+      return overload ? [{ name: fn.name, overload }] : [];
     });
-  };
 
   const computedFieldTsDefinition = (
     schema: PostgresSchema,
-    { fn }: { fn: PostgresFunction },
+    { name, overload }: { name: string; overload: RpcFunctionOverload },
   ) =>
-    `${JSON.stringify(fn.name)}: ${generateNullableUnionTsType(
-      getFunctionReturnType(schema, fn),
+    `${JSON.stringify(name)}: ${generateNullableUnionTsType(
+      getFunctionReturnType(schema, overload),
       true,
     )}`;
 
   // `ComputedFields` names the `Row` keys PostgREST leaves out of `select('*')`,
   // so postgrest-js does not have to infer them from `Functions`.
-  const computedFieldsTsType = (computedFields: { fn: PostgresFunction }[]) =>
+  const computedFieldsTsType = (computedFields: { name: string }[]) =>
     computedFields.length === 0
       ? "never"
-      : computedFields.map(({ fn }) => JSON.stringify(fn.name)).join(" | ");
+      : computedFields.map(({ name }) => JSON.stringify(name)).join(" | ");
 
   let output = `
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
@@ -964,32 +691,16 @@ export type Database = {
             }
           }
           Functions: {
-            ${(() => {
-              if (schemaFunctions.length === 0) {
-                return "[_ in never]: never";
-              }
-              const schemaFunctionsGroupedByName = schemaFunctions.reduce(
-                (acc, curr) => {
-                  (acc[curr.fn.name] ??= []).push(curr);
-                  return acc;
-                },
-                {} as Record<string, typeof schemaFunctions>,
-              );
-              for (const fns of Object.values(schemaFunctionsGroupedByName)) {
-                fns.sort(
-                  (a, b) =>
-                    compareStrings(a.fn.argument_types, b.fn.argument_types) ||
-                    compareStrings(a.fn.return_type, b.fn.return_type),
-                );
-              }
-
-              return Object.entries(schemaFunctionsGroupedByName)
-                .map(([fnName, fns]) => {
-                  const functionSignatures = getFunctionSignatures(schema, fns);
-                  return `${JSON.stringify(fnName)}:\n${functionSignatures}`;
-                })
-                .join(",\n");
-            })()}
+            ${
+              schemaFunctions.length === 0
+                ? "[_ in never]: never"
+                : schemaFunctions
+                    .map(
+                      (fn) =>
+                        `${JSON.stringify(fn.name)}:\n${getFunctionSignatures(schema, fn)}`,
+                    )
+                    .join(",\n")
+            }
           }
           Enums: {
             ${
