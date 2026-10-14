@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.4.0...postgrest-typegen/v0.5.0) (2026-10-14)
+
+
+### Features
+
+* **postgrest-typegen:** resolve the PostgREST RPC surface into rpcFunctions ([#271](https://github.com/supabase/sdk/issues/271)) ([a8ed508](https://github.com/supabase/sdk/commit/a8ed5083b1a3bf0e2f49e5ee3e533e27499970b5))
+* **typegen:** run the Swift generator from supabase-swift's supabase-typegen ([#264](https://github.com/supabase/sdk/issues/264)) ([3489596](https://github.com/supabase/sdk/commit/3489596e617439acb10a2d6ef0073a5ff0d3a133))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** fall back to the first generated schema for DefaultSchema ([#262](https://github.com/supabase/sdk/issues/262)) ([fa321ee](https://github.com/supabase/sdk/commit/fa321ee5e66dd1d140817b7b79b9b611090f5217))
+
 ## [0.4.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.1...postgrest-typegen/v0.4.0) (2026-09-30)
 
 
