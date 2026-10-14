@@ -16,9 +16,10 @@ dart run bin/extract.dart <path-to-sdk-root>
 
 The JSON dump goes to stdout, sorted by name.
 
-Each symbol has a `name`, a `kind`, a `file` and a `line`. `kind` is one of `class`, `method`, `property`, `function` or `variable`.
-Files that fail to parse are skipped with a warning on stderr, and any other
-failure exits with status 1.
+Each symbol has a `name`, a `kind`, a `file` and a `line`. `kind` is one of
+`class`, `method`, `property`, `function` or `variable`. Files that fail to
+parse are skipped with a warning on stderr, and any other failure exits with
+status 1.
 
 ## What counts as public
 
