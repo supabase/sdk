@@ -58,8 +58,8 @@
     "@types/node": "^26.3.0",
     "knip": "^6.32.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.86.0",
-    "oxlint-tsgolint": "7.0.2003",
+    "oxlint": "1.87.0",
+    "oxlint-tsgolint": "7.0.2004",
     "typescript": "7.0.2"
   },
   "peerDependencies": {
