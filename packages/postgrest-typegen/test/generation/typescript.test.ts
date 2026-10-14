@@ -15,6 +15,7 @@ import {
   generateTypescript as rawGenerateTypescript,
   pgTypeToTsType,
 } from "../../src/generation/typescript.ts";
+import { resolveRpcFunctions } from "../../src/rpc.ts";
 import { sortGeneratorMetadata } from "../../src/sort.ts";
 import type {
   PostgresSchema,
@@ -1008,6 +1009,60 @@ describe("typescript typegen", () => {
       } as const
       "
     `);
+  });
+
+  test("a document without rpcFunctions generates the same output", async () => {
+    // Version 1 documents predating the collection stay valid; the generator
+    // resolves the collection itself and must emit the same types.
+    const withoutRpc = buildMetadata({
+      tables: [baseTable({ id: 1, name: "category" })],
+      columns: [baseColumn({ table_id: 1, name: "name", format: "text" })],
+      functions: [
+        baseFunction({
+          id: 1,
+          name: "name_translated",
+          args: [{ mode: "in", name: "", type_id: 500, has_default: false }],
+          argument_types: "category",
+          identity_argument_types: "category",
+          return_type_id: 25,
+          return_type: "text",
+        }),
+        baseFunction({
+          id: 2,
+          name: "add",
+          args: [{ mode: "in", name: "a", type_id: 23, has_default: false }],
+          argument_types: "a integer",
+        }),
+      ],
+      types: [
+        userStatusEnum,
+        textType,
+        int4Type,
+        {
+          id: 500,
+          name: "category",
+          schema: "public",
+          format: "category",
+          enums: [],
+          attributes: [],
+          comment: null,
+          type_relation_id: 1,
+        },
+      ],
+    });
+    const withRpc = {
+      ...withoutRpc,
+      rpcFunctions: resolveRpcFunctions(withoutRpc),
+    };
+    expect(withRpc.rpcFunctions.map((fn) => fn.name)).toEqual([
+      "add",
+      "name_translated",
+    ]);
+
+    const result = await generateTypescript(withRpc);
+    expect(await generateTypescript(withoutRpc)).toBe(result);
+    expect(result).toContain("name_translated: string | null");
+    expect(result).toContain("add: { Args: { a: number }; Returns: number }");
   });
 
   test("function signature with args and scalar return", async () => {

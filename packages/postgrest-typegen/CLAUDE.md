@@ -31,6 +31,17 @@ Hard split between **introspection** and **generation**:
   injects its forked-pg pool). Runs the SQL builders in `src/introspection/sql/`.
 - `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`. Pure functions: `GeneratorMetadata` in, the complete source
   file (ending in a single newline) out. No database access.
+- `src/rpc.ts` -- `resolveRpcFunctions(metadata) => RpcFunction[]`, the
+  PostgREST view of the raw `functions` collection: which functions `/rpc`
+  exposes, overload grouping and order, resolved parameter and return types,
+  `setof_options` for embedding, `computed_field_of` and the per-overload
+  `error` for unresolvable overloads. Pure and canonically ordered.
+  `introspect()` attaches its result as `metadata.rpcFunctions` (optional in
+  the contract); the TypeScript generator reads that collection and falls
+  back to running the pass when a document lacks it. **All PostgREST function
+  semantics live here**, so an out-of-process generator never reimplements
+  them: a rule change is a change to this file plus the parity goldens, never
+  to a generator.
 - `src/types.ts` -- `GeneratorMetadata` + `Postgres*` types. This is the public,
   pluggable contract: any source that can produce `GeneratorMetadata` can feed
   the generators. **ArkType is the single source of truth here**: each shape is
@@ -119,8 +130,9 @@ applies the sorts `generateTypescript` defines, and all three generators
 consume that single pass. The only sorts that remain inside generators are ones the
 single-collection pass cannot express: cross-collection *merge* sorts
 (TypeScript merges tables + foreign tables, and views + materialized
-views, into one per-schema group then sort by name) and TypeScript's
-overload-resolution sorts. Don't add per-collection sorting in a
+views, into one per-schema group then sort by name). RPC overload order is
+owned by `resolveRpcFunctions` (argument list, then return type) and kept by
+`sortGeneratorMetadata`. Don't add per-collection sorting in a
 generator — extend `sortGeneratorMetadata` instead.
 
 ## Test Patterns

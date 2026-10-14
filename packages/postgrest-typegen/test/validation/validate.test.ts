@@ -16,8 +16,10 @@ import {
   type PostgresTable,
   type PostgresType,
   type PostgresView,
+  type RpcFunction,
   serializeGeneratorMetadata,
 } from "../../src/types.ts";
+import { resolveRpcFunctions } from "../../src/rpc.ts";
 import {
   addressCompositeType,
   baseColumn,
@@ -175,6 +177,47 @@ interface ExpectedPostgresView {
   columns?: ExpectedPostgresColumn[];
 }
 
+interface ExpectedRpcFunction {
+  schema: string;
+  name: string;
+  overloads: {
+    function_id: number;
+    args: {
+      type_id: number;
+      format: string | null;
+      type_schema: string | null;
+      name: string;
+      mode: "in" | "inout" | "variadic";
+      has_default: boolean;
+      relation_id: number | null;
+    }[];
+    returns: {
+      type_id: number;
+      format: string | null;
+      type_schema: string | null;
+      relation_id: number | null;
+      columns:
+        | {
+            type_id: number;
+            format: string | null;
+            type_schema: string | null;
+            name: string;
+          }[]
+        | null;
+    };
+    is_set_returning: boolean;
+    rows_estimate: number | null;
+    setof_options: {
+      from: string;
+      to: string;
+      is_one_to_one: boolean;
+      is_setof_return: boolean;
+    } | null;
+    computed_field_of: number | null;
+    error: string | null;
+  }[];
+}
+
 interface ExpectedGeneratorMetadata {
   version: 1;
   schemas: ExpectedPostgresSchema[];
@@ -187,6 +230,8 @@ interface ExpectedGeneratorMetadata {
   relationships: ExpectedPostgresRelationship[];
   functions: ExpectedPostgresFunction[];
   types: ExpectedPostgresType[];
+  // Optional so version 1 documents predating the collection remain valid.
+  rpcFunctions?: ExpectedRpcFunction[];
 }
 
 assertEquals<Equals<PostgresColumn, ExpectedPostgresColumn>>();
@@ -201,6 +246,7 @@ assertEquals<Equals<PostgresSchema, ExpectedPostgresSchema>>();
 assertEquals<Equals<PostgresTable, ExpectedPostgresTable>>();
 assertEquals<Equals<PostgresType, ExpectedPostgresType>>();
 assertEquals<Equals<PostgresView, ExpectedPostgresView>>();
+assertEquals<Equals<RpcFunction, ExpectedRpcFunction>>();
 assertEquals<Equals<GeneratorMetadata, ExpectedGeneratorMetadata>>();
 
 describe("parseGeneratorMetadata", () => {
@@ -232,6 +278,23 @@ describe("parseGeneratorMetadata", () => {
 
   test("returns the value unchanged when it satisfies the contract", () => {
     expect(parseGeneratorMetadata(validMetadata)).toEqual(validMetadata);
+  });
+
+  test("accepts the resolved rpcFunctions collection", () => {
+    const withRpc = {
+      ...validMetadata,
+      rpcFunctions: resolveRpcFunctions(validMetadata),
+    };
+    expect(withRpc.rpcFunctions).toHaveLength(1);
+    expect(parseGeneratorMetadata(withRpc)).toEqual(withRpc);
+  });
+
+  test("rejects an rpcFunctions entry that does not have the resolved shape", () => {
+    const bad = {
+      ...validMetadata,
+      rpcFunctions: [{ schema: "public", name: "add", overloads: [{}] }],
+    };
+    expect(() => parseGeneratorMetadata(bad)).toThrow(TypeError);
   });
 
   test("accepts a fully empty metadata", () => {
@@ -387,6 +450,15 @@ describe("generatorMetadataJsonSchema", () => {
         "relationships",
       ]),
     );
+  });
+
+  test("describes rpcFunctions without requiring it", () => {
+    const schema = generatorMetadataJsonSchema as {
+      required: string[];
+      properties: Record<string, unknown>;
+    };
+    expect(schema.properties).toHaveProperty("rpcFunctions");
+    expect(schema.required).not.toContain("rpcFunctions");
   });
 
   test("is itself JSON-serializable", () => {

@@ -117,5 +117,36 @@ export function sortGeneratorMetadata(
         args: [...fn.args].sort((a, b) => compareStrings(a.name, b.name)),
       })),
     types: [...metadata.types].sort(bySchemaName),
+    // `resolveRpcFunctions` orders the overloads of a function by signature,
+    // and that order is kept here, like composite attributes; the entries,
+    // their args and their table columns are addressed by name.
+    ...(metadata.rpcFunctions === undefined
+      ? {}
+      : {
+          rpcFunctions: [...metadata.rpcFunctions]
+            .sort(
+              (a, b) =>
+                compareStrings(a.schema, b.schema) ||
+                compareStrings(a.name, b.name),
+            )
+            .map((fn) => ({
+              ...fn,
+              overloads: fn.overloads.map((overload) => ({
+                ...overload,
+                args: [...overload.args].sort((a, b) =>
+                  compareStrings(a.name, b.name),
+                ),
+                returns: {
+                  ...overload.returns,
+                  columns:
+                    overload.returns.columns === null
+                      ? null
+                      : [...overload.returns.columns].sort((a, b) =>
+                          compareStrings(a.name, b.name),
+                        ),
+                },
+              })),
+            })),
+        }),
   };
 }

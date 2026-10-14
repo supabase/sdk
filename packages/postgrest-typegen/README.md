@@ -62,6 +62,42 @@ collection; **apply it after introspection and before any `generate*` call** so
 output is deterministic regardless of the producer. Generators expect
 pre-sorted input and do not re-sort it themselves.
 
+### RPC functions (`rpcFunctions`, `resolveRpcFunctions`)
+
+`functions` is `pg_proc` as introspected. Which of those functions PostgREST
+exposes under `/rpc`, how overloads group, what a call returns and whether a
+function doubles as a computed field or an embeddable relation are PostgREST
+rules, so `introspect()` applies them once and attaches the result as
+`rpcFunctions`. A generator in any language reads that collection instead of
+reimplementing the rules:
+
+```ts
+for (const fn of metadata.rpcFunctions ?? resolveRpcFunctions(metadata)) {
+  // fn.schema, fn.name, and one entry per overload PostgREST can resolve.
+  for (const overload of fn.overloads) {
+    overload.args; // input parameters: name, mode, type reference, has_default, relation_id
+    overload.returns; // type reference, plus relation_id or RETURNS TABLE columns
+    overload.is_set_returning; // the response is an array
+    overload.setof_options; // embeddable like a relation: from, to, is_one_to_one
+    overload.computed_field_of; // selectable as a column of this relation
+    overload.error; // why PostgREST cannot resolve a call, else null
+  }
+}
+```
+
+A type reference carries `type_id`, `format` (the type's name, spelled like
+`PostgresColumn.format`) and `type_schema`, so a generator maps it with the
+same table it uses for columns. An overload's `error` is the message the
+TypeScript generator emits as the `Returns` type of an unresolvable overload:
+two overloads PostgREST cannot tell apart, or a computed field that returns no
+rows. Overloads are ordered by argument list, then by return type; the
+TypeScript generator emits them in that order.
+
+`resolveRpcFunctions` is pure and deterministic, so a custom producer attaches
+it the same way, and a document without the collection (produced before it
+existed) still generates: the TypeScript generator falls back to running the
+pass itself.
+
 ### Runtime validation (opt-in)
 
 `GeneratorMetadata` is backed by an [ArkType](https://arktype.io) schema, so a
@@ -113,7 +149,9 @@ therefore changes under one rule:
   released version still parses and generates what it generated before. The
   view flags `is_insert_enabled` and `is_update_enabled` are the model: they
   are optional, and the TypeScript generator, the only one that emits view
-  write types, falls back to `is_updatable` when they are absent.
+  write types, falls back to `is_updatable` when they are absent. The
+  `rpcFunctions` collection follows the same rule: a generator that does not
+  find it runs `resolveRpcFunctions` on the raw `functions` itself.
 - **Anything else moves `GENERATOR_METADATA_VERSION`:** removing or renaming a
   field, making one required, narrowing its type, or changing what an existing
   value means. The version is `1`.
