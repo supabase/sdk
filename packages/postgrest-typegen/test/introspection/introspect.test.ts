@@ -234,6 +234,20 @@ describe("introspect (integration)", () => {
       expect(fn?.overloads[0]?.error).toContain("no matches were found");
     });
 
+    test("marks a computed relationship as not callable but still embeddable", () => {
+      const fn = full.rpcFunctions?.find(
+        (f) => f.name === "test_unnamed_row_setof",
+      );
+      const byRow = fn?.overloads.filter((o) => o.args[0]?.name === "");
+      expect(byRow).toHaveLength(2);
+      for (const overload of byRow ?? []) {
+        expect(overload.error).toContain("no matches were found");
+        expect(overload.setof_options?.to).toBe("todos");
+      }
+      const byId = fn?.overloads.find((o) => o.args[0]?.name === "user_id");
+      expect(byId?.error).toBeNull();
+    });
+
     test("reports unresolvable overloads", () => {
       const fn = full.rpcFunctions?.find(
         (f) => f.name === "postgrest_unresolvable_function",

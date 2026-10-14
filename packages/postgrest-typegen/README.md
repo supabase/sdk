@@ -89,8 +89,10 @@ A type reference carries `type_id`, `format` (the type's name, spelled like
 `PostgresColumn.format`) and `type_schema`, so a generator maps it with the
 same table it uses for columns. An overload's `error` is the message the
 TypeScript generator emits as the `Returns` type of an unresolvable overload:
-two overloads PostgREST cannot tell apart, or a computed field that returns no
-rows. Overloads are ordered by argument list, then by return type; the
+two overloads PostgREST cannot tell apart, or a sole unnamed row parameter,
+which PostgREST never matches under `/rpc` (such a function is a computed
+field or computed relationship, reached by embedding it from its relation).
+Overloads are ordered by argument list, then by return type; the
 TypeScript generator emits them in that order.
 
 `resolveRpcFunctions` is pure and deterministic, so a custom producer attaches

@@ -334,7 +334,11 @@ export const generateTypescript = async (
     // Without that metadata PostgREST still returns an array, so the collapse would make
     // the type diverge from the actual response.
     const collapsibleSingleRow = setof_options?.is_one_to_one === true;
-    return `${returnType}${overload.is_set_returning && !collapsibleSingleRow ? "[]" : ""}
+    const isArray =
+      overload.error === null &&
+      overload.is_set_returning &&
+      !collapsibleSingleRow;
+    return `${returnType}${isArray ? "[]" : ""}
                           ${setofOptionsInfo}`;
   };
 

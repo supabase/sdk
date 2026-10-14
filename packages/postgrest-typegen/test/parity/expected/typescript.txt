@@ -975,10 +975,8 @@ export type Database = {
       get_todos_by_matview: {
         Args: { "": Database["public"]["Views"]["todos_matview"]["Row"] }
         Returns: {
-          details: string | null
-          id: number
-          "user-id": number
-        }
+          error: true
+        } & "the function public.get_todos_by_matview with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
         SetofOptions: {
           from: "todos_matview"
           to: "todos"
@@ -1235,7 +1233,9 @@ export type Database = {
       }
       test_unnamed_row_composite: {
         Args: { "": Database["public"]["Tables"]["users"]["Row"] }
-        Returns: Database["public"]["CompositeTypes"]["composite_type_with_array_attribute"]
+        Returns: {
+          error: true
+        } & "the function public.test_unnamed_row_composite with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
         SetofOptions: {
           from: "users"
           to: "composite_type_with_array_attribute"
@@ -1253,10 +1253,8 @@ export type Database = {
         | {
             Args: { "": Database["public"]["Tables"]["todos"]["Row"] }
             Returns: {
-              details: string | null
-              id: number
-              "user-id": number
-            }[]
+              error: true
+            } & "the function public.test_unnamed_row_setof with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
             SetofOptions: {
               from: "todos"
               to: "todos"
@@ -1281,10 +1279,8 @@ export type Database = {
         | {
             Args: { "": Database["public"]["Tables"]["users"]["Row"] }
             Returns: {
-              details: string | null
-              id: number
-              "user-id": number
-            }[]
+              error: true
+            } & "the function public.test_unnamed_row_setof with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
             SetofOptions: {
               from: "users"
               to: "todos"
@@ -1295,10 +1291,8 @@ export type Database = {
       test_unnamed_view_row: {
         Args: { "": Database["public"]["Views"]["todos_view"]["Row"] }
         Returns: {
-          details: string | null
-          id: number
-          "user-id": number
-        }[]
+          error: true
+        } & "the function public.test_unnamed_view_row with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
         SetofOptions: {
           from: "todos_view"
           to: "todos"
