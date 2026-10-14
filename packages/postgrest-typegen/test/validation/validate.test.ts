@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+  type ContractType,
+  type EdgeFunction,
   GENERATOR_METADATA_VERSION,
   generatorMetadataJsonSchema,
   generatorMetadataSchema,
@@ -231,9 +233,42 @@ interface ExpectedGeneratorMetadata {
   functions: ExpectedPostgresFunction[];
   types: ExpectedPostgresType[];
   rpcFunctions?: ExpectedRpcFunction[];
+  edgeFunctions?: ExpectedEdgeFunction[];
+}
+
+type ExpectedContractType =
+  | { kind: "string" | "number" | "boolean" | "null" | "unknown" }
+  | { kind: "literal"; value: string | number | boolean }
+  | { kind: "array"; element: ExpectedContractType }
+  | { kind: "tuple"; elements: ExpectedContractType[] }
+  | {
+      kind: "object";
+      properties: {
+        name: string;
+        type: ExpectedContractType;
+        optional: boolean;
+      }[];
+      additionalProperties?: ExpectedContractType;
+    }
+  | { kind: "record"; key: ExpectedContractType; value: ExpectedContractType }
+  | { kind: "union"; members: ExpectedContractType[] }
+  | { kind: "reference"; name: string }
+  | { kind: "unsupported"; repr: string };
+
+interface ExpectedEdgeFunction {
+  slug: string;
+  entrypoint: string;
+  importMap: string | null;
+  verifyJwt: boolean;
+  requestBody: ExpectedContractType | null;
+  responseBody: ExpectedContractType | null;
+  types: { name: string; type: ExpectedContractType }[];
+  diagnostics: { path: string; message: string }[];
 }
 
 assertEquals<Equals<PostgresColumn, ExpectedPostgresColumn>>();
+assertEquals<Equals<ContractType, ExpectedContractType>>();
+assertEquals<Equals<EdgeFunction, ExpectedEdgeFunction>>();
 assertEquals<Equals<PostgresForeignTable, ExpectedPostgresForeignTable>>();
 assertEquals<Equals<PostgresFunction, ExpectedPostgresFunction>>();
 assertEquals<
@@ -462,5 +497,91 @@ describe("generatorMetadataJsonSchema", () => {
 
   test("is itself JSON-serializable", () => {
     expect(() => JSON.stringify(generatorMetadataJsonSchema)).not.toThrow();
+  });
+
+  test("describes Edge Function contracts through a recursive $defs entry", () => {
+    const schema = generatorMetadataJsonSchema as {
+      $defs: Record<string, unknown>;
+      properties: {
+        edgeFunctions: {
+          items: { properties: Record<string, unknown>; required: string[] };
+        };
+      };
+      required: string[];
+    };
+    expect(schema.required).not.toContain("edgeFunctions");
+    expect(schema.$defs["ContractType"]).toBeDefined();
+    const properties = schema.properties.edgeFunctions.items.properties;
+    expect(properties["requestBody"]).toEqual({
+      anyOf: [{ $ref: "#/$defs/ContractType" }, { type: "null" }],
+    });
+    expect(properties["types"]).toMatchObject({
+      items: { properties: { type: { $ref: "#/$defs/ContractType" } } },
+    });
+    expect(schema.properties.edgeFunctions.items.required).toEqual(
+      expect.arrayContaining([
+        "slug",
+        "entrypoint",
+        "requestBody",
+        "responseBody",
+        "types",
+        "diagnostics",
+      ]),
+    );
+  });
+});
+
+describe("parseGeneratorMetadata with edgeFunctions", () => {
+  const edgeFunction: EdgeFunction = {
+    slug: "greet",
+    entrypoint: "supabase/functions/greet/index.ts",
+    importMap: null,
+    verifyJwt: true,
+    requestBody: {
+      kind: "object",
+      properties: [{ name: "name", type: { kind: "string" }, optional: false }],
+    },
+    responseBody: { kind: "reference", name: "Greeting" },
+    types: [
+      {
+        name: "Greeting",
+        type: {
+          kind: "union",
+          members: [
+            { kind: "literal", value: "hi" },
+            { kind: "unsupported", repr: "Date" },
+          ],
+        },
+      },
+    ],
+    diagnostics: [
+      { path: "Greeting", message: "Date cannot be expressed as JSON." },
+    ],
+  };
+
+  test("accepts a document with the collection and one without", () => {
+    const base = buildMetadata({});
+    expect(parseGeneratorMetadata(base)).toEqual(base);
+    const withFunctions = { ...base, edgeFunctions: [edgeFunction] };
+    expect(
+      parseGeneratorMetadata(
+        JSON.parse(serializeGeneratorMetadata(withFunctions)),
+      ),
+    ).toEqual(withFunctions);
+  });
+
+  test("validates contract nodes below the top level", () => {
+    const broken = JSON.parse(
+      serializeGeneratorMetadata({
+        ...buildMetadata({}),
+        edgeFunctions: [edgeFunction],
+      }),
+    ) as {
+      edgeFunctions: { types: { type: { members: { kind: string }[] } }[] }[];
+    };
+    broken.edgeFunctions[0]!.types[0]!.type.members[1]!.kind = "date";
+    expect(() => parseGeneratorMetadata(broken)).toThrow(
+      /edgeFunctions\[0\]\.types\[0\]\.type .*kind/,
+    );
   });
 });

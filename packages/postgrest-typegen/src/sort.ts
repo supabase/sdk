@@ -25,7 +25,11 @@
  * preserved. Function `args` are sorted by name because PostgREST RPC args are
  * addressed by name (the generated type is an object), matching TypeScript.
  */
-import type { GeneratorMetadata, PostgresRelationship } from "./types.ts";
+import type {
+  EdgeFunction,
+  GeneratorMetadata,
+  PostgresRelationship,
+} from "./types.ts";
 import { compareStrings } from "./collation.ts";
 
 // Relations (tables/views/materialized views/foreign tables) and types share a
@@ -148,5 +152,32 @@ export function sortGeneratorMetadata(
               })),
             })),
         }),
+    // Absent stays absent, so a document without Edge Functions serializes
+    // exactly as it did before the collection existed.
+    ...(metadata.edgeFunctions === undefined
+      ? {}
+      : { edgeFunctions: sortEdgeFunctions(metadata.edgeFunctions) }),
   };
+}
+
+/**
+ * Order Edge Functions by slug, their declarations by name and their
+ * diagnostics by path and message. Property, tuple and union order inside a
+ * contract is source order and is kept. A producer of the `edgeFunctions`
+ * collection applies this so its output is byte-stable on its own.
+ */
+export function sortEdgeFunctions(
+  functions: readonly EdgeFunction[],
+): EdgeFunction[] {
+  return [...functions]
+    .sort((a, b) => compareStrings(a.slug, b.slug))
+    .map((fn) => ({
+      ...fn,
+      types: [...fn.types].sort((a, b) => compareStrings(a.name, b.name)),
+      diagnostics: [...fn.diagnostics].sort(
+        (a, b) =>
+          compareStrings(a.path, b.path) ||
+          compareStrings(a.message, b.message),
+      ),
+    }));
 }

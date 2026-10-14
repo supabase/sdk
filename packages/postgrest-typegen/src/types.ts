@@ -14,7 +14,7 @@
  * runtime instead of blindly casting it. Validation is deliberately *not* baked
  * into `introspect()` — it is an opt-in helper.
  */
-import { type } from "arktype";
+import { scope, type } from "arktype";
 
 const postgresColumnSchema = type({
   table_id: "number",
@@ -267,6 +267,100 @@ const rpcFunctionSchema = type({
 export type RpcFunction = typeof rpcFunctionSchema.infer;
 
 /**
+ * The type language an Edge Function contract is expressed in. It covers
+ * what JSON can carry, so every SDK generator can render every node:
+ *
+ * - `string`, `number`, `boolean`, `null`, `unknown` are the JSON scalars
+ *   plus the escape hatch for `any`/`unknown`.
+ * - `literal` is a single string, number or boolean value.
+ * - `array` and `tuple` are JSON arrays with one element type or one type per
+ *   position.
+ * - `object` is a JSON object with named properties; `additionalProperties`
+ *   carries the type of any key that is not listed, when the source had an
+ *   index signature next to named properties.
+ * - `record` is a JSON object whose keys are all of one type (`string` or a
+ *   union of string literals) and whose values are all of one type.
+ * - `union` is a choice between members.
+ * - `reference` names a declaration in the function's `types`, so recursive
+ *   and shared types keep their identity.
+ * - `unsupported` marks a TypeScript construct the extractor could not
+ *   express (a method, a conditional type, a `Date`, ...). `repr` holds the
+ *   source text for the reader; generators fall back to their loosest type.
+ */
+const contractTypes = scope({
+  contractType:
+    "primitive | literal | array | tuple | object | record | union | reference | unsupported",
+  primitive: { kind: "'string' | 'number' | 'boolean' | 'null' | 'unknown'" },
+  literal: { kind: "'literal'", value: "string | number | boolean" },
+  array: { kind: "'array'", element: "contractType" },
+  tuple: { kind: "'tuple'", elements: "contractType[]" },
+  property: { name: "string", type: "contractType", optional: "boolean" },
+  object: {
+    kind: "'object'",
+    properties: "property[]",
+    "additionalProperties?": "contractType",
+  },
+  record: { kind: "'record'", key: "contractType", value: "contractType" },
+  union: { kind: "'union'", members: "contractType[]" },
+  reference: { kind: "'reference'", name: "string" },
+  unsupported: { kind: "'unsupported'", repr: "string" },
+}).export();
+
+/** Validates one contract node and everything under it. */
+export const contractTypeSchema = contractTypes.contractType;
+export type ContractType = typeof contractTypeSchema.infer;
+export type ContractProperty = typeof contractTypes.property.infer;
+
+/**
+ * A contract node as it appears inside {@link generatorMetadataSchema}. The
+ * document schema only checks that it is an object, since ArkType cannot
+ * emit JSON Schema for a recursive type; `parseGeneratorMetadata` validates
+ * the tree with {@link contractTypeSchema} afterwards, and
+ * {@link generatorMetadataJsonSchema} describes it with a `$defs` entry.
+ */
+const contractNodeSchema = type("object").as<ContractType>();
+
+/** A named type referenced from a contract through a `reference` node. */
+export const contractDeclarationSchema = type({
+  name: "string",
+  type: contractNodeSchema,
+});
+export type ContractDeclaration = typeof contractDeclarationSchema.infer;
+
+/**
+ * Something the extractor could not express, or a function it could not
+ * read. `path` locates the node in the function's contract, for example
+ * `RequestBody.address.zip` or `Shared.id` for a declaration; it is empty
+ * when the diagnostic concerns the function as a whole.
+ */
+export const edgeFunctionDiagnosticSchema = type({
+  path: "string",
+  message: "string",
+});
+export type EdgeFunctionDiagnostic = typeof edgeFunctionDiagnosticSchema.infer;
+
+/**
+ * One Edge Function of the project and its contract, read from the exported
+ * `RequestBody` and `ResponseBody` types of its entrypoint. Paths are
+ * relative to the project root (the directory holding `supabase/`) in POSIX
+ * form, the way the Supabase CLI resolves them from `config.toml`.
+ */
+export const edgeFunctionSchema = type({
+  slug: "string",
+  entrypoint: "string",
+  importMap: "string | null",
+  verifyJwt: "boolean",
+  /** The exported `RequestBody` type, or `null` when the module has none. */
+  requestBody: contractNodeSchema.or("null"),
+  /** The exported `ResponseBody` type, or `null` when the module has none. */
+  responseBody: contractNodeSchema.or("null"),
+  /** Every declaration a `reference` in this function's contract points at. */
+  types: contractDeclarationSchema.array(),
+  diagnostics: edgeFunctionDiagnosticSchema.array(),
+});
+export type EdgeFunction = typeof edgeFunctionSchema.infer;
+
+/**
  * Bumped whenever `GeneratorMetadata`'s shape changes in a way a consumer
  * should branch on. Out-of-process consumers (a generator in another
  * language's SDK repo, fed JSON over a process boundary) only see the
@@ -302,6 +396,13 @@ export const generatorMetadataSchema = type({
    * a generator falls back to running `resolveRpcFunctions` itself.
    */
   "rpcFunctions?": rpcFunctionSchema.array(),
+  /**
+   * The Edge Functions of the project and their contracts, produced by
+   * `extractEdgeFunctions()` and merged in by the consumer. Optional: the
+   * database introspection alone does not know about them, and a document
+   * without the field generates what it always generated.
+   */
+  "edgeFunctions?": edgeFunctionSchema.array(),
 });
 export type GeneratorMetadata = typeof generatorMetadataSchema.infer;
 
@@ -311,8 +412,127 @@ export type GeneratorMetadata = typeof generatorMetadataSchema.infer;
  * validate or generate types against the contract without depending on
  * ArkType or this package's TypeScript types.
  */
-export const generatorMetadataJsonSchema =
-  generatorMetadataSchema.toJsonSchema();
+/**
+ * JSON Schema of {@link contractTypeSchema}, written by hand because ArkType
+ * cannot emit one for a recursive type. Keep it in step with the scope above.
+ */
+const CONTRACT_TYPE_JSON_SCHEMA = {
+  oneOf: [
+    {
+      type: "object",
+      properties: {
+        kind: { enum: ["string", "number", "boolean", "null", "unknown"] },
+      },
+      required: ["kind"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "literal" },
+        value: { type: ["string", "number", "boolean"] },
+      },
+      required: ["kind", "value"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "array" },
+        element: { $ref: "#/$defs/ContractType" },
+      },
+      required: ["kind", "element"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "tuple" },
+        elements: { type: "array", items: { $ref: "#/$defs/ContractType" } },
+      },
+      required: ["kind", "elements"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "object" },
+        properties: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              type: { $ref: "#/$defs/ContractType" },
+              optional: { type: "boolean" },
+            },
+            required: ["name", "type", "optional"],
+          },
+        },
+        additionalProperties: { $ref: "#/$defs/ContractType" },
+      },
+      required: ["kind", "properties"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "record" },
+        key: { $ref: "#/$defs/ContractType" },
+        value: { $ref: "#/$defs/ContractType" },
+      },
+      required: ["kind", "key", "value"],
+    },
+    {
+      type: "object",
+      properties: {
+        kind: { const: "union" },
+        members: { type: "array", items: { $ref: "#/$defs/ContractType" } },
+      },
+      required: ["kind", "members"],
+    },
+    {
+      type: "object",
+      properties: { kind: { const: "reference" }, name: { type: "string" } },
+      required: ["kind", "name"],
+    },
+    {
+      type: "object",
+      properties: { kind: { const: "unsupported" }, repr: { type: "string" } },
+      required: ["kind", "repr"],
+    },
+  ],
+} as const;
+
+export const generatorMetadataJsonSchema = withContractTypeDefinition(
+  generatorMetadataSchema.toJsonSchema(),
+);
+
+/**
+ * Replace the opaque `object` placeholders of the contract nodes in the
+ * generated JSON Schema with references to the hand-written definition, so
+ * the published schema describes the whole document.
+ */
+function withContractTypeDefinition(schema: unknown): unknown {
+  const root = schema as Record<string, unknown>;
+  const edgeFunction = (
+    (root["properties"] as Record<string, unknown>)["edgeFunctions"] as {
+      items: Record<string, unknown>;
+    }
+  ).items;
+  const properties = edgeFunction["properties"] as Record<string, unknown>;
+  const nullableRef = {
+    anyOf: [{ $ref: "#/$defs/ContractType" }, { type: "null" }],
+  };
+  properties["requestBody"] = nullableRef;
+  properties["responseBody"] = nullableRef;
+  const declaration = (
+    properties["types"] as { items: { properties: Record<string, unknown> } }
+  ).items;
+  declaration.properties["type"] = { $ref: "#/$defs/ContractType" };
+  return {
+    ...root,
+    $defs: {
+      ...(root["$defs"] as object | undefined),
+      ContractType: CONTRACT_TYPE_JSON_SCHEMA,
+    },
+  };
+}
 
 /**
  * Serialize a {@link GeneratorMetadata} value to the JSON document that
@@ -345,6 +565,27 @@ export function parseGeneratorMetadata(data: unknown): GeneratorMetadata {
   const out = generatorMetadataSchema(data);
   if (out instanceof type.errors) {
     throw new TypeError(`Invalid GeneratorMetadata: ${out.summary}`);
+  }
+  for (const [index, fn] of (out.edgeFunctions ?? []).entries()) {
+    const nodes: [string, unknown][] = [
+      [`edgeFunctions[${index}].requestBody`, fn.requestBody],
+      [`edgeFunctions[${index}].responseBody`, fn.responseBody],
+      ...fn.types.map((declaration, position): [string, unknown] => [
+        `edgeFunctions[${index}].types[${position}].type`,
+        declaration.type,
+      ]),
+    ];
+    for (const [where, node] of nodes) {
+      if (node === null) {
+        continue;
+      }
+      const result = contractTypeSchema(node);
+      if (result instanceof type.errors) {
+        throw new TypeError(
+          `Invalid GeneratorMetadata: ${where} ${result.summary}`,
+        );
+      }
+    }
   }
   return out;
 }

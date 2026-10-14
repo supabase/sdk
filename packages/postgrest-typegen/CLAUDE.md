@@ -56,6 +56,17 @@ Hard split between **introspection** and **generation**:
   shape change; `generatorMetadataJsonSchema` and `serializeGeneratorMetadata`
   own the JSON boundary for generators living outside this process.
 
+- Edge Function contracts: `GeneratorMetadata` has an optional
+  `edgeFunctions` collection, produced by `@supabase/functions-typegen` (a
+  sibling package) and merged in by the document's assembler. This package
+  owns only the contract: the schemas in `src/types.ts` and
+  `sortEdgeFunctions` in `src/sort.ts`. The recursive `contractTypeSchema`
+  cannot be turned into JSON Schema by ArkType, so the document schema types
+  contract nodes as opaque objects (`type("object").as<ContractType>()`),
+  `parseGeneratorMetadata` validates the trees in a second pass and
+  `generatorMetadataJsonSchema` splices a hand-written `$defs.ContractType`
+  in. Keep that definition in step with the scope.
+
 ## Subpath Exports
 
 - `.` -- everything

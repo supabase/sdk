@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { resolveRpcFunctions } from "../src/rpc.ts";
 import { sortGeneratorMetadata } from "../src/sort.ts";
-import type { PostgresType } from "../src/types.ts";
+import type { EdgeFunction, PostgresType } from "../src/types.ts";
 import {
   addressCompositeType,
   baseColumn,
@@ -15,6 +15,47 @@ import {
 } from "./generation/fixtures.ts";
 
 describe("sortGeneratorMetadata", () => {
+  test("orders Edge Functions by slug and their declarations and diagnostics, and keeps the collection absent when it is absent", () => {
+    const fn = (slug: string): EdgeFunction => ({
+      slug,
+      entrypoint: `supabase/functions/${slug}/index.ts`,
+      importMap: null,
+      verifyJwt: true,
+      requestBody: null,
+      responseBody: null,
+      types: [
+        { name: "Zed", type: { kind: "string" } },
+        { name: "Arm", type: { kind: "string" } },
+      ],
+      diagnostics: [
+        { path: "R.b", message: "x" },
+        { path: "R.a", message: "z" },
+        { path: "R.a", message: "a" },
+      ],
+    });
+    const sorted = sortGeneratorMetadata({
+      ...buildMetadata({}),
+      edgeFunctions: [fn("z"), fn("ä"), fn("a")],
+    });
+    expect(sorted.edgeFunctions?.map((entry) => entry.slug)).toEqual([
+      "a",
+      "ä",
+      "z",
+    ]);
+    expect(sorted.edgeFunctions?.[0]?.types.map((t) => t.name)).toEqual([
+      "Arm",
+      "Zed",
+    ]);
+    expect(sorted.edgeFunctions?.[0]?.diagnostics).toEqual([
+      { path: "R.a", message: "a" },
+      { path: "R.a", message: "z" },
+      { path: "R.b", message: "x" },
+    ]);
+    expect("edgeFunctions" in sortGeneratorMetadata(buildMetadata({}))).toBe(
+      false,
+    );
+  });
+
   test("orders names with a fixed collation, independent of the host locale", () => {
     // An English collation puts "ä" next to "a"; Swedish would put it after
     // "z". The order must not change with the machine that runs the generator.

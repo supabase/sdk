@@ -209,6 +209,62 @@ worker-pool-backed formatter) and it is never loaded or needed. Calling
 `generateTypescript` without `format` when `oxfmt` is missing throws an error
 saying so.
 
+## Edge Function contracts
+
+The optional `edgeFunctions` collection of `GeneratorMetadata` describes the
+[Edge Functions](https://supabase.com/docs/guides/functions) of a project, so
+the same generators that type tables can type function calls. `introspect()`
+knows nothing about functions: the collection is produced by
+[`@supabase/functions-typegen`](../functions-typegen), which reads the
+project's source files, and merged into the document by whoever assembles it.
+A document without the collection generates what it always generated.
+
+A function declares its contract by exporting two types from its entrypoint.
+Either may be left out, and an alias to an existing type is enough:
+
+```ts
+// supabase/functions/greet/index.ts
+export type RequestBody = { name: string; greeting?: "hello" | "hi" };
+export interface ResponseBody {
+  message: string;
+}
+```
+
+`RequestBody` is the JSON body the function accepts, `ResponseBody` the JSON
+body it answers with. The names avoid `Request` and `Response` on purpose:
+those are globals in the edge runtime, and shadowing them in type position
+would change what a handler's `(request: Request)` annotation means. A
+function without the exports still appears by name with both bodies `null`,
+so a generated method can at least check that the function exists.
+
+Each entry carries the function's `slug`, project-relative `entrypoint` and
+`importMap`, its `verifyJwt` setting, the two bodies, the named `types` the
+bodies reference, and its own `diagnostics`: every construct JSON cannot carry
+is marked `unsupported` with the source text and a diagnostic naming the spot,
+so a generator falls back to its loosest type there instead of failing.
+
+Contracts use a small type language, `ContractType`:
+
+| `kind`        | Fields                                | Meaning                                                            |
+| ------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| `string`, `number`, `boolean`, `null` |               | JSON scalars                                                       |
+| `unknown`     |                                       | `any` or `unknown`                                                 |
+| `literal`     | `value`                               | one string, number or boolean value                                |
+| `array`       | `element`                             | JSON array of one type                                             |
+| `tuple`       | `elements`                            | JSON array with one type per position                              |
+| `object`      | `properties`, `additionalProperties?` | named properties (`name`, `type`, `optional`); the type of other keys when the source had an index signature |
+| `record`      | `key`, `value`                        | JSON object whose keys are all strings or a union of string literals |
+| `union`       | `members`                             | one of the members                                                 |
+| `reference`   | `name`                                | a declaration in the function's `types`                            |
+| `unsupported` | `repr`                                | a construct JSON cannot carry; `repr` is the source text           |
+
+`sortGeneratorMetadata` orders the collection by slug, each function's
+declarations by name and its diagnostics by path and message, and leaves an
+absent collection absent, so existing documents serialize byte for byte as
+before. `parseGeneratorMetadata` validates the contract trees, and
+`generatorMetadataJsonSchema` describes them through a `ContractType` entry in
+`$defs`.
+
 ## Generating types without database credentials
 
 `GeneratorMetadata` is the pluggable contract, so generating types for a
