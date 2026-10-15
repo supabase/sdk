@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/supabase/sdk/compare/typegen/v0.2.2...typegen/v0.3.0) (2026-10-15)
+
+
+### Features
+
+* **typegen:** run the Swift generator from supabase-swift's supabase-typegen ([#264](https://github.com/supabase/sdk/issues/264)) ([3489596](https://github.com/supabase/sdk/commit/3489596e617439acb10a2d6ef0073a5ff0d3a133))
+
+
+### Bug Fixes
+
+* **typegen:** bump @supabase/postgrest-typegen to 0.5.0 ([#274](https://github.com/supabase/sdk/issues/274)) ([7b96ba0](https://github.com/supabase/sdk/commit/7b96ba037c32cb42b4920c5310ce113f171fe3e7))
+
 ## [0.2.2](https://github.com/supabase/sdk/compare/typegen/v0.2.1...typegen/v0.2.2) (2026-09-30)
 
 
