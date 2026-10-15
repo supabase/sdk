@@ -9,8 +9,8 @@ Spec: [https://supabase.github.io/storage/](https://supabase.github.io/storage/)
 
 The API spec documents no success body for `POST /object/list-v2/{bucketName}`. The handler, [`listObjectsV2`](https://github.com/supabase/storage/blob/master/src/storage/object.ts), answers with `hasNext`, `nextCursor`, `folders`, and `objects`.
 
-<!-- Delete the paragraph above once the list-v2 route in supabase/storage declares its 200
-     response schema: https://github.com/supabase/storage/blob/master/src/http/routes/object/listObjectsV2.ts -->
+<!-- Delete the paragraph above once storage#1518 corrects the entry:
+     https://github.com/supabase/storage/pull/1518 -->
 
 ## Behavior
 
