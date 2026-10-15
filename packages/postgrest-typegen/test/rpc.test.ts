@@ -435,10 +435,36 @@ describe("resolveRpcFunctions", () => {
       ).toBe(1);
     });
 
-    test("an unnamed computed field returning no rows is not callable", () => {
+    test("an unnamed computed field is never callable, whatever it returns", () => {
+      const message =
+        "the function public.summary with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache";
       expect(only([scalarOnRow("summary", "")]).overloads[0]?.error).toBe(
-        "the function public.summary with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache",
+        message,
       );
+
+      // A computed relationship keeps its embedding metadata but is not
+      // callable either: PostgREST only passes a sole unnamed parameter when
+      // it is json, jsonb or text.
+      const [relationship] = only([
+        baseFunction({
+          name: "summary",
+          args: [arg("", 500)],
+          argument_types: "todos",
+          return_type_id: 501,
+          return_type: "SETOF users",
+          return_type_relation_id: 2,
+          is_set_returning_function: true,
+          prorows: 1000,
+        }),
+      ]).overloads;
+      expect(relationship?.error).toBe(message);
+      expect(relationship?.computed_field_of).toBe(1);
+      expect(relationship?.setof_options).toEqual({
+        from: "todos",
+        to: "users",
+        is_one_to_one: false,
+        is_setof_return: true,
+      });
     });
   });
 

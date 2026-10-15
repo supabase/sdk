@@ -245,9 +245,10 @@ const rpcFunctionOverloadSchema = type({
   computed_field_of: "number | null",
   /**
    * Why PostgREST cannot resolve a call to this overload, when it cannot: the
-   * function conflicts with another overload, or it is a computed field that
-   * returns no rows. Generators surface the message instead of a callable
-   * signature.
+   * function conflicts with another overload, or its sole parameter is an
+   * unnamed row, which PostgREST never matches under `/rpc` (the function is
+   * a computed field or computed relationship, reached by embedding).
+   * Generators surface the message instead of a callable signature.
    */
   error: "string | null",
 });

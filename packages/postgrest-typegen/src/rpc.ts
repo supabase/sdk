@@ -178,13 +178,14 @@ export function resolveRpcFunctions(
         }
       }
     }
-    // A sole unnamed row parameter makes the function a computed field, which
-    // PostgREST only exposes under `/rpc` when it also returns rows.
+    // PostgREST passes a sole unnamed parameter only when it is json, jsonb or
+    // text, so a function taking a row this way is a computed field or a
+    // computed relationship, reachable by embedding it from its relation and
+    // never through `/rpc`, whatever it returns.
     if (
       soleInArg &&
       soleInArg.name === "" &&
-      relationTypesById.has(soleInArg.type_id) &&
-      returnRelationName(fn) === null
+      relationTypesById.has(soleInArg.type_id)
     ) {
       return `the function ${fn.schema}.${fn.name} with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache`;
     }
