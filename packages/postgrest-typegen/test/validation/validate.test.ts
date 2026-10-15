@@ -230,7 +230,6 @@ interface ExpectedGeneratorMetadata {
   relationships: ExpectedPostgresRelationship[];
   functions: ExpectedPostgresFunction[];
   types: ExpectedPostgresType[];
-  // Optional so version 1 documents predating the collection remain valid.
   rpcFunctions?: ExpectedRpcFunction[];
 }
 

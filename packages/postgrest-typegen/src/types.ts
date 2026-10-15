@@ -205,8 +205,8 @@ const rpcFunctionReturnsSchema = rpcTypeReferenceSchema.merge({
    */
   relation_id: "number | null",
   /**
-   * The columns of a `RETURNS TABLE (…)` or `OUT` parameter result, in name
-   * order; `null` for every other return type.
+   * The columns of a `RETURNS TABLE (…)` result, in name order; `null` for
+   * every other return type, including a record built from `OUT` parameters.
    */
   columns: rpcTypeReferenceSchema.merge({ name: "string" }).array().or("null"),
 });
