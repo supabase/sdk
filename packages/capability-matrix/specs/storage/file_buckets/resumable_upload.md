@@ -63,12 +63,14 @@ The SDK never has two `PATCH` requests in flight for the same upload URL: the se
 - HTTP 400 with the message `Invalid Upload-Metadata header` on the `POST`: the SDK produced an `Upload-Metadata` value the server cannot parse. Not retried.
 - HTTP 400 on a signed upload whose token is missing (message `Missing x-signature header`), expired, or issued for another path. Not retried.
 - HTTP 404 or HTTP 410 on the upload URL: the upload is gone; see Expiry under Behavior. Not counted as a retry.
+- A check before the wire: `metadata` is accepted only as a JSON object the SDK serialises itself, never as caller-supplied text, and any other value is rejected as the SDK's own argument error before any request is sent. The server's answer to a `metadata` value it cannot parse as JSON is no error at all: it logs a warning, drops the value, and creates the object without `user_metadata`, so the check is the only thing that keeps the caller's metadata from being lost silently.
+
+<!-- Delete the server sentence above, and keep the check, once supabase/storage rejects an unparsable `metadata` value with HTTP 400 instead of dropping it (handler: src/http/routes/tus/lifecycle.ts, "Failed to parse user metadata"). Upstream issue: not yet opened. -->
 
 ## Notes
 
 - SDKs on platforms without a durable local store (a server-side runtime with no file system, a browser with storage disabled) keep the record in memory only. Such an SDK declares `partially_implemented` with a note that recovery after a restart is not available, never `not_applicable`, because pause, resume, and cancel within one process still apply.
 - The guide recommends the direct storage hostname (`{project}.storage.supabase.co`) for large uploads. The SDK uses whatever storage URL the client was configured with and does not rewrite it.
-- A `metadata` value the server cannot parse as JSON is dropped silently and the object is created without `user_metadata`. The SDK serialises the caller's value itself, so this cannot happen for a value the SDK's own type accepts.
 
 ## Related
 
