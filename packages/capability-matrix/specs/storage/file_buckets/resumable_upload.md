@@ -65,8 +65,6 @@ The SDK never has two `PATCH` requests in flight for the same upload URL: the se
 - HTTP 404 or HTTP 410 on the upload URL: the upload is gone; see Expiry under Behavior. Not counted as a retry.
 - A check before the wire: `metadata` is accepted only as a JSON object the SDK serialises itself, never as caller-supplied text, and any other value is rejected as the SDK's own argument error before any request is sent. The server's answer to a `metadata` value it cannot parse as JSON is no error at all: it logs a warning, drops the value, and creates the object without `user_metadata`, so the check is the only thing that keeps the caller's metadata from being lost silently.
 
-<!-- Delete the server sentence above, and keep the check, once supabase/storage rejects an unparsable `metadata` value with HTTP 400 instead of dropping it (handler: src/http/routes/tus/lifecycle.ts, "Failed to parse user metadata"). Upstream issue: not yet opened. -->
-
 ## Notes
 
 - SDKs on platforms without a durable local store (a server-side runtime with no file system, a browser with storage disabled) keep the record in memory only. Such an SDK declares `partially_implemented` with a note that recovery after a restart is not available, never `not_applicable`, because pause, resume, and cancel within one process still apply.
