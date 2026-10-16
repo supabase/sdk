@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.5.0...postgrest-typegen/v0.6.0) (2026-10-16)
+
+
+### Features
+
+* **postgrest-typegen:** infer view column nullability from the source column ([#284](https://github.com/supabase/sdk/issues/284)) ([1e8c266](https://github.com/supabase/sdk/commit/1e8c266fa9aa2eb75fd09f9d03660580bcc26662))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** a sole unnamed row parameter is never callable through /rpc ([#277](https://github.com/supabase/sdk/issues/277)) ([08c6cc9](https://github.com/supabase/sdk/commit/08c6cc9b480a6843b254d6381052264b5e118e26))
+* **postgrest-typegen:** narrow the computed-field fallback and key RPC groups safely ([#272](https://github.com/supabase/sdk/issues/272)) ([e3f5c0e](https://github.com/supabase/sdk/commit/e3f5c0ee79670c68118b16fe7b2baa3fbb8e54c2))
+
 ## [0.5.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.4.0...postgrest-typegen/v0.5.0) (2026-10-14)
 
 
