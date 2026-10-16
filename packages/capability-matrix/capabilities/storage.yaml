@@ -98,6 +98,10 @@ features:
     name: Upload with Signed URL
     description: Upload a file using a pre-signed upload URL, without requiring standard authentication.
     group: file_buckets
+  - id: storage.file_buckets.resumable_upload
+    name: Resumable Upload
+    description: Upload a large file in chunks with the tus protocol, with pause, resume, cancel, and recovery of an interrupted upload after the process restarts.
+    group: file_buckets
   - id: storage.vector_buckets.access_vector_index
     name: Access Vector Index
     description: Scope subsequent vector operations to a specific index within a bucket.
