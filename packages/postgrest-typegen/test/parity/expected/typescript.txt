@@ -453,7 +453,7 @@ export type Database = {
           get_single_user_summary_from_view: {
             todo_count: number | null
             todo_details: string[] | null
-            user_id: number | null
+            user_id: number
             user_name: string | null
             user_status: Database["public"]["Enums"]["user_status"] | null
           } | null
@@ -540,7 +540,7 @@ export type Database = {
     Views: {
       a_view: {
         Row: {
-          id: number | null
+          id: number
         }
         ComputedFields: never
         Insert: {
@@ -554,8 +554,8 @@ export type Database = {
       todos_matview: {
         Row: {
           details: string | null
-          id: number | null
-          "user-id": number | null
+          id: number
+          "user-id": number
           get_todos_by_matview: {
             details: string | null
             id: number
@@ -606,8 +606,8 @@ export type Database = {
       todos_view: {
         Row: {
           details: string | null
-          id: number | null
-          "user-id": number | null
+          id: number
+          "user-id": number
           blurb_varchar: string | null
           test_unnamed_view_row: {
             details: string | null
@@ -669,7 +669,7 @@ export type Database = {
         Row: {
           todo_count: number | null
           todo_details: string[] | null
-          user_id: number | null
+          user_id: number
           user_name: string | null
           user_status: Database["public"]["Enums"]["user_status"] | null
         }
@@ -679,14 +679,14 @@ export type Database = {
       users_view: {
         Row: {
           decimal: number | null
-          id: number | null
+          id: number
           name: string | null
           status: Database["public"]["Enums"]["user_status"] | null
           user_uuid: string | null
           get_single_user_summary_from_view: {
             todo_count: number | null
             todo_details: string[] | null
-            user_id: number | null
+            user_id: number
             user_name: string | null
             user_status: Database["public"]["Enums"]["user_status"] | null
           } | null
@@ -717,9 +717,9 @@ export type Database = {
       }
       users_view_with_multiple_refs_to_users: {
         Row: {
-          initial_id: number | null
+          initial_id: number
           initial_name: string | null
-          second_id: number | null
+          second_id: number
           second_name: string | null
         }
         ComputedFields: never
@@ -919,7 +919,7 @@ export type Database = {
             Returns: {
               todo_count: number | null
               todo_details: string[] | null
-              user_id: number | null
+              user_id: number
               user_name: string | null
               user_status: Database["public"]["Enums"]["user_status"] | null
             }
@@ -940,7 +940,7 @@ export type Database = {
             Returns: {
               todo_count: number | null
               todo_details: string[] | null
-              user_id: number | null
+              user_id: number
               user_name: string | null
               user_status: Database["public"]["Enums"]["user_status"] | null
             }
@@ -961,7 +961,7 @@ export type Database = {
             Returns: {
               todo_count: number | null
               todo_details: string[] | null
-              user_id: number | null
+              user_id: number
               user_name: string | null
               user_status: Database["public"]["Enums"]["user_status"] | null
             }

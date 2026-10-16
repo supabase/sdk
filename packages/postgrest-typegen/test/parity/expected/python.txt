@@ -276,37 +276,37 @@ class PublicUsersAuditUpdate(TypedDict):
     user_id: NotRequired[Annotated[Optional[int], Field(alias="user_id")]]
 
 class PublicAView(BaseModel):
-    id: Optional[int] = Field(alias="id")
+    id: int = Field(alias="id")
 
 class PublicTodosView(BaseModel):
     details: Optional[str] = Field(alias="details")
-    id: Optional[int] = Field(alias="id")
-    user_id: Optional[int] = Field(alias="user-id")
+    id: int = Field(alias="id")
+    user_id: int = Field(alias="user-id")
 
 class PublicUserTodosSummaryView(BaseModel):
     todo_count: Optional[int] = Field(alias="todo_count")
     todo_details: Optional[List[str]] = Field(alias="todo_details")
-    user_id: Optional[int] = Field(alias="user_id")
+    user_id: int = Field(alias="user_id")
     user_name: Optional[str] = Field(alias="user_name")
     user_status: Optional[PublicUserStatus] = Field(alias="user_status")
 
 class PublicUsersView(BaseModel):
     decimal: Optional[float] = Field(alias="decimal")
-    id: Optional[int] = Field(alias="id")
+    id: int = Field(alias="id")
     name: Optional[str] = Field(alias="name")
     status: Optional[PublicUserStatus] = Field(alias="status")
     user_uuid: Optional[uuid.UUID] = Field(alias="user_uuid")
 
 class PublicUsersViewWithMultipleRefsToUsers(BaseModel):
-    initial_id: Optional[int] = Field(alias="initial_id")
+    initial_id: int = Field(alias="initial_id")
     initial_name: Optional[str] = Field(alias="initial_name")
-    second_id: Optional[int] = Field(alias="second_id")
+    second_id: int = Field(alias="second_id")
     second_name: Optional[str] = Field(alias="second_name")
 
 class PublicTodosMatview(BaseModel):
     details: Optional[str] = Field(alias="details")
-    id: Optional[int] = Field(alias="id")
-    user_id: Optional[int] = Field(alias="user-id")
+    id: int = Field(alias="id")
+    user_id: int = Field(alias="user-id")
 
 class PublicCompositeTypeWithArrayAttribute(BaseModel):
     my_text_array: Optional[List[str]] = Field(alias="my_text_array")
