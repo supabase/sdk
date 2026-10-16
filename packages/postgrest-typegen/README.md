@@ -122,6 +122,16 @@ comment on column my_view.total is '@notNull';
 The directive is honored on view and materialized view columns only, and the
 comment is passed through unchanged.
 
+The inference describes the rows a query reads, so a few values can still be
+null where the type says otherwise:
+
+- Rows returned by a write through an `INSTEAD OF` trigger are the trigger's
+  `NEW`, so a column the trigger leaves unset comes back null.
+- PostgreSQL does not enforce `NOT NULL` inside composite values, so a column
+  whose type is a view's row type can hold a row with null fields.
+- A materialized view keeps the rows of its last refresh, including nulls from
+  before its source column became `NOT NULL`.
+
 ### Runtime validation (opt-in)
 
 `GeneratorMetadata` is backed by an [ArkType](https://arktype.io) schema, so a

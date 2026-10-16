@@ -16,6 +16,8 @@ interface Token {
 }
 
 const LIST_MARKERS = new Set(["i", "o", "b", "x"]);
+const WHITESPACE = " \t\n";
+const PUNCTUATION = "(){}";
 
 /**
  * Parse the text form of a `pg_node_tree` (for example
@@ -85,11 +87,11 @@ function tokenize(text: string): Token[] {
   let index = 0;
   while (index < text.length) {
     const character = text.charAt(index);
-    if (/\s/.test(character)) {
+    if (WHITESPACE.includes(character)) {
       index++;
       continue;
     }
-    if ("(){}".includes(character)) {
+    if (PUNCTUATION.includes(character)) {
       tokens.push({ raw: character, text: character });
       index++;
       continue;
@@ -103,7 +105,7 @@ function tokenize(text: string): Token[] {
         index += 2;
         continue;
       }
-      if (/\s/.test(current) || "(){}".includes(current)) {
+      if (WHITESPACE.includes(current) || PUNCTUATION.includes(current)) {
         break;
       }
       unescaped += current;

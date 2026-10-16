@@ -65,6 +65,15 @@ function inferNonNullViewColumns(rows: ViewDefinitionRow[]): Set<string> {
     ),
   );
   const resolved = new Map<string, Set<number>>();
+  const nullableIndexesByQuery = new Map<NodeTreeNode, Set<number>>();
+  const nullableIndexesOf = (query: NodeTreeNode): Set<number> => {
+    let indexes = nullableIndexesByQuery.get(query);
+    if (indexes === undefined) {
+      indexes = nullableRangeTableIndexes(query);
+      nullableIndexesByQuery.set(query, indexes);
+    }
+    return indexes;
+  };
 
   const nonNullColumnsOfView = (viewId: string): Set<number> => {
     const cached = resolved.get(viewId);
@@ -112,7 +121,7 @@ function inferNonNullViewColumns(rows: ViewDefinitionRow[]): Set<string> {
     }
     const varno = Number(expression.fields.varno);
     const attnum = Number(expression.fields.varattno);
-    if (attnum <= 0 || nullableRangeTableIndexes(query).has(varno)) {
+    if (attnum <= 0 || nullableIndexesOf(query).has(varno)) {
       return false;
     }
     const entry = list(query.fields.rtable)[varno - 1];
