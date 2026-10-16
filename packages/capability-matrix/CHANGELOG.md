@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.15.0...capability-matrix/v1.16.0) (2026-10-16)
+
+
+### Features
+
+* **database:** add generated types capabilities for typed queries and function calls ([#276](https://github.com/supabase/sdk/issues/276)) ([1fd943a](https://github.com/supabase/sdk/commit/1fd943a60f988064576d4bb93127cd7524afbb7f))
+
 ## [1.15.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.14.0...capability-matrix/v1.15.0) (2026-10-12)
 
 
