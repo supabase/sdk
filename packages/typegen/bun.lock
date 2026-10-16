@@ -5,7 +5,7 @@
     "": {
       "name": "@supabase/typegen",
       "dependencies": {
-        "@supabase/postgrest-typegen": "0.5.0",
+        "@supabase/postgrest-typegen": "0.6.0",
       },
       "devDependencies": {
         "@tsconfig/bun": "^1.0.11",
@@ -206,7 +206,7 @@
 
     "@oxlint/binding-win32-x64-msvc": ["@oxlint/binding-win32-x64-msvc@1.87.0", "", { "os": "win32", "cpu": "x64" }, "sha512-k+m/EShyXE29J/r1fjk0HlAzhN5JhIvj044oSJkXTEkCLrWZQgXb/3r4q5LTw/eaKW/4GuMXG2xmiJs3s5rPNw=="],
 
-    "@supabase/postgrest-typegen": ["@supabase/postgrest-typegen@0.5.0", "", { "dependencies": { "arktype": "2.2.8" }, "peerDependencies": { "oxfmt": "0.66.0" }, "optionalPeers": ["oxfmt"] }, "sha512-TgK8AphlUQk09seM3NzHO3dFmVGOSBUNH5pjfl/mbcvZgNJXASBwPOpnQ02/9oMjrdsQ/oY3hiqfsqrVJG1+vw=="],
+    "@supabase/postgrest-typegen": ["@supabase/postgrest-typegen@0.6.0", "", { "dependencies": { "arktype": "2.2.8" }, "peerDependencies": { "oxfmt": "0.66.0" }, "optionalPeers": ["oxfmt"] }, "sha512-3aCh88bSqPpLbKQV3q9obZcYSJ9BYbQgkYFCYgGcu9pv/WEE/9sK7k2aWJqKJR9hK9NTWXBD85/yx7vSMvEw+A=="],
 
     "@tsconfig/bun": ["@tsconfig/bun@1.0.11", "", {}, "sha512-DQA3HOKFQ+/yPTUa73k5QGcuEM1ExtL6uWQMR0QrfOTitm0oLHqHd1tI74WtEtMqlIu+tvSMELJ6p5uNxVE7lw=="],
 
