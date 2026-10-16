@@ -29,6 +29,11 @@ Hard split between **introspection** and **generation**:
 - `src/introspection/` -- `introspect(db, opts) => GeneratorMetadata`. Takes a
   structural `Queryable` (`pg.Pool`/`pg.Client` satisfy it; postgres-meta
   injects its forked-pg pool). Runs the SQL builders in `src/introspection/sql/`.
+  View column `is_nullable` is the one value computed outside SQL:
+  `view-nullability.ts` parses each view's `pg_rewrite.ev_action` with
+  `node-tree.ts` and walks its query tree (see "View column nullability" in the
+  README). It reads only the join tree and range table, never
+  `varnullingrels`, so one code path serves PostgreSQL 15 and later.
 - `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`. Pure functions: `GeneratorMetadata` in, the complete source
   file (ending in a single newline) out. No database access.
 - `src/rpc.ts` -- `resolveRpcFunctions(metadata) => RpcFunction[]`, the

@@ -14,7 +14,9 @@ import { PRIMARY_KEYS_SQL } from "./sql/primary_keys.sql.ts";
 import { SCHEMAS_SQL } from "./sql/schemas.sql.ts";
 import { TABLES_SQL } from "./sql/table.sql.ts";
 import { TYPES_SQL } from "./sql/types.sql.ts";
+import { VIEW_DEFINITIONS_SQL } from "./sql/view_definitions.sql.ts";
 import { VIEWS_SQL } from "./sql/views.sql.ts";
+import { applyViewColumnNullability } from "./view-nullability.ts";
 
 /**
  * Minimal structural database interface. `pg.Pool` / `pg.Client` satisfy it,
@@ -72,6 +74,7 @@ export async function introspect(
     relationships,
     functions,
     types,
+    viewDefinitions,
   ] = await Promise.all([
     queryRows(SCHEMAS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(TABLES_SQL({ schemaFilter: systemExcludingFilter })),
@@ -83,6 +86,7 @@ export async function introspect(
     listRelationships(db, systemExcludingFilter),
     queryRows(FUNCTIONS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(TYPES_SQL),
+    queryRows(VIEW_DEFINITIONS_SQL({ schemaFilter: systemExcludingFilter })),
   ]);
 
   const metadata = {
@@ -92,7 +96,7 @@ export async function introspect(
     foreignTables,
     views,
     materializedViews,
-    columns,
+    columns: applyViewColumnNullability(columns, viewDefinitions),
     primaryKeys,
     relationships,
     functions: functions.filter(

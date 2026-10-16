@@ -100,6 +100,28 @@ it the same way, and a document without the collection (produced before it
 existed) still generates: the TypeScript generator falls back to running the
 pass itself.
 
+### View column nullability
+
+PostgreSQL never marks view columns `NOT NULL`, so `introspect()` works out
+`is_nullable` for view and materialized view columns from the view's query
+tree. A column is not nullable when it is a plain reference to a `NOT NULL`
+column (directly, through another view, a subquery, a non-recursive CTE, a
+join alias or a `GROUP BY` key) and nothing on the way puts it on the nullable
+side of an outer join, in a set operation such as `UNION` or under
+`GROUPING SETS`/`ROLLUP`/`CUBE`. This works the same on every supported
+PostgreSQL version. Expressions stay nullable, even ones that cannot return
+null.
+
+For a column the catalog cannot prove non-null, such as `coalesce(x, 0)` or
+`count(*)`, add a line containing only `@notNull` to its comment:
+
+```sql
+comment on column my_view.total is '@notNull';
+```
+
+The directive is honored on view and materialized view columns only, and the
+comment is passed through unchanged.
+
 ### Runtime validation (opt-in)
 
 `GeneratorMetadata` is backed by an [ArkType](https://arktype.io) schema, so a
