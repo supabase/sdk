@@ -4,7 +4,7 @@
 
 Type generation for PostgREST from a PostgreSQL schema. Introspects a database
 into a normalized `GeneratorMetadata` shape, then renders language types
-(TypeScript, Go, Python) from it. This is the engine extracted from
+(TypeScript, Go, Python, Swift) from it. This is the engine extracted from
 postgres-meta (the one behind `supabase gen types`), repackaged as a small,
 driver-agnostic library.
 
@@ -18,6 +18,9 @@ that language's own SDK repo, consuming `introspect()`'s JSON output via
 `serializeGeneratorMetadata`/`generatorMetadataJsonSchema` (see the Dart
 `supabase_typegen` package in `supabase/supabase-flutter` and the Swift
 `supabase-typegen` executable in `supabase/supabase-swift` for the pattern).
+`generateSwift` is the supabase-swift 2 generator, kept for projects on that
+major while the executable serves supabase-swift 3 and later; it takes no new
+features and goes once supabase-swift 2 is no longer supported.
 The compatibility rule for the contract, how `GENERATOR_METADATA_VERSION`
 relates to the package version and who reviews contract changes are in the
 README under "Contract compatibility".
@@ -34,7 +37,8 @@ Hard split between **introspection** and **generation**:
   `node-tree.ts` and walks its query tree (see "View column nullability" in the
   README). It reads only the join tree and range table, never
   `varnullingrels`, so one code path serves PostgreSQL 15 and later.
-- `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`. Pure functions: `GeneratorMetadata` in, the complete source
+- `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython` /
+  `generateSwift`. Pure functions: `GeneratorMetadata` in, the complete source
   file (ending in a single newline) out. No database access.
 - `src/rpc.ts` -- `resolveRpcFunctions(metadata) => RpcFunction[]`, the
   PostgREST view of the raw `functions` collection: which functions `/rpc`
@@ -117,7 +121,7 @@ unquoted numbers.
 a global int8 type parser. `src/introspection/normalize.ts` coerces known
 numeric id fields after each query so output is identical under any driver.
 
-**Deterministic ordering:** the Go/Python generators emit objects in
+**Deterministic ordering:** the Go/Python/Swift generators emit objects in
 `GeneratorMetadata` order (only TypeScript sorts internally), so output is
 sensitive to however the producer ordered its collections. Do NOT rely on
 introspection query order (heap/aggregate-plan order is environment- and
@@ -131,10 +135,10 @@ never oid — equivalent databases assign different oids, so an oid sort would
 still churn output across environments.
 
 **TypeScript is the source of truth for ordering.** `sortGeneratorMetadata`
-applies the sorts `generateTypescript` defines, and all three generators
+applies the sorts `generateTypescript` defines, and all four generators
 consume that single pass. The only sorts that remain inside generators are ones the
 single-collection pass cannot express: cross-collection *merge* sorts
-(TypeScript merges tables + foreign tables, and views + materialized
+(TypeScript and Swift merge tables + foreign tables, and views + materialized
 views, into one per-schema group then sort by name). RPC overload order is
 owned by `resolveRpcFunctions` (argument list, then return type) and kept by
 `sortGeneratorMetadata`. Don't add per-collection sorting in a

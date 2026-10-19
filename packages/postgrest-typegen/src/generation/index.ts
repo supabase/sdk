@@ -7,3 +7,8 @@ export {
   pgTypeToTsType,
   type TypeResolutionContext,
 } from "./typescript.ts";
+export {
+  type AccessControl,
+  generateSwift,
+  type GenerateSwiftOptions,
+} from "./swift.ts";

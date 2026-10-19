@@ -6,19 +6,21 @@ driver-agnostic library.
 
 > **Status:** alpha. The public API may still change between minor versions.
 
-## Scope: introspection is permanent, three generators are transitional
+## Scope: introspection is permanent, four generators are transitional
 
 This package's permanent job is introspection and the `GeneratorMetadata`
 contract (see "Out-of-process generators" below): any *new* language's
 generator lives in that language's own SDK repo, consuming this package's
 JSON output, not inside `postgrest-typegen`.
 
-The TypeScript, Go, and Python generators bundled here are a
+The TypeScript, Go, Python, and Swift generators bundled here are a
 **deliberate transition**, not the target architecture for new languages.
 They move out one language at a time, TypeScript first into supabase-js, then
-Go and Python. Swift's generator is the `supabase-typegen` executable in
-[supabase-swift](https://github.com/supabase/supabase-swift), which
-`supabase gen types --lang swift` runs.
+Go and Python. Swift's generator for supabase-swift 3 and later is the
+`supabase-typegen` executable in
+[supabase-swift](https://github.com/supabase/supabase-swift);
+`generateSwift` stays here for projects on supabase-swift 2 and is removed
+once that major is no longer supported.
 
 > [!IMPORTANT]
 > **We do not accept contributions that fix the bundled generators.**
@@ -54,7 +56,7 @@ generators.
 
 ### Stable ordering (`sortGeneratorMetadata`)
 
-The Go/Python generators emit tables, views, and materialized views in
+The Go/Python/Swift generators emit tables, views, and materialized views in
 `GeneratorMetadata` order, so their output depends on how the producer ordered
 its collections (a SQL introspector returns rows in environment-dependent heap
 order). `sortGeneratorMetadata` is a pure pass that canonically sorts every
@@ -221,6 +223,7 @@ import {
   generateTypescript, // async (formats its output)
   generateGo,
   generatePython,
+  generateSwift,
 } from "@supabase/postgrest-typegen/generation";
 ```
 
@@ -229,6 +232,7 @@ import {
 | `generateTypescript` | `{ detectOneToOneRelationships?, postgrestVersion?, defaultSchema?, format? }` |
 | `generateGo`         | —                                                                              |
 | `generatePython`     | —                                                                              |
+| `generateSwift`      | `{ accessControl?: 'internal' \| 'public' \| 'private' \| 'package' }`         |
 
 Every generator returns the complete contents of the generated file, ending
 with a single newline, so consumers write the result as-is.
