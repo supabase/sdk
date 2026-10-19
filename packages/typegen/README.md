@@ -57,13 +57,13 @@ both does not.
 
 ## Languages
 
-| `--lang`     | Runs           | How                                                     | Flags                                                                              |
-| ------------ | -------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
-| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
-| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
+| `--lang`     | Runs           | How                                                         | Flags                                                                              |
+| ------------ | -------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen`     | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
+| `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`             |                                                                                    |
+| `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `swift`      | in-process     | `generateSwift`, or `supabase-typegen` for supabase-swift 3 | `--swift-access-control internal\|public\|private\|package`                        |
-| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
+| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project       |                                                                                    |
 
 The in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
