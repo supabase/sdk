@@ -127,9 +127,12 @@ export interface TypegenLanguage {
   /** What `--lang` accepts, for example `dart`. */
   readonly name: string;
   /**
-   * `true` when the generator is a function called in this process. `false`
-   * when a toolchain outside the consumer runs it, which hosted consumers such
-   * as postgres-meta's `/generators/*` routes cannot offer.
+   * `true` when the entry can generate in this process, so a host that cannot
+   * run processes may offer it. That includes an entry that runs an external
+   * tool only for some projects and generates in-process otherwise, such as
+   * Swift, which runs `supabase-typegen` for supabase-swift 3. `false` when a
+   * toolchain outside the consumer always runs it, which hosted consumers
+   * such as postgres-meta's `/generators/*` routes cannot offer.
    */
   readonly inProcess: boolean;
   /** Language-specific flags; empty when the language has none. */

@@ -78,6 +78,8 @@ lives in supabase-js.
 - Out-of-process tools: stdout is code, stderr is diagnostics, exit 0 is
   success. `dart run` keeps stdout clean when it is not a terminal.
 - `inProcess` must be accurate: hosted consumers (postgres-meta) filter on it.
+  It means "can generate without spawning", so Swift is `true` even though it
+  runs `supabase-typegen` for supabase-swift 3 projects.
 - Keep the dependency list minimal; everything here lands in the CLI bundle.
 - `@supabase/postgrest-typegen` is pinned exactly, not a caret range: the
   registry promises consumers one postgrest-typegen version for introspection

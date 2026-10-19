@@ -62,7 +62,7 @@ both does not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen`     | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`             |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`         |                                                                                    |
-| `swift`      | in-process     | `generateSwift`, or `supabase-typegen` for supabase-swift 3 | `--swift-access-control internal\|public\|private\|package`                        |
+| `swift`      | both           | `generateSwift`, or `supabase-typegen` for supabase-swift 3 | `--swift-access-control internal\|public\|private\|package`                        |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project       |                                                                                    |
 
 The in-process entries are a transition: as each generator relocates to
@@ -95,8 +95,9 @@ Xcode's inside the `.xcodeproj` or `.xcworkspace`):
 `--swift-access-control` accepts `internal`, `public`, `private` and
 `package`. `supabase-typegen` accepts only the first two, so the other two
 fail before it runs for supabase-swift 3 and use `generateSwift` without a
-version pin. The entry is `inProcess` because a host that cannot run
-processes still gets the in-process generator.
+version pin. So Swift runs in-process or out-of-process depending on the
+project. Its `inProcess` is `true` because a host that cannot run processes
+still gets the in-process generator.
 
 ## Using the registry
 
