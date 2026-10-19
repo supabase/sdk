@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.16.0...capability-matrix/v1.17.0) (2026-10-19)
+
+
+### Features
+
+* **storage:** add resumable_upload capability and spec ([#278](https://github.com/supabase/sdk/issues/278)) ([93373b0](https://github.com/supabase/sdk/commit/93373b01181ba9cf10bf6f3ac8b30f1de737af09))
+
 ## [1.16.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.15.0...capability-matrix/v1.16.0) (2026-10-16)
 
 
