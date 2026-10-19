@@ -17,7 +17,7 @@ describe("languages", () => {
     expect(new Set(names).size).toBe(names.length);
   });
 
-  test("marks the bundled generators in-process and swift and dart out-of-process", () => {
+  test("marks every language but dart in-process", () => {
     expect(
       Object.fromEntries(
         languages.map((language) => [language.name, language.inProcess]),
@@ -26,7 +26,7 @@ describe("languages", () => {
       typescript: true,
       go: true,
       python: true,
-      swift: false,
+      swift: true,
       dart: false,
     });
   });
@@ -42,7 +42,7 @@ describe("languages", () => {
         name: "swift-access-control",
         audience: "user",
         kind: "choice",
-        choices: ["internal", "public"],
+        choices: ["internal", "public", "private", "package"],
         default: "internal",
         help: "Access control for Swift generated types.",
       },

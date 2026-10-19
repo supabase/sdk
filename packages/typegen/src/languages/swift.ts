@@ -9,10 +9,17 @@ import {
 } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { gunzipSync } from "node:zlib";
+import { type AccessControl, generateSwift } from "@supabase/postgrest-typegen";
 import type { ChoiceOptionSpec, Host, TypegenLanguage } from "../contract.ts";
-import { ToolNotInstalledError, TypegenError } from "../errors.ts";
+import {
+  InvalidOptionError,
+  SpawnUnavailableError,
+  ToolNotInstalledError,
+  TypegenError,
+} from "../errors.ts";
 import { resolveOptions } from "../options.ts";
 import { externalLanguage } from "./external.ts";
+import { inProcessLanguage } from "./in-process.ts";
 
 const SWIFT_ACCESS_CONTROL = "swift-access-control";
 const BINARY = "supabase-typegen";
@@ -20,18 +27,20 @@ const RELEASES = "https://github.com/supabase/supabase-swift/releases";
 const REPOSITORY = /github\.com[/:]supabase\/supabase-swift(\.git)?\/?$/i;
 
 /**
- * The flag `supabase gen types` already exposes, narrowed to the two levels
- * `supabase-typegen` accepts. The in-process generator it replaces also took
- * `private` and `package`; those now fail validation before anything runs.
+ * The flag `supabase gen types` already exposes. The supabase-swift 2
+ * generator accepts all four levels; `supabase-typegen` accepts only
+ * `internal` and `public` and rejects the others before anything runs.
  */
 const swiftAccessControl = {
   name: SWIFT_ACCESS_CONTROL,
   audience: "user",
   kind: "choice",
-  choices: ["internal", "public"],
+  choices: ["internal", "public", "private", "package"],
   default: "internal",
   help: "Access control for Swift generated types.",
 } satisfies ChoiceOptionSpec;
+
+const binaryAccessControl = new Set(["internal", "public"]);
 
 const installHint = `Set SUPABASE_TYPEGEN to a \`${BINARY}\` binary, or put one on PATH. Download it from the supabase-swift release your project depends on (${RELEASES}).`;
 
@@ -48,17 +57,33 @@ export interface SwiftDependencies {
   readonly fetch: (url: string, init?: RequestInit) => Promise<Response>;
 }
 
+/** Which generator renders the project's Swift types. */
+type Generator =
+  | { readonly kind: "bundled" }
+  | {
+      readonly kind: "binary";
+      readonly version?: string;
+      readonly command?: string;
+      readonly fallBackToBundled: boolean;
+    };
+
 /**
- * Swift runs `supabase-typegen` from supabase-swift, which reads the document
- * on stdin and writes one file of `@Table` structs to stdout.
+ * Swift types come from one of two generators, chosen by the supabase-swift
+ * version of the project, read from the nearest `Package.resolved` (SwiftPM,
+ * or Xcode's copy inside the `.xcodeproj` or `.xcworkspace`):
  *
- * The generated code targets the `@Table` macro of one supabase-swift
- * version, so the binary must come from the same release as the project's
- * dependency. The entry reads that version from the nearest
- * `Package.resolved` (SwiftPM, or Xcode's copy inside the `.xcodeproj` or
- * `.xcworkspace`), downloads the release's binary once into the user's cache
- * and runs it. Without a version pin, or on a platform with no release asset,
- * it runs `supabase-typegen` from PATH. `SUPABASE_TYPEGEN` overrides both.
+ * - supabase-swift 2: `generateSwift`, bundled and run in this process.
+ * - supabase-swift 3 and later: `supabase-typegen` from supabase-swift, which
+ *   reads the document on stdin and writes one file of `@Table` structs to
+ *   stdout. The generated code targets the `@Table` macro of one version, so
+ *   the binary comes from the same release as the project's dependency,
+ *   downloaded once into the user's cache. On a platform without a release
+ *   asset it runs `supabase-typegen` from PATH.
+ * - No version pin, such as a branch pin or no `Package.resolved` at all:
+ *   `supabase-typegen` from PATH when there is one, else the bundled
+ *   generator, which is also what a host that cannot run processes gets.
+ *
+ * `SUPABASE_TYPEGEN` names a `supabase-typegen` binary to run instead.
  *
  * It is a binary, not a package dependency, because its swift-format
  * dependency would pin every app's swift-syntax, and because an Xcode project
@@ -74,39 +99,86 @@ export function createSwift(
   },
 ): TypegenLanguage {
   const options = [swiftAccessControl];
+  const bundled = inProcessLanguage("swift", options, (metadata, resolved) =>
+    generateSwift(metadata, {
+      accessControl: resolved[SWIFT_ACCESS_CONTROL] as AccessControl,
+    }),
+  );
   return {
     name: "swift",
-    inProcess: false,
+    inProcess: true,
     options,
     async generate(metadata, values, host) {
-      resolveOptions("swift", options, values);
-      const command = await resolveBinary(host, dependencies);
-      return externalLanguage("swift", options, {
-        command,
-        args: (_metadata, resolved) => [
-          "--access-control",
-          resolved[SWIFT_ACCESS_CONTROL] as string,
-        ],
-        installHint,
-        classify: (result) =>
-          result.exitCode === 65 ? { kind: "metadata-rejected" } : undefined,
-      }).generate(metadata, values, host);
+      const resolved = resolveOptions("swift", options, values);
+      const generator = await chooseGenerator(host);
+      const accessControl = resolved[SWIFT_ACCESS_CONTROL] as string;
+      if (
+        generator.kind === "bundled" ||
+        (generator.fallBackToBundled && !binaryAccessControl.has(accessControl))
+      ) {
+        return bundled.generate(metadata, values, host);
+      }
+      if (!binaryAccessControl.has(accessControl)) {
+        throw new InvalidOptionError({
+          language: "swift",
+          option: SWIFT_ACCESS_CONTROL,
+          message: `Option "${SWIFT_ACCESS_CONTROL}" of language "swift" expects "internal" or "public" for supabase-swift 3 and later, got "${accessControl}".`,
+        });
+      }
+      const command =
+        generator.command ??
+        (await downloadBinary(host, dependencies, generator.version));
+      try {
+        return await externalLanguage("swift", options, {
+          command,
+          args: (_metadata, resolvedOptions) => [
+            "--access-control",
+            resolvedOptions[SWIFT_ACCESS_CONTROL] as string,
+          ],
+          installHint,
+          classify: (result) =>
+            result.exitCode === 65 ? { kind: "metadata-rejected" } : undefined,
+        }).generate(metadata, values, host);
+      } catch (error) {
+        if (
+          generator.fallBackToBundled &&
+          (error instanceof ToolNotInstalledError ||
+            error instanceof SpawnUnavailableError)
+        ) {
+          return bundled.generate(metadata, values, host);
+        }
+        throw error;
+      }
     },
   };
 }
 
 export const swift = createSwift();
 
-async function resolveBinary(
-  host: Host,
-  { platform, arch, fetch }: SwiftDependencies,
-): Promise<string> {
+async function chooseGenerator(host: Host): Promise<Generator> {
   const override = host.env.SUPABASE_TYPEGEN;
   if (override) {
-    return override;
+    return { kind: "binary", command: override, fallBackToBundled: false };
   }
+  const version = await pinnedVersion(host.cwd);
+  if (version === undefined) {
+    return { kind: "binary", command: BINARY, fallBackToBundled: true };
+  }
+  if (majorVersion(version) < 3) {
+    return { kind: "bundled" };
+  }
+  return { kind: "binary", version, fallBackToBundled: false };
+}
+
+const majorVersion = (version: string): number =>
+  Number.parseInt(version.split(".")[0] ?? "", 10);
+
+async function downloadBinary(
+  host: Host,
+  { platform, arch, fetch }: SwiftDependencies,
+  version: string | undefined,
+): Promise<string> {
   const asset = assets[`${platform}-${arch}`];
-  const version = asset ? await pinnedVersion(host.cwd) : undefined;
   if (!asset || !version) {
     return BINARY;
   }

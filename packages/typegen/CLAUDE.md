@@ -40,14 +40,16 @@ lives in supabase-js.
 - `src/languages/dart.ts` -- the first out-of-process entry:
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
-- `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, a
-  prebuilt binary from supabase-swift's releases (SDK-2199). It downloads the
-  release the nearest `Package.resolved` pins into the user cache, then falls
-  back to PATH; `SUPABASE_TYPEGEN` overrides both. The only entry that touches
-  the network or the file system; `createSwift` takes `fetch` and the platform
-  so tests stay offline.
-  `swift-access-control` maps to `--access-control` and accepts only
-  `internal` and `public`. Exit `65` is a rejected document.
+- `src/languages/swift.ts` -- chooses by the supabase-swift version the
+  nearest `Package.resolved` pins. 2 runs `generateSwift` in-process; 3 and
+  later run `supabase-typegen --access-control <level>`, a prebuilt binary
+  from supabase-swift's releases (SDK-2199), downloaded into the user cache or
+  taken from PATH. Without a version pin it tries PATH and falls back to
+  `generateSwift`; `SUPABASE_TYPEGEN` overrides everything. The only entry
+  that touches the network or the file system; `createSwift` takes `fetch`
+  and the platform so tests stay offline. `swift-access-control` accepts all
+  four levels, but the binary only `internal` and `public`. Exit `65` is a
+  rejected document.
 - `src/languages/index.ts` -- the three in-process entries and the `languages`
   list. `typescript` has no user options; `detect-one-to-one-relationships`
   (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),

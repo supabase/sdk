@@ -62,10 +62,10 @@ both does not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
-| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, fetched    | `--swift-access-control internal\|public`                                          |
+| `swift`      | in-process     | `generateSwift`, or `supabase-typegen` for supabase-swift 3 | `--swift-access-control internal\|public\|private\|package`                        |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
-The three in-process entries are a transition: as each generator relocates to
+The in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
 command, or for TypeScript to an import of the new npm package, and consumers
 notice nothing but a dependency bump.
@@ -75,17 +75,28 @@ supabase-swift releases, not a package dependency: as a SwiftPM product its
 swift-format dependency would pin every app's swift-syntax, and an Xcode
 project without a `Package.swift` has nothing to `swift run` from.
 
-The output targets one version's `@Table` macro, so the binary must match the
-project's supabase-swift. The entry reads that version from the nearest
-`Package.resolved` (in `cwd` or a parent; SwiftPM's, or Xcode's inside the
-`.xcodeproj` or `.xcworkspace`), downloads that release's asset once into
-`$XDG_CACHE_HOME/supabase/typegen/<version>/` (default `~/Library/Caches` on
-macOS, `~/.cache` elsewhere) and runs it. Without a version pin, or on a
-platform with no asset (anything but macOS and Linux x86_64), it runs
-`supabase-typegen` from PATH. `SUPABASE_TYPEGEN=<path>` overrides both.
+The entry picks the generator from the project's supabase-swift version, read
+from the nearest `Package.resolved` (in `cwd` or a parent; SwiftPM's, or
+Xcode's inside the `.xcodeproj` or `.xcworkspace`):
 
-`--swift-access-control` lost `private` and `package`, which the new
-generator does not accept.
+- **supabase-swift 2**: `generateSwift` from `@supabase/postgrest-typegen`,
+  in-process, with the output `supabase gen types` has always produced.
+- **supabase-swift 3 and later**: `supabase-typegen`, whose output targets
+  that version's `@Table` macro, so the binary must match the project's
+  supabase-swift. The entry downloads that release's asset once into
+  `$XDG_CACHE_HOME/supabase/typegen/<version>/` (default `~/Library/Caches`
+  on macOS, `~/.cache` elsewhere) and runs it. On a platform with no asset
+  (anything but macOS and Linux x86_64) it runs `supabase-typegen` from PATH.
+- **No version pin** (a branch or revision pin, or no `Package.resolved`):
+  `supabase-typegen` from PATH, or `generateSwift` when there is none or the
+  host cannot run processes.
+
+`SUPABASE_TYPEGEN=<path>` runs that binary in every case.
+`--swift-access-control` accepts `internal`, `public`, `private` and
+`package`. `supabase-typegen` accepts only the first two, so the other two
+fail before it runs for supabase-swift 3 and use `generateSwift` without a
+version pin. The entry is `inProcess` because a host that cannot run
+processes still gets the in-process generator.
 
 ## Using the registry
 

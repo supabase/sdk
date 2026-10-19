@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
+  generateSwift,
   serializeGeneratorMetadata,
   sortGeneratorMetadata,
 } from "@supabase/postgrest-typegen";
@@ -26,6 +27,8 @@ import { commandNotFound, createFakeHost, rejection } from "./helpers.ts";
 import { unsortedMetadata } from "./fixtures.ts";
 
 const success = (stdout: string) => ({ exitCode: 0, stdout, stderr: "" });
+const bundledOutput = (accessControl: "internal" | "public" | "private") =>
+  generateSwift(sortGeneratorMetadata(unsortedMetadata), { accessControl });
 
 describe("swift", () => {
   test("runs supabase-typegen in the project with the sorted document on stdin", async () => {
@@ -52,33 +55,37 @@ describe("swift", () => {
     expect(host.requests[0]!.args).toEqual(["--access-control", "public"]);
   });
 
-  test("rejects the levels the generator does not accept before spawning", async () => {
-    for (const level of ["private", "package"]) {
-      const host = createFakeHost();
-      expect(
-        await rejection(
-          swift.generate(
-            unsortedMetadata,
-            { "swift-access-control": level },
-            host,
-          ),
-        ),
-      ).toBeInstanceOf(InvalidOptionError);
-      expect(host.requests).toHaveLength(0);
-    }
-  });
-
-  test("reports a missing supabase-typegen with an install hint", async () => {
+  test("generates with the bundled generator when supabase-typegen is not on PATH", async () => {
     const host = createFakeHost(() => {
       throw commandNotFound("supabase-typegen");
     });
-    const error = await rejection(swift.generate(unsortedMetadata, {}, host));
-    expect(error).toBeInstanceOf(ToolNotInstalledError);
-    const notInstalled = error as ToolNotInstalledError;
-    expect(notInstalled.tool).toBe("supabase-typegen");
-    expect(notInstalled.installHint).toContain(
-      "https://github.com/supabase/supabase-swift/releases",
+    expect(
+      await swift.generate(
+        unsortedMetadata,
+        { "swift-access-control": "public" },
+        host,
+      ),
+    ).toBe(bundledOutput("public"));
+    expect(host.requests).toHaveLength(1);
+  });
+
+  test("generates with the bundled generator on a host that cannot run processes", async () => {
+    const { spawn: _, ...host } = createFakeHost();
+    expect(await swift.generate(unsortedMetadata, {}, host)).toBe(
+      bundledOutput("internal"),
     );
+  });
+
+  test("generates the levels supabase-typegen does not accept with the bundled generator", async () => {
+    const host = createFakeHost();
+    expect(
+      await swift.generate(
+        unsortedMetadata,
+        { "swift-access-control": "private" },
+        host,
+      ),
+    ).toBe(bundledOutput("private"));
+    expect(host.requests).toHaveLength(0);
   });
 
   test("reports exit 65 as a rejected document", async () => {
@@ -132,7 +139,7 @@ describe("swift binary resolution", () => {
     root = mkdtempSync(join(tmpdir(), "typegen-swift-"));
   });
 
-  const resolvedV2 = (version: string) =>
+  const resolved = (version: string) =>
     JSON.stringify({
       pins: [
         {
@@ -182,27 +189,24 @@ describe("swift binary resolution", () => {
   };
 
   test("downloads the release the project's Package.resolved pins and runs it", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const { language, host, urls } = setup(cwd);
 
     expect(await language.generate(unsortedMetadata, {}, host)).toBe("code\n");
 
     expect(urls).toEqual([
-      "https://github.com/supabase/supabase-swift/releases/download/v2.56.0/supabase-typegen-macos-universal.tar.gz",
+      "https://github.com/supabase/supabase-swift/releases/download/v3.1.0/supabase-typegen-macos-universal.tar.gz",
     ]);
     const command = host.requests[0]!.command;
     expect(command).toBe(
-      join(
-        root,
-        "home/Library/Caches/supabase/typegen/2.56.0/supabase-typegen",
-      ),
+      join(root, "home/Library/Caches/supabase/typegen/3.1.0/supabase-typegen"),
     );
     expect(readFileSync(command, "utf8")).toBe(binary);
     expect(statSync(command).mode & 0o777).toBe(0o755);
   });
 
   test("reuses the cached binary", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const { language, host, urls } = setup(cwd);
     await language.generate(unsortedMetadata, {}, host);
     await language.generate(unsortedMetadata, {}, host);
@@ -219,7 +223,7 @@ describe("swift binary resolution", () => {
               {
                 package: "Supabase",
                 repositoryURL: "https://github.com/supabase/supabase-swift",
-                state: { version: "2.40.0" },
+                state: { version: "3.0.0" },
               },
             ],
           },
@@ -228,19 +232,19 @@ describe("swift binary resolution", () => {
     });
     const { language, host, urls } = setup(cwd);
     await language.generate(unsortedMetadata, {}, host);
-    expect(urls[0]).toContain("/download/v2.40.0/");
+    expect(urls[0]).toContain("/download/v3.0.0/");
   });
 
   test("finds Package.resolved in a parent directory", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     mkdirSync(join(cwd, "Sources/App"), { recursive: true });
     const { language, host, urls } = setup(join(cwd, "Sources/App"));
     await language.generate(unsortedMetadata, {}, host);
-    expect(urls[0]).toContain("/download/v2.56.0/");
+    expect(urls[0]).toContain("/download/v3.1.0/");
   });
 
   test("picks the Linux asset on Linux x86_64", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const urls: string[] = [];
     const language = createSwift({
       platform: "linux",
@@ -257,7 +261,7 @@ describe("swift binary resolution", () => {
     await language.generate(unsortedMetadata, {}, host);
     expect(urls[0]).toEndWith("/supabase-typegen-linux-x86_64.tar.gz");
     expect(host.requests[0]!.command).toBe(
-      join(root, "xdg/supabase/typegen/2.56.0/supabase-typegen"),
+      join(root, "xdg/supabase/typegen/3.1.0/supabase-typegen"),
     );
   });
 
@@ -284,7 +288,7 @@ describe("swift binary resolution", () => {
   });
 
   test("falls back to PATH on a platform without a release asset", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const language = createSwift({
       platform: "win32",
       arch: "x64",
@@ -295,8 +299,73 @@ describe("swift binary resolution", () => {
     expect(host.requests[0]!.command).toBe("supabase-typegen");
   });
 
+  test("generates a supabase-swift 2 project with the bundled generator", async () => {
+    for (const version of ["2.56.0", "2.0.0"]) {
+      const cwd = project({ "Package.resolved": resolved(version) });
+      const { language, host, urls } = setup(cwd);
+      expect(
+        await language.generate(
+          unsortedMetadata,
+          { "swift-access-control": "private" },
+          host,
+        ),
+      ).toBe(bundledOutput("private"));
+      expect(urls).toEqual([]);
+      expect(host.requests).toHaveLength(0);
+    }
+  });
+
+  test("rejects the levels supabase-typegen does not accept before downloading", async () => {
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
+    const { language, host, urls } = setup(cwd);
+    expect(
+      await rejection(
+        language.generate(
+          unsortedMetadata,
+          { "swift-access-control": "package" },
+          host,
+        ),
+      ),
+    ).toBeInstanceOf(InvalidOptionError);
+    expect(urls).toEqual([]);
+    expect(host.requests).toHaveLength(0);
+  });
+
+  test("reports a missing supabase-typegen for supabase-swift 3 with an install hint", async () => {
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
+    const language = createSwift({
+      platform: "win32",
+      arch: "x64",
+      fetch: async () => fail("must not download"),
+    });
+    const host = createFakeHost(
+      () => {
+        throw commandNotFound("supabase-typegen");
+      },
+      { cwd },
+    );
+    const error = await rejection(
+      language.generate(unsortedMetadata, {}, host),
+    );
+    expect(error).toBeInstanceOf(ToolNotInstalledError);
+    const notInstalled = error as ToolNotInstalledError;
+    expect(notInstalled.tool).toBe("supabase-typegen");
+    expect(notInstalled.installHint).toContain(
+      "https://github.com/supabase/supabase-swift/releases",
+    );
+  });
+
+  test("SUPABASE_TYPEGEN overrides the bundled generator", async () => {
+    const cwd = project({ "Package.resolved": resolved("2.56.0") });
+    const { language, host } = setup(cwd, undefined, {
+      SUPABASE_TYPEGEN: "/opt/dev/supabase-typegen",
+    });
+    expect(await language.generate(unsortedMetadata, {}, host)).toBe("code\n");
+    expect(host.requests[0]!.command).toBe("/opt/dev/supabase-typegen");
+  });
+
   test("SUPABASE_TYPEGEN overrides the download", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const { language, host, urls } = setup(cwd, undefined, {
       SUPABASE_TYPEGEN: "/opt/dev/supabase-typegen",
     });
@@ -306,7 +375,7 @@ describe("swift binary resolution", () => {
   });
 
   test("reports a release without the binary as not installed", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.10.0") });
+    const cwd = project({ "Package.resolved": resolved("3.0.0-beta.1") });
     const { language, host } = setup(
       cwd,
       () => new Response("Not Found", { status: 404 }),
@@ -315,12 +384,12 @@ describe("swift binary resolution", () => {
       language.generate(unsortedMetadata, {}, host),
     );
     expect(error).toBeInstanceOf(ToolNotInstalledError);
-    expect((error as ToolNotInstalledError).message).toContain("2.10.0");
+    expect((error as ToolNotInstalledError).message).toContain("3.0.0-beta.1");
     expect(host.requests).toHaveLength(0);
   });
 
   test("reports any other download failure", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const { language, host } = setup(
       cwd,
       () => new Response("", { status: 503 }),
@@ -333,7 +402,7 @@ describe("swift binary resolution", () => {
   });
 
   test("validates options before downloading", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": resolved("3.1.0") });
     const { language, host, urls } = setup(cwd);
     expect(
       await rejection(
