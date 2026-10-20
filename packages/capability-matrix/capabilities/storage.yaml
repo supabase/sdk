@@ -314,3 +314,7 @@ features:
     name: Service Error Codes
     description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
     group: errors
+  - id: storage.file_buckets.transfer_progress
+    name: Transfer Progress
+    description: Report how many bytes an upload or a download has moved so far, and the total when it is known, while the transfer runs.
+    group: file_buckets
