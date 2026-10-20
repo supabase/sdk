@@ -14,9 +14,11 @@ import (
 
 // parsedSymbol matches the ParsedSymbol shape emitted by the sibling
 // extractors and consumed by the capability-matrix scripts. Name carries the
-// package-qualified spelling used in Go sdk-compliance.yaml files:
-// <package>.<Identifier> for package-level declarations and
-// <package>.<Type>.<Member> for methods and fields.
+// qualified spelling used in Go sdk-compliance.yaml files: the package's
+// directory path relative to the SDK root, then the identifier, so a
+// module-root package reads auth.Admin while a nested package reads
+// auth/customprovider.Builder. Methods and fields append their member name,
+// as in auth/customprovider.Builder.OIDC.
 type parsedSymbol struct {
 	Name string `json:"name"`
 	Kind string `json:"kind"`
@@ -32,8 +34,10 @@ type parseResult struct {
 // extractProject returns the exported symbols of the Go SDK repository at
 // root, sorted by name and deduplicated. moduleDirectories names the module
 // directories to walk, relative to root; when empty they are discovered from
-// the root's go.work file. Two walked packages sharing a name is an error,
-// since their qualified symbol names would collide.
+// the root's go.work file. Every walked package must sit in a directory
+// named after it: the extraction fails on the first package whose name and
+// directory base name disagree, since its path-derived qualifier would
+// misname it.
 func extractProject(root string, moduleDirectories []string) ([]parsedSymbol, error) {
 	absoluteRoot, err := filepath.Abs(root)
 	if err != nil {
@@ -54,7 +58,6 @@ func extractProject(root string, moduleDirectories []string) ([]parsedSymbol, er
 
 	fileSet := token.NewFileSet()
 	symbols := []parsedSymbol{}
-	packageDirectories := map[string]string{}
 
 	for _, moduleDirectory := range moduleDirectories {
 		moduleRoot := filepath.Join(absoluteRoot, moduleDirectory)
@@ -96,7 +99,14 @@ func extractProject(root string, moduleDirectories []string) ([]parsedSymbol, er
 				return nil
 			}
 
-			fileSymbols, packageName, err := extractFile(fileSet, path, relativePath)
+			packageDirectory := filepath.ToSlash(filepath.Dir(relativePath))
+			qualifier := packageDirectory
+			if packageDirectory == "." {
+				// A module at the SDK root has no directory to derive a
+				// qualifier from; extractFile falls back to the package name.
+				qualifier = ""
+			}
+			fileSymbols, packageName, err := extractFile(fileSet, path, relativePath, qualifier)
 			if err != nil {
 				// One unreadable or unparseable file must not fail the whole
 				// dump; skip it and surface a warning.
@@ -107,12 +117,9 @@ func extractProject(root string, moduleDirectories []string) ([]parsedSymbol, er
 			if packageName == "main" {
 				return nil
 			}
-
-			packageDirectory := filepath.ToSlash(filepath.Dir(relativePath))
-			if existing, seen := packageDirectories[packageName]; seen && existing != packageDirectory {
-				return fmt.Errorf("package name %q appears in both %s and %s: qualified symbol names would collide", packageName, existing, packageDirectory)
+			if packageDirectory != "." && packageName != filepath.Base(packageDirectory) {
+				return fmt.Errorf("package %q does not line up with its directory %s: its path-derived qualifier would misname it", packageName, packageDirectory)
 			}
-			packageDirectories[packageName] = packageDirectory
 
 			symbols = append(symbols, fileSymbols...)
 			return nil
@@ -145,14 +152,18 @@ func extractProject(root string, moduleDirectories []string) ([]parsedSymbol, er
 }
 
 // extractFile parses one Go source file syntactically and returns its
-// exported symbols and its package name. Exportedness in Go is lexical, so
-// no type resolution or build is needed.
-func extractFile(fileSet *token.FileSet, path, relativePath string) ([]parsedSymbol, string, error) {
-	file, err := parser.ParseFile(fileSet, path, nil, parser.SkipObjectResolution)
+// exported symbols and its package name. Symbols are qualified by qualifier,
+// or by the package name itself when qualifier is empty. Exportedness in Go
+// is lexical, so no type resolution or build is needed.
+func extractFile(fileSet *token.FileSet, filePath, relativePath, qualifier string) ([]parsedSymbol, string, error) {
+	file, err := parser.ParseFile(fileSet, filePath, nil, parser.SkipObjectResolution)
 	if err != nil {
 		return nil, "", err
 	}
 	packageName := file.Name.Name
+	if qualifier == "" {
+		qualifier = packageName
+	}
 
 	var symbols []parsedSymbol
 	emit := func(name, kind string, position token.Pos) {
@@ -172,7 +183,7 @@ func extractFile(fileSet *token.FileSet, path, relativePath string) ([]parsedSym
 				continue
 			}
 			if declaration.Recv == nil {
-				emit(packageName+"."+functionName, "function", declaration.Pos())
+				emit(qualifier+"."+functionName, "function", declaration.Pos())
 				continue
 			}
 			// Methods on unexported types are unreachable by consumers, so
@@ -181,7 +192,7 @@ func extractFile(fileSet *token.FileSet, path, relativePath string) ([]parsedSym
 			if !ok || !ast.IsExported(receiverName) {
 				continue
 			}
-			emit(packageName+"."+receiverName+"."+functionName, "method", declaration.Pos())
+			emit(qualifier+"."+receiverName+"."+functionName, "method", declaration.Pos())
 
 		case *ast.GenDecl:
 			for _, specification := range declaration.Specs {
@@ -191,7 +202,7 @@ func extractFile(fileSet *token.FileSet, path, relativePath string) ([]parsedSym
 					if !ast.IsExported(typeName) {
 						continue
 					}
-					qualifiedType := packageName + "." + typeName
+					qualifiedType := qualifier + "." + typeName
 					emit(qualifiedType, "class", specification.Pos())
 					emitTypeMembers(emit, qualifiedType, specification.Type)
 				case *ast.ValueSpec:
@@ -199,7 +210,7 @@ func extractFile(fileSet *token.FileSet, path, relativePath string) ([]parsedSym
 						if !ast.IsExported(name.Name) {
 							continue
 						}
-						emit(packageName+"."+name.Name, "variable", name.Pos())
+						emit(qualifier+"."+name.Name, "variable", name.Pos())
 					}
 				}
 			}

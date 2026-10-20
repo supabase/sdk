@@ -30,6 +30,9 @@ func TestExtractProjectWorkspace(t *testing.T) {
 		{"alpha.New", "function", "alpha/alpha.go"},
 		{"alpha.Widget", "class", "alpha/alpha.go"},
 		{"alpha.Widget.Apply", "method", "alpha/alpha.go"},
+		{"alpha/options.Mode", "class", "alpha/options/options.go"},
+		{"alpha/options.Mode.Level", "property", "alpha/options/options.go"},
+		{"alpha/options.With", "function", "alpha/options/options.go"},
 		{"beta.DefaultLimit", "variable", "beta/beta.go"},
 		{"beta.Options", "class", "beta/beta.go"},
 		{"beta.Reader", "class", "beta/beta.go"},
@@ -73,12 +76,12 @@ func TestExtractProjectWithoutWorkspaceFileFails(t *testing.T) {
 	}
 }
 
-func TestExtractProjectPackageNameCollisionFails(t *testing.T) {
-	_, err := extractProject("testdata/collision", nil)
+func TestExtractProjectMisalignedPackageNameFails(t *testing.T) {
+	_, err := extractProject("testdata/misaligned", nil)
 	if err == nil {
-		t.Fatal("extractProject: expected an error for two walked packages sharing a name")
+		t.Fatal("extractProject: expected an error for a package not named after its directory")
 	}
-	for _, fragment := range []string{`"shared"`, "one", "two"} {
+	for _, fragment := range []string{`"shared"`, "one"} {
 		if !strings.Contains(err.Error(), fragment) {
 			t.Errorf("error %q should mention %s", err, fragment)
 		}
