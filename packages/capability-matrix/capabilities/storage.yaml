@@ -190,6 +190,10 @@ features:
     name: Purge Bucket CDN Cache
     description: Invalidate the CDN cache for all objects in a bucket. Supports an optional transformations flag to purge only resized/formatted variants while leaving original cached files intact.
     group: file_buckets
+  - id: storage.file_buckets.purge_project_cache
+    name: Purge Project CDN Cache
+    description: Invalidate the CDN cache for all objects in every bucket of the project. Supports an optional transformations flag to purge only resized/formatted variants while leaving original cached files intact.
+    group: file_buckets
   - id: storage.analytics.create_analytics_bucket
     name: Create Analytics Bucket
     description: Create a bucket backed by Apache Iceberg table format for structured analytical data storage.
