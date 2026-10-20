@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.18.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.17.0...capability-matrix/v1.18.0) (2026-10-20)
+
+
+### Features
+
+* **storage:** add purge_project_cache capability ([#294](https://github.com/supabase/sdk/issues/294)) ([94b4da6](https://github.com/supabase/sdk/commit/94b4da6f710ac793e0dd8152d0913c9931782dd6))
+* **storage:** add transfer_progress capability and spec ([#282](https://github.com/supabase/sdk/issues/282)) ([1d2c1be](https://github.com/supabase/sdk/commit/1d2c1be5afef1b456a6430dd78ea6a879be3266d))
+
 ## [1.17.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.16.0...capability-matrix/v1.17.0) (2026-10-19)
 
 
