@@ -5,10 +5,11 @@
 //	go run . [-module <directory>]... <path-to-sdk-root>
 //
 // The dump lists every exported package-level identifier of the repository's
-// published modules, each name qualified by its package (for example
-// postgrest.FilterBuilder.Eq), sorted by name. Published modules are the use
-// directives of the go.work file at the root, or the -module directories
-// when given. Output goes to stdout; files that fail to parse are skipped
+// published modules, each name qualified by its package's root-relative
+// directory path (postgrest.FilterBuilder.Eq for a module-root package,
+// auth/customprovider.Builder for a nested one), sorted by name. Published
+// modules are the use directives of the go.work file at the root, or the
+// -module directories when given. Output goes to stdout; files that fail to parse are skipped
 // with a warning on stderr.
 package main
 
