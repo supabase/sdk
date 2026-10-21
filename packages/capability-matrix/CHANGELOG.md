@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.18.0...capability-matrix/v1.19.0) (2026-10-21)
+
+
+### Features
+
+* **go-symbol-extractor:** qualify Go symbols by their root-relative package path ([#295](https://github.com/supabase/sdk/issues/295)) ([9ab6e11](https://github.com/supabase/sdk/commit/9ab6e11eb6991d620b8486241c72d250bc89c1ba))
+
 ## [1.18.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.17.0...capability-matrix/v1.18.0) (2026-10-20)
 
 
