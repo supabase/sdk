@@ -1,0 +1,3625 @@
+openapi: 3.0.0
+info:
+  title: PostgREST
+  version: '16'
+  license:
+    name: MIT
+    url: https://github.com/PostgREST/postgrest/blob/main/LICENSE
+  description: |-
+    The HTTP API that every PostgREST server exposes, independent of the database
+    schema behind it.
+
+    PostgREST serves each table, view and function of the exposed schema(s) as a
+    resource. The resource names, columns and function arguments depend on the
+    database, so this model treats them as opaque: rows are JSON objects, filters
+    are query parameters keyed by column name, and function arguments are JSON
+    object keys or query parameters keyed by argument name. Everything that does
+    not depend on the schema (the URL grammar, headers, preferences, media types,
+    status codes and errors) is modeled precisely.
+
+    Reference: https://docs.postgrest.org/en/v16/references/api.html
+tags:
+  - name: OpenAPI
+    description: The schema-specific OpenAPI description that PostgREST generates.
+  - name: Functions
+    description: Functions of the exposed schema, called as RPC.
+  - name: Tables and Views
+    description: Tables, views and foreign tables of the exposed schema.
+paths:
+  /:
+    get:
+      operationId: Root_describe
+      summary: Get the OpenAPI description
+      description: Returns the OpenAPI description of the selected schema.
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The OpenAPI description.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+          content:
+            application/openapi+json:
+              schema:
+                $ref: '#/components/schemas/OpenApiDocument'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenApiDocument'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - OpenAPI
+    head:
+      operationId: Root_describeHead
+      summary: Get the OpenAPI description headers
+      description: Same as `describe`, without a response body.
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+        '300':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '400':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '401':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '403':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '404':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '405':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '406':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '416':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '500':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '503':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '504':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+      tags:
+        - OpenAPI
+  /rpc/{function}:
+    get:
+      operationId: Functions_call
+      summary: Call a function with GET
+      description: |-
+        Calls a STABLE or IMMUTABLE function with GET. The query string carries
+        the arguments, plus filters, ordering and pagination for a table-valued
+        result.
+      parameters:
+        - $ref: '#/components/parameters/FunctionPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/PaginationParameters.order'
+        - $ref: '#/components/parameters/PaginationParameters.limit'
+        - $ref: '#/components/parameters/PaginationParameters.offset'
+        - $ref: '#/components/parameters/ResultParameters.or'
+        - $ref: '#/components/parameters/ResultParameters.and'
+        - $ref: '#/components/parameters/ResultParameters.notOr'
+        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - name: arguments
+          in: query
+          required: false
+          description: |-
+            Function arguments and horizontal filters, one query parameter per
+            entry. A key that names a function parameter is an argument (repeat it
+            for a variadic argument, and pass arrays as literals such as
+            `{1,2,3}`). Any other key is a filter on a table-valued result, with the
+            same grammar as `FilterParameters`.
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Range
+          in: header
+          required: false
+          description: |-
+            Rows to return. An alternative to the `limit` and `offset` query
+            parameters. An invalid range fails with PGRST103 (416).
+          schema:
+            $ref: '#/components/schemas/ItemRange'
+        - name: Range-Unit
+          in: header
+          required: false
+          description: Unit of `Range`. Only `items` is supported.
+          schema:
+            type: string
+            enum:
+              - items
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/FunctionPreference'
+      responses:
+        '200':
+          description: 'Function result as JSON: a scalar, an object, or an array of rows.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema: {}
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: The function returns `void`.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+        '206':
+          description: 'Function result as JSON: a scalar, an object, or an array of rows.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema: {}
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '300':
+          description: Ambiguous embedding (PGRST201) or ambiguous overloaded function (PGRST203).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '416':
+          description: Invalid range (PGRST103).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Functions
+    head:
+      operationId: Functions_callHead
+      summary: Call a function with HEAD
+      description: Same as `call`, without a response body.
+      parameters:
+        - $ref: '#/components/parameters/FunctionPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/PaginationParameters.order'
+        - $ref: '#/components/parameters/PaginationParameters.limit'
+        - $ref: '#/components/parameters/PaginationParameters.offset'
+        - $ref: '#/components/parameters/ResultParameters.or'
+        - $ref: '#/components/parameters/ResultParameters.and'
+        - $ref: '#/components/parameters/ResultParameters.notOr'
+        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - name: arguments
+          in: query
+          required: false
+          description: Function arguments and horizontal filters. See `call`.
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Range
+          in: header
+          required: false
+          description: |-
+            Rows to return. An alternative to the `limit` and `offset` query
+            parameters. An invalid range fails with PGRST103 (416).
+          schema:
+            $ref: '#/components/schemas/ItemRange'
+        - name: Range-Unit
+          in: header
+          required: false
+          description: Unit of `Range`. Only `items` is supported.
+          schema:
+            type: string
+            enum:
+              - items
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/FunctionPreference'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+        '206':
+          description: Successful
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+        '300':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '400':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '401':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '403':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '404':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '405':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '406':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '416':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '500':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '503':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '504':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+      tags:
+        - Functions
+    post:
+      operationId: Functions_invoke
+      parameters:
+        - $ref: '#/components/parameters/FunctionPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/PaginationParameters.order'
+        - $ref: '#/components/parameters/PaginationParameters.limit'
+        - $ref: '#/components/parameters/PaginationParameters.offset'
+        - $ref: '#/components/parameters/ResultParameters.or'
+        - $ref: '#/components/parameters/ResultParameters.and'
+        - $ref: '#/components/parameters/ResultParameters.notOr'
+        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - name: filters
+          in: query
+          required: false
+          description: Horizontal filters on a table-valued result. See `FilterParameters`.
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Content-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to write to or call into, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Range
+          in: header
+          required: false
+          description: |-
+            Rows to return. An alternative to the `limit` and `offset` query
+            parameters. An invalid range fails with PGRST103 (416).
+          schema:
+            $ref: '#/components/schemas/ItemRange'
+        - name: Range-Unit
+          in: header
+          required: false
+          description: Unit of `Range`. Only `items` is supported.
+          schema:
+            type: string
+            enum:
+              - items
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/FunctionPreference'
+      description: |-
+        Calls a function with POST. Every function accepts POST, whatever its
+        volatility. Filters, ordering and pagination in the query string apply to a
+        table-valued result.
+      summary: Call a function with POST
+      responses:
+        '200':
+          description: 'Function result as JSON: a scalar, an object, or an array of rows.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema: {}
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: The function returns `void`.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+        '206':
+          description: 'Function result as JSON: a scalar, an object, or an array of rows.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema: {}
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '300':
+          description: Ambiguous embedding (PGRST201) or ambiguous overloaded function (PGRST203).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '416':
+          description: Invalid range (PGRST103).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Functions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  additionalProperties: {}
+                - type: array
+                  items: {}
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+          text/plain:
+            schema:
+              type: string
+          text/xml:
+            schema:
+              type: string
+        description: |-
+          One key per argument name. Arguments with a DEFAULT can be omitted. A
+          variadic argument takes a JSON array. For a function with a single unnamed
+          `json` or `jsonb` parameter, the whole body is that argument.
+  /{relation}:
+    get:
+      operationId: Relations_read
+      summary: Read rows
+      description: |-
+        Reads rows. Supports vertical filtering (`select`), horizontal filtering,
+        ordering, pagination, resource embedding and aggregates. The response is
+        206 Partial Content when it does not contain every row of the count.
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/FilterParameters.filters'
+        - $ref: '#/components/parameters/FilterParameters.or'
+        - $ref: '#/components/parameters/FilterParameters.and'
+        - $ref: '#/components/parameters/FilterParameters.notOr'
+        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/PaginationParameters.order'
+        - $ref: '#/components/parameters/PaginationParameters.limit'
+        - $ref: '#/components/parameters/PaginationParameters.offset'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Range
+          in: header
+          required: false
+          description: |-
+            Rows to return. An alternative to the `limit` and `offset` query
+            parameters. An invalid range fails with PGRST103 (416).
+          schema:
+            $ref: '#/components/schemas/ItemRange'
+        - name: Range-Unit
+          in: header
+          required: false
+          description: Unit of `Range`. Only `items` is supported.
+          schema:
+            type: string
+            enum:
+              - items
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReadPreference'
+      responses:
+        '200':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '300':
+          description: Ambiguous embedding (PGRST201) or ambiguous overloaded function (PGRST203).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '416':
+          description: Invalid range (PGRST103).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Tables and Views
+    head:
+      operationId: Relations_readHead
+      summary: Read rows without a body
+      description: Same as `read`, without a response body.
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/FilterParameters.filters'
+        - $ref: '#/components/parameters/FilterParameters.or'
+        - $ref: '#/components/parameters/FilterParameters.and'
+        - $ref: '#/components/parameters/FilterParameters.notOr'
+        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/PaginationParameters.order'
+        - $ref: '#/components/parameters/PaginationParameters.limit'
+        - $ref: '#/components/parameters/PaginationParameters.offset'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Accept-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to read from, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Range
+          in: header
+          required: false
+          description: |-
+            Rows to return. An alternative to the `limit` and `offset` query
+            parameters. An invalid range fails with PGRST103 (416).
+          schema:
+            $ref: '#/components/schemas/ItemRange'
+        - name: Range-Unit
+          in: header
+          required: false
+          description: Unit of `Range`. Only `items` is supported.
+          schema:
+            type: string
+            enum:
+              - items
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/ReadPreference'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+        '206':
+          description: Successful
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: Range of the returned or affected rows, and the total when counted.
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Range-Unit:
+              required: false
+              description: Unit of `Content-Range`.
+              schema:
+                type: string
+                enum:
+                  - items
+        '300':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '400':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '401':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '403':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '404':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '405':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '406':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '416':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '500':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '503':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+        '504':
+          description: |-
+            Error of a HEAD request. There is no body; `Proxy-Status` carries the error
+            code.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+      tags:
+        - Tables and Views
+    post:
+      operationId: Relations_insert
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/ColumnsParameter'
+        - $ref: '#/components/parameters/OnConflictParameter'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Content-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to write to or call into, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/InsertPreference'
+      description: |-
+        Creates one row from a JSON object, or many rows from a JSON
+        array of objects with uniform keys or from CSV, in a single INSERT. Missing
+        keys get NULL, or the column DEFAULT with `Prefer: missing=default`.
+
+        With `Prefer: resolution=merge-duplicates` or `resolution=ignore-duplicates`
+        the insert becomes an upsert on the primary key, or on the `on_conflict`
+        columns.
+      summary: Insert or upsert rows
+      responses:
+        '201':
+          description: 'Rows were inserted. No body unless `Prefer: return=representation`.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+            Location:
+              required: false
+              description: |-
+                With `Prefer: return=headers-only` and a primary key, the URL of the
+                created row, such as `/projects?id=eq.34`.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '409':
+          description: Foreign key (23503) or uniqueness (23505) violation.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Tables and Views
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - $ref: '#/components/schemas/Row'
+                - type: array
+                  items:
+                    $ref: '#/components/schemas/Row'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+          text/csv:
+            schema:
+              type: string
+    put:
+      operationId: Relations_upsert
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/FilterParameters.filters'
+        - $ref: '#/components/parameters/FilterParameters.or'
+        - $ref: '#/components/parameters/FilterParameters.and'
+        - $ref: '#/components/parameters/FilterParameters.notOr'
+        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/ColumnsParameter'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Content-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to write to or call into, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/PutPreference'
+      description: |-
+        Inserts the row, or replaces it when it exists. The
+        query string filters every primary key column with `eq`, and the body
+        repeats those values and gives every column. Limits and offsets are not
+        allowed (PGRST114). A body key that differs from the filter fails with
+        PGRST115.
+      summary: Upsert a single row
+      responses:
+        '200':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: 'The request succeeded. No body unless `Prefer: return=representation`.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '409':
+          description: Foreign key (23503) or uniqueness (23505) violation.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Tables and Views
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Row'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+          text/csv:
+            schema:
+              type: string
+    patch:
+      operationId: Relations_update
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/FilterParameters.filters'
+        - $ref: '#/components/parameters/FilterParameters.or'
+        - $ref: '#/components/parameters/FilterParameters.and'
+        - $ref: '#/components/parameters/FilterParameters.notOr'
+        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/SelectParameter'
+        - $ref: '#/components/parameters/ColumnsParameter'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Content-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to write to or call into, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UpdatePreference'
+      description: |-
+        Sets the payload columns on every row that matches the
+        filters. Without filters every row is updated.
+      summary: Update rows
+      responses:
+        '200':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: 'The request succeeded. No body unless `Prefer: return=representation`.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '409':
+          description: Foreign key (23503) or uniqueness (23505) violation.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Tables and Views
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Row'
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+          text/csv:
+            schema:
+              type: string
+    delete:
+      operationId: Relations_delete
+      summary: Delete rows
+      description: |-
+        Deletes every row that matches the filters. Without filters every row is
+        deleted.
+      parameters:
+        - $ref: '#/components/parameters/RelationPath'
+        - $ref: '#/components/parameters/FilterParameters.filters'
+        - $ref: '#/components/parameters/FilterParameters.or'
+        - $ref: '#/components/parameters/FilterParameters.and'
+        - $ref: '#/components/parameters/FilterParameters.notOr'
+        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/SelectParameter'
+        - name: Accept
+          in: header
+          required: false
+          description: Media type(s) of the response.
+          schema:
+            $ref: '#/components/schemas/AcceptMediaType'
+        - name: Content-Profile
+          in: header
+          required: false
+          description: |-
+            Schema to write to or call into, when the server exposes several schemas
+            (`db-schemas`). Defaults to the first schema. An unknown schema fails with
+            PGRST106.
+          schema:
+            type: string
+        - name: Prefer
+          in: header
+          required: false
+          description: Preferences for this request.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/DeletePreference'
+      responses:
+        '200':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '204':
+          description: 'The request succeeded. No body unless `Prefer: return=representation`.'
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+        '400':
+          description: |-
+            Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
+            a more specific mapping, such as a constraint violation or `RAISE` (P0001).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '401':
+          description: |-
+            Invalid or missing JWT (PGRST301 to PGRST303), or insufficient privileges
+            (42501) for an anonymous request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '403':
+          description: Insufficient privileges (42501) for an authenticated request.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '404':
+          description: |-
+            Unknown table, view or function (PGRST202, PGRST205, 42P01, 42883), or an
+            invalid path (PGRST125).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '405':
+          description: Method not allowed for the resource (PGRST101, PGRST105, PGRST117, 25006).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '406':
+          description: Unknown schema (PGRST106), unavailable media type (PGRST107), or not exactly one row for a singular response (PGRST116).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '409':
+          description: Foreign key (23503) or uniqueness (23505) violation.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '500':
+          description: Server or database error.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '503':
+          description: The database is unavailable (PGRST000 to PGRST002, 08*, 53*).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        '504':
+          description: Timed out waiting for a database connection (PGRST003).
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+        default:
+          description: |-
+            Any other status. Database functions can respond with any status by raising
+            SQLSTATE `PTxyz` (status `xyz`), or SQLSTATE `PGRST` with the status in the
+            error detail.
+          headers:
+            Proxy-Status:
+              required: false
+              description: |-
+                Proxy status (RFC 9209) with the error code. Useful for HEAD requests,
+                which have no body.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostgrestError'
+      tags:
+        - Tables and Views
+security:
+  - BearerAuth: []
+  - {}
+components:
+  parameters:
+    ColumnsParameter:
+      name: columns
+      in: query
+      required: false
+      description: |-
+        Payload keys to write. Other keys in the payload are ignored. Keys missing
+        from a row get NULL, or the column DEFAULT with `Prefer: missing=default`.
+        An unknown column fails with PGRST204.
+      schema:
+        $ref: '#/components/schemas/ColumnList'
+      explode: false
+    FilterParameters.and:
+      name: and
+      in: query
+      required: false
+      description: All conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    FilterParameters.filters:
+      name: filters
+      in: query
+      required: false
+      description: |-
+        Filters and embedded resource parameters. Each entry is one query
+        parameter. The key is one of:
+
+        - `<field>`: a column, JSON/composite path (`json_data->>blood_type`) or
+        computed field. The value is a `FilterExpression`, such as `age=gte.18`.
+        Repeat the key to apply several conditions to the same field.
+        - `<embedded>`: an embedded resource from `select`. Only `is.null` and
+        `not.is.null` are allowed, for example `actors=not.is.null`.
+        - `<embedded>.<field>`: a filter on an embedded resource, such as
+        `actors.first_name=eq.Jehanne`. Nested embeddings chain with `.`:
+        `roles.actors.first_name=like.*Tom*`.
+        - `<embedded>.order`, `<embedded>.limit`, `<embedded>.offset`: ordering
+        and pagination of an embedded resource. The value is an `OrderList` or a
+        `RowCount`.
+        - `<embedded>.or`, `<embedded>.and`, `<embedded>.not.or`,
+        `<embedded>.not.and`: logical operators on an embedded resource. The
+        value is a `LogicalExpression`.
+
+        Filters on an embedded resource do not remove parent rows unless the
+        embedding uses `!inner` or the parent filters on `<embedded>=not.is.null`.
+      schema:
+        type: object
+        additionalProperties:
+          type: string
+    FilterParameters.notAnd:
+      name: not.and
+      in: query
+      required: false
+      description: Not all of the conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    FilterParameters.notOr:
+      name: not.or
+      in: query
+      required: false
+      description: Not all of the conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    FilterParameters.or:
+      name: or
+      in: query
+      required: false
+      description: At least one of the conditions holds.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    FunctionPath:
+      name: function
+      in: path
+      required: true
+      description: Function in the selected schema.
+      schema:
+        $ref: '#/components/schemas/ResourceName'
+    OnConflictParameter:
+      name: on_conflict
+      in: query
+      required: false
+      description: |-
+        Columns of a UNIQUE constraint to use as the upsert conflict target,
+        instead of the primary key. Used with `Prefer: resolution=...`.
+      schema:
+        $ref: '#/components/schemas/ColumnList'
+      explode: false
+    PaginationParameters.limit:
+      name: limit
+      in: query
+      required: false
+      description: Maximum number of rows to return. The server caps it at `db-max-rows`.
+      schema:
+        $ref: '#/components/schemas/RowCount'
+      explode: false
+    PaginationParameters.offset:
+      name: offset
+      in: query
+      required: false
+      description: Number of rows to skip.
+      schema:
+        $ref: '#/components/schemas/RowCount'
+      explode: false
+    PaginationParameters.order:
+      name: order
+      in: query
+      required: false
+      description: Row order.
+      schema:
+        $ref: '#/components/schemas/OrderList'
+      explode: false
+    RelationPath:
+      name: relation
+      in: path
+      required: true
+      description: Table or view in the selected schema.
+      schema:
+        $ref: '#/components/schemas/ResourceName'
+    ResultParameters.and:
+      name: and
+      in: query
+      required: false
+      description: All conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    ResultParameters.notAnd:
+      name: not.and
+      in: query
+      required: false
+      description: Not all of the conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    ResultParameters.notOr:
+      name: not.or
+      in: query
+      required: false
+      description: Not all of the conditions hold.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    ResultParameters.or:
+      name: or
+      in: query
+      required: false
+      description: At least one of the conditions holds.
+      schema:
+        $ref: '#/components/schemas/LogicalExpression'
+      explode: false
+    SelectParameter:
+      name: select
+      in: query
+      required: false
+      description: |-
+        Fields to return. On writes it shapes the representation returned with
+        `Prefer: return=representation`.
+      schema:
+        $ref: '#/components/schemas/SelectList'
+      explode: false
+  schemas:
+    AcceptMediaType:
+      anyOf:
+        - type: string
+          enum:
+            - application/json
+            - text/csv
+            - application/vnd.pgrst.object+json
+            - application/vnd.pgrst.array+json
+            - application/vnd.pgrst.array+json;nulls=stripped
+            - application/geo+json
+            - application/vnd.pgrst.plan
+            - application/vnd.pgrst.plan+text
+            - application/vnd.pgrst.plan+json
+            - application/openapi+json
+            - '*/*'
+        - type: string
+      description: |-
+        Media types for the `Accept` request header. Any other value selects a media
+        type handler defined in the database, and fails with PGRST107 when none
+        exists. The header can list several media types with quality values.
+    AggregateFunction:
+      type: string
+      enum:
+        - avg
+        - count
+        - max
+        - min
+        - sum
+      description: Aggregate functions usable in a `SelectList` as `<field>.<function>()`.
+    ColumnList:
+      type: string
+      description: Comma-separated list of column names.
+      example: source,publication_date,figure
+    CommonPreference:
+      anyOf:
+        - $ref: '#/components/schemas/HandlingPreference'
+        - $ref: '#/components/schemas/TimezonePreference'
+        - $ref: '#/components/schemas/TxPreference'
+      description: Preferences accepted by every request.
+    ContentRange:
+      type: string
+      pattern: ^(\*|[0-9]+-[0-9]+)/(\*|[0-9]+)$
+      description: |-
+        Range of the returned rows and, when a count was requested, the total:
+        `<first>-<last>/<total>`. The range is `*` when no rows were returned, and
+        the total is `*` when no count was requested.
+      example: 0-24/3573458
+    CountPreference:
+      type: string
+      enum:
+        - count=exact
+        - count=planned
+        - count=estimated
+      description: Asks for the total number of rows, returned as the total in `Content-Range`.
+    DeletePreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/CountPreference'
+        - $ref: '#/components/schemas/ReturnPreference'
+        - $ref: '#/components/schemas/MaxAffectedPreference'
+      description: Preferences accepted by DELETE on tables and views.
+    EmbeddingJoinType:
+      type: string
+      enum:
+        - inner
+        - left
+      description: |-
+        Join type hint for an embedded resource: `actors!inner(*)`. Without a hint,
+        embedding is a left join.
+    ErrorCode:
+      anyOf:
+        - type: string
+          enum:
+            - PGRST000
+            - PGRST001
+            - PGRST002
+            - PGRST003
+            - PGRST100
+            - PGRST101
+            - PGRST102
+            - PGRST103
+            - PGRST105
+            - PGRST106
+            - PGRST107
+            - PGRST108
+            - PGRST111
+            - PGRST112
+            - PGRST114
+            - PGRST115
+            - PGRST116
+            - PGRST117
+            - PGRST118
+            - PGRST120
+            - PGRST121
+            - PGRST122
+            - PGRST123
+            - PGRST124
+            - PGRST125
+            - PGRST126
+            - PGRST127
+            - PGRST128
+            - PGRST129
+            - PGRST200
+            - PGRST201
+            - PGRST202
+            - PGRST203
+            - PGRST204
+            - PGRST205
+            - PGRST300
+            - PGRST301
+            - PGRST302
+            - PGRST303
+            - PGRSTX00
+        - type: string
+      description: |-
+        Error code. PostgREST codes have the form `PGRST<group><id>`. Other values
+        are PostgreSQL SQLSTATE codes forwarded from the database (for example
+        `23505`), or custom codes raised by database functions (`PT402`, or any code
+        raised with SQLSTATE `PGRST`).
+    FilterExpression:
+      type: string
+      description: |-
+        Horizontal filter applied to a column, a JSON/composite path or a computed
+        field, sent as the value of the query parameter named after that field.
+
+        Grammar: `[not.]<operator>[(<modifier>)].<value>`
+
+        - `<operator>` is a `FilterOperator`.
+        - `<modifier>` is either an `OperatorModifier` (`like(any).{O*,P*}`) or, for
+        the full-text search operators, a text search configuration
+        (`fts(french).amusant`).
+        - `<value>` is the operand. `in` takes a parenthesized list
+        (`in.(1,2,3)`), `cs`/`cd`/`ov` take array or range literals
+        (`cs.{a,b}`, `ov.[2017-01-01,2017-06-30]`), `is` takes an `IsValue`. In
+        `like` and `ilike` patterns `*` is an alias of `%`. Wrap values with
+        reserved characters in double quotes and escape `"` and `\` with `\`.
+
+        On an embedded resource name (for example `actors=not.is.null`) only
+        `is.null` and `not.is.null` are allowed.
+      example: not.in.(1,2,3)
+    FilterOperator:
+      type: string
+      enum:
+        - eq
+        - gt
+        - gte
+        - lt
+        - lte
+        - neq
+        - like
+        - ilike
+        - match
+        - imatch
+        - in
+        - is
+        - isdistinct
+        - fts
+        - plfts
+        - phfts
+        - wfts
+        - cs
+        - cd
+        - ov
+        - sl
+        - sr
+        - nxr
+        - nxl
+        - adj
+      description: Filter operators accepted in a `FilterExpression`.
+    FunctionPreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/CountPreference'
+        - $ref: '#/components/schemas/MaxAffectedPreference'
+      description: Preferences accepted by function calls.
+    GeoJsonFeatureCollection:
+      type: object
+      required:
+        - type
+        - features
+      properties:
+        type:
+          type: string
+          enum:
+            - FeatureCollection
+        features:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      description: A GeoJSON FeatureCollection (RFC 7946).
+    HandlingPreference:
+      type: string
+      enum:
+        - handling=lenient
+        - handling=strict
+      description: |-
+        How the server treats invalid or unfulfillable preferences. `lenient` (the
+        default) ignores them. `strict` rejects the request with PGRST122.
+    InsertPreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/CountPreference'
+        - $ref: '#/components/schemas/ReturnPreference'
+        - $ref: '#/components/schemas/ResolutionPreference'
+        - $ref: '#/components/schemas/MissingPreference'
+      description: Preferences accepted by POST on tables and views (insert and upsert).
+    IsValue:
+      type: string
+      enum:
+        - 'null'
+        - not_null
+        - 'true'
+        - 'false'
+        - unknown
+      description: Operands of the `is` operator.
+    ItemRange:
+      type: string
+      pattern: ^[0-9]+-[0-9]*$
+      description: |-
+        Item range for pagination, as `<first>-<last>` or the open-ended
+        `<first>-`. Indexes are zero-based and inclusive.
+      example: 0-19
+    LogicalExpression:
+      type: string
+      description: |-
+        Value of a logical operator query parameter (`or`, `and`, `not.or`,
+        `not.and`, and their embedded forms such as `actors.or`): a parenthesized,
+        comma-separated list of conditions.
+
+        Each condition is either `<field>.<filter expression>` (for example
+        `age.lt.18`, `age.not.in.(1,2)`) or a nested logical operator
+        (`not.and(age.gte.11,age.lte.17)`). An embedded resource can be tested for
+        existence with `<embedded>.is.null` or `<embedded>.not.is.null`.
+      example: (age.eq.14,not.and(age.gte.11,age.lte.17))
+    LogicalOperator:
+      type: string
+      enum:
+        - and
+        - or
+      description: Logical operators, used as query parameter names.
+    MaxAffectedPreference:
+      type: string
+      pattern: ^max-affected=[0-9]+$
+      description: |-
+        Upper bound for the number of rows a PATCH, DELETE or table-valued function
+        call can affect. Enforced only with `handling=strict`. Exceeding it fails
+        with PGRST124.
+      example: max-affected=10
+    MissingPreference:
+      type: string
+      enum:
+        - missing=default
+      description: |-
+        Value for columns missing from the payload. The default is NULL. With
+        `missing=default` the column DEFAULT is used.
+    NullsOrder:
+      type: string
+      enum:
+        - nullsfirst
+        - nullslast
+      description: Placement of NULL values in an `OrderList`.
+    OpenApiDocument:
+      type: object
+      additionalProperties: {}
+      description: |-
+        OpenAPI 2.0 (Swagger) description of the selected schema, generated from the
+        schema cache, or the result of the `db-root-spec` function when set.
+    OperatorModifier:
+      type: string
+      enum:
+        - any
+        - all
+      description: |-
+        Modifiers that apply an operator to every value in a list:
+        `last_name=like(any).{O*,P*}`. Valid on `eq`, `like`, `ilike`, `gt`, `gte`,
+        `lt`, `lte`, `match` and `imatch`.
+    OrderDirection:
+      type: string
+      enum:
+        - asc
+        - desc
+      description: Sort directions in an `OrderList`.
+    OrderList:
+      type: string
+      description: |-
+        Comma-separated list of ordering terms. Each term is
+        `<field>[.asc|.desc][.nullsfirst|.nullslast]`, where `<field>` is a column, a
+        JSON/composite path (`location->>lat`) or, on a to-one embedded resource, an
+        embedded column (`directors(last_name)`). The default direction is ascending.
+      example: age.desc.nullslast,height
+    PostgrestError:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        details:
+          type: string
+          nullable: true
+        hint:
+          type: string
+          nullable: true
+      description: |-
+        Error body. It follows the PostgreSQL error structure. With
+        `client-error-verbosity=minimal` only `code` and `message` are present.
+    PutPreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/ReturnPreference'
+      description: Preferences accepted by PUT on tables and views (single row upsert).
+    ReadPreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/CountPreference'
+      description: Preferences accepted by reads (GET and HEAD) on tables and views.
+    ResolutionPreference:
+      type: string
+      enum:
+        - resolution=merge-duplicates
+        - resolution=ignore-duplicates
+      description: Upsert behavior on a primary key or `on_conflict` conflict.
+    ResourceName:
+      type: string
+      minLength: 1
+      description: |-
+        Name of a table, view or function in the exposed schema, as it appears in the
+        URL. Names are case sensitive. Percent-encode spaces and non-ASCII characters
+        (`Order%20Items`, `%D9%85%D9%88%D8%A7%D8%B1%D8%AF`).
+      example: people
+    ReturnPreference:
+      type: string
+      enum:
+        - return=minimal
+        - return=headers-only
+        - return=representation
+      description: What a write request returns.
+    Row:
+      type: object
+      additionalProperties: {}
+      description: |-
+        A row of a table, view or table-valued function, as a JSON object keyed by
+        column name. Its shape depends on the database schema and on `select`
+        (aliases, casts, JSON paths, aggregates and embedded resources).
+    RowCount:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Number of rows.
+    SelectList:
+      type: string
+      description: |-
+        Vertical filtering: the comma-separated list of fields to return. Defaults to
+        `*` (all columns).
+
+        Each item is one of:
+
+        - a column or computed field: `first_name`, `*`
+        - a JSON, composite or array path with `->` (JSON) and `->>` (text):
+        `json_data->phones->0->>number`
+        - an aliased item: `fullName:full_name`
+        - a cast item: `salary::text`
+        - an aggregate (when `db-aggregates-enabled`): `amount.sum()`, `amount.avg()::int`,
+        `count()`. See `AggregateFunction`. Non-aggregated items become the GROUP BY.
+        - an embedded resource with its own select list:
+        `directors(id,last_name)`, `director:directors(*)`, `directors()` (embed
+        used only for filtering, not returned)
+        - an embedding hint to pick a foreign key, column or join table, and an
+        optional join type: `addresses!billing(name)`, `actors!inner(*)`,
+        `clients!client_id!left(*)`. See `EmbeddingJoinType`.
+        - a spread embedded resource whose fields are lifted into the parent object:
+        `...directors(first_name)`. On a to-many relationship each field becomes an
+        array.
+
+        Wrap identifiers that contain reserved characters (`,` `.` `:` `*` `(` `)`)
+        in double quotes.
+      example: id,fullName:full_name,salary::text,director:directors!inner(id,last_name)
+    TimezonePreference:
+      type: string
+      pattern: ^timezone=.+$
+      description: |-
+        Time zone for the transaction: any name in `pg_timezone_names` or a numeric
+        offset such as `05:30` or `-03:00`. An invalid time zone is always an error,
+        also with `handling=lenient`.
+      example: timezone=America/Los_Angeles
+    TxPreference:
+      type: string
+      enum:
+        - tx=commit
+        - tx=rollback
+      description: |-
+        Whether the transaction ends in COMMIT or ROLLBACK. The server honors it only
+        when `db-tx-end` allows it.
+    UpdatePreference:
+      anyOf:
+        - $ref: '#/components/schemas/CommonPreference'
+        - $ref: '#/components/schemas/CountPreference'
+        - $ref: '#/components/schemas/ReturnPreference'
+        - $ref: '#/components/schemas/MissingPreference'
+        - $ref: '#/components/schemas/MaxAffectedPreference'
+      description: Preferences accepted by PATCH on tables and views.
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: Bearer
+servers:
+  - url: '{baseUrl}'
+    description: A PostgREST server
+    variables:
+      baseUrl:
+        default: http://localhost:3000

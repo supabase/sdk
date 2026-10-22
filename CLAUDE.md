@@ -10,6 +10,7 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by the Dart compliance workflow.
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
 - `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
+- `packages/postgrest-typespec/`: a TypeSpec model of the generic PostgREST v16 HTTP API (routes, URL grammar, `Prefer` preferences, media types, errors), independent of any database schema. `bun run build` emits `openapi/openapi.yaml`, which is committed; `postgrest-typespec-validate.yml` checks formatting and fails when the committed output is stale. Not release-managed. See its `README.md`.
 - `packages/typegen/`: the language registry for `supabase gen types --lang`. `languages` maps each name to a generator, either in-process (the four bundled in postgrest-typegen) or an external tool run in the user's project (Dart via `dart run supabase_typegen`). The CLI dispatches through it, so adding a language is a pull request here plus a CLI dependency bump. See its own `CLAUDE.md`.
 
 ## Commands

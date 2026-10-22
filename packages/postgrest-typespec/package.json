@@ -1,0 +1,19 @@
+{
+  "name": "@supabase/postgrest-typespec",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeSpec model of the generic PostgREST HTTP API, independent of any database schema",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsp compile .",
+    "format": "tsp format \"**/*.tsp\"",
+    "format:check": "tsp format --check \"**/*.tsp\""
+  },
+  "devDependencies": {
+    "@typespec/compiler": "1.17.0",
+    "@typespec/http": "1.17.0",
+    "@typespec/openapi": "1.17.0",
+    "@typespec/openapi3": "1.17.0"
+  }
+}
