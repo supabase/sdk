@@ -38,6 +38,15 @@ model CreatedResponse {
   @header("Location") location?: string;
 }
 
+/**
+ * An upsert with `Prefer: resolution=merge-duplicates` updated existing rows
+ * and inserted none. No body unless `Prefer: return=representation`.
+ */
+model UpsertedResponse {
+  @statusCode statusCode: 200;
+  ...WriteResponseHeaders;
+}
+
 /** The request succeeded. No body unless `Prefer: return=representation`. */
 model NoContentResponse {
   @statusCode statusCode: 204;
@@ -76,6 +85,8 @@ op Insert<Payload extends {}>(
   ...Payload,
 ):
   | CreatedResponse
+  | UpsertedResponse
+  | RowsRepresentation<200, WriteResponseHeaders>
   | RowsRepresentation<201, WriteResponseHeaders>
   | ConflictError
   | CommonErrors;
@@ -92,6 +103,7 @@ op Upsert<Payload extends {}>(
 ):
   | NoContentResponse
   | RowsRepresentation<200, WriteResponseHeaders>
+  | RowsRepresentation<201, WriteResponseHeaders>
   | ConflictError
   | CommonErrors;
 

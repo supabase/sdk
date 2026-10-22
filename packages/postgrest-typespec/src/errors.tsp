@@ -26,7 +26,7 @@ union ErrorCode {
   /** 400: cannot parse a query string parameter. */
   PGRST100: "PGRST100",
 
-  /** 405: functions accept only GET and POST. */
+  /** 405: functions accept only GET, HEAD and POST. */
   PGRST101: "PGRST101",
 
   /** 400: invalid request body, such as an empty body or malformed JSON. */

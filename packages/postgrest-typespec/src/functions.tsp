@@ -9,7 +9,7 @@ namespace PostgREST;
 /** Path of a function. */
 model FunctionPath {
   /** Function in the selected schema. */
-  @path("function") functionName: ResourceName;
+  @path functionName: ResourceName;
 }
 
 /** Function result as JSON: a scalar, an object, or an array of rows. */
@@ -63,10 +63,10 @@ model ResultParameters {
   @query and?: LogicalExpression;
 
   /** Not all of the conditions hold. */
-  @query("not.or") notOr?: LogicalExpression;
+  @query `not.or`?: LogicalExpression;
 
   /** Not all of the conditions hold. */
-  @query("not.and") notAnd?: LogicalExpression;
+  @query `not.and`?: LogicalExpression;
 }
 
 /** A JSON object of named arguments. */
@@ -76,9 +76,9 @@ alias JsonArguments = {
   /**
    * One key per argument name. Arguments with a DEFAULT can be omitted. A
    * variadic argument takes a JSON array. For a function with a single unnamed
-   * `json` or `jsonb` parameter, the whole body is that argument.
+   * `json` or `jsonb` parameter, the whole object is that argument.
    */
-  @body body: Record<unknown> | unknown[];
+  @body body: Record<unknown>;
 };
 
 /** URL-encoded named arguments. Repeat a key for a variadic argument. */
@@ -122,11 +122,12 @@ op Call<Payload extends {}>(
 
 /**
  * Functions of the exposed schema, under the `/rpc` prefix. Functions are
- * called with the privileges of the request role. VOLATILE functions accept
- * only POST; STABLE and IMMUTABLE functions also accept GET and HEAD
- * (PGRST101 otherwise). Stored procedures are not supported.
+ * called with the privileges of the request role. Only GET, HEAD and POST are
+ * allowed (PGRST101 otherwise). GET and HEAD run in a read-only transaction,
+ * so a VOLATILE function that writes fails there with 405 (25006). Stored
+ * procedures are not supported.
  */
-@route("/rpc/{function}")
+@route("/rpc/{functionName}")
 @tag("Functions")
 interface Functions {
   /**

@@ -2,18 +2,32 @@
   "name": "@supabase/postgrest-typespec",
   "version": "0.0.0",
   "private": true,
-  "description": "TypeSpec model of the generic PostgREST HTTP API, independent of any database schema",
+  "description": "TypeSpec model of the generic PostgREST HTTP API, independent of any database schema, with an emitted JavaScript client",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "tsp compile .",
     "format": "tsp format \"**/*.tsp\"",
-    "format:check": "tsp format --check \"**/*.tsp\""
+    "format:check": "tsp format --check \"**/*.tsp\"",
+    "check-types": "tsc -p e2e",
+    "e2e:up": "docker compose -f e2e/docker-compose.yml -p postgrest-typespec-e2e up -d --wait",
+    "e2e:down": "docker compose -f e2e/docker-compose.yml -p postgrest-typespec-e2e down -v",
+    "e2e": "bun test e2e"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.3",
     "@typespec/compiler": "1.17.0",
     "@typespec/http": "1.17.0",
+    "@typespec/http-client-js": "0.16.3",
     "@typespec/openapi": "1.17.0",
-    "@typespec/openapi3": "1.17.0"
+    "@typespec/openapi3": "1.17.0",
+    "@typespec/rest": "0.87.0",
+    "@typespec/ts-http-runtime": "0.2.1",
+    "typescript": "7.0.2",
+    "uri-template": "^2.0.0"
+  },
+  "overrides": {
+    "@alloy-js/core": "0.24.1",
+    "@alloy-js/typescript": "0.24.0"
   }
 }

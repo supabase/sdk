@@ -50,10 +50,10 @@ model FilterParameters {
   @query and?: LogicalExpression;
 
   /** Not all of the conditions hold. */
-  @query("not.or") notOr?: LogicalExpression;
+  @query `not.or`?: LogicalExpression;
 
   /** Not all of the conditions hold. */
-  @query("not.and") notAnd?: LogicalExpression;
+  @query `not.and`?: LogicalExpression;
 }
 
 /** Ordering and pagination. */
@@ -84,5 +84,5 @@ model OnConflictParameter {
    * Columns of a UNIQUE constraint to use as the upsert conflict target,
    * instead of the primary key. Used with `Prefer: resolution=...`.
    */
-  @query("on_conflict") onConflict?: ColumnList;
+  @query on_conflict?: ColumnList;
 }

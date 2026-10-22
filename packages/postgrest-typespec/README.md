@@ -30,15 +30,55 @@ The query grammar is a set of documented string scalars (`SelectList`, `OrderLis
 
 - TypeSpec has no OPTIONS verb, so the model leaves out `OPTIONS` (the allowed methods and CORS preflight).
 - The model declares one request body media type per operation variant and shares the route (`@sharedRoute`). The OpenAPI output merges the variants into one operation with several request content types.
-- A filter key can repeat (`age=gte.18&age=lte.65`). A string-valued record cannot show this, so only the documentation mentions it.
+- A filter key or a variadic argument can repeat (`age=gte.18&age=lte.65`, `v=1&v=2`). A string-valued record cannot show this, so only the documentation mentions it.
+
+## Example client
+
+`clients/js` is a TypeScript client emitted by [`@typespec/http-client-js`](https://www.npmjs.com/package/@typespec/http-client-js). It is an example of what a generator can build from the model, not a supported SDK.
+
+```ts
+import { PostgRestClient } from "./clients/js/src/index.js";
+
+const client = new PostgRestClient(
+  { getBearerToken: async () => jwt },
+  { endpoint: "http://localhost:3000", allowInsecureConnection: true },
+);
+
+const films = await client.relationsClient.read("films", {
+  select: "title,director:directors(name)",
+  filters: { year: "gte.1990" },
+  order: "year.desc",
+  prefer: ["count=exact"],
+});
+```
+
+The emitter (0.16.3) has gaps that shaped the model or that the tests work around:
+
+- It puts property names, not wire names, into the URI template variables. Properties whose wire name differs are therefore named after the wire name (`` `not.or` ``, `on_conflict`). The function path parameter is `functionName`, since the emitter renames `function`.
+- It mistypes the transforms of a union whose variants are unions, so the per-operation `Prefer` unions are aliases.
+- It sends `application/x-www-form-urlencoded` bodies as JSON, and it matches response media types by substring (`for="application/json"` in a plan media type matches JSON). The e2e tests check these cases with plain `fetch`.
+- It always sends a bearer token, so it cannot make anonymous requests without a JWT. Use a JWT whose `role` is the anonymous role.
+- It warns `unknown-encoding` for raw `bytes` bodies. The warning is harmless: the bodies are sent and read as raw bytes.
+- `@typespec/http-client-js` 0.16.3 and `@typespec/emitter-framework` 0.21.0 ask for different `@alloy-js` versions. The `overrides` in `package.json` pin one version so that the emitter loads.
+
+## End-to-end tests
+
+`e2e/` runs the example client against a real PostgREST v16 server. `docker-compose.yml` starts PostgreSQL and PostgREST on port 3901, and `fixture.sql` creates a small schema that covers tables, a view, embedding, schemas, privileges and function kinds.
+
+```bash
+bun run e2e:up     # start PostgreSQL and PostgREST (Docker)
+bun run e2e        # run the tests (POSTGREST_URL overrides the server URL)
+bun run e2e:down   # stop and remove the containers
+```
 
 ## Commands
 
 ```bash
 bun install
-bun run build          # tsp compile → openapi/openapi.yaml
+bun run build          # tsp compile → openapi/openapi.yaml and clients/js
 bun run format         # tsp format
 bun run format:check
+bun run check-types    # type check the e2e tests and the emitted client
 ```
 
-The generated `openapi/openapi.yaml` is committed. CI fails when it does not match the TypeSpec sources, so run `bun run build` after every change.
+The generated `openapi/openapi.yaml` and `clients/js` are committed. CI fails when they do not match the TypeSpec sources, so run `bun run build` after every change. CI also runs the e2e tests.

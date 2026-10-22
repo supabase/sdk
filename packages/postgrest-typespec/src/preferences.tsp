@@ -84,53 +84,39 @@ union MissingPreference {
 scalar MaxAffectedPreference extends string;
 
 /** Preferences accepted by every request. */
-union CommonPreference {
-  HandlingPreference,
-  TimezonePreference,
-  TxPreference,
-}
+alias CommonPreference = HandlingPreference | TimezonePreference | TxPreference;
 
 /** Preferences accepted by reads (GET and HEAD) on tables and views. */
-union ReadPreference {
-  CommonPreference,
-  CountPreference,
-}
+alias ReadPreference = CommonPreference | CountPreference;
 
 /** Preferences accepted by POST on tables and views (insert and upsert). */
-union InsertPreference {
-  CommonPreference,
-  CountPreference,
-  ReturnPreference,
-  ResolutionPreference,
-  MissingPreference,
-}
+alias InsertPreference =
+  | CommonPreference
+  | CountPreference
+  | ReturnPreference
+  | ResolutionPreference
+  | MissingPreference;
 
 /** Preferences accepted by PUT on tables and views (single row upsert). */
-union PutPreference {
-  CommonPreference,
-  ReturnPreference,
-}
+alias PutPreference = CommonPreference | ReturnPreference;
 
 /** Preferences accepted by PATCH on tables and views. */
-union UpdatePreference {
-  CommonPreference,
-  CountPreference,
-  ReturnPreference,
-  MissingPreference,
-  MaxAffectedPreference,
-}
+alias UpdatePreference =
+  | CommonPreference
+  | CountPreference
+  | ReturnPreference
+  | MissingPreference
+  | MaxAffectedPreference;
 
 /** Preferences accepted by DELETE on tables and views. */
-union DeletePreference {
-  CommonPreference,
-  CountPreference,
-  ReturnPreference,
-  MaxAffectedPreference,
-}
+alias DeletePreference =
+  | CommonPreference
+  | CountPreference
+  | ReturnPreference
+  | MaxAffectedPreference;
 
 /** Preferences accepted by function calls. */
-union FunctionPreference {
-  CommonPreference,
-  CountPreference,
-  MaxAffectedPreference,
-}
+alias FunctionPreference =
+  | CommonPreference
+  | CountPreference
+  | MaxAffectedPreference;

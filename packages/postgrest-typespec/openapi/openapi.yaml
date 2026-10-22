@@ -60,9 +60,6 @@ paths:
             application/openapi+json:
               schema:
                 $ref: '#/components/schemas/OpenApiDocument'
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OpenApiDocument'
         '400':
           description: |-
             Invalid request (PGRST1xx, PGRST200, PGRST204), or a database error without
@@ -377,7 +374,7 @@ paths:
                 type: string
       tags:
         - OpenAPI
-  /rpc/{function}:
+  /rpc/{functionName}:
     get:
       operationId: Functions_call
       summary: Call a function with GET
@@ -393,8 +390,8 @@ paths:
         - $ref: '#/components/parameters/PaginationParameters.offset'
         - $ref: '#/components/parameters/ResultParameters.or'
         - $ref: '#/components/parameters/ResultParameters.and'
-        - $ref: '#/components/parameters/ResultParameters.notOr'
-        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - $ref: '#/components/parameters/ResultParameters.not.or'
+        - $ref: '#/components/parameters/ResultParameters.not.and'
         - name: arguments
           in: query
           required: false
@@ -446,7 +443,12 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/FunctionPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/MaxAffectedPreference'
       responses:
         '200':
           description: 'Function result as JSON: a scalar, an object, or an array of rows.'
@@ -747,8 +749,8 @@ paths:
         - $ref: '#/components/parameters/PaginationParameters.offset'
         - $ref: '#/components/parameters/ResultParameters.or'
         - $ref: '#/components/parameters/ResultParameters.and'
-        - $ref: '#/components/parameters/ResultParameters.notOr'
-        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - $ref: '#/components/parameters/ResultParameters.not.or'
+        - $ref: '#/components/parameters/ResultParameters.not.and'
         - name: arguments
           in: query
           required: false
@@ -795,7 +797,12 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/FunctionPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/MaxAffectedPreference'
       responses:
         '200':
           description: The request has succeeded.
@@ -1001,8 +1008,8 @@ paths:
         - $ref: '#/components/parameters/PaginationParameters.offset'
         - $ref: '#/components/parameters/ResultParameters.or'
         - $ref: '#/components/parameters/ResultParameters.and'
-        - $ref: '#/components/parameters/ResultParameters.notOr'
-        - $ref: '#/components/parameters/ResultParameters.notAnd'
+        - $ref: '#/components/parameters/ResultParameters.not.or'
+        - $ref: '#/components/parameters/ResultParameters.not.and'
         - name: filters
           in: query
           required: false
@@ -1049,7 +1056,12 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/FunctionPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/MaxAffectedPreference'
       description: |-
         Calls a function with POST. Every function accepts POST, whatever its
         volatility. Filters, ordering and pagination in the query string apply to a
@@ -1348,11 +1360,8 @@ paths:
         content:
           application/json:
             schema:
-              anyOf:
-                - type: object
-                  additionalProperties: {}
-                - type: array
-                  items: {}
+              type: object
+              additionalProperties: {}
           application/x-www-form-urlencoded:
             schema:
               type: object
@@ -1371,7 +1380,7 @@ paths:
         description: |-
           One key per argument name. Arguments with a DEFAULT can be omitted. A
           variadic argument takes a JSON array. For a function with a single unnamed
-          `json` or `jsonb` parameter, the whole body is that argument.
+          `json` or `jsonb` parameter, the whole object is that argument.
   /{relation}:
     get:
       operationId: Relations_read
@@ -1386,8 +1395,8 @@ paths:
         - $ref: '#/components/parameters/FilterParameters.filters'
         - $ref: '#/components/parameters/FilterParameters.or'
         - $ref: '#/components/parameters/FilterParameters.and'
-        - $ref: '#/components/parameters/FilterParameters.notOr'
-        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/FilterParameters.not.or'
+        - $ref: '#/components/parameters/FilterParameters.not.and'
         - $ref: '#/components/parameters/PaginationParameters.order'
         - $ref: '#/components/parameters/PaginationParameters.limit'
         - $ref: '#/components/parameters/PaginationParameters.offset'
@@ -1429,7 +1438,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ReadPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
       responses:
         '200':
           description: Rows as a JSON array.
@@ -1726,8 +1739,8 @@ paths:
         - $ref: '#/components/parameters/FilterParameters.filters'
         - $ref: '#/components/parameters/FilterParameters.or'
         - $ref: '#/components/parameters/FilterParameters.and'
-        - $ref: '#/components/parameters/FilterParameters.notOr'
-        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/FilterParameters.not.or'
+        - $ref: '#/components/parameters/FilterParameters.not.and'
         - $ref: '#/components/parameters/PaginationParameters.order'
         - $ref: '#/components/parameters/PaginationParameters.limit'
         - $ref: '#/components/parameters/PaginationParameters.offset'
@@ -1769,7 +1782,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/ReadPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
       responses:
         '200':
           description: The request has succeeded.
@@ -1974,7 +1991,14 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/InsertPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/ReturnPreference'
+                - $ref: '#/components/schemas/ResolutionPreference'
+                - $ref: '#/components/schemas/MissingPreference'
       description: |-
         Creates one row from a JSON object, or many rows from a JSON
         array of objects with uniform keys or from CSV, in a single INSERT. Missing
@@ -1985,6 +2009,54 @@ paths:
         columns.
       summary: Insert or upsert rows
       responses:
+        '200':
+          description: |-
+            An upsert with `Prefer: resolution=merge-duplicates` updated existing rows
+            and inserted none. No body unless `Prefer: return=representation`.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
         '201':
           description: 'Rows were inserted. No body unless `Prefer: return=representation`.'
           headers:
@@ -2228,8 +2300,8 @@ paths:
         - $ref: '#/components/parameters/FilterParameters.filters'
         - $ref: '#/components/parameters/FilterParameters.or'
         - $ref: '#/components/parameters/FilterParameters.and'
-        - $ref: '#/components/parameters/FilterParameters.notOr'
-        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/FilterParameters.not.or'
+        - $ref: '#/components/parameters/FilterParameters.not.and'
         - $ref: '#/components/parameters/SelectParameter'
         - $ref: '#/components/parameters/ColumnsParameter'
         - name: Accept
@@ -2254,7 +2326,11 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/PutPreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/ReturnPreference'
       description: |-
         Inserts the row, or replaces it when it exists. The
         query string filters every primary key column with `eq`, and the body
@@ -2264,6 +2340,52 @@ paths:
       summary: Upsert a single row
       responses:
         '200':
+          description: Rows as a JSON array.
+          headers:
+            Preference-Applied:
+              required: false
+              description: Preferences from the `Prefer` header that the server applied.
+              schema:
+                type: string
+            Content-Range:
+              required: false
+              description: 'With `Prefer: count=...`, the number of affected rows as the total.'
+              schema:
+                $ref: '#/components/schemas/ContentRange'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.array+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Row'
+            application/vnd.pgrst.object+json:
+              schema:
+                $ref: '#/components/schemas/Row'
+            text/csv:
+              schema:
+                type: string
+            application/geo+json:
+              schema:
+                $ref: '#/components/schemas/GeoJsonFeatureCollection'
+            application/vnd.pgrst.plan+text:
+              schema:
+                type: string
+            application/vnd.pgrst.plan+json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: {}
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '201':
           description: Rows as a JSON array.
           headers:
             Preference-Applied:
@@ -2508,8 +2630,8 @@ paths:
         - $ref: '#/components/parameters/FilterParameters.filters'
         - $ref: '#/components/parameters/FilterParameters.or'
         - $ref: '#/components/parameters/FilterParameters.and'
-        - $ref: '#/components/parameters/FilterParameters.notOr'
-        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/FilterParameters.not.or'
+        - $ref: '#/components/parameters/FilterParameters.not.and'
         - $ref: '#/components/parameters/SelectParameter'
         - $ref: '#/components/parameters/ColumnsParameter'
         - name: Accept
@@ -2534,7 +2656,14 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/UpdatePreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/ReturnPreference'
+                - $ref: '#/components/schemas/MissingPreference'
+                - $ref: '#/components/schemas/MaxAffectedPreference'
       description: |-
         Sets the payload columns on every row that matches the
         filters. Without filters every row is updated.
@@ -2789,8 +2918,8 @@ paths:
         - $ref: '#/components/parameters/FilterParameters.filters'
         - $ref: '#/components/parameters/FilterParameters.or'
         - $ref: '#/components/parameters/FilterParameters.and'
-        - $ref: '#/components/parameters/FilterParameters.notOr'
-        - $ref: '#/components/parameters/FilterParameters.notAnd'
+        - $ref: '#/components/parameters/FilterParameters.not.or'
+        - $ref: '#/components/parameters/FilterParameters.not.and'
         - $ref: '#/components/parameters/SelectParameter'
         - name: Accept
           in: header
@@ -2814,7 +2943,13 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/components/schemas/DeletePreference'
+              anyOf:
+                - $ref: '#/components/schemas/HandlingPreference'
+                - $ref: '#/components/schemas/TimezonePreference'
+                - $ref: '#/components/schemas/TxPreference'
+                - $ref: '#/components/schemas/CountPreference'
+                - $ref: '#/components/schemas/ReturnPreference'
+                - $ref: '#/components/schemas/MaxAffectedPreference'
       responses:
         '200':
           description: Rows as a JSON array.
@@ -3093,7 +3228,7 @@ components:
         type: object
         additionalProperties:
           type: string
-    FilterParameters.notAnd:
+    FilterParameters.not.and:
       name: not.and
       in: query
       required: false
@@ -3101,7 +3236,7 @@ components:
       schema:
         $ref: '#/components/schemas/LogicalExpression'
       explode: false
-    FilterParameters.notOr:
+    FilterParameters.not.or:
       name: not.or
       in: query
       required: false
@@ -3118,7 +3253,7 @@ components:
         $ref: '#/components/schemas/LogicalExpression'
       explode: false
     FunctionPath:
-      name: function
+      name: functionName
       in: path
       required: true
       description: Function in the selected schema.
@@ -3173,7 +3308,7 @@ components:
       schema:
         $ref: '#/components/schemas/LogicalExpression'
       explode: false
-    ResultParameters.notAnd:
+    ResultParameters.not.and:
       name: not.and
       in: query
       required: false
@@ -3181,7 +3316,7 @@ components:
       schema:
         $ref: '#/components/schemas/LogicalExpression'
       explode: false
-    ResultParameters.notOr:
+    ResultParameters.not.or:
       name: not.or
       in: query
       required: false
@@ -3241,12 +3376,6 @@ components:
       type: string
       description: Comma-separated list of column names.
       example: source,publication_date,figure
-    CommonPreference:
-      anyOf:
-        - $ref: '#/components/schemas/HandlingPreference'
-        - $ref: '#/components/schemas/TimezonePreference'
-        - $ref: '#/components/schemas/TxPreference'
-      description: Preferences accepted by every request.
     ContentRange:
       type: string
       pattern: ^(\*|[0-9]+-[0-9]+)/(\*|[0-9]+)$
@@ -3262,13 +3391,6 @@ components:
         - count=planned
         - count=estimated
       description: Asks for the total number of rows, returned as the total in `Content-Range`.
-    DeletePreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/CountPreference'
-        - $ref: '#/components/schemas/ReturnPreference'
-        - $ref: '#/components/schemas/MaxAffectedPreference'
-      description: Preferences accepted by DELETE on tables and views.
     EmbeddingJoinType:
       type: string
       enum:
@@ -3377,12 +3499,6 @@ components:
         - nxl
         - adj
       description: Filter operators accepted in a `FilterExpression`.
-    FunctionPreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/CountPreference'
-        - $ref: '#/components/schemas/MaxAffectedPreference'
-      description: Preferences accepted by function calls.
     GeoJsonFeatureCollection:
       type: object
       required:
@@ -3407,14 +3523,6 @@ components:
       description: |-
         How the server treats invalid or unfulfillable preferences. `lenient` (the
         default) ignores them. `strict` rejects the request with PGRST122.
-    InsertPreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/CountPreference'
-        - $ref: '#/components/schemas/ReturnPreference'
-        - $ref: '#/components/schemas/ResolutionPreference'
-        - $ref: '#/components/schemas/MissingPreference'
-      description: Preferences accepted by POST on tables and views (insert and upsert).
     IsValue:
       type: string
       enum:
@@ -3518,16 +3626,6 @@ components:
       description: |-
         Error body. It follows the PostgreSQL error structure. With
         `client-error-verbosity=minimal` only `code` and `message` are present.
-    PutPreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/ReturnPreference'
-      description: Preferences accepted by PUT on tables and views (single row upsert).
-    ReadPreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/CountPreference'
-      description: Preferences accepted by reads (GET and HEAD) on tables and views.
     ResolutionPreference:
       type: string
       enum:
@@ -3605,21 +3703,13 @@ components:
       description: |-
         Whether the transaction ends in COMMIT or ROLLBACK. The server honors it only
         when `db-tx-end` allows it.
-    UpdatePreference:
-      anyOf:
-        - $ref: '#/components/schemas/CommonPreference'
-        - $ref: '#/components/schemas/CountPreference'
-        - $ref: '#/components/schemas/ReturnPreference'
-        - $ref: '#/components/schemas/MissingPreference'
-        - $ref: '#/components/schemas/MaxAffectedPreference'
-      description: Preferences accepted by PATCH on tables and views.
   securitySchemes:
     BearerAuth:
       type: http
       scheme: Bearer
 servers:
-  - url: '{baseUrl}'
+  - url: '{endpoint}'
     description: A PostgREST server
     variables:
-      baseUrl:
+      endpoint:
         default: http://localhost:3000

@@ -16,9 +16,7 @@ model OpenApiDocument is Record<unknown>;
 model OpenApiResponse {
   @statusCode statusCode: 200;
   ...CommonResponseHeaders;
-  @header("Content-Type") contentType:
-    | "application/openapi+json"
-    | "application/json";
+  @header("Content-Type") contentType: "application/openapi+json";
   @body body: OpenApiDocument;
 }
 

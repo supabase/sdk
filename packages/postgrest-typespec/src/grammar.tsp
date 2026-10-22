@@ -90,7 +90,7 @@ scalar LogicalExpression extends string;
 
 /** Number of rows. */
 @minValue(0)
-scalar RowCount extends int64;
+scalar RowCount extends safeint;
 
 /** Filter operators accepted in a `FilterExpression`. */
 enum FilterOperator {

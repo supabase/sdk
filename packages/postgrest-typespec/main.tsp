@@ -36,10 +36,10 @@ using OpenAPI;
   },
 })
 @server(
-  "{baseUrl}",
+  "{endpoint}",
   "A PostgREST server",
   {
-    baseUrl?: url = "http://localhost:3000",
+    endpoint?: url = "http://localhost:3000",
   }
 )
 @tagMetadata(
