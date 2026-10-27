@@ -63,7 +63,7 @@ both does not.
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
 | `swift`      | out-of-process | `supabase-typegen --access-control <level>`, fetched    | `--swift-access-control internal\|public`                                          |
-| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
+| `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   | `--dart-set-exit-if-changed`, `--dart-output <path>`                               |
 
 The three in-process entries are a transition: as each generator relocates to
 its SDK repository (SDK-1641), its entry here changes to an out-of-process
@@ -198,6 +198,10 @@ Every failure the registry raises extends `TypegenError` and carries the
   refused the `GeneratorMetadata` document, usually because it does not
   understand this `GENERATOR_METADATA_VERSION`. The fix is updating the tool or
   the CLI so both agree.
+- `OutputChangedError` (extends `ToolFailedError`, adds `path`): a check-only
+  run, such as Dart's `dart-set-exit-if-changed`, found the generated file at
+  `path` out of date and wrote nothing. The message is the tool's description
+  of the first difference; the fix is regenerating the file.
 
 Anything a generator throws itself, or a `spawn` rejection other than a missing
 executable, passes through unchanged.

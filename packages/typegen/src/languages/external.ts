@@ -11,6 +11,7 @@ import type {
 } from "../contract.ts";
 import {
   MetadataRejectedError,
+  OutputChangedError,
   SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,
@@ -27,7 +28,8 @@ type ToolFailure =
       readonly tool: string;
       readonly installHint: string;
     }
-  | { readonly kind: "metadata-rejected" };
+  | { readonly kind: "metadata-rejected" }
+  | { readonly kind: "output-changed"; readonly path: string };
 
 /** Describes the command line of a generator that runs outside this process. */
 export interface ExternalTool {
@@ -41,7 +43,10 @@ export interface ExternalTool {
   /** Shown when `command` itself cannot be found. */
   readonly installHint: string;
   /** Classifies a non-zero exit; return `undefined` for a generic failure. */
-  classify?(result: SpawnResult): ToolFailure | undefined;
+  classify?(
+    result: SpawnResult,
+    options: ResolvedOptions,
+  ): ToolFailure | undefined;
 }
 
 const isCommandNotFound = (error: unknown): boolean =>
@@ -103,7 +108,7 @@ export function externalLanguage(
         return result.stdout;
       }
       const stderr = result.stderr.trim();
-      const failure = tool.classify?.(result);
+      const failure = tool.classify?.(result, resolved);
       const commandLine = command.join(" ");
       switch (failure?.kind) {
         case "not-installed":
@@ -121,6 +126,15 @@ export function externalLanguage(
             stderr,
             version: sorted.version,
             message: `\`${commandLine}\` rejected the GeneratorMetadata document (version ${sorted.version}). Update the tool and supabase gen types so both agree on the document format.${stderr ? `\n${stderr}` : ""}`,
+          });
+        case "output-changed":
+          throw new OutputChangedError({
+            language: name,
+            command,
+            exitCode: result.exitCode,
+            stderr,
+            path: failure.path,
+            message: stderr || `${failure.path} is out of date.`,
           });
         default:
           throw new ToolFailedError({

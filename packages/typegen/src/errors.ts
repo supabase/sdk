@@ -100,3 +100,21 @@ export class MetadataRejectedError extends ToolFailedError {
     this.version = init.version;
   }
 }
+
+/**
+ * A check-only run found that the committed file differs from the code the
+ * tool would generate. Nothing was written; regenerating the file fixes it.
+ */
+export class OutputChangedError extends ToolFailedError {
+  readonly path: string;
+
+  constructor(
+    init: ConstructorParameters<typeof ToolFailedError>[0] & {
+      readonly path: string;
+    },
+  ) {
+    super(init);
+    this.name = "OutputChangedError";
+    this.path = init.path;
+  }
+}

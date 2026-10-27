@@ -22,6 +22,7 @@ export type {
 export {
   InvalidOptionError,
   MetadataRejectedError,
+  OutputChangedError,
   SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,

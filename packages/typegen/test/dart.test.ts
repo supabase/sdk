@@ -6,6 +6,7 @@ import {
 import {
   dart,
   MetadataRejectedError,
+  OutputChangedError,
   SpawnUnavailableError,
   ToolFailedError,
   ToolNotInstalledError,
@@ -168,5 +169,101 @@ describe("dart", () => {
     expect(await rejection(dart.generate(unsortedMetadata, {}, host))).toEqual(
       new Error("host exploded"),
     );
+  });
+
+  describe("dart-set-exit-if-changed", () => {
+    test("checks the default file instead of writing to stdout", async () => {
+      const host = createFakeHost(() => ({
+        exitCode: 0,
+        stdout: "",
+        stderr: "lib/supabase_schema.g.dart is up to date.\n",
+      }));
+      const output = await dart.generate(
+        unsortedMetadata,
+        { "dart-set-exit-if-changed": true },
+        host,
+      );
+
+      expect(output).toBe("");
+      expect(host.requests[0]!.args).toEqual([
+        "run",
+        "supabase_typegen",
+        "--output",
+        "lib/supabase_schema.g.dart",
+        "--set-exit-if-changed",
+      ]);
+    });
+
+    test("checks the file passed with dart-output", async () => {
+      const host = createFakeHost(() => success(""));
+      await dart.generate(
+        unsortedMetadata,
+        {
+          "dart-set-exit-if-changed": true,
+          "dart-output": "lib/src/schema.g.dart",
+        },
+        host,
+      );
+
+      expect(host.requests[0]!.args).toEqual([
+        "run",
+        "supabase_typegen",
+        "--output",
+        "lib/src/schema.g.dart",
+        "--set-exit-if-changed",
+      ]);
+    });
+
+    test("ignores dart-output without the check", async () => {
+      const host = createFakeHost(() => success("code"));
+      await dart.generate(
+        unsortedMetadata,
+        { "dart-output": "lib/src/schema.g.dart" },
+        host,
+      );
+
+      expect(host.requests[0]!.args).toEqual([
+        "run",
+        "supabase_typegen",
+        "--output",
+        "-",
+      ]);
+    });
+
+    test("reports a stale file with the tool's description", async () => {
+      const stderr =
+        "lib/supabase_schema.g.dart is out of date with the database schema, first differing at line 120 in Books.";
+      const host = createFakeHost(() => ({
+        exitCode: 1,
+        stdout: "",
+        stderr: `${stderr}\n`,
+      }));
+      const error = await rejection(
+        dart.generate(
+          unsortedMetadata,
+          { "dart-set-exit-if-changed": true },
+          host,
+        ),
+      );
+
+      expect(error).toBeInstanceOf(OutputChangedError);
+      expect(error).toBeInstanceOf(ToolFailedError);
+      const changed = error as OutputChangedError;
+      expect(changed.path).toBe("lib/supabase_schema.g.dart");
+      expect(changed.exitCode).toBe(1);
+      expect(changed.message).toBe(stderr);
+    });
+
+    test("treats exit code 1 as a failure without the check", async () => {
+      const host = createFakeHost(() => ({
+        exitCode: 1,
+        stdout: "",
+        stderr: "",
+      }));
+      const error = await rejection(dart.generate(unsortedMetadata, {}, host));
+
+      expect(error).toBeInstanceOf(ToolFailedError);
+      expect(error).not.toBeInstanceOf(OutputChangedError);
+    });
   });
 });

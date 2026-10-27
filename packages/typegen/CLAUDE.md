@@ -27,7 +27,7 @@ lives in supabase-js.
   `TypegenLanguage`. Changing these is a semver-relevant change for the CLI.
 - `src/errors.ts` -- `TypegenError` and its subclasses (`InvalidOptionError`,
   `SpawnUnavailableError`, `ToolNotInstalledError`, `ToolFailedError`,
-  `MetadataRejectedError`). The
+  `MetadataRejectedError`, `OutputChangedError`). The
   CLI maps these to its actionability model generically; keep the fields
   stable.
 - `src/options.ts` -- `resolveOptions`: defaults plus validation, run at the
@@ -40,6 +40,11 @@ lives in supabase-js.
 - `src/languages/dart.ts` -- the first out-of-process entry:
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
+  `dart-set-exit-if-changed` runs the tool with `--output <dart-output>
+  --set-exit-if-changed` instead, which compares with that file, prints
+  nothing on stdout and exits `1` when it differs, classified as
+  `OutputChangedError`. `classify` receives the resolved options so exit `1`
+  means a stale file only in that mode.
 - `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, a
   prebuilt binary from supabase-swift's releases (SDK-2199). It downloads the
   release the nearest `Package.resolved` pins into the user cache, then falls

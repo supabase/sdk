@@ -49,7 +49,16 @@ describe("languages", () => {
     ]);
     expect(findLanguage("go")?.options).toEqual([]);
     expect(findLanguage("python")?.options).toEqual([]);
-    expect(findLanguage("dart")?.options).toEqual([]);
+    expect(
+      userOptions("dart")?.map((option) => [
+        option.name,
+        option.kind,
+        option.default,
+      ]),
+    ).toEqual([
+      ["dart-set-exit-if-changed", "boolean", false],
+      ["dart-output", "string", "lib/supabase_schema.g.dart"],
+    ]);
   });
 
   test("typescript carries the consumers' settings as consumer options", () => {
