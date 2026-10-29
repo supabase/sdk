@@ -27,7 +27,7 @@ The SDK fires the events for each change to the state, as [Get Presence State](.
 - `leave` fires once per key that has left entries in the change. Its payload carries the key, the key's metas after the change (empty when the key is gone), and the left metas, with the payloads the state held for them.
 - `sync` fires once after each change. `sync` carries no payload: the app reads the presence state.
 
-`join` and `leave` never repeat an entry, never report an entry the state did not hold, and never report one entry as both joined and left in one change. Within one change, all `join` events fire before any `leave` event, and `sync` fires last. The metas in the payloads have the shape the presence state uses: no `phx_ref` or `phx_ref_prev`, and `presence_ref` set.
+A joined entry is absent from the state before the change and present after it. A left entry is present before the change and absent after it. So `join` and `leave` never repeat an entry, and never report one entry as both joined and left in one change. Within one change, all `join` events fire before any `leave` event, and `sync` fires last. The metas in the payloads have the shape the presence state uses: no `phx_ref` or `phx_ref_prev`, and `presence_ref` set.
 
 An SDK that exposes the presence state as a stream of values may skip a `sync` for a change that leaves the state unchanged. An SDK that exposes joins and leaves as a stream of changes may skip a change with no joined and no left entries.
 
