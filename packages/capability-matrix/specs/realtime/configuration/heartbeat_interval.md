@@ -30,14 +30,14 @@ Any reply proves the socket is alive. A reply with status `ok` and a reply with 
 
 After it sends a heartbeat, the client waits one interval for the reply. When the next tick comes and the heartbeat still has no reply, the client treats the socket as dead. It then does these steps in order:
 
-1. It marks every joined channel as errored, so that each one rejoins when a socket opens again.
+1. It marks every joined channel as errored, so that each one rejoins when a socket opens again (see [Subscribe](../channel/subscribe.md)).
 2. It closes the socket from its side. It does not wait for more messages.
-3. It schedules a reconnect through the reconnect backoff (see [Configurable Reconnect Backoff](reconnect_backoff.md)). This is attempt 1, because the attempt count reset when the socket opened.
+3. It schedules a reconnect (see [Connect](../client/connect.md)). This is attempt 1, because the attempt count reset when the socket opened.
 
 So the client finds a dead socket at most two intervals after the last reply, or after the open event when no reply has come yet. A reply that arrives after the client treated the socket as dead has no effect.
 
 ## Related
 
-- [Configurable Reconnect Backoff](reconnect_backoff.md): the delay before the client reopens a socket that missed a heartbeat reply
+- [Connect](../client/connect.md): when and how the client reopens a socket that missed a heartbeat reply
 - Listen to Heartbeats (`realtime.client.listen_heartbeats`): reports each send, reply, and missing reply to the app
 - Dynamic Access Token Callback (`realtime.configuration.access_token_callback`): refreshes the token on each heartbeat
