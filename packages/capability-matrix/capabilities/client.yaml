@@ -18,7 +18,7 @@ features:
     group: authentication_integration
   - id: client.authentication_integration.cross_client_token_sync
     name: Cross-Client Token Synchronization
-    description: The client listens for auth state change events and automatically propagates the current JWT to all sub-clients (database, realtime, storage, functions) so requests stay authenticated without manual intervention.
+    description: Every sub-client (database, realtime, storage, functions) stays authenticated with the current JWT as the session signs in, refreshes, and signs out, without the caller updating any of them by hand. Whether the client pushes the token on auth state change events or each sub-client resolves it per request is an implementation detail.
     group: authentication_integration
   - id: client.authentication_integration.oauth_flow_type
     name: OAuth Flow Type Selection

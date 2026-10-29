@@ -12,9 +12,9 @@ features:
     name: Invoke Function
     description: Call a deployed Edge Function by name with an optional request body.
     group: invocation
-  - id: functions.invocation.set_auth_token
-    name: Set Auth Token
-    description: Update the authorization token sent with all subsequent function invocations.
+  - id: functions.invocation.auth_token
+    name: Invocation Auth Token
+    description: Supply the authorization token sent with function invocations, fixed at client construction, resolved per request from an access token provider, or overridden on a single call.
     group: request_configuration
   - id: functions.invocation.method_override
     name: HTTP Method Override
