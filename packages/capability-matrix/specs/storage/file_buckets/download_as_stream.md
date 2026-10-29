@@ -34,7 +34,7 @@ Spec: [https://supabase.github.io/storage/](https://supabase.github.io/storage/)
 
 ## Related
 
-- Download File (`storage.file_buckets.download`): the buffered download, which this capability builds on
+- [Download File](./download.md): the buffered download, which this capability builds on
 - Download with Image Transform (`storage.file_buckets.download_with_transform`): the same modes apply to a transformed image, which the server sends without a `Content-Length`
 - Cancel In-Flight Request (`storage.file_buckets.request_cancellation`): cancelling closes the connection while the body streams
 - Automatic Retry (`storage.configuration.auto_retry`): retries end when the download call returns
