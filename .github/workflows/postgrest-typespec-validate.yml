@@ -1,0 +1,54 @@
+name: Validate postgrest-typespec
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/postgrest-typespec/**"
+      - ".github/workflows/postgrest-typespec-validate.yml"
+  pull_request:
+    paths:
+      - "packages/postgrest-typespec/**"
+      - ".github/workflows/postgrest-typespec-validate.yml"
+
+defaults:
+  run:
+    working-directory: packages/postgrest-typespec
+
+jobs:
+  compile:
+    name: Format, compile, generated output, types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run format:check
+      - name: Regenerate the OpenAPI document and the JavaScript client
+        run: rm -rf clients/js && bun run build
+      - name: Check that the committed output is up to date
+        run: |
+          if [ -n "$(git status --porcelain -- openapi clients)" ]; then
+            git status --short -- openapi clients
+            echo "Run 'bun run build' and commit the result."
+            exit 1
+          fi
+      - run: bun run check-types
+
+  e2e:
+    name: End-to-end against PostgREST
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run e2e:up
+      - run: bun run e2e
+      - if: always()
+        run: bun run e2e:down
