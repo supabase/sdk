@@ -1,8 +1,7 @@
 # Supabase SDK Getting Started
 
 How the Supabase SDK team builds client SDKs, starting with the principles we work by.
-It applies to every client SDK repository (JavaScript, Swift, Flutter, Python, Go, C#,
-Kotlin).
+It applies to every official client SDK repository.
 
 This tier is about how we work. What each feature does is in the
 [capability registry](../../packages/capability-matrix/capabilities/) and the

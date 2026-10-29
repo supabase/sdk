@@ -12,7 +12,7 @@ AI use. This page does not repeat them. It adds what is special to SDKs.
 An SDK is a thin layer over the Supabase services. It turns a service's API into calls
 that feel native in the language, and it keeps the state that only the client can
 hold: the session, the Realtime connection, the user's configuration. It does not add
-its own product on top. Each abstraction that one SDK adds is code that six other SDKs
+its own product on top. Each abstraction that one SDK adds is code that every other SDK
 must copy, test, and keep the same.
 
 Example: when users want a helper that combines two service calls into one workflow,
@@ -22,7 +22,7 @@ the helper goes in an example or a guide, not into the client.
 
 When logic can run in the service, it runs in the service. A change in the service
 ships once, reaches every SDK at the same time, and reaches users who never upgrade
-their SDK. A change in the client ships seven times, and old versions stay in use for
+their SDK. A change in the client ships once in each SDK, and old versions stay in use for
 years.
 
 Put logic in the client only when it must run there:
@@ -86,7 +86,7 @@ its raw type, and the calls that do not use it keep working.
 
 A client works with good defaults and the fewest inputs: the project URL and a key.
 Each new option is one more test case, one more docs entry, and one more way for
-seven SDKs to differ. Add an option only when a real user cannot reach their goal
+the SDKs to differ. Add an option only when a real user cannot reach their goal
 without it. Keep the escape hatches that let users solve the rest themselves: a custom
 HTTP client, global headers, custom session storage.
 
@@ -106,7 +106,7 @@ SDK repository. The fix is a capability, not an exception.
 
 Agree on the behavior before you write it. For SDK behavior, the agreement is a merged
 capability, and a spec file when the SDK adds behavior beyond the service's API. Code is
-cheap to write, for humans and for agents. Code that seven SDKs build differently is
+cheap to write, for humans and for agents. Code that each SDK builds differently is
 expensive to fix.
 
 Example: a fix that changes what a method returns is a behavior change. It starts with
