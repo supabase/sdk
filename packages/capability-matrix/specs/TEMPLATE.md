@@ -97,10 +97,18 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      the rest. A check before the wire states the input it applies to, the form it accepts,
      the error the SDK raises (its own argument error, never the server error type), and
      the server answer it pre-empts, with status and error_code, so a reader knows what the
-     check saves them from. Remove this section if there are none. -->
+     check saves them from. Remove this section if there are none.
+
+     A check before the wire is the exception, not the default: validation belongs to the
+     service (docs/getting-started/principles.md#validation-belongs-to-the-service). Every
+     copy of a service rule in an SDK goes stale when the service changes the rule, so a
+     limit the service enforces, such as a maximum payload size, is never checked here. Add
+     a check only when the service's own answer would mislead the caller, for example a
+     malformed id answered with the same status as a missing record, and say so in the
+     sentence that defines the check. -->
 
 - `error_code`: when the SDK sees it and what it does with it
-- A check before the wire: the input, the form it accepts, the error raised, and the server answer it pre-empts
+- A check before the wire: the input, the form it accepts, the error raised, the server answer it pre-empts, and why that answer is not enough
 
 ## Notes
 
