@@ -26,8 +26,18 @@ that all rows must share one key set.
 | absent (default)  | `null` |
 | `missing=default` | the column's `DEFAULT` |
 
-Implementations that send `columns` MUST expose this as `defaultToNull`, defaulting to true; `false`
-sends `missing=default`. Without `columns` the preference has no effect — every row carries every
+Implementations that send `columns` pick the preference by the kind of row value:
+
+- An insert type that defines an absent field as the column's `DEFAULT` and offers an explicit way to
+  write `null`: implementations MUST send `missing=default`, so an absent field gets the column's
+  `DEFAULT` and an explicit null writes `null`, as it does in a single-row insert of the same value.
+  They MUST NOT expose `defaultToNull`, since the row value already expresses both.
+- Any other row value, such as an untyped map: implementations MUST expose the choice as
+  `defaultToNull`, defaulting to true; `false` sends `missing=default`.
+
+An implementation that accepts both kinds applies each rule to the rows of its kind.
+
+Without `columns` the preference has no effect — every row carries every
 key, and a column absent from the payload is left out of the statement so the database applies its
 default — so an implementation that sends rows verbatim need not expose it.
 

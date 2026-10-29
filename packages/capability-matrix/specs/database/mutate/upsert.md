@@ -11,7 +11,8 @@ Spec: [https://docs.postgrest.org/en/latest/references/api/tables_views.html#ups
 ## Behavior
 
 An [insert](insert.md) plus a conflict target and a resolution. Every insert behavior applies
-unchanged, including `columns` and `defaultToNull`.
+unchanged, including `columns` and the choice between `missing=default` and `defaultToNull` by the
+kind of row value.
 
 **Conflict target.** `on_conflict` names the unique index's columns, comma-separated; absent, the
 primary key is used. It applies to every row in the request, and one request may mix merged and
