@@ -50,26 +50,9 @@ is information, not a requirement.
 
 ## Pages
 
-- [principles.md](principles.md): thirteen engineering principles that the standards
+- [principles.md](principles.md): the engineering principles that the standards
   apply, starting with thin clients, logic, validation, and defaults in the server, and
   decoding that accepts new values. Read once.
-
-Planned, in order:
-
-- `standards/spec-first.md`: a change to SDK behavior starts with a capability, and a
-  spec when needed, in `supabase/sdk`.
-- `standards/compatibility.md`: forward compatibility with services, runtime support
-  table, end-of-life policy.
-- `standards/api-design.md`: public API, naming across SDKs, approval by the SDK's lead
-  maintainer.
-- `standards/repository.md`: required files and CI checks in every SDK repository.
-- `templates/agents-md.md`: the `AGENTS.md` template.
-- `playbooks/implementing-a-capability.md`, `playbooks/triaging.md`,
-  `playbooks/cutting-a-release.md`, `playbooks/handling-a-regression.md`.
-- `standards/release-versioning.md`, `standards/triage-response.md`,
-  `standards/testing.md`, `standards/breaking-changes.md`,
-  `standards/spec-lifecycle.md`.
-- `philosophy.md`.
 
 ## Change a page
 
