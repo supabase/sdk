@@ -1,7 +1,7 @@
 # Sign Out
 
-End the user's sessions on the Auth server for a chosen scope and, when the 
-scope includes the current session, remove the locally stored session. 
+End the user's sessions on the Auth server for a chosen scope and, when the
+scope includes the current session, remove the locally stored session.
 
 ## API
 
@@ -11,110 +11,200 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
 ## Behavior
 
-The input is a scope, one of `global`, `local`, or `others`. 
+The input is a scope, one of `global`, `local`, or `others`. When the caller
+supplies none, the SDK must define a default (see Notes). The SDK always sends
+the `scope` query parameter and must not rely on the server default.
 
-When the caller supplies none, the SDK must define a default. The SDK always 
-sends the `scope` query parameter, it must not rely on the server default.
+The flowchart under each scope below is the exact logic for that scope.
 
-The request is authenticated with the current session's access token as the 
-bearer credential. When the stored access token has expired, the SDK refreshes
-the session first, as it does before any authenticated call, so the server can
-identify the session to end.
+The request to sign out is authenticated with the current session's access
+token as the bearer credential, so the server can identify the session the
+scope is relative to. On success the server answers `204 No Content`, so the SDK
+returns nothing beyond the absence of an error.
 
-When there is no stored session, the SDK makes no request, removes any 
-remaining local auth state as described below, and returns success.
+Sign-out ends refresh tokens, not access tokens. An access token already issued
+for an ended session stays valid until its `exp` claim, and the SDK cannot make
+it unusable elsewhere.
 
-The server answers `204 No Content`, so the SDK returns nothing beyond the
-absence of an error. Errors defines the outcomes each scope below reacts to:
-success, already signed out, failure, and a failed refresh.
+### How the scopes differ
+
+The scopes differ in which server sessions they end, and in when, if ever, they
+remove the local session. Already signed out follows the success column.
+
+| Scope    | Server sessions ended                     | Local session on success | Local session on failure |
+| -------- | ----------------------------------------- | ------------------------ | ------------------------ |
+| `local`  | The current session                       | Removed                  | Removed                  |
+| `global` | Every session of the user                 | Removed                  | Kept                     |
+| `others` | Every session of the user except this one | Kept                     | Kept                     |
+
+- `local` signs out the device first and asks the server second, so the device
+  is signed out whatever the server answers.
+- `global` asks the server first and signs out the device only once the server
+  has ended the sessions.
+- `others` never signs out the device, and needs the current session to
+  authenticate, so with no stored session it fails instead of succeeding.
+
+All three return the error on failure.
+
+### `local`
+
+Signs out this device and revokes the current session's refresh token on the
+server. Signing out of the device never depends on the server: it happens
+before any request, so the device is signed out whatever the server answers,
+however long it takes to answer, and when it cannot be reached at all.
 
 Removing the local session clears all auth state the SDK persists for the user:
 the stored session, every stored PKCE code verifier, and any separately stored
-copy of the user object. It then emits the sign-out event through Subscribe to
-Auth Events (`auth.session.subscribe_auth_events`), with the user-initiated
-reason from [Sign-Out Reason](sign_out_reason.md). The SDK emits the
-event exactly when it removes the local session.
+copy of the user object. The removal emits the sign-out event through Subscribe
+to Auth Events (`auth.session.subscribe_auth_events`), with the user-initiated
+reason from [Sign-Out Reason](sign_out_reason.md) in SDKs that implement it.
 
-Sign-out ends the refresh token, not the access token. An access token already
-issued stays valid until its `exp` claim, so the SDK cannot make it unusable
-elsewhere. It can only stop holding it.
+The SDK emits the event exactly when it removes the local session, and never
+twice for one sign-out. The access token the SDK held stays valid until its
+`exp` claim; the SDK can only stop holding it.
 
 SDKs that serialize session operations behind a lock run sign-out under that
 lock, so a refresh in flight cannot write a new session back after sign-out has
 removed it.
 
-The table summarizes the three scopes, which the sections below describe in
-full. Already signed out follows the success column.
+Removing the local session before the request also keeps the reason on the 
+sign-out event correct. If the SDK refreshed an expired access token through 
+Refresh Session first, a rejected refresh would remove the session with the 
+session-expired reason, for a sign-out the user asked for. Instead, the SDK 
+keeps the refresh token in memory and refreshes with it only to authenticate 
+the revocation. That refresh must not store the new session, which would sign 
+the device back in, and emits no events. A refresh answered 
+`400 refresh_token_not_found` or `400 session_not_found` means the server has 
+nothing left to revoke, for example because the session was revoked elsewhere, 
+so the SDK treats it as already signed out.
 
-| Scope    | Server sessions ended                     | Local session on success | Local session on failure | Error returned on failure |
-| -------- | ----------------------------------------- | ------------------------ | ------------------------ | ------------------------- |
-| `local`  | The current session                       | Removed                  | Removed                  | Yes                       |
-| `global` | Every session of the user                 | Removed                  | Kept                     | Yes                       |
-| `others` | Every session of the user except this one | Kept                     | Kept                     | Yes                       |
-
-### `local`
-
-Signs out this device and revokes the current session's refresh token on the
-server. Signing out of the device never depends on the server.
-
-The SDK removes the local session, and emits the sign-out event, before it
-sends the request. The device is signed out whatever the server answers and
-however long it takes to answer.
-
-- **Success or already signed out:** the SDK returns success.
-- **Failure:** the SDK returns the error. The device stays signed out, but the
-  refresh token stays valid on the server until it expires or is revoked
-  another way. The error lets the app tell that the revocation did not happen.
-- **Refresh failed with a network failure or a `5xx`:** the SDK removes the
-  local session anyway and returns the refresh error.
+When the revocation fails, the device stays signed out, but the refresh token
+stays valid on the server until it expires or is revoked another way. The error
+lets the app tell that the revocation did not happen.
 
 A sign-out event listener that throws does not stop the request: the SDK sends
 it, then raises the listener's error in place of the result.
 
+```mermaid
+---
+title: Signing out using `local` scope
+---
+flowchart TB
+    A["AuthClient.signOut(scope=local)"] --> V{"Valid scope?"}
+    V -- no --> EV(["Return input validation error"])
+    V -- yes --> S{"Stored session?"}
+    S -- no --> C0["Clear leftover local auth state"]
+    C0 --> OK(["Return success"])
+    S -- yes --> RM["1. Create an in-memory copy of the Refresh Token. 2. Remove the local session. 3. Emit (SIGNED_OUT, user-initiated)"]
+    RM --> X{"Access token expired?"}
+    X -- no --> L["POST /logout?scope=local"]
+    X -- yes --> RF["Refresh Access Token once with the in-memory Refresh Token<br>(not stored, no events, no retries)"]
+    RF -- ok --> L
+    RF -- 400 refresh_token_not_found<br>400 session_not_found --> OK
+    RF -- any other failure --> ER(["Return refresh error. Device stays signed out."])
+    L -- 204, 403 user_not_found,<br>403 session_not_found --> OK
+    L -- network failure, 5xx, anything else --> E(["Return error. Device stays signed out."])
+
+    RF@{ shape: rect}
+```
+
 ### `global`
 
 Ends every session of the user on the server, including this one, then signs
-out this device. The local session changes only after the server has answered
-with success or already signed out.
+out this device.
 
-- **Success or already signed out:** the SDK removes the local session and
-  returns success.
-- **Failure:** the SDK keeps the local session, emits no event, and returns the
-  error.
-- **Refresh failed with a network failure or a `5xx`:** the SDK keeps the local
-  session and returns the refresh error.
+When the stored access token has expired, the SDK refreshes it first through
+Refresh Session (`auth.session.refresh_session`), the same refresh that runs
+before any authenticated call. When the server rejects that refresh with a
+`4xx`, Refresh Session has already removed the local session and emitted the
+sign-out event with the session-expired reason by the time sign-out sees the
+error. Sign-out only returns the error.
 
-Keeping the session on failure lets the user retry, or fall back to `local`.
+Removing the local session after a successful answer clears all auth state the
+SDK persists for the user: the stored session, every stored PKCE code verifier,
+and any separately stored copy of the user object. The removal emits the
+sign-out event through Subscribe to Auth Events
+(`auth.session.subscribe_auth_events`), with the user-initiated reason from
+[Sign-Out Reason](sign_out_reason.md) in SDKs that implement it. The SDK emits
+the event exactly when it removes the local session, and never twice for one
+sign-out. The access token the SDK held stays valid until its `exp` claim; the
+SDK can only stop holding it.
 
-Removing it would leave the client with no credentials with which to end the
-other sessions.
+SDKs that serialize session operations behind a lock run sign-out under that
+lock, so a refresh in flight cannot write a new session back after sign-out has
+removed it.
+
+On failure the SDK keeps the local session, so the user can retry or fall back
+to `local`. Removing it would leave the client with no credentials with which
+to end the other sessions.
+
+```mermaid
+---
+title: Signing out using `global` scope
+---
+flowchart TB
+    A["AuthClient.signOut(scope=global)"] --> V{"Valid scope?"}
+    V -- no --> EV(["Return input validation error"])
+    V -- yes --> S{"Stored session?"}
+    S -- no --> C0["Clear leftover local auth state"]
+    C0 --> OK(["Return success"])
+    S -- yes --> X{"Access Token expired?"}
+    X -- no --> L["POST /logout?scope=global"]
+    X -- yes --> RF["Regular session refresh"]
+    RF -- ok --> L
+    RF -- 4xx --> RX["Removes local session. Emit (SIGNED_OUT, session-expired)"]
+    RX --> ER(["Return refresh error"])
+    RF -- network failure, 5xx --> K1["Keep local session"]
+    K1 --> ER
+    L -- 204, 403 user_not_found --> RM["1. Remove local session. 2. Emit (SIGNED_OUT, user-initiated)"]
+    RM --> OK
+    L -- 403 session_not_found, network failure, 5xx, anything else --> K2["Keep local session. No events emitted."]
+    K2 --> E(["Return error"])
+```
 
 ### `others`
 
-Ends every session of the user on the server except this one. The SDK never
-changes the local session for this scope, and so never emits the sign-out
+Ends every session of the user on the server except this one. Sign-out itself
+never changes the local session for this scope, and so never emits the sign-out
 event.
 
-- **Success or already signed out:** the SDK returns success.
-- **Failure:** the SDK returns the error.
-- **Refresh failed with a network failure or a `5xx`:** the SDK keeps the local
-  session and returns the refresh error.
+When the stored access token has expired, the SDK refreshes it first through
+Refresh Session (`auth.session.refresh_session`), the same refresh that runs
+before any authenticated call. When the server rejects that refresh with a
+`4xx`, Refresh Session has already removed the local session and emitted the
+sign-out event with the session-expired reason by the time sign-out sees the
+error. Sign-out only returns the error. This is the only way this scope ends
+with no local session.
+
+With no stored session the SDK has no credential with which to revoke the other
+sessions, so it returns its own no-session error instead of success.
+
+```mermaid
+---
+title: Signing out using `others` scope
+---
+flowchart TB
+    A["AuthClient.signOut(scope=others)"] --> V{"Valid scope?"}
+    V -- no --> EV(["Return input validation error"])
+    V -- yes --> S{"Stored session?"}
+    S -- no --> ENS(["Return no-session error"])
+    S -- yes --> X{"Access token expired?"}
+    X -- no --> L["POST /logout?scope=others"]
+    X -- yes --> RF["Regular session refresh"]
+    RF -- ok --> L
+    RF -- 4xx --> RX["Removes local session.<br>Emit (SIGNED_OUT, session-expired)"]
+    RX --> ER(["Return refresh error"])
+    RF -- network failure, 5xx --> ER
+    L -- 204, 403 user_not_found --> OK(["Return success. Local session untouched."])
+    L -- 403 session_not_found, network failure,<br>5xx, anything else --> E(["Return error. Local session untouched."])
+```
 
 ## Errors
 
-- A check before hitting the wire: the scope must be exactly one of `global`, 
-  `local`,  or `others`. Any other value should cause a failure.
-
-The SDK classifies every logout response by its HTTP status and `error_code`
-as one of three outcomes:
-
-- **Success:** `204`.
-- **Already signed out:** the server found nothing left to revoke for the
-  scope. The SDK handles it exactly like a `204`.
-- **Failure:** every other answer and every network failure. The SDK returns
-  the error.
-
-The server answers land in those outcomes as follows:
+Besides `204`, some logout answers mean the server found nothing left to revoke
+for the scope. The SDK treats these as already signed out and handles them
+exactly like a `204`. Every other answer, and every network failure, is a
+failure. The table lists how each answer lands per scope:
 
 | Server answer                                    | `local`            | `global`           | `others`           |
 | ------------------------------------------------ | ------------------ | ------------------ | ------------------ |
@@ -131,27 +221,20 @@ The reason for each row:
   sessions, so nothing is left to revoke for any scope.
 - `403` `session_not_found`: the current session no longer exists, so nothing
   is left to revoke for `local`, but the other sessions that `global` and
-  `others` end still do. The stored session is then unusable, so
-  an app that gets this failure for `global` falls back to `local` to sign out
-  the device.
+  `others` end still do. The stored session is then unusable, so an app that
+  gets this failure for `global` falls back to `local` to sign out the device.
 - `403` `bad_jwt` (the access token is expired, its signature cannot be
-  verified, or a claim is missing or malformed) and `403` `user_banned`:
-  the server rejected the token before looking at any session, so
-  every session still exists. A ban does not end sessions.
+  verified, or a claim is missing or malformed) and `403` `user_banned`: the
+  server rejected the token before looking at any session, so every session
+  still exists. A ban does not end sessions.
 - `400` `bad_jwt`: the `sub` claim is not a UUID.
 - `401` `no_authorization`: the request carried no bearer token.
-- `404`: the Auth server never answers it on this endpoint, so it
-  comes from something in front of the server.
+- `404`: the Auth server never answers it on this endpoint, so it comes from
+  something in front of the server.
 - Any other `4xx` or `5xx`, including the `500` the server answers when it
   cannot end the sessions: the SDK returns the server's error.
-- A network failure: the SDK returns its retryable network error, so
-  the app can tell an unreachable server from a refusal and retry.
-
-When the refresh before the request fails, the SDK sends no logout request and
-returns the refresh error. A refresh the server rejected with a `4xx` has
-already removed the local session. A refresh that failed with a network failure
-or a `5xx` leaves the stored session in place, and each scope under Behavior
-says what happens to it.
+- A network failure: the SDK returns its retryable network error, so the app
+  can tell an unreachable server from a refusal and retry.
 
 ## Notes
 
@@ -160,19 +243,19 @@ says what happens to it.
   and do not check the session, so a missing session gets `204`. This spec
   does not support them: against such a server every `401` and `404` is a
   failure, including the `404` that means the user is already gone.
-- Each SDK can define their own default scope, Auth uses `global`, so 
-  default to this unless there is a good reason to do otherwise.
-- SDKs that hold no session (stateless server-side SDKs) implement this 
-  capability as the admin form, Admin Sign Out (`auth.admin.sign_out`), which 
+- Each SDK can define its own default scope. Auth uses `global`, so default to
+  that unless there is a good reason to do otherwise.
+- SDKs that hold no session (stateless server-side SDKs) implement this
+  capability as the admin form, Admin Sign Out (`auth.admin.sign_out`), which
   takes the access token explicitly and keeps no local state to clear.
 
 ## Related
 
-- [Sign-Out Reason](sign_out_reason.md): the reason carried on the sign-out event this 
-  capability emits.
-- Subscribe to Auth Events (`auth.session.subscribe_auth_events`): the event 
+- [Sign-Out Reason](sign_out_reason.md): the reason carried on the sign-out
+  event this capability emits.
+- Subscribe to Auth Events (`auth.session.subscribe_auth_events`): the event
   stream the sign-out event is emitted on.
-- Admin Sign Out (`auth.admin.sign_out`): the same server call with an 
+- Admin Sign Out (`auth.admin.sign_out`): the same server call with an
   explicitly supplied access token.
-- Refresh Session (`auth.session.refresh_session`): runs before sign-out when
-  the stored access token has expired.
+- Refresh Session (`auth.session.refresh_session`): runs before sign-out under
+  `global` and `others` when the stored access token has expired.
