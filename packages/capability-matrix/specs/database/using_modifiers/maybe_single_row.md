@@ -5,16 +5,16 @@
 Spec: [PostgREST Documentation: Singular or Plural](https://docs.postgrest.org/en/latest/references/api/resource_representation.html#singular-plural)
 
 - `GET` or `HEAD /{relation}`
-- `POST`, `PATCH`, or `DELETE /{relation}` with `Prefer: return=representation`
+- `POST`, `PATCH`, or `DELETE /{relation}`
 - `GET` or `POST /rpc/{function}`
 
 ## Behavior
 
 The query resolves to one of three results: Nothing when no row matches, the Row when exactly one row matches, and an Error when more than one row matches. Nothing is the SDK's idiomatic empty value, such as `null`, `nil`, or a zero value. The Error is a failure indication that the user can handle, as idiomatic for this SDK, of the same type [`single_row`](single_row.md) raises.
 
-**Reads.** A `GET` or `HEAD` request on a relation, and every call to `/rpc/{function}` whatever its method, keeps the `Accept` header it sends without this modifier. The SDK counts the elements of the JSON array in the response body: an empty array resolves to Nothing, one element resolves to that element as the Row, and more than one raises the Error defined under Errors. The single-object `Accept` header would make the server answer a read that matches no row with HTTP 406, so the SDK keeps the default header and a lookup that finds nothing is not recorded as a failed request. A function call is counted on the client even when it writes, because the rows a function returns say nothing about the rows it changed.
+**Writes.** An insert, upsert, update, or delete on a relation sends `application/vnd.pgrst.object+json` as the `Accept` media type, keeping any parameters the header already carries, such as `nulls=stripped`. The server then checks the count inside the transaction: it rolls back a write that affects more than one row and answers HTTP 406 with `PGRST116`, which the SDK raises as the Error. Counting on the client instead would let the write commit to every matched row before the Error reached the caller. A successful answer with a JSON object as its body resolves to that object as the Row, and one with an empty body, as for a write that does not request `Prefer: return=representation`, resolves to Nothing. A write that affects no row is answered with HTTP 406 and `PGRST116` as well, and the SDK resolves it to Nothing as defined under Errors.
 
-**Writes.** An insert, upsert, update, or delete on a relation sends `Accept: application/vnd.pgrst.object+json`, so the count is checked inside the transaction. The server rolls back a write that affects more than one row and answers HTTP 406 with `PGRST116`, which the SDK raises as the Error, and nothing is written. Counting on the client instead would let the write commit to every matched row before the Error reached the caller. A successful answer carries one JSON object, which the SDK returns as the Row. A write that affects no row is answered with HTTP 406 and `PGRST116` as well, and the SDK resolves it to Nothing as defined under Errors.
+**Reads.** Every other request, which is a `GET` or `HEAD` on a relation or a call to `/rpc/{function}` whatever its method, keeps the `Accept` header it sends without this modifier, so a read that matches no row is answered with an empty array rather than HTTP 406. The SDK counts the elements of a JSON array body: an empty array resolves to Nothing, one element resolves to that element as the Row, and more than one raises the Error defined under Errors. A body that is not a JSON array, such as the result of a function that returns a single value, resolves to that value as the Row, and an empty body, as for a `HEAD` request, resolves to Nothing. A function call is counted on the client even when the function writes, because the rows a function returns say nothing about the rows it changed.
 
 ## Errors
 
