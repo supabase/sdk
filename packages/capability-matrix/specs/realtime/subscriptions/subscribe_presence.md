@@ -37,7 +37,7 @@ After a rejoin, the new `presence_state` is diffed against the old state, so `jo
 
 ## Errors
 
-- A presence listener added while the channel is joining or joined is rejected with the SDK's own error, and nothing is registered. The join payload already carries `config.presence.enabled`, so a listener added after subscribe on a channel that joined with presence off would never fire. The app adds presence listeners before it subscribes.
+- A presence listener added while the channel is joining or joined, on a channel that has presence off, is rejected with the SDK's own error, and nothing is registered. The join payload already carries `config.presence.enabled: false`, so such a listener would never fire. A channel has presence on when its join payload carried `true` or a track on it has succeeded since the join. On a channel with presence on, the SDK accepts the listener, which receives the events from the next message on; the app reads the presence state for what came before. The app that wants presence events adds a listener before it subscribes, or sets the presence `enabled` option.
 
 ## Related
 
