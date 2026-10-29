@@ -61,8 +61,9 @@ Each standard and playbook has a `status` and a `version` in its frontmatter.
 
 ## Pages
 
-- [principles.md](principles.md): eleven engineering principles that the standards
-  apply, starting with thin clients, logic and validation in the server. Read once.
+- [principles.md](principles.md): thirteen engineering principles that the standards
+  apply, starting with thin clients, logic, validation, and defaults in the server, and
+  decoding that accepts new values. Read once.
 - [standards/spec-first.md](standards/spec-first.md) (`draft`): a change to SDK
   behavior starts with a capability, and a spec when needed, in `supabase/sdk`.
 

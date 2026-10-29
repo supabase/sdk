@@ -50,6 +50,38 @@ accepts the larger payload on the same day.
 A check before the request is the exception. It needs a spec, and the spec states why
 the service's own answer is not enough.
 
+## The service owns its defaults
+
+When the service has a default for a field that a request does not require, the SDK
+does not send that field unless the user sets it. The SDK option has no value by
+default (`nil`, `null`, `None`, `undefined`), and the SDK leaves an unset option out of
+the request. The service then applies its own default. A default that an SDK copies is
+a second copy of a service rule. When the service changes it, users get the old value
+until every SDK ships a release and every user upgrades.
+
+This applies to values that the service reads. An option that only the client reads,
+such as the session storage or the auto refresh of tokens, has its default in the SDK.
+
+Example: the service creates a bucket as private when the request has no `public`
+field. The SDK's `public` option has no value by default. When the user does not set it,
+the request has no `public` field, and the service decides. When the user sets it to
+`false`, the request sends `false`. If the service changes its default, every SDK
+version, old and new, follows on the same day.
+
+## Decoding is open to new values
+
+The service adds values over time: a new field, a new enum value, a new event type, a
+new error code. An SDK does not fail when a response contains a value that it does not
+know. It ignores a field that it does not know. It decodes an enum value that it does
+not know into a form the user can read, such as an "unknown" case that keeps the raw
+value, and it does not raise an error. It returns an error code that it does not know as
+the service sent it. A new value in the service then works with old SDK versions, and a
+later SDK release adds full support for it.
+
+Example: the service adds a new factor type to the list of a user's MFA factors. An SDK
+that knows only `totp` and `phone` still decodes the list. The new factor appears with
+its raw type, and the calls that do not use it keep working.
+
 ## Convenience over configuration
 
 A client works with good defaults and the fewest inputs: the project URL and a key.
