@@ -26,6 +26,9 @@ Sign-out ends refresh tokens, not access tokens. An access token already issued
 for an ended session stays valid until its `exp` claim, and the SDK cannot make
 it unusable elsewhere.
 
+A sign-out event listener that throws should not stop the request to the server:
+the SDK sends it and then handles listener's error as the SDK sees fit.
+
 ### How the scopes differ
 
 The scopes differ in which server sessions they end, and in when, if ever, they
@@ -81,9 +84,6 @@ so the SDK treats it as already signed out.
 When the revocation fails, the device stays signed out, but the refresh token
 stays valid on the server until it expires or is revoked another way. The error
 lets the app tell that the revocation did not happen.
-
-A sign-out event listener that throws does not stop the request: the SDK sends
-it, then raises the listener's error in place of the result.
 
 ```mermaid
 ---
