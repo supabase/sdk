@@ -10,9 +10,11 @@ Spec: [PostgREST Documentation: Missing](https://docs.postgrest.org/en/latest/re
 
 ## Behavior
 
-When rows in a bulk insert or upsert omit different fields, the caller can choose whether each omitted value becomes SQL `NULL` or uses the column's database `DEFAULT`.
+When rows in a bulk insert or upsert omit different fields, each omitted value becomes either SQL `NULL` or the column's database `DEFAULT`.
 
 Using database defaults sends `missing=default`. The alternative omits that preference or sends `missing=null`. The choice only affects omitted fields. An explicitly supplied null remains null.
+
+Who makes the choice depends on the row value, as [Insert Rows](insert.md) defines under missing columns. For an insert type that defines an absent field as the column's `DEFAULT` and offers an explicit way to write null, the SDK always sends `missing=default` and offers no `defaultToNull` option, so a caller writes `NULL` by supplying an explicit null. For any other row value, such as an untyped map, the caller chooses through `defaultToNull`.
 
 The missing preference is independent of other `Prefer` entries, including `return`, `resolution`, and `count`. An SDK must preserve those entries when changing the missing-field behavior.
 
