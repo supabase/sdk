@@ -48,23 +48,12 @@ Standards use **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** as
 defined in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). A rule with no keyword
 is information, not a requirement.
 
-## Status
-
-Each standard and playbook has a `status` and a `version` in its frontmatter.
-
-| Status | Meaning |
-| --- | --- |
-| `draft` | Under discussion. Follow it, and comment on it, but expect changes. |
-| `candidate` | Agreed by the team. Changes come from use, not from first opinions. |
-| `stable` | The rule. Version `1.0.0` or higher. |
-| `deprecated` | Do not follow. The page names its replacement. |
-
 ## Pages
 
 - [principles.md](principles.md): thirteen engineering principles that the standards
   apply, starting with thin clients, logic, validation, and defaults in the server, and
   decoding that accepts new values. Read once.
-- [standards/spec-first.md](standards/spec-first.md) (`draft`): a change to SDK
+- [standards/spec-first.md](standards/spec-first.md): a change to SDK
   behavior starts with a capability, and a spec when needed, in `supabase/sdk`.
 
 Planned, in order:
@@ -84,10 +73,4 @@ Planned, in order:
 
 ## Change a page
 
-Open a pull request in `supabase/sdk`. Use the commit type `docs`, with no scope. A
-change to a standard adds a `changelog` entry and bumps its `version`:
-
-- **Patch**: a clarification that changes no requirement.
-- **Minor**: a new rule.
-- **Major**: a change to the meaning of an existing rule, or its removal. Before
-  `stable`, the version stays `0.x` and such a change bumps the minor.
+Open a pull request in `supabase/sdk`. Use the commit type `docs`, with no scope.

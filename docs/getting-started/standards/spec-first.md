@@ -1,13 +1,3 @@
----
-status: draft
-version: 0.1.0
-applies_to: all
-changelog:
-  - version: 0.1.0
-    date: 2026-10-29
-    summary: Initial draft, from the rule in the SDK harness conventions
----
-
 # Spec First
 
 A change to what an SDK does for its users starts in `supabase/sdk`, not in the SDK.
@@ -140,8 +130,7 @@ Enforced by: the SDK harness skills follow this page.
 
 ## Open questions
 
-These are open while the status is `draft`. Each one becomes a rule or is removed
-before `candidate`.
+Each one becomes a rule or is removed after team review.
 
 - Does an experimental or preview API, marked as such in the SDK, need a capability
   first?
