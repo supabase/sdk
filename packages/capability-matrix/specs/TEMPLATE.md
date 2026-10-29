@@ -68,7 +68,9 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 ## Behavior
 
 <!-- Required. What the SDK layer adds, in SDK-neutral terms. Typical content:
-     - defaults the SDK fills in, such as the current session's access token
+     - defaults the SDK fills in, such as the current session's access token, but never
+       a default the service applies to an absent field: the SDK leaves that field out
+       (docs/getting-started/principles.md#the-service-owns-its-defaults)
      - state the SDK keeps or changes, such as the stored session or a key cache
      - how the SDK reshapes the response
      - what must happen before or after this call, across capabilities
