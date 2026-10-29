@@ -1,7 +1,7 @@
 # Principles
 
-These principles explain the standards. When a standard does not cover a case, use the
-principle to decide, and then propose a rule for the case.
+These principles guide every change to a Supabase SDK. When no spec or written rule
+covers a case, use them to decide, and then write the decision down.
 
 The Supabase code standards (`engineering-standards:code-standards` in
 `supabase/agent-os`) already cover ownership of code, PR size, review, test plans, and

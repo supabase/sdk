@@ -1,8 +1,8 @@
 # Supabase SDK Getting Started
 
-How the Supabase SDK team builds client SDKs: the principles we work by, the rules we
-follow, and the steps for common tasks. It applies to every client SDK repository
-(JavaScript, Swift, Flutter, Python, Go, C#, Kotlin).
+How the Supabase SDK team builds client SDKs, starting with the principles we work by.
+It applies to every client SDK repository (JavaScript, Swift, Flutter, Python, Go, C#,
+Kotlin).
 
 This tier is about how we work. What each feature does is in the
 [capability registry](../../packages/capability-matrix/capabilities/) and the
@@ -12,9 +12,9 @@ This tier is about how we work. What each feature does is in the
 
 Humans and agents read the same pages. Neither gets a private copy.
 
-- **Humans**: read the principles once, and read a standard when your change touches it.
+- **Humans**: read the principles once.
 - **Agents**: load this index first, then load only the pages your task needs. Cite a
-  rule by its ID in findings and PR descriptions.
+  principle by its ID in findings and PR descriptions.
 
 ## Layers
 
@@ -30,29 +30,23 @@ does not repeat it.
 When two layers conflict, the more specific layer wins inside its scope. The page that
 deviates states the deviation and the reason.
 
-## Cite a rule
+## Cite a principle
 
-Each `##` heading in a page is one rule or one principle. Its ID is the page path
-without `.md`, then `#`, then the heading slug:
+Each `##` heading in [principles.md](principles.md) is one principle. Its ID is the
+page path without `.md`, then `#`, then the heading slug:
 
 ```
 principles#validation-belongs-to-the-service
 ```
 
-A heading slug never changes. A rule that is no longer valid is marked deprecated and
-keeps its heading.
-
-## Requirement levels
-
-Standards use **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** as
-defined in [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). A rule with no keyword
-is information, not a requirement.
+A heading slug never changes. A principle that no longer applies is marked deprecated
+and keeps its heading.
 
 ## Pages
 
-- [principles.md](principles.md): the engineering principles that the standards
-  apply, starting with thin clients, logic, validation, and defaults in the server, and
-  decoding that accepts new values. Read once.
+- [principles.md](principles.md): the engineering principles, starting with thin
+  clients, logic, validation, and defaults in the server, and decoding that accepts new
+  values. Read once.
 
 ## Change a page
 
