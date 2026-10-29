@@ -10,7 +10,19 @@ Spec: [PostgREST Documentation: Singular or Plural](https://docs.postgrest.org/e
 
 ## Behavior
 
-The query resolves to one of three results: Nothing when no row matches, the Row when exactly one row matches, and an Error when more than one row matches. Nothing is the SDK's idiomatic empty value, such as `null`, `nil`, or a zero value. The Error is a failure indication that the user can handle, as idiomatic for this SDK, of the same type [`single_row`](single_row.md) raises.
+The query resolves to one of three results:
+
+| Query Match        | Result               |
+| ------------------ | -------------------- |
+| No rows.           | Success with Nothing |
+| Exactly one row.   | Success with Row     |
+| More than one row. | Failure with Error   |
+
+Where:
+
+- **Nothing**: the SDK's idiomatic empty value, such as `null`, `nil`, or a zero value
+- **Row**: the single row result
+- **Error**: a failure indication that the user can handle, as idiomatic for this SDK, of the same type [`single_row`](single_row.md) raises
 
 **Writes.** An insert, upsert, update, or delete on a relation sends `application/vnd.pgrst.object+json` as the `Accept` media type, keeping any parameters the header already carries, such as `nulls=stripped`. The server then checks the count inside the transaction: it rolls back a write that affects more than one row and answers HTTP 406 with `PGRST116`, which the SDK raises as the Error. Counting on the client instead would let the write commit to every matched row before the Error reached the caller. A successful answer with a JSON object as its body resolves to that object as the Row, and one with an empty body, as for a write that does not request `Prefer: return=representation`, resolves to Nothing. A write that affects no row is answered with HTTP 406 and `PGRST116` as well, and the SDK resolves it to Nothing as defined under Errors.
 
