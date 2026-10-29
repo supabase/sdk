@@ -158,5 +158,5 @@ in an issue, a spec, or these pages. Agents cannot read a hallway conversation, 
 team members were not there.
 
 Example: the rule that a behavior change needs a spec first lived only in one agent
-skill. It is now [`standards/spec-first`](standards/spec-first.md), so every human and
+skill. It is now [Spec before code](#spec-before-code) on this page, so every human and
 every agent follows the same text.

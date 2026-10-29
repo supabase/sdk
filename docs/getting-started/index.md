@@ -32,11 +32,11 @@ deviates states the deviation and the reason.
 
 ## Cite a rule
 
-Each `##` heading in a standard is one rule. Its ID is the page path without `.md`,
-then `#`, then the heading slug:
+Each `##` heading in a page is one rule or one principle. Its ID is the page path
+without `.md`, then `#`, then the heading slug:
 
 ```
-standards/spec-first#capability-before-code
+principles#validation-belongs-to-the-service
 ```
 
 A heading slug never changes. A rule that is no longer valid is marked deprecated and
@@ -53,11 +53,11 @@ is information, not a requirement.
 - [principles.md](principles.md): thirteen engineering principles that the standards
   apply, starting with thin clients, logic, validation, and defaults in the server, and
   decoding that accepts new values. Read once.
-- [standards/spec-first.md](standards/spec-first.md): a change to SDK
-  behavior starts with a capability, and a spec when needed, in `supabase/sdk`.
 
 Planned, in order:
 
+- `standards/spec-first.md`: a change to SDK behavior starts with a capability, and a
+  spec when needed, in `supabase/sdk`.
 - `standards/compatibility.md`: forward compatibility with services, runtime support
   table, end-of-life policy.
 - `standards/api-design.md`: public API, naming across SDKs, approval by the SDK's lead
