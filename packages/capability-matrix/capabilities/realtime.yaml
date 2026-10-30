@@ -26,6 +26,10 @@ features:
     name: Broadcast Message
     description: Send a broadcast message to other subscribers of the channel over the websocket connection.
     group: channel
+  - id: realtime.channel.broadcast_persist
+    name: Persist Broadcast Message
+    description: Store a broadcast message sent on a private channel so it can be replayed, for the maximum retention or for a time to live in seconds, via the per-message persist option of Broadcast Message and Broadcast via HTTP.
+    group: channel
   - id: realtime.channel.subscribe
     name: Subscribe
     description: Register the channel with the server and start receiving events.
