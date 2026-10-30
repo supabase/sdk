@@ -40,6 +40,8 @@ An SDK spells each name per its language convention and keeps the name above as 
 | Sign up that returns no session (confirmation required) | none |
 | Sign in with password, ID token, Web3, passkey, or anonymously | `SIGNED_IN` |
 | Exchange a PKCE code for a flow the SDK started with a password reset request | `PASSWORD_RECOVERY` |
+| Exchange a PKCE code for a flow the SDK started with an email change request, for the user the client holds | `USER_UPDATED` |
+| Exchange a PKCE code for a flow the SDK started with an email change request, while the client holds another user or none | `SIGNED_IN` |
 | Detect a session in a redirect URL whose `type` is `recovery` | `PASSWORD_RECOVERY` |
 | Exchange a PKCE code for any other flow, or detect a session in any other redirect URL | `SIGNED_IN` |
 | Verify an OTP of type `recovery` | `PASSWORD_RECOVERY` |
