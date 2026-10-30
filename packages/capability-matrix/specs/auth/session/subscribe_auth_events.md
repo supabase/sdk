@@ -18,13 +18,13 @@ The SDK defines these events, and no others:
 - `PASSWORD_RECOVERY`
 - `MFA_CHALLENGE_VERIFIED`
 
-An SDK spells each name per its language convention and keeps the name above as the event's raw string value. The SDK does not define an event that no operation emits. Because events can be added in a minor release, SDKs in languages where an exhaustive match over a closed type breaks when a value is added expose the events as an open set, so a match needs a default branch.
+An SDK spells each name per its language convention and keeps the name above as the event's raw string value. The SDK does not define an event that no row of [Event per operation](#event-per-operation) emits. Because events can be added in a minor release, SDKs in languages where an exhaustive match over a closed type breaks when a value is added expose the events as an open set, so a match needs a default branch.
 
 ### Subscription
 
 - A subscription receives every change the client applies after the subscribe call returns, whether or not the app has started reading from it. The SDK buffers changes for a subscription that has not read them yet and drops none.
 - The first event of every subscription is `INITIAL_SESSION`, carrying the session the client holds, or no session. The SDK delivers it once client initialization has finished: the stored session has been read, and when it was expired, one refresh attempt has finished. A subscription created before initialization finishes receives `INITIAL_SESSION` when it finishes, before any other event.
-- When that refresh attempt fails without a rejection of the refresh token (for example no network, or a 5xx answer), `INITIAL_SESSION` carries the expired stored session. When the server rejects the refresh token with one of the codes under [Errors](#errors), `INITIAL_SESSION` carries no session.
+- When that refresh attempt fails without a rejection of the refresh token (for example no network, or a 5xx answer), `INITIAL_SESSION` carries the expired stored session. When the server rejects the refresh token with one of the codes under [Errors](#errors), the SDK removes the stored session and `INITIAL_SESSION` carries no session. The SDK emits no `SIGNED_OUT` for that rejection: the subscription receives `INITIAL_SESSION` alone. The refresh rows of [Event per operation](#event-per-operation) apply only to refreshes that start after initialization finishes.
 - When storage cannot be read yet (for example a device keychain before the first unlock), initialization has not finished, and the SDK delivers nothing until storage is read.
 - After `INITIAL_SESSION`, each change the client applies produces exactly one event, in the order the client applied the changes. The SDK persists the new state before it delivers the event, so an app that reads the client's current session while handling an event reads the state that event describes.
 - The session carried by an event is the one the client holds after the change. `SIGNED_OUT` carries no session.
@@ -35,6 +35,7 @@ An SDK spells each name per its language convention and keeps the name above as 
 
 | Operation | Event |
 | --- | --- |
+| Subscribe | `INITIAL_SESSION`, to the new subscription only, once initialization finishes |
 | Sign up that returns a session | `SIGNED_IN` |
 | Sign up that returns no session (confirmation required) | none |
 | Sign in with password, ID token, Web3, passkey, or anonymously | `SIGNED_IN` |
