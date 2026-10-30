@@ -27,6 +27,34 @@ The SDK finds the flow from the URL's contents, never from a configured flow typ
 5. `sb` is present: the server marks its redirects with this empty parameter, so a URL with the marker and no result is an error.
 6. Otherwise the URL is not an auth redirect. The call says so, and detection leaves the URL alone.
 
+The rows, with the event each result emits:
+
+```mermaid
+flowchart TD
+  url(["Redirect URL"]) --> merge["Merge query and fragment,<br/>fragment wins"]
+  merge --> r1{"error, error_code or<br/>error_description?"}
+  r1 -- yes --> fail["Raise the SDK's auth error"]
+  r1 -- no --> r2{"message?"}
+  r2 -- yes --> pending["Email-change-pending result,<br/>no session change, no event"]
+  r2 -- no --> r3{"code?"}
+  r3 -- yes --> exchange["Exchange the code,<br/>see Concurrent PKCE Flows"]
+  exchange --> purpose{"Purpose of the<br/>flow that completed"}
+  purpose -- recovery --> recovery["PASSWORD_RECOVERY"]
+  purpose -- "email_change, link_identity" --> updated["USER_UPDATED"]
+  purpose -- sign_in --> signedIn["SIGNED_IN"]
+  r3 -- no --> r4{"access_token?"}
+  r4 -- yes --> check{"Reject option on, or<br/>refresh_token, token_type<br/>or expires_in missing?"}
+  check -- yes --> fail
+  check -- no --> store["GET /user, store the session"]
+  store --> type{"type parameter"}
+  type -- recovery --> recovery
+  type -- email_change --> updated
+  type -- "other or none" --> signedIn
+  r4 -- no --> r5{"sb?"}
+  r5 -- yes --> fail
+  r5 -- no --> none["Not an auth redirect"]
+```
+
 The default test for an auth redirect is that row 1 to 5 matches. A bare `code` matches it, which is why the predicate exists.
 
 The SDK accepts implicit tokens in row 4 even when it starts every flow with PKCE, because the server sends tokens in the fragment for a link that started without a code challenge, such as an invite or a link generated through the admin API ([handler](https://github.com/supabase/auth/blob/a7e97d665b9ea03853edb66d014bcde323f7894b/internal/api/verify.go#L135-L138)). The SDK offers an option that rejects them, as defined under Errors.
@@ -39,6 +67,27 @@ After it stores the session, the SDK emits one auth event:
 A platform can deliver the same URL more than once, for example as the launch URL and again on the deep link stream. The SDK keeps the outcome of at least the 8 most recent redirects that carried a code or an access token, keyed by that value. A second delivery with the same key, while the first is in flight or after it ended, returns the first delivery's result or error. It sends no request and emits no event. To retry a code after a failure, the app calls the code exchange itself.
 
 A sign-out clears those outcomes, so a URL delivered after a sign-out is handled again. A redirect that started before a sign-out and finishes after it does not store its session, and fails with the SDK's cancellation error: the user signed out after the link was opened. A sign-out that keeps the local session, such as one scoped to other sessions, does neither.
+
+A duplicate delivery while the first is in flight, and a sign-out that overtakes a redirect:
+
+```mermaid
+sequenceDiagram
+  participant P as Platform or app
+  participant S as SDK
+  participant A as Auth server
+  P->>S: URL with code X (launch URL)
+  S->>A: POST /token, code X
+  P->>S: same URL again (deep link stream)
+  Note over S: key X is in flight, so wait for its outcome
+  A-->>S: session
+  S-->>P: result for both deliveries, one SIGNED_IN event
+  P->>S: URL with code Y
+  S->>A: POST /token, code Y
+  P->>S: sign-out
+  Note over S: clear the outcomes
+  A-->>S: session
+  S-->>P: cancellation error, session not stored
+```
 
 SDKs that read the page's own URL remove the parameters they read from it after a successful result, so a reload does not deliver the redirect again.
 
