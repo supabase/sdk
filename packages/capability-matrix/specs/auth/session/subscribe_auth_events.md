@@ -39,8 +39,9 @@ An SDK spells each name per its language convention and keeps the name above as 
 | Sign up that returns a session | `SIGNED_IN` |
 | Sign up that returns no session (confirmation required) | none |
 | Sign in with password, ID token, Web3, passkey, or anonymously | `SIGNED_IN` |
-| Exchange a PKCE code, or detect a session in a redirect URL, for a redirect whose `type` is `recovery` | `PASSWORD_RECOVERY` |
-| Exchange a PKCE code, or detect a session in a redirect URL, for any other redirect | `SIGNED_IN` |
+| Exchange a PKCE code for a flow the SDK started with a password reset request | `PASSWORD_RECOVERY` |
+| Detect a session in a redirect URL whose `type` is `recovery` | `PASSWORD_RECOVERY` |
+| Exchange a PKCE code for any other flow, or detect a session in any other redirect URL | `SIGNED_IN` |
 | Verify an OTP of type `recovery` | `PASSWORD_RECOVERY` |
 | Verify an OTP of type `email_change` or `phone_change` that returns a session for the user the client holds | `USER_UPDATED` |
 | Verify an OTP of type `email_change` or `phone_change` that returns a session while the client holds another user or none | `SIGNED_IN` |
@@ -60,6 +61,8 @@ An SDK spells each name per its language convention and keeps the name above as 
 | Sign out with scope `others` | none |
 
 Detecting a session in a recovery redirect produces `PASSWORD_RECOVERY` alone, not `SIGNED_IN` followed by `PASSWORD_RECOVERY`.
+
+A PKCE redirect carries only a `code`, not a `type`. So when the SDK starts a PKCE flow, it stores the flow's purpose with its code verifier, and the exchange reads that purpose to choose the event.
 
 The `200` answer to `DELETE /user/identities/{identity_id}` carries no user, so the SDK removes the identity whose `identity_id` matches from the held session's user. When no remaining identity uses that identity's provider, the SDK also removes the provider from the user's `app_metadata.providers`. Then it persists the session and emits `USER_UPDATED`. It does this only when the held session's user is the identity's `user_id`; otherwise it emits nothing.
 
