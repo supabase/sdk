@@ -14,6 +14,13 @@ The reason takes one of the following values:
 - **session-expired** — the refresh token was rejected (invalid or expired) and the stored session was removed without the user asking to sign out.
 - **session-missing** — a previously stored session could not be recovered because it was absent or missing required data.
 
+An SDK may split session-expired in two, as long as both stay distinguishable from user-initiated and session-missing:
+
+- **session-expired** — the server answered `refresh_token_not_found`, `session_expired`, or an OAuth `invalid_grant` on refresh.
+- **session-revoked** — the server answered `refresh_token_already_used`, `user_banned`, or `session_not_found` (on refresh, or on any call the SDK authorized with the held session's access token).
+
+An SDK that does not split them reports session-expired for all six answers.
+
 The reason is only meaningful on the sign-out event. For every other auth event (sign-in, token refresh, user update, and so on) the reason is absent.
 
 SDKs that surface auth events but cannot determine the cause should treat the reason as absent rather than guessing.
