@@ -30,7 +30,42 @@ Exchanging a code for a session selects the verifier as follows:
 1. With a flow ID, the SDK uses that flow's record and no other. The flow ID is the one the app passes to the call or, when it passes none, the `sb_flow_id` parameter of the redirect URL the code came from.
 2. Without a flow ID, the SDK tries the pending flows newest first. When the server answers HTTP 400 with error code `bad_code_verifier`, the SDK tries the next older flow. It stops at the first success or at the first other error. The server keeps its flow state when the verifier does not match and deletes it only after a successful exchange ([handler](https://github.com/supabase/auth/blob/a7e97d665b9ea03853edb66d014bcde323f7894b/internal/api/token.go#L249-L278)), so a wrong guess does not spend the code.
 
-A successful exchange removes the record it used. A record that the search in step 2 tried and the server rejected stays pending: the rejection shows that this code is not the flow's, not that the flow ended. When the app passed a flow ID, an HTTP response that rejects the exchange removes that flow's record, and a failure before any response keeps it, so the app can retry.
+A successful exchange removes the record it used. No failure in the search of step 2 removes a record: a `bad_code_verifier` answer shows that this code is not the flow's, not that the flow ended. When the app passed a flow ID, an HTTP response that rejects the exchange removes that flow's record, and a failure before any response keeps it, so the app can retry.
+
+The verifier selection, as a flowchart:
+
+```mermaid
+flowchart TD
+  start(["Exchange a code"]) --> hasID{"Flow ID?<br/>argument, else sb_flow_id"}
+  hasID -- yes --> found{"Record exists<br/>and not expired?"}
+  found -- no --> noFlow["Fail before any request:<br/>no pending flow"]
+  found -- yes --> sendOne["POST /token with that verifier"]
+  sendOne -- success --> doneOne["Store session, remove the record"]
+  sendOne -- HTTP error --> rejectOne["Fail, remove the record"]
+  sendOne -- no response --> keepOne["Fail, keep the record"]
+  hasID -- no --> anyPending{"Any pending flow?"}
+  anyPending -- no --> noFlow
+  anyPending -- yes --> pick["Take the newest untried flow"]
+  pick --> sendNext["POST /token with its verifier"]
+  sendNext -- success --> doneNext["Store session, remove that record"]
+  sendNext -- "400 bad_code_verifier" --> left{"Untried flow left?"}
+  left -- yes --> pick
+  left -- no --> lastError["Fail with the last bad_code_verifier error,<br/>keep every record"]
+  sendNext -- "other error or no response" --> otherError["Fail with that error,<br/>keep every record"]
+```
+
+What happens to a pending flow record:
+
+| Event | Record |
+|---|---|
+| The flow starts | stored, before the request is sent or the URL returned |
+| The request that started the flow gets an HTTP error | removed |
+| A sixth flow starts and this record is the oldest | removed |
+| The SDK reads it one hour or more after the flow started | removed |
+| An exchange with it succeeds | removed |
+| An exchange by its flow ID gets an HTTP error | removed |
+| The search of step 2 gets `bad_code_verifier` with it | kept |
+| Any request with it gets no response | kept |
 
 ## Errors
 
