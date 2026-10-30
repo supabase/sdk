@@ -42,7 +42,8 @@ An SDK spells each name per its language convention and keeps the name above as 
 | Exchange a PKCE code, or detect a session in a redirect URL, for a redirect whose `type` is `recovery` | `PASSWORD_RECOVERY` |
 | Exchange a PKCE code, or detect a session in a redirect URL, for any other redirect | `SIGNED_IN` |
 | Verify an OTP of type `recovery` | `PASSWORD_RECOVERY` |
-| Verify an OTP of type `email_change` or `phone_change` that returns a session | `USER_UPDATED` |
+| Verify an OTP of type `email_change` or `phone_change` that returns a session for the user the client holds | `USER_UPDATED` |
+| Verify an OTP of type `email_change` or `phone_change` that returns a session while the client holds another user or none | `SIGNED_IN` |
 | Verify an OTP of any other type that returns a session | `SIGNED_IN` |
 | Verify an OTP that returns no session | none |
 | Set a session from an access token and a refresh token | `SIGNED_IN`, once, even when setting it refreshed the session |
@@ -60,7 +61,7 @@ An SDK spells each name per its language convention and keeps the name above as 
 
 Detecting a session in a recovery redirect produces `PASSWORD_RECOVERY` alone, not `SIGNED_IN` followed by `PASSWORD_RECOVERY`.
 
-The `200` answer to `DELETE /user/identities/{identity_id}` carries no user, so the SDK removes the identity whose `identity_id` matches from the held session's user, persists the session, and emits `USER_UPDATED`. It does this only when the held session's user is the identity's `user_id`; otherwise it emits nothing.
+The `200` answer to `DELETE /user/identities/{identity_id}` carries no user, so the SDK removes the identity whose `identity_id` matches from the held session's user. When no remaining identity uses that identity's provider, the SDK also removes the provider from the user's `app_metadata.providers`. Then it persists the session and emits `USER_UPDATED`. It does this only when the held session's user is the identity's `user_id`; otherwise it emits nothing.
 
 ## Errors
 
