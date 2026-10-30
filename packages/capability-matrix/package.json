@@ -27,16 +27,16 @@
   "dependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "ignore": "^7.0.12",
+    "ignore": "^7.0.13",
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@types/bun": "^1.4.3",
+    "@types/bun": "^1.4.4",
     "@types/node": "^26",
-    "knip": "^6.41.0",
+    "knip": "^6.42.1",
     "oxfmt": "0.66.0",
-    "oxlint": "1.88.0",
-    "oxlint-tsgolint": "7.0.2004",
+    "oxlint": "1.89.0",
+    "oxlint-tsgolint": "7.0.2005",
     "typescript": "^7.0.2"
   }
 }
