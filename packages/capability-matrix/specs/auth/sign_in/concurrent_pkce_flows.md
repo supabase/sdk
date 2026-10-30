@@ -13,15 +13,15 @@ Every call that starts a PKCE flow generates a flow ID and a code verifier, and 
 The purpose is one of four values, set by the call that starts the flow:
 
 - `recovery`: password reset
-- `email_change`: an update of the user's email
+- `email_change`: an update of the user's email, and a resend of type `email_change`
 - `link_identity`: identity linking
-- `sign_in`: every other call above
+- `sign_in`: every other call above, including a resend of any other type
 
 The purpose decides the auth event the flow emits when it completes, as defined in [Session URL Detection](../../client/authentication_integration/session_url_detection.md).
 
 The SDK keeps at most 5 pending flows. Starting a sixth removes the oldest record. A record expires one hour after its flow started: the SDK never uses an expired record, and removes it when it reads it. The bound and the expiry keep stale verifiers out of the newest-first search below.
 
-When the request that starts a flow fails with an HTTP response, the SDK removes the record, because the server created no flow for it. When the request fails before any response arrives, such as on a timeout or a lost connection, the SDK keeps the record: the server may have created the flow, and its email may still arrive.
+When the request that starts a flow returns a session at once, such as a sign-up on a project that confirms emails automatically, the SDK removes the record: no redirect will complete the flow. When the request that starts a flow fails with an HTTP response, the SDK removes the record, because the server created no flow for it. When the request fails before any response arrives, such as on a timeout or a lost connection, the SDK keeps the record: the server may have created the flow, and its email may still arrive.
 
 OAuth sign-in and identity linking return the flow ID together with the URL, because the app holds that URL until the flow completes. The other calls complete through an email link or a server redirect and have no response to carry the ID. An SDK may also add the flow ID to the redirect URL it sends as the `sb_flow_id` query parameter, so that the callback names its own flow. The flow ID is opaque to the server and to the app: only the SDK that wrote it parses it.
 
@@ -60,6 +60,7 @@ What happens to a pending flow record:
 |---|---|
 | The flow starts | stored, before the request is sent or the URL returned |
 | The request that started the flow gets an HTTP error | removed |
+| The request that started the flow returns a session | removed |
 | A sixth flow starts and this record is the oldest | removed |
 | The SDK reads it one hour or more after the flow started | removed |
 | An exchange with it succeeds | removed |
