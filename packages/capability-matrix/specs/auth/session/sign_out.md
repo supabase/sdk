@@ -46,8 +46,9 @@ remove the local session. Already signed out follows the success column.
   is signed out whatever the server answers.
 - `global` asks the server first and signs out the device only once the server
   has ended the sessions.
-- `others` never signs out the device, and needs the current session to
-  authenticate, so with no stored session it fails instead of succeeding.
+- `others` never signs out the device through its logout request, and needs
+  the current session to authenticate, so with no stored session it fails
+  instead of succeeding.
 
 All three return the error on failure. The last column covers a failed logout
 request only. A refresh the server rejects before the request also removes the
@@ -74,8 +75,8 @@ sign-out, never twice. The access token the SDK held stays valid until its
 `exp` claim; the SDK can only stop holding it.
 
 A refresh in flight when sign-out removes the session must not write a session
-back afterwards. SDKs that serialize session operations behind a lock can meet 
-this by running sign-out under it.
+back afterwards. SDKs that serialize session operations behind a lock meet this
+by running sign-out under it.
 
 Removing the local session before the request also keeps the reason on the
 sign-out event correct. If the SDK refreshed an expired access token through
@@ -130,7 +131,8 @@ the new session, as Refresh Session (`auth.session.refresh_session`) does. The
 SDK must store it, because it keeps the local session if the logout then fails,
 and the refresh has replaced the stored refresh token. Sign-out handles a
 rejected refresh itself, though. When the server rejects the refresh with a
-`4xx`, the session cannot be refreshed again, so the SDK removes the local
+`4xx`, including `400 refresh_token_already_used`, the stored refresh token
+cannot be used again, so the SDK removes the local
 session, emits the sign-out event with the user-initiated reason, and returns
 the refresh error. The user asked to sign this device out, so the reason is
 user-initiated, not session-expired. The error tells the app that the other
@@ -279,15 +281,18 @@ section.
 
 The reason for each row:
 
-- `400 refresh_token_not_found`, `400 session_not_found` and 
-  `400 session_expired`: the session can never be refreshed again. It was 
-  revoked elsewhere, hit its inactivity timeout or time box, was replaced by a 
-  newer login under single-session-per-user, or needs an MFA step-up it can no 
-  longer make. Nothing is left to revoke for `local`, but the other sessions 
-  that `global` and `others` end may still exist, and no logout request was 
+- `400 refresh_token_not_found`, `400 session_not_found` and
+  `400 session_expired`: the session can never be refreshed again. It was
+  revoked elsewhere, hit its inactivity timeout or time box, was replaced by a
+  newer login under single-session-per-user, or needs an MFA step-up it can no
+  longer make. Nothing is left to revoke for `local`, but the other sessions
+  that `global` and `others` end may still exist, and no logout request was
   sent.
 - `400 refresh_token_already_used`: with refresh token rotation disabled, the
-  server leaves the session alive and fails only this request.
+  server leaves the session alive and fails only this request. Under `local`
+  the session is therefore still left to revoke. Under `global` and `others`
+  the stored refresh token is spent all the same, so the local session is
+  removed as for any other `4xx`.
 - `5xx` or a network failure: the server never judged the refresh token, so the
   session may still be alive.
 
