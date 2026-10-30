@@ -3,9 +3,9 @@
 These principles guide every change to a Supabase SDK. When no spec or written rule
 covers a case, use them to decide, and then write the decision down.
 
-The Supabase code standards (`engineering-standards:code-standards` in
-`supabase/agent-os`) already cover ownership of code, PR size, review, test plans, and
-AI use. This page does not repeat them. It adds what is special to SDKs.
+The [Supabase code standards](https://github.com/supabase/agent-os/blob/main/plugins/engineering/engineering-standards/code-standards/SKILL.md)
+(`engineering-standards:code-standards` in `supabase/agent-os`) already cover ownership
+of code, PR size, review, test plans, and AI use. This page does not repeat them. It adds what is special to SDKs.
 
 ## Clients are thin layers
 

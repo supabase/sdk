@@ -20,11 +20,13 @@ Humans and agents read the same pages. Neither gets a private copy.
 Three layers of rules apply to an SDK change. Each layer adds to the one above it and
 does not repeat it.
 
-| Layer | Where | Scope |
-| --- | --- | --- |
-| Supabase code standards | `engineering-standards:code-standards` skill in `supabase/agent-os` | Every Supabase repository: code quality, PR size, review, AI policy |
-| SDK Getting Started | This folder | Every client SDK repository |
-| Repository instructions | `AGENTS.md` and `CONTRIBUTING.md` in each SDK repository | One repository: commands, layout, local conventions |
+| Layer                   | Where                                                           | Scope                                                               |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Supabase code standards | [`code-standards` skill][code-standards] in `supabase/agent-os` | Every Supabase repository: code quality, PR size, review, AI policy |
+| SDK Getting Started     | This folder                                                     | Every client SDK repository                                         |
+| Repository instructions | `AGENTS.md` and `CONTRIBUTING.md` in each SDK repository        | One repository: commands, layout, local conventions                 |
+
+[code-standards]: https://github.com/supabase/agent-os/blob/main/plugins/engineering/engineering-standards/code-standards/SKILL.md
 
 When two layers conflict, the more specific layer wins inside its scope. The page that
 deviates states the deviation and the reason.
