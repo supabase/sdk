@@ -14,6 +14,9 @@ The reason takes one of the following values:
 - **session-expired** — the refresh token was rejected (invalid or expired) and the stored session was removed without the user asking to sign out.
 - **session-missing** — a previously stored session could not be recovered because it was absent or missing required data.
 
+A sign-out can itself run into a rejected refresh. The reason then follows what the sign-out asked for, as [Sign Out](sign_out.md) defines per scope. 
+It is **user-initiated** when the sign-out ends the current session (the `local` and `global` scopes), and **session-expired** when it does not (the `others` scope), since the user asked to end the other sessions, not this one.
+
 The reason is only meaningful on the sign-out event. For every other auth event (sign-in, token refresh, user update, and so on) the reason is absent.
 
 SDKs that surface auth events but cannot determine the cause should treat the reason as absent rather than guessing.
