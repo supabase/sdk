@@ -21,7 +21,7 @@ When the channel has `broadcast.ack` set, the server answers a message it did no
 
 - `persistence_unauthorized`: the sender has no `persistence` policy. The message was delivered but not stored.
 - `persistence_failed`: the insert failed. The message was delivered but not stored.
-- `invalid_persist_ttl`: the server refused the `ttl`. The message was neither delivered nor stored.
+- `persistence_invalid_ttl`: the server refused the `ttl`. The message was neither delivered nor stored.
 
 Without `broadcast.ack`, the server sends no reply for these, so the SDK cannot tell the app whether the message was stored.
 
