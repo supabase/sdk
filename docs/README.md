@@ -1,18 +1,19 @@
-# Supabase SDK Getting Started
+# Supabase SDK Engineering
 
 How the Supabase SDK team builds client SDKs, starting with the principles we work by.
 It applies to every official client SDK repository.
 
 This tier is about how we work. What each feature does is in the
-[capability registry](../../packages/capability-matrix/capabilities/) and the
-[feature specs](../../packages/capability-matrix/specs/).
+[capability registry](../packages/capability-matrix/capabilities/) and the
+[feature specs](../packages/capability-matrix/specs/).
 
 ## Who reads this
 
-Humans and agents read the same pages. Neither gets a private copy.
+This document and other documents in this folder are intended for reading by humans
+and AI agents alike.
 
 - **Humans**: read the principles once.
-- **Agents**: load this index first, then load only the pages your task needs. Cite a
+- **Agents**: load this README first, then load only the pages your task needs. Cite a
   principle by its ID in findings and PR descriptions.
 
 ## Layers
@@ -23,7 +24,7 @@ does not repeat it.
 | Layer                   | Where                                                           | Scope                                                               |
 | ----------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Supabase code standards | [`code-standards` skill][code-standards] in `supabase/agent-os` | Every Supabase repository: code quality, PR size, review, AI policy |
-| SDK Getting Started     | This folder                                                     | Every client SDK repository                                         |
+| SDK engineering docs    | `docs/` in `supabase/sdk`                                       | Every client SDK repository                                         |
 | Repository instructions | `AGENTS.md` and `CONTRIBUTING.md` in each SDK repository        | One repository: commands, layout, local conventions                 |
 
 [code-standards]: https://github.com/supabase/agent-os/blob/main/plugins/engineering/engineering-standards/code-standards/SKILL.md

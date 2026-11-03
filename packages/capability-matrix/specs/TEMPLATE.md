@@ -70,7 +70,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 <!-- Required. What the SDK layer adds, in SDK-neutral terms. Typical content:
      - defaults the SDK fills in, such as the current session's access token, but never
        a default the service applies to an absent field: the SDK leaves that field out
-       (docs/getting-started/principles.md#the-service-owns-its-defaults)
+       (docs/principles.md#the-service-owns-its-defaults)
      - state the SDK keeps or changes, such as the stored session or a key cache
      - how the SDK reshapes the response
      - what must happen before or after this call, across capabilities
@@ -102,7 +102,7 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      check saves them from. Remove this section if there are none.
 
      A check before the wire is the exception, not the default: validation belongs to the
-     service (docs/getting-started/principles.md#validation-belongs-to-the-service). Every
+     service (docs/principles.md#validation-belongs-to-the-service). Every
      copy of a service rule in an SDK goes stale when the service changes the rule, so a
      limit the service enforces, such as a maximum payload size, is never checked here. Add
      a check only when the service's own answer would mislead the caller, for example a
