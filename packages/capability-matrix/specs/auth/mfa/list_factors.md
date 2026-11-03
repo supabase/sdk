@@ -16,6 +16,8 @@ The SDK sends a fresh `GET /user` with the current session's access token. It do
 
 The SDK returns the factors in two groups, `verified` and `unverified`, by each factor's `status`. It may also group verified factors by type. Order within a group is the server's order. An empty `factors` array or a missing one yields two empty groups.
 
+The server creates the `recovery_code` factor already `verified`, so it lands in the verified group. The type is the only field that tells it apart. It cannot be challenged; an application that picks a factor to verify filters by type.
+
 Factor types include `totp`, `phone`, `webauthn`, and `recovery_code`. SDKs must tolerate a type they do not know: the factor stays in its status group and is never dropped or raised as a decoding error.
 
 ## Prerequisites
