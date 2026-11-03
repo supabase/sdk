@@ -11,9 +11,9 @@ of code, PR size, review, test plans, and AI use. This page does not repeat them
 
 An SDK is a thin layer over the Supabase services. It turns a service's API into calls
 that feel native in the language, and it keeps the state that only the client can
-hold: the session, the Realtime connection, the user's configuration. It does not add
-its own product on top. Each abstraction that one SDK adds is code that every other SDK
-must copy, test, and keep the same.
+hold (for example the session, the Realtime connection or the user's configuration).
+It does not add its own product on top. Each abstraction that one SDK adds is code that
+every other SDK must copy, test, and keep the same.
 
 Example: when users want a helper that combines two service calls into one workflow,
 the helper goes in an example or a guide, not into the client.
@@ -109,8 +109,9 @@ capability, and a spec file when the SDK adds behavior beyond the service's API.
 cheap to write, for humans and for agents. Code that each SDK builds differently is
 expensive to fix.
 
-Example: a fix that changes what a method returns is a behavior change. It starts with
-a spec change, even when the code change is one line.
+Example: a fix that changes what a method returns, when a spec describes that return,
+is a behavior change. It starts with a spec change, even when the code change is one
+line.
 
 ## One concept, many idioms
 
