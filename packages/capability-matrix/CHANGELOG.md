@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.20.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.19.0...capability-matrix/v1.20.0) (2026-11-03)
+
+
+### Features
+
+* **auth:** Add spec for `AuthClient.signOut()` ([#302](https://github.com/supabase/sdk/issues/302)) ([cb01912](https://github.com/supabase/sdk/commit/cb01912a86d3aeb365830d20fcde3fe94b301c81))
+* **realtime:** add broadcast_persist capability and spec ([#310](https://github.com/supabase/sdk/issues/310)) ([9a4432e](https://github.com/supabase/sdk/commit/9a4432e699ed209135fb3ff0181e1fc07f56b0a9))
+
 ## [1.19.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.18.0...capability-matrix/v1.19.0) (2026-10-21)
 
 
