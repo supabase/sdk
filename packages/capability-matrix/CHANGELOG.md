@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.20.0...capability-matrix/v2.0.0) (2026-11-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* **functions:** rename set_auth_token to auth_token ([#90](https://github.com/supabase/sdk/issues/90))
+
+### Features
+
+* **functions:** rename set_auth_token to auth_token ([#90](https://github.com/supabase/sdk/issues/90)) ([b73f439](https://github.com/supabase/sdk/commit/b73f43995161e83bd2d1043d268f9fdfb992e5a7))
+
 ## [1.20.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.19.0...capability-matrix/v1.20.0) (2026-11-03)
 
 
