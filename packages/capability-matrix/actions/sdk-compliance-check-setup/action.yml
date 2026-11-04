@@ -5,6 +5,17 @@ inputs:
   compliance-file:
     description: Path to sdk-compliance.yaml in the calling repo
     default: sdk-compliance.yaml
+  api-paths:
+    description: >-
+      Newline-separated git pathspecs that can change the public API. When set,
+      a pull request that touches none of them (nor the compliance file) skips
+      the check. Empty disables the gate.
+    default: ""
+  warm-cache:
+    description: >-
+      Set to "true" when the caller wants push events in additions mode to run
+      the expensive extraction once, so it can save caches for later pull requests.
+    default: "false"
 
 outputs:
   coverage-mode:
@@ -12,7 +23,10 @@ outputs:
     value: ${{ steps.coverage.outputs.mode }}
   should-run:
     description: Whether the public API check applies to this event
-    value: ${{ steps.coverage.outputs.should-run }}
+    value: ${{ steps.coverage.outputs.should-run == 'true' && steps.paths.outputs.changed != 'false' && 'true' || 'false' }}
+  warm:
+    description: Whether this run only warms caches for later pull requests (push event in additions mode with warm-cache enabled)
+    value: ${{ steps.coverage.outputs.warm }}
 
 runs:
   using: composite
@@ -37,9 +51,15 @@ runs:
       shell: bash
       env:
         COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+        WARM_CACHE: ${{ inputs.warm-cache }}
       run: |
         MODE=$(bun run --silent coverage-mode -- "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE")
         echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+        if [ "$WARM_CACHE" = "true" ] && [ "$MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" = "push" ]; then
+          echo "warm=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "warm=false" >> "$GITHUB_OUTPUT"
+        fi
         if [ "$MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
           echo "should-run=false" >> "$GITHUB_OUTPUT"
           echo "::notice::Skipping additions-mode API check outside a pull request"
@@ -48,8 +68,37 @@ runs:
         fi
       working-directory: _sdk-spec/packages/capability-matrix
 
+    - name: Skip when the pull request cannot change the public API
+      id: paths
+      if: steps.coverage.outputs.should-run == 'true' && inputs.api-paths != '' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        API_PATHS: ${{ inputs.api-paths }}
+        COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        CHANGED=true
+        # The default pull request checkout is the merge commit, so diffing it
+        # against the base commit lists exactly the files the pull request changes.
+        # Any failure leaves CHANGED=true, so the check runs rather than being skipped.
+        if git fetch --no-tags --depth=1 origin "$BASE_SHA"; then
+          PATHSPECS=()
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then PATHSPECS+=("$line"); fi
+          done <<< "$API_PATHS"
+          PATHSPECS+=("$COMPLIANCE_FILE")
+          if DIFF=$(git diff --name-only "$BASE_SHA" HEAD -- "${PATHSPECS[@]}"); then
+            if [ -z "$DIFF" ]; then CHANGED=false; fi
+          fi
+        fi
+        echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+        if [ "$CHANGED" = "false" ]; then
+          echo "::notice::No public API paths changed; skipping the public API check"
+        fi
+      working-directory: _sdk-pr
+
     - name: Checkout base SDK tree
-      if: steps.coverage.outputs.mode == 'additions' && github.event_name == 'pull_request'
+      if: steps.coverage.outputs.mode == 'additions' && github.event_name == 'pull_request' && steps.paths.outputs.changed != 'false'
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         ref: ${{ github.event.pull_request.base.sha }}

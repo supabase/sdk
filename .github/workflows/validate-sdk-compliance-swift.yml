@@ -11,6 +11,19 @@ on:
         description: Ref to checkout from supabase/sdk for tooling and spec (defaults to the commit this workflow was called at; override only during pre-merge testing)
         type: string
         default: ""
+      runner:
+        description: Runner label for the macOS job that builds the Swift package. Pass a larger runner (for example a Blacksmith or xlarge macOS label) to speed up cold builds
+        type: string
+        default: macos-latest
+      public-api-paths:
+        description: Newline-separated git pathspecs that can change the public API. A pull request touching none of them (nor the compliance file) skips the check
+        type: string
+        default: |
+          Sources/
+          Plugins/
+          Package.swift
+          Package.resolved
+          .sdk-parse-ignore
 
 # Tooling, composite actions, and capability spec all resolve from the single
 # supabase/sdk commit the caller pinned this workflow at (job.workflow_sha),
@@ -40,7 +53,7 @@ jobs:
 
   check:
     name: Check public API against capability matrix
-    runs-on: macos-latest
+    runs-on: ${{ inputs.runner }}
     permissions:
       contents: read
       pull-requests: write
@@ -57,25 +70,60 @@ jobs:
         uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
         with:
           compliance-file: ${{ inputs.compliance-file }}
+          api-paths: ${{ inputs.public-api-paths }}
+          warm-cache: "true"
+
+      # A push to the default branch in additions mode has nothing to check. It
+      # extracts the symbols once and saves the caches below, because a pull
+      # request can read caches saved from its base branch but not from other
+      # pull requests.
+      - name: Compute cache keys
+        id: keys
+        if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
+        run: echo "swift=$(swift --version 2>&1 | shasum | cut -c1-12)" >> "$GITHUB_OUTPUT"
 
       - name: Cache SPM dependencies
-        if: steps.api_check_setup.outputs.should-run == 'true'
+        if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.cache/org.swift.swiftpm
-            _sdk-pr/.build/repositories
             _sdk-base/.build/repositories
           key: spm-${{ runner.os }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
           restore-keys: spm-${{ runner.os }}-
 
+      # Compiled dependencies (swift-syntax, BoringSSL, OpenTelemetry) are most of
+      # a cold build. Only the push run saves this, so pull requests never write
+      # multi-gigabyte entries that no other pull request can read.
+      - name: Restore build cache
+        id: build_cache
+        if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: _sdk-pr/.build
+          key: spm-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
+          restore-keys: spm-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-
+
+      # The base symbols depend only on the base commit, the Swift toolchain and
+      # the normalizer, so every pull request on the same base commit reuses them.
+      - name: Restore base symbols
+        id: base_symbols
+        if: steps.api_check_setup.outputs.should-run == 'true' && steps.api_check_setup.outputs.coverage-mode == 'additions' && github.event_name == 'pull_request'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .api-cache/symbols.json
+          key: swift-api-symbols-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-spec/packages/capability-matrix/src/**') }}-${{ github.event.pull_request.base.sha }}
+
       - name: Extract Swift symbol graphs
-        if: steps.api_check_setup.outputs.should-run == 'true'
+        if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
         env:
           COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
+          BASE_SYMBOLS_HIT: ${{ steps.base_symbols.outputs.cache-hit }}
         run: |
           BRANCHES=(pr)
-          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          if [ "$COVERAGE_MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ "$BASE_SYMBOLS_HIT" != "true" ]; then
+            BRANCHES+=(base)
+          fi
           for b in "${BRANCHES[@]}"; do
             cd "$GITHUB_WORKSPACE/_sdk-$b"
             # || true: test targets may fail to extract on CI runners; library targets land first
@@ -91,18 +139,51 @@ jobs:
           done
 
       - name: Normalize Swift symbol graphs
-        if: steps.api_check_setup.outputs.should-run == 'true'
+        id: normalize
+        if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
         env:
           COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
+          BASE_SYMBOLS_HIT: ${{ steps.base_symbols.outputs.cache-hit }}
         run: |
           BRANCHES=(pr)
-          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          if [ "$COVERAGE_MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" = "pull_request" ] && [ "$BASE_SYMBOLS_HIT" != "true" ]; then
+            BRANCHES+=(base)
+          fi
           for b in "${BRANCHES[@]}"; do
             bun run --silent normalize-symbolgraph -- \
               "$GITHUB_WORKSPACE/$b-raw.json" "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
+
+          # Stage the symbols the next pull requests on this base commit can reuse.
+          CACHE_DIR="$GITHUB_WORKSPACE/.api-cache"
+          mkdir -p "$CACHE_DIR"
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            cp "$GITHUB_WORKSPACE/pr-symbols.json" "$CACHE_DIR/symbols.json"
+            echo "save-symbols=true" >> "$GITHUB_OUTPUT"
+          elif [ "$COVERAGE_MODE" = "additions" ]; then
+            if [ "$BASE_SYMBOLS_HIT" = "true" ]; then
+              cp "$CACHE_DIR/symbols.json" "$GITHUB_WORKSPACE/base-symbols.json"
+            else
+              cp "$GITHUB_WORKSPACE/base-symbols.json" "$CACHE_DIR/symbols.json"
+              echo "save-symbols=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
         working-directory: _sdk-spec/packages/capability-matrix
+
+      - name: Save symbols cache
+        if: steps.normalize.outputs.save-symbols == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .api-cache/symbols.json
+          key: swift-api-symbols-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-spec/packages/capability-matrix/src/**') }}-${{ github.event.pull_request.base.sha || github.sha }}
+
+      - name: Save build cache
+        if: steps.api_check_setup.outputs.warm == 'true' && steps.build_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: _sdk-pr/.build
+          key: spm-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         if: steps.api_check_setup.outputs.should-run == 'true'
