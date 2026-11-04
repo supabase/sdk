@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.0.0...capability-matrix/v2.1.0) (2026-11-04)
+
+
+### Features
+
+* **capability-matrix:** speed up the Swift public API check ([#322](https://github.com/supabase/sdk/issues/322)) ([897f366](https://github.com/supabase/sdk/commit/897f36616f80973c3e139af4fc0670f52722f73a))
+
 ## [2.0.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.20.0...capability-matrix/v2.0.0) (2026-11-04)
 
 
