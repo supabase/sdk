@@ -151,11 +151,12 @@ jobs:
             SGFILES=$(find .build -maxdepth 4 -name "*.symbols.json")
             if [ -z "$SGFILES" ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
             # The || true above hides extraction failures, so require a graph for
-            # every library product target; an incomplete set would be cached and
-            # reused as the base by later pull requests.
+            # every library product target, named by its c99name like the file; an
+            # incomplete set would be cached and reused as the base by later pull
+            # requests.
             MISSING=0
             for t in $(swift package describe --type json \
-              | jq -r '.products[] | select(.type | type == "object" and has("library")) | .targets[]' | sort -u); do
+              | jq -r '. as $d | [$d.products[] | select(.type | type == "object" and has("library")) | .targets[]] | unique as $libs | $d.targets[] | select(.name as $n | $libs | index($n)) | .c99name' | sort -u); do
               if [ -z "$(find .build -maxdepth 4 -name "$t.symbols.json" | head -n 1)" ]; then
                 echo "::error::No symbol graph emitted for library target $t"
                 MISSING=1
