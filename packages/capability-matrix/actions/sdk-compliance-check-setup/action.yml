@@ -13,8 +13,9 @@ inputs:
     default: ""
   warm-cache:
     description: >-
-      Set to "true" when the caller wants push events in additions mode to run
-      the expensive extraction once, so it can save caches for later pull requests.
+      Set to "true" when the caller wants pushes to the default branch in additions
+      mode to run the expensive extraction once, so it can save caches for later
+      pull requests.
     default: "false"
 
 outputs:
@@ -24,6 +25,9 @@ outputs:
   should-run:
     description: Whether the public API check applies to this event
     value: ${{ steps.coverage.outputs.should-run == 'true' && steps.paths.outputs.changed != 'false' && 'true' || 'false' }}
+  path-skipped:
+    description: Whether the path gate skipped a pull request that touches no public API paths
+    value: ${{ steps.paths.outputs.changed == 'false' && 'true' || 'false' }}
   warm:
     description: Whether this run only warms caches for later pull requests (push event in additions mode with warm-cache enabled)
     value: ${{ steps.coverage.outputs.warm }}
@@ -52,10 +56,13 @@ runs:
       env:
         COMPLIANCE_FILE: ${{ inputs.compliance-file }}
         WARM_CACHE: ${{ inputs.warm-cache }}
+        DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       run: |
         MODE=$(bun run --silent coverage-mode -- "$GITHUB_WORKSPACE/_sdk-pr/$COMPLIANCE_FILE")
         echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-        if [ "$WARM_CACHE" = "true" ] && [ "$MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" = "push" ]; then
+        # Caches saved from other refs are unreadable by pull requests and only evict
+        # the useful ones, so only the default branch warms them.
+        if [ "$WARM_CACHE" = "true" ] && [ "$MODE" = "additions" ] && [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$GITHUB_REF" = "refs/heads/$DEFAULT_BRANCH" ]; then
           echo "warm=true" >> "$GITHUB_OUTPUT"
         else
           echo "warm=false" >> "$GITHUB_OUTPUT"

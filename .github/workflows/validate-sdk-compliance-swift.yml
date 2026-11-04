@@ -21,9 +21,14 @@ on:
         default: |
           Sources/
           Plugins/
-          Package.swift
+          Package*.swift
           Package.resolved
           .sdk-parse-ignore
+          .github/workflows/
+      warm-cache:
+        description: Whether a push to the default branch in additions mode extracts once and saves the build and base-symbol caches that pull requests restore. Turn it off to disable the push-time build
+        type: boolean
+        default: true
 
 # Tooling, composite actions, and capability spec all resolve from the single
 # supabase/sdk commit the caller pinned this workflow at (job.workflow_sha),
@@ -71,7 +76,7 @@ jobs:
         with:
           compliance-file: ${{ inputs.compliance-file }}
           api-paths: ${{ inputs.public-api-paths }}
-          warm-cache: "true"
+          warm-cache: ${{ inputs.warm-cache }}
 
       # A push to the default branch in additions mode has nothing to check. It
       # extracts the symbols once and saves the caches below, because a pull
@@ -80,7 +85,15 @@ jobs:
       - name: Compute cache keys
         id: keys
         if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
-        run: echo "swift=$(swift --version 2>&1 | shasum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+        env:
+          SDK_REF: ${{ inputs.sdk-ref || job.workflow_sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+        run: |
+          SWIFT=$(swift --version 2>&1 | shasum | cut -c1-12)
+          echo "swift=$SWIFT" >> "$GITHUB_OUTPUT"
+          # The symbols depend on the extraction flags in this wrapper and the
+          # normalizer, both pinned by the supabase/sdk commit, plus the base commit.
+          echo "symbols-key=swift-api-symbols-$RUNNER_OS-$RUNNER_ARCH-$SWIFT-$SDK_REF-$BASE_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Cache SPM dependencies
         if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
@@ -104,15 +117,15 @@ jobs:
           key: spm-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-pr/Package.resolved') }}
           restore-keys: spm-build-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-
 
-      # The base symbols depend only on the base commit, the Swift toolchain and
-      # the normalizer, so every pull request on the same base commit reuses them.
+      # Every pull request on the same base commit reuses the base symbols, as long
+      # as the Swift toolchain and the supabase/sdk commit are the same.
       - name: Restore base symbols
         id: base_symbols
         if: steps.api_check_setup.outputs.should-run == 'true' && steps.api_check_setup.outputs.coverage-mode == 'additions' && github.event_name == 'pull_request'
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .api-cache/symbols.json
-          key: swift-api-symbols-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-spec/packages/capability-matrix/src/**') }}-${{ github.event.pull_request.base.sha }}
+          key: ${{ steps.keys.outputs.symbols-key }}
 
       - name: Extract Swift symbol graphs
         if: steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.warm == 'true'
@@ -126,6 +139,9 @@ jobs:
           fi
           for b in "${BRANCHES[@]}"; do
             cd "$GITHUB_WORKSPACE/_sdk-$b"
+            # A restored build cache can hold graphs from an older commit. Delete them
+            # so a failed build cannot pass with stale symbols.
+            find .build -name '*.symbols.json' -delete 2>/dev/null || true
             # || true: test targets may fail to extract on CI runners; library targets land first
             swift package dump-symbol-graph \
               --minimum-access-level public \
@@ -134,6 +150,18 @@ jobs:
             # symbols file across all of them (paths from .build never contain spaces).
             SGFILES=$(find .build -maxdepth 4 -name "*.symbols.json")
             if [ -z "$SGFILES" ]; then echo "::error::No symbol graphs emitted"; exit 1; fi
+            # The || true above hides extraction failures, so require a graph for
+            # every library product target; an incomplete set would be cached and
+            # reused as the base by later pull requests.
+            MISSING=0
+            for t in $(swift package describe --type json \
+              | jq -r '.products[] | select(.type | type == "object" and has("library")) | .targets[]' | sort -u); do
+              if [ -z "$(find .build -maxdepth 4 -name "$t.symbols.json" | head -n 1)" ]; then
+                echo "::error::No symbol graph emitted for library target $t"
+                MISSING=1
+              fi
+            done
+            if [ "$MISSING" = "1" ]; then exit 1; fi
             jq -s '[.[] | .symbols[]]' $SGFILES \
               > "$GITHUB_WORKSPACE/$b-raw.json"
           done
@@ -176,7 +204,7 @@ jobs:
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: .api-cache/symbols.json
-          key: swift-api-symbols-${{ runner.os }}-${{ runner.arch }}-${{ steps.keys.outputs.swift }}-${{ hashFiles('_sdk-spec/packages/capability-matrix/src/**') }}-${{ github.event.pull_request.base.sha || github.sha }}
+          key: ${{ steps.keys.outputs.symbols-key }}
 
       - name: Save build cache
         if: steps.api_check_setup.outputs.warm == 'true' && steps.build_cache.outputs.cache-hit != 'true'
@@ -190,7 +218,10 @@ jobs:
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
+      # When the path gate skips the check, this still clears a drift comment that
+      # an earlier push of the same pull request posted.
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-drift
-        if: steps.api_check_setup.outputs.should-run == 'true' && github.event_name == 'pull_request'
+        if: (steps.api_check_setup.outputs.should-run == 'true' || steps.api_check_setup.outputs.path-skipped == 'true') && github.event_name == 'pull_request'
         with:
           compliance-file: ${{ inputs.compliance-file }}
+          clear-only: ${{ steps.api_check_setup.outputs.path-skipped }}
