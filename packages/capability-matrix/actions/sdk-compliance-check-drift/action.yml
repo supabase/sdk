@@ -5,11 +5,15 @@ inputs:
   compliance-file:
     description: Path to sdk-compliance.yaml in the calling repo
     default: sdk-compliance.yaml
+  clear-only:
+    description: Set to "true" to skip the drift check and only clear a previously posted drift comment, for pull requests whose public API check was skipped
+    default: "false"
 
 runs:
   using: composite
   steps:
     - name: Check capability matrix drift
+      if: inputs.clear-only != 'true'
       shell: bash
       env:
         COMPLIANCE_FILE: ${{ inputs.compliance-file }}
