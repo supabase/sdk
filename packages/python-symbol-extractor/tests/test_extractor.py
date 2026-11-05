@@ -236,6 +236,23 @@ class TestRules:
         assert names(symbols) == {"Thing", "Thing.go"}
         assert by_name(symbols, "Thing").file == "pkg/_impl.py"
 
+    def test_private_name_re_exported_under_two_public_names(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": """
+                    from ._impl import _Thing as Thing
+                    from ._impl import _Thing as AsyncThing
+
+                    __all__ = ["Thing", "AsyncThing"]
+                """,
+                "pkg/_impl.py": "class _Thing:\n    def go(self): ...\n",
+            },
+        )
+        symbols = parse_python_project(tmp_path)
+        assert names(symbols) == {"Thing", "Thing.go", "AsyncThing", "AsyncThing.go"}
+
     def test_re_exported_private_module_is_read_as_public(self, tmp_path):
         write_project(
             tmp_path,

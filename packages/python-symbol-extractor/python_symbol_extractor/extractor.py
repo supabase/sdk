@@ -179,7 +179,8 @@ class _Collector:
     def __init__(self, root: Path, ignore: IgnoreMatcher) -> None:
         self._root = root
         self._ignore = ignore
-        self._seen: set[str] = set()
+        self._seen_modules: set[str] = set()
+        self._seen: set[tuple[str, str]] = set()
         self.symbols: list[ParsedSymbol] = []
 
     def walk_module(self, module: griffe.Module) -> None:
@@ -204,8 +205,8 @@ class _Collector:
         except (griffe.AliasResolutionError, griffe.CyclicAliasError):
             return
         if target.is_module:
-            if target.path not in self._seen:
-                self._seen.add(target.path)
+            if target.path not in self._seen_modules:
+                self._seen_modules.add(target.path)
                 self._walk_members(target)
         else:
             name = alias.name if target.name.startswith("_") else target.name
@@ -218,15 +219,15 @@ class _Collector:
         if name.startswith("_"):
             return
         kind = _kind(obj, in_class)
-        if kind is None or obj.path in self._seen:
+        qualified = f"{prefix}.{name}" if prefix else name
+        if kind is None or (obj.path, qualified) in self._seen:
             return
-        self._seen.add(obj.path)
+        self._seen.add((obj.path, qualified))
 
         file = self._relative_file(obj)
         if file is None or self._ignore.ignores(file):
             return
 
-        qualified = f"{prefix}.{name}" if prefix else name
         self.symbols.append(
             ParsedSymbol(name=qualified, kind=kind, file=file, line=obj.lineno)
         )
