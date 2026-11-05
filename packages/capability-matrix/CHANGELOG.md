@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.1.0...capability-matrix/v2.2.0) (2026-11-05)
+
+
+### Features
+
+* **realtime:** add foreground liveness probe and network path wake capabilities ([#325](https://github.com/supabase/sdk/issues/325)) ([6a3d779](https://github.com/supabase/sdk/commit/6a3d7790611395c3d763d5caec2aca0c61f1c3dc))
+
 ## [2.1.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.0.0...capability-matrix/v2.1.0) (2026-11-04)
 
 
