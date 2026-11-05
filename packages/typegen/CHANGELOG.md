@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/supabase/sdk/compare/typegen/v0.3.1...typegen/v0.3.2) (2026-11-05)
+
+
+### Bug Fixes
+
+* **typegen:** bump @supabase/postgrest-typegen to 0.7.0 ([#331](https://github.com/supabase/sdk/issues/331)) ([bf6218c](https://github.com/supabase/sdk/commit/bf6218cf542f3bb85a0167ae2a5b8aeda03e9344))
+
 ## [0.3.1](https://github.com/supabase/sdk/compare/typegen/v0.3.0...typegen/v0.3.1) (2026-10-16)
 
 
