@@ -1,8 +1,9 @@
 import type { SchemaFilterProps } from "./common.ts";
+import { filterByList } from "./helpers.ts";
 import { literal } from "./pg-format.ts";
 
 export const VIEWS_KEY_DEPENDENCIES_SQL = (
-  props: SchemaFilterProps,
+  props: SchemaFilterProps & { extraSearchPath?: string[] },
 ) => /* SQL */ `
 -- Adapted from
 -- https://github.com/PostgREST/postgrest/blob/f9f0f79fa914ac00c11fbf7f4c558e14821e67e2/src/PostgREST/SchemaCache.hs#L820
@@ -42,7 +43,7 @@ views as (
   join pg_namespace n on n.oid = c.relnamespace
   join pg_rewrite r on r.ev_class = c.oid
   where c.relkind in ('v', 'm') 
-    ${props.schemaFilter ? `and n.nspname ${props.schemaFilter}` : ""}
+    ${viewSchemaFilter(props)}
 ),
 transform_json as (
   select
@@ -123,6 +124,20 @@ group by sch.nspname, tbl.relname,  rep.view_schema, rep.view_name, pks_fks.conn
 -- make sure we only return key for which all columns are referenced in the view - no partial PKs or FKs
 having ncol = array_length(array_agg(row(col.attname, view_columns) order by pks_fks.ord), 1)
 `;
+
+/**
+ * Like PostgREST, the views followed to their base tables also include the
+ * `db-extra-search-path` schemas; the recursion still starts from the selected
+ * schemas only.
+ */
+function viewSchemaFilter({
+  schemaFilter,
+  extraSearchPath = [],
+}: SchemaFilterProps & { extraSearchPath?: string[] }): string {
+  if (!schemaFilter) return "";
+  if (extraSearchPath.length === 0) return `and n.nspname ${schemaFilter}`;
+  return `and (n.nspname ${schemaFilter} or n.nspname ${filterByList(extraSearchPath)})`;
+}
 
 /**
  * One text rewrite of the `pg_node_tree` to JSON conversion: a `replace`, or

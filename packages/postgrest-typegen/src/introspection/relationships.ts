@@ -164,12 +164,15 @@ export function expandViewRelationships(
  * `introspect()` builds with the system schemas excluded. Like PostgREST, view
  * expansion sees the foreign keys of every non-system schema, so a view over a
  * table in a schema that is not selected keeps the table's foreign keys; only
- * the views and tables in the selected schemas get relationships. Errors from
- * the injected `Queryable` propagate by throwing — callers adapt.
+ * the views and tables in the selected schemas get relationships. Views in the
+ * `extraSearchPath` schemas are followed to their base tables but get no
+ * relationships of their own. Errors from the injected `Queryable` propagate
+ * by throwing — callers adapt.
  */
 export async function listRelationships(
   db: Queryable,
   schemaFilter: string,
+  extraSearchPath: string[] = [],
 ): Promise<PostgresRelationship[]> {
   const tableRelationshipsQuery = db.query(
     TABLE_RELATIONSHIPS_SQL({ schemaFilter }),
@@ -185,7 +188,7 @@ export async function listRelationships(
       : db.query(
           TABLE_RELATIONSHIPS_SQL({ schemaFilter: NON_SYSTEM_SCHEMAS_FILTER }),
         ),
-    db.query(VIEWS_KEY_DEPENDENCIES_SQL({ schemaFilter })),
+    db.query(VIEWS_KEY_DEPENDENCIES_SQL({ schemaFilter, extraSearchPath })),
   ]);
 
   const emittedKeys = new Set(
