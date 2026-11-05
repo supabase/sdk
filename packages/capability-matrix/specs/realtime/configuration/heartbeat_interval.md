@@ -36,6 +36,22 @@ After it sends a heartbeat, the client waits one interval for the reply. When th
 
 So the client finds a dead socket at most two intervals after the last reply, or after the open event when no reply has come yet. A reply that arrives after the client treated the socket as dead has no effect.
 
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+    Note over C,S: Socket opens
+    Note over C: Tick 1, one interval after open
+    C->>S: heartbeat, ref 1
+    S-->>C: phx_reply, ref 1
+    Note over C: Tick 2, ref 1 has a reply
+    C->>S: heartbeat, ref 2
+    Note over C: Tick 3, ref 2 has no reply
+    C->>C: Mark joined channels errored
+    C->>C: Close the socket
+    C->>C: Schedule reconnect, attempt 1
+```
+
 ## Related
 
 - [Connect](../client/connect.md): when and how the client reopens a socket that missed a heartbeat reply

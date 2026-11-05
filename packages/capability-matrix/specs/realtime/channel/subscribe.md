@@ -22,6 +22,16 @@ When the server rejects a join with the error code `ChannelRateLimitReached`, `C
 
 When a socket opens, the client resets the rejoin attempt count of every channel to 0, and it rejoins each errored channel at once, without a rejoin delay.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Joining: subscribe
+    Joining --> Joined: join reply ok
+    Joining --> Errored: join error or timeout, attempt + 1
+    Errored --> Joining: rejoin delay for attempt ends, 30 s after a rate limit
+    Joined --> Errored: socket lost
+    Errored --> Joining: socket opens, attempt = 0, no delay
+```
+
 ## Related
 
 - [Connect](../client/connect.md): the socket reconnect that triggers an immediate rejoin

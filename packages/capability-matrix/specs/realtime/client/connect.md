@@ -20,6 +20,19 @@ The client never stops on its own. There is no maximum attempt count. Reconnect 
 
 The client keeps at most one scheduled reconnect. A new schedule cancels the one that is waiting.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Connecting: connect
+    Connecting --> Open: socket opens, attempt = 0
+    Connecting --> Waiting: socket fails to open, attempt + 1
+    Open --> Waiting: close the app did not ask for, attempt + 1
+    Waiting --> Connecting: delay for attempt ends
+    Connecting --> Closed: disconnect
+    Open --> Closed: disconnect
+    Waiting --> Closed: disconnect
+    Closed --> [*]
+```
+
 ### Attempt count
 
 Attempt numbers start at 1. The attempt count resets to 0 when a socket opens. The open event is the reset point, not a successful channel join. So the first reconnect after a connection that was open is always attempt 1, whatever happened before that connection.
