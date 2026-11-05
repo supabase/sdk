@@ -79,7 +79,7 @@ jobs:
       - name: Publish to npm
         run: npm publish --access public --provenance
 
-  bump-typegen-pin:
+  release-typegen:
     needs: [release-please, publish-postgrest-typegen]
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -88,6 +88,10 @@ jobs:
     defaults:
       run:
         working-directory: packages/typegen
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+      BASE_BRANCH: ${{ github.ref_name }}
+      STAGING_BRANCH: typegen-postgrest-typegen-${{ needs.release-please.outputs.version }}
     steps:
       - name: Generate token
         id: app-token
@@ -108,8 +112,6 @@ jobs:
           bun-version: latest
 
       - name: Wait for the release to be served by npm
-        env:
-          VERSION: ${{ needs.release-please.outputs.version }}
         run: |
           for attempt in $(seq 1 40); do
             if npm view "@supabase/postgrest-typegen@${VERSION}" version >/dev/null 2>&1; then
@@ -122,36 +124,67 @@ jobs:
           exit 1
 
       - name: Bump the pin
+        id: bump
         env:
-          VERSION: ${{ needs.release-please.outputs.version }}
-        run: bun add --exact "@supabase/postgrest-typegen@${VERSION}"
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          bun add --exact "@supabase/postgrest-typegen@${VERSION}"
+          if git diff --quiet -- package.json bun.lock; then
+            echo "packages/typegen already pins @supabase/postgrest-typegen@${VERSION}; nothing to do."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          release_branch="release-please--branches--${STAGING_BRANCH}--components--typegen"
+          if [ -n "$(gh pr list --head "$release_branch" --state open --json number --jq '.[0].number')" ]; then
+            echo "A typegen release pull request for this pin is already open."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Open pull request
+      # release-please only builds release pull requests from commits already on
+      # their target branch, so the pin bump goes to a staging branch, the
+      # release pull request is opened against it and then retargeted.
+      - name: Push the pin bump to a staging branch
+        if: steps.bump.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          VERSION: ${{ needs.release-please.outputs.version }}
-          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
-          BASE_BRANCH: ${{ github.ref_name }}
         run: |
-          if git diff --quiet -- package.json bun.lock; then
-            echo "packages/typegen already pins @supabase/postgrest-typegen@${VERSION}; nothing to do."
-            exit 0
-          fi
-
-          branch="chore/typegen-postgrest-typegen-${VERSION}"
-          title="fix(typegen): bump @supabase/postgrest-typegen to ${VERSION}"
           git config user.name "${APP_SLUG}[bot]"
           git config user.email "$(gh api "/users/${APP_SLUG}[bot]" --jq .id)+${APP_SLUG}[bot]@users.noreply.github.com"
-          git fetch origin "$branch:refs/remotes/origin/$branch" || true
-          git checkout -b "$branch"
+          git checkout -b "$STAGING_BRANCH"
           git add package.json bun.lock
-          git commit -m "$title"
-          git push --force-with-lease origin "$branch"
+          git commit -m "fix(typegen): bump @supabase/postgrest-typegen to ${VERSION}"
+          git push --force origin "$STAGING_BRANCH"
 
-          body="$(printf 'Bumps the exact pin in packages/typegen to the version published from %s.\n\nRelease notes: https://github.com/%s/releases/tag/%s' "$TAG_NAME" "$GITHUB_REPOSITORY" "$TAG_NAME")"
-          if [ -n "$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')" ]; then
-            echo "Pull request already open for $branch; pushed the update."
-          else
-            gh pr create --base "$BASE_BRANCH" --head "$branch" --title "$title" --body "$body"
+      - name: Open the typegen release pull request
+        if: steps.bump.outputs.changed == 'true'
+        id: release-pr
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.typegen.json
+          manifest-file: .release-please-manifest.typegen.json
+          target-branch: ${{ env.STAGING_BRANCH }}
+          skip-github-release: true
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Retarget the release pull request
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR: ${{ steps.release-pr.outputs.pr }}
+        run: |
+          if [ -z "$PR" ]; then
+            echo "::error::release-please opened no typegen release pull request against ${STAGING_BRANCH}"
+            exit 1
+          fi
+          number="$(jq -r .number <<<"$PR")"
+          title="chore(${BASE_BRANCH}): $(jq -r .title <<<"$PR" | sed 's/^[^:]*: //')"
+          gh pr edit "$number" --base "$BASE_BRANCH" --title "$title"
+          git push origin --delete "$STAGING_BRANCH"
+
+          superseded="$(gh pr list --head "release-please--branches--${BASE_BRANCH}--components--typegen" --base "$BASE_BRANCH" --state open --json number --jq '.[0].number')"
+          if [ -n "$superseded" ]; then
+            gh pr close "$superseded" --delete-branch
           fi
