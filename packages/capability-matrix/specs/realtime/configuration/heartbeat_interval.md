@@ -14,7 +14,7 @@ The client takes the heartbeat interval at construction. The default is 25 secon
 
 ### Sending
 
-The heartbeat cycle starts when a socket opens. The client sends the first heartbeat one interval after the open event. When a reply arrives, the client sends the next heartbeat one interval after the reply. So there is never more than one heartbeat without a reply.
+The heartbeat cycle starts when a socket opens. The client sends a heartbeat every interval, starting one interval after the open event. When a tick comes and the previous heartbeat has no reply, the client treats the socket as dead instead of sending (see Missing reply). So there is never more than one heartbeat without a reply.
 
 Each heartbeat has a new `ref` that no other message on the socket uses. The cycle stops when the socket closes and starts again when the next socket opens.
 
@@ -24,7 +24,7 @@ The protocol guide asks clients to send a heartbeat at least every 25 seconds. T
 
 Only a `phx_reply` whose `ref` matches the heartbeat's `ref` counts as the reply. Other messages on the socket, including channel traffic, do not count.
 
-Any reply proves the socket is alive. A reply with status `ok` and a reply with status `error` have the same effect: the client schedules the next heartbeat.
+Any reply proves the socket is alive. A reply with status `ok` and a reply with status `error` have the same effect: the client clears the pending heartbeat, and the next tick sends a new one. A reply does not move the next tick.
 
 ### Missing reply
 
