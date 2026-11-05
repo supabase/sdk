@@ -8,10 +8,10 @@ The foreground signal is the platform's notification that the app moved from the
 
 On the foreground signal, while the connection is connected, the SDK:
 
-- Sends a heartbeat at once, outside the heartbeat schedule, and restarts the heartbeat interval from that moment. When a heartbeat is already waiting for its reply, the SDK sends no second one, and the reply to that heartbeat ends the probe.
+- Sends a heartbeat at once, outside the heartbeat schedule, and restarts the heartbeat interval from that moment. When a heartbeat is already waiting for its reply, the SDK sends no second one, and the reply to that heartbeat ends the probe. The SDK pauses the heartbeat schedule while it waits, because the next scheduled heartbeat would fail the socket on the unanswered one, possibly before the probe deadline. Platforms that suspend an app make this likely: a scheduled tick that was overdue during the suspension runs when the app resumes, before the SDK has read the reply.
 - Starts a probe deadline of 5 seconds at once, whether or not it sent a heartbeat.
 
-A reply to the heartbeat before the deadline ends the probe. Nothing else changes.
+A reply to the heartbeat before the deadline ends the probe. When the SDK paused the heartbeat schedule, the reply restarts the heartbeat interval. Nothing else changes.
 
 With no reply by the deadline, the SDK handles the probe as a heartbeat timeout: it publishes the timeout heartbeat event, closes the socket, and starts a reconnect attempt at once, without the backoff wait. A failure of that attempt follows the normal reconnect backoff.
 
@@ -28,11 +28,11 @@ flowchart TB
     C -- no --> N(["No probe"])
     C -- yes --> P{"Heartbeat already waiting for its reply?"}
     P -- no --> S["Send a heartbeat now.<br>Restart the heartbeat interval."]
-    P -- yes --> W["Send nothing.<br>The reply to that heartbeat counts."]
+    P -- yes --> W["Send nothing. Pause the heartbeat schedule.<br>The reply to that heartbeat counts."]
     S --> D["Start the 5 second probe deadline at once.<br>It runs while the SDK waits for the reply."]
     W --> D
     D --> R{"Reply before the deadline?"}
-    R -- yes --> OK(["Probe ends. Nothing else changes."])
+    R -- yes --> OK(["Probe ends. A paused heartbeat schedule restarts."])
     R -- no --> T["1. Publish the timeout heartbeat event. 2. Close the socket."]
     T --> RC(["Reconnect at once, with no backoff wait.<br>A failed attempt follows the normal backoff."])
 ```
