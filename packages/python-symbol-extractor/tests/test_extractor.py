@@ -114,6 +114,18 @@ class TestRules:
         with pytest.raises(ValueError, match="no Python packages found"):
             parse_python_project(tmp_path)
 
+    def test_projects_with_an_unknown_layout_find_no_packages(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "lib/mylib/__init__.py": "class Thing: ...\n",
+                "src/deeper/mypkg/__init__.py": "class Other: ...\n",
+            },
+        )
+        with pytest.raises(ValueError, match="no Python packages found"):
+            parse_python_project(tmp_path)
+
     def test_wildcard_re_export_follows_all(self, tmp_path):
         write_project(
             tmp_path,
