@@ -1,5 +1,6 @@
 import type { PostgresRelationship } from "../types.ts";
 import type { Queryable } from "./index.ts";
+import { DEFAULT_SYSTEM_SCHEMAS, filterByList } from "./sql/helpers.ts";
 import { TABLE_RELATIONSHIPS_SQL } from "./sql/table_relationships.sql.ts";
 import { VIEWS_KEY_DEPENDENCIES_SQL } from "./sql/views_key_dependencies.sql.ts";
 
@@ -13,7 +14,8 @@ import { VIEWS_KEY_DEPENDENCIES_SQL } from "./sql/views_key_dependencies.sql.ts"
  *     by mapping a base table's foreign key columns onto the view columns that
  *     select them (`VIEWS_KEY_DEPENDENCIES_SQL` + the cartesian-product
  *     expansion below). This second part is pure TypeScript, not SQL — ported
- *     verbatim from upstream.
+ *     from upstream, except that the expansion sees every non-system schema's
+ *     foreign keys (see `listRelationships`).
  *
  * Adapted from:
  * https://github.com/PostgREST/postgrest/blob/f9f0f79fa914ac00c11fbf7f4c558e14821e67e2/src/PostgREST/SchemaCache.hs#L392
@@ -39,13 +41,30 @@ export type ViewKeyDependency = {
  * view↔view relationships implied by the view key dependencies. Pure function
  * (no database) so the cartesian-product expansion can be unit-tested directly.
  *
- * Ported verbatim from `PostgresMetaRelationships.list()` (the body of the
- * `allViewM2oAndO2oRelationships` block).
+ * Ported from `PostgresMetaRelationships.list()` (the body of the
+ * `allViewM2oAndO2oRelationships` block). Every table relationship feeds the
+ * expansion, but a table→view relationship is emitted on the table itself, so
+ * `isTableEmitted` keeps it to the tables the caller returns relationships for.
  */
 export function expandViewRelationships(
   allTableM2oAndO2oRelationships: PostgresRelationship[],
   viewsKeyDependencies: ViewKeyDependency[],
+  isTableEmitted: (relationship: PostgresRelationship) => boolean,
 ): PostgresRelationship[] {
+  const keyDepsByConstraint = new Map<string, ViewKeyDependency[]>();
+  for (const vkd of viewsKeyDependencies) {
+    const key = keyDependencyKey(
+      vkd.table_schema,
+      vkd.table_name,
+      vkd.constraint_name,
+      vkd.constraint_type,
+    );
+    keyDepsByConstraint.set(key, [
+      ...(keyDepsByConstraint.get(key) ?? []),
+      vkd,
+    ]);
+  }
+
   return allTableM2oAndO2oRelationships.flatMap((r) => {
     const expandKeyDepCols = (
       colDeps: ColDep[],
@@ -68,20 +87,19 @@ export function expandViewRelationships(
       }));
     };
 
-    const viewToTableKeyDeps = viewsKeyDependencies.filter(
-      (vkd) =>
-        vkd.table_schema === r.schema &&
-        vkd.table_name === r.relation &&
-        vkd.constraint_name === r.foreign_key_name &&
-        vkd.constraint_type === "f",
-    );
-    const tableToViewKeyDeps = viewsKeyDependencies.filter(
-      (vkd) =>
-        vkd.table_schema === r.referenced_schema &&
-        vkd.table_name === r.referenced_relation &&
-        vkd.constraint_name === r.foreign_key_name &&
-        vkd.constraint_type === "f_ref",
-    );
+    const viewToTableKeyDeps =
+      keyDepsByConstraint.get(
+        keyDependencyKey(r.schema, r.relation, r.foreign_key_name, "f"),
+      ) ?? [];
+    const tableToViewKeyDeps =
+      keyDepsByConstraint.get(
+        keyDependencyKey(
+          r.referenced_schema,
+          r.referenced_relation,
+          r.foreign_key_name,
+          "f_ref",
+        ),
+      ) ?? [];
 
     const viewToTableRelationships = viewToTableKeyDeps.flatMap((vtkd) =>
       expandKeyDepCols(vtkd.column_dependencies).map(({ viewColumns }) => ({
@@ -96,7 +114,9 @@ export function expandViewRelationships(
       })),
     );
 
-    const tableToViewRelationships = tableToViewKeyDeps.flatMap((tvkd) =>
+    const tableToViewRelationships = (
+      isTableEmitted(r) ? tableToViewKeyDeps : []
+    ).flatMap((tvkd) =>
       expandKeyDepCols(tvkd.column_dependencies).map(({ viewColumns }) => ({
         foreign_key_name: r.foreign_key_name,
         schema: r.schema,
@@ -139,26 +159,54 @@ export function expandViewRelationships(
 /**
  * List all relationships (table↔table plus the view-derived ones) for the
  * schemas selected by `schemaFilter`, the `IN (…)`/`NOT IN (…)` fragment
- * `introspect()` builds with the system schemas excluded. Errors from the
- * injected `Queryable` propagate by throwing — callers adapt.
+ * `introspect()` builds with the system schemas excluded. Like PostgREST, view
+ * expansion sees the foreign keys of every non-system schema, so a view over a
+ * table in a schema that is not selected keeps the table's foreign keys; only
+ * the views and tables in the selected schemas get relationships. Errors from
+ * the injected `Queryable` propagate by throwing — callers adapt.
  */
 export async function listRelationships(
   db: Queryable,
   schemaFilter: string,
 ): Promise<PostgresRelationship[]> {
-  const { rows: allTableM2oAndO2oRelationships } = await db.query(
-    TABLE_RELATIONSHIPS_SQL({ schemaFilter }),
-  );
-  const { rows: viewsKeyDependencies } = await db.query(
-    VIEWS_KEY_DEPENDENCIES_SQL({ schemaFilter }),
-  );
+  const [
+    { rows: tableRelationships },
+    { rows: allTableRelationships },
+    { rows: viewsKeyDependencies },
+  ] = await Promise.all([
+    db.query(TABLE_RELATIONSHIPS_SQL({ schemaFilter })),
+    db.query(
+      TABLE_RELATIONSHIPS_SQL({
+        schemaFilter: filterByList(
+          undefined,
+          undefined,
+          DEFAULT_SYSTEM_SCHEMAS,
+        ),
+      }),
+    ),
+    db.query(VIEWS_KEY_DEPENDENCIES_SQL({ schemaFilter })),
+  ]);
 
+  const emittedKeys = new Set(
+    (tableRelationships as PostgresRelationship[]).map(relationshipKey),
+  );
   const allViewM2oAndO2oRelationships = expandViewRelationships(
-    allTableM2oAndO2oRelationships as PostgresRelationship[],
+    allTableRelationships as PostgresRelationship[],
     viewsKeyDependencies as ViewKeyDependency[],
+    (r) => emittedKeys.has(relationshipKey(r)),
   );
 
-  return (allTableM2oAndO2oRelationships as PostgresRelationship[]).concat(
+  return (tableRelationships as PostgresRelationship[]).concat(
     allViewM2oAndO2oRelationships,
   );
 }
+
+const relationshipKey = (r: PostgresRelationship) =>
+  JSON.stringify([r.schema, r.relation, r.foreign_key_name]);
+
+const keyDependencyKey = (
+  tableSchema: string,
+  tableName: string,
+  constraintName: string,
+  constraintType: ViewKeyDependency["constraint_type"],
+) => JSON.stringify([tableSchema, tableName, constraintName, constraintType]);
