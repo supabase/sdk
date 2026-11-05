@@ -11,14 +11,6 @@ on:
         description: Ref to checkout from supabase/sdk for tooling and spec (defaults to the commit this workflow was called at; override only during pre-merge testing)
         type: string
         default: ""
-      griffe-packages:
-        description: Space- or comma-separated griffe package names to dump
-        type: string
-        required: true
-      griffe-search-paths:
-        description: Comma-separated search paths for griffe relative to repo root
-        type: string
-        default: ""
 
 # Tooling, composite actions, and capability spec all resolve from the single
 # supabase/sdk commit the caller pinned this workflow at (job.workflow_sha),
@@ -66,41 +58,15 @@ jobs:
         with:
           compliance-file: ${{ inputs.compliance-file }}
 
-      - name: Set up Python
+      # The Python extractor discovers the packages under each checkout from
+      # their pyproject.toml files and loads them statically through griffe,
+      # so the target checkouts need no dependency installation. Only the
+      # extractor's own locked dependencies are synced.
+      - name: Setup uv
         if: steps.api_check_setup.outputs.should-run == 'true'
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: "3.13"
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
-      - name: Install griffe
-        if: steps.api_check_setup.outputs.should-run == 'true'
-        run: pip install griffe
-
-      - name: Dump griffe symbols
-        if: steps.api_check_setup.outputs.should-run == 'true'
-        env:
-          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
-          GRIFFE_PACKAGES: ${{ inputs.griffe-packages }}
-          GRIFFE_SEARCH_PATHS: ${{ inputs.griffe-search-paths }}
-        run: |
-          PKGS=$(echo "$GRIFFE_PACKAGES" | tr ',' ' ' | xargs)
-          if [ -z "$PKGS" ]; then
-            echo "::error::griffe-packages is required and must be non-empty"
-            exit 1
-          fi
-          BRANCHES=(pr)
-          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
-          for b in "${BRANCHES[@]}"; do
-            SEARCH_FLAGS=""
-            if [ -n "$GRIFFE_SEARCH_PATHS" ]; then
-              SEARCH_FLAGS=$(echo "$GRIFFE_SEARCH_PATHS" | tr ',' '\n' \
-                | while read -r p; do echo "--search $GITHUB_WORKSPACE/_sdk-$b/$p"; done \
-                | tr '\n' ' ')
-            fi
-            python -m griffe dump $PKGS $SEARCH_FLAGS -o "$GITHUB_WORKSPACE/api-raw-$b.json"
-          done
-
-      - name: Normalize griffe symbols
+      - name: Extract Python symbols
         if: steps.api_check_setup.outputs.should-run == 'true'
         env:
           COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
@@ -108,11 +74,10 @@ jobs:
           BRANCHES=(pr)
           if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
           for b in "${BRANCHES[@]}"; do
-            bun run --silent normalize-griffe -- "$GITHUB_WORKSPACE/api-raw-$b.json" \
-              --project-root "$GITHUB_WORKSPACE/_sdk-$b" \
+            uv run --frozen --no-dev python -m python_symbol_extractor "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
-        working-directory: _sdk-spec/packages/capability-matrix
+        working-directory: _sdk-spec/packages/python-symbol-extractor
 
       - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
         if: steps.api_check_setup.outputs.should-run == 'true'

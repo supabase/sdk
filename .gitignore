@@ -8,3 +8,6 @@
 
 # AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
 /packages/capability-matrix/docs/superpowers/
+
+# Python bytecode caches
+__pycache__/

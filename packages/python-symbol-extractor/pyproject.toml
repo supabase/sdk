@@ -1,0 +1,29 @@
+[project]
+name = "python-symbol-extractor"
+version = "0.1.0"
+description = "Extracts the public API surface of Python packages into the ParseResult shape consumed by the SDK capability matrix check."
+requires-python = ">=3.11"
+dependencies = [
+    "griffelib>=2.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+target-version = "py311"
+extend-exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "UP", "B", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["fixtures"]
+pythonpath = ["."]
