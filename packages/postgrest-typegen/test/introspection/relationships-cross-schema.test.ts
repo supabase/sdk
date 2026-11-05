@@ -7,12 +7,13 @@ import {
 import { Pool } from "pg";
 import { Wait } from "testcontainers";
 
+import { generateTypescript } from "../../src/generation/typescript.ts";
 import { introspect } from "../../src/introspection/index.ts";
-import type { PostgresRelationship } from "../../src/types.ts";
+import type { GeneratorMetadata } from "../../src/types.ts";
 
 let container: StartedPostgreSqlContainer;
 let pool: Pool;
-let relationships: PostgresRelationship[];
+let metadata: GeneratorMetadata;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer("postgres:15-alpine")
@@ -39,9 +40,7 @@ beforeAll(async () => {
     create view public.projects as select * from private.projects;
     create view public.members as select * from private.members;
   `);
-  ({ relationships } = await introspect(pool, {
-    includedSchemas: ["public"],
-  }));
+  metadata = await introspect(pool, { includedSchemas: ["public"] });
 }, 180_000);
 
 afterAll(async () => {
@@ -50,7 +49,7 @@ afterAll(async () => {
 });
 
 const named = (foreignKeyName: string) =>
-  relationships.filter((r) => r.foreign_key_name === foreignKeyName);
+  metadata.relationships.filter((r) => r.foreign_key_name === foreignKeyName);
 
 describe("view relationships over tables in a schema that is not requested", () => {
   test("a view over a private table keeps the foreign key to a public table", () => {
@@ -69,22 +68,92 @@ describe("view relationships over tables in a schema that is not requested", () 
   });
 
   test("views over private tables relate to each other through a private foreign key", () => {
-    const viewToView = named("members_project_id_fkey").find(
-      (r) => r.referenced_schema === "public",
-    );
-    expect(viewToView).toEqual({
-      foreign_key_name: "members_project_id_fkey",
-      schema: "public",
-      relation: "members",
-      columns: ["project_id"],
-      is_one_to_one: false,
-      referenced_schema: "public",
-      referenced_relation: "projects",
-      referenced_columns: ["id"],
-    });
+    expect(named("members_project_id_fkey")).toEqual([
+      {
+        foreign_key_name: "members_project_id_fkey",
+        schema: "public",
+        relation: "members",
+        columns: ["project_id"],
+        is_one_to_one: false,
+        referenced_schema: "private",
+        referenced_relation: "projects",
+        referenced_columns: ["id"],
+      },
+      {
+        foreign_key_name: "members_project_id_fkey",
+        schema: "public",
+        relation: "members",
+        columns: ["project_id"],
+        is_one_to_one: false,
+        referenced_schema: "public",
+        referenced_relation: "projects",
+        referenced_columns: ["id"],
+      },
+    ]);
   });
 
   test("relationships of the private tables are not emitted", () => {
-    expect(relationships.filter((r) => r.schema !== "public")).toEqual([]);
+    expect(metadata.relationships.filter((r) => r.schema !== "public")).toEqual(
+      [],
+    );
+  });
+
+  test("the generated view types reference the public relations only", async () => {
+    const output = await generateTypescript(metadata);
+    const views = output.slice(
+      output.indexOf("Views: {"),
+      output.indexOf("Functions: {"),
+    );
+    expect(views).toMatchInlineSnapshot(`
+      "Views: {
+            members: {
+              Row: {
+                id: number
+                project_id: number
+              }
+              ComputedFields: never
+              Insert: {
+                id?: number | null
+                project_id?: number | null
+              }
+              Update: {
+                id?: number | null
+                project_id?: number | null
+              }
+              Relationships: [
+                {
+                  foreignKeyName: "members_project_id_fkey"
+                  columns: ["project_id"]
+                  referencedRelation: "projects"
+                  referencedColumns: ["id"]
+                },
+              ]
+            }
+            projects: {
+              Row: {
+                id: number
+                organization_id: number
+              }
+              ComputedFields: never
+              Insert: {
+                id?: number | null
+                organization_id?: number | null
+              }
+              Update: {
+                id?: number | null
+                organization_id?: number | null
+              }
+              Relationships: [
+                {
+                  foreignKeyName: "projects_organization_id_fkey"
+                  columns: ["organization_id"]
+                  referencedRelation: "organizations"
+                  referencedColumns: ["id"]
+                },
+              ]
+            }
+          }
+          "
+    `);
   });
 });

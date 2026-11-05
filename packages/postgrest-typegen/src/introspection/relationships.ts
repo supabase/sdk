@@ -14,8 +14,8 @@ import { VIEWS_KEY_DEPENDENCIES_SQL } from "./sql/views_key_dependencies.sql.ts"
  *     by mapping a base table's foreign key columns onto the view columns that
  *     select them (`VIEWS_KEY_DEPENDENCIES_SQL` + the cartesian-product
  *     expansion below). This second part is pure TypeScript, not SQL — ported
- *     from upstream, except that the expansion sees every non-system schema's
- *     foreign keys (see `listRelationships`).
+ *     from postgres-meta, except that the expansion sees every non-system
+ *     schema's foreign keys, as PostgREST does (see `listRelationships`).
  *
  * Adapted from:
  * https://github.com/PostgREST/postgrest/blob/f9f0f79fa914ac00c11fbf7f4c558e14821e67e2/src/PostgREST/SchemaCache.hs#L392
@@ -59,10 +59,12 @@ export function expandViewRelationships(
       vkd.constraint_name,
       vkd.constraint_type,
     );
-    keyDepsByConstraint.set(key, [
-      ...(keyDepsByConstraint.get(key) ?? []),
-      vkd,
-    ]);
+    let bucket = keyDepsByConstraint.get(key);
+    if (!bucket) {
+      bucket = [];
+      keyDepsByConstraint.set(key, bucket);
+    }
+    bucket.push(vkd);
   }
 
   return allTableM2oAndO2oRelationships.flatMap((r) => {
@@ -169,21 +171,20 @@ export async function listRelationships(
   db: Queryable,
   schemaFilter: string,
 ): Promise<PostgresRelationship[]> {
+  const tableRelationshipsQuery = db.query(
+    TABLE_RELATIONSHIPS_SQL({ schemaFilter }),
+  );
   const [
     { rows: tableRelationships },
     { rows: allTableRelationships },
     { rows: viewsKeyDependencies },
   ] = await Promise.all([
-    db.query(TABLE_RELATIONSHIPS_SQL({ schemaFilter })),
-    db.query(
-      TABLE_RELATIONSHIPS_SQL({
-        schemaFilter: filterByList(
-          undefined,
-          undefined,
-          DEFAULT_SYSTEM_SCHEMAS,
+    tableRelationshipsQuery,
+    schemaFilter === NON_SYSTEM_SCHEMAS_FILTER
+      ? tableRelationshipsQuery
+      : db.query(
+          TABLE_RELATIONSHIPS_SQL({ schemaFilter: NON_SYSTEM_SCHEMAS_FILTER }),
         ),
-      }),
-    ),
     db.query(VIEWS_KEY_DEPENDENCIES_SQL({ schemaFilter })),
   ]);
 
@@ -200,6 +201,12 @@ export async function listRelationships(
     allViewM2oAndO2oRelationships,
   );
 }
+
+const NON_SYSTEM_SCHEMAS_FILTER = filterByList(
+  undefined,
+  undefined,
+  DEFAULT_SYSTEM_SCHEMAS,
+);
 
 const relationshipKey = (r: PostgresRelationship) =>
   JSON.stringify([r.schema, r.relation, r.foreign_key_name]);
