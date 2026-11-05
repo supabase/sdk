@@ -3,13 +3,12 @@ from enum import Enum
 
 
 class SymbolKind(Enum):
-    """The `kind` values of the `ParsedSymbol` shape shared by every extractor."""
+    """The `kind` values the Python extractor reports, a subset of the shared shape."""
 
     CLASS = "class"
     METHOD = "method"
     PROPERTY = "property"
     FUNCTION = "function"
-    VARIABLE = "variable"
 
 
 @dataclass(frozen=True)

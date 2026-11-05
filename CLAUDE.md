@@ -9,7 +9,7 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/capability-matrix/` — the **canonical feature registry** for all Supabase client SDKs — not the SDKs themselves. It defines what features exist (name, description, grouping) across 7 client SDKs (JavaScript, Flutter, Python, Swift, C#, Go, Kotlin). SDKs declare compliance separately in their own repos via `sdk-compliance.yaml` files. The output is a static capability matrix website at https://supabase.github.io/sdk/ showing which features each SDK implements.
 - `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by the Dart compliance workflow.
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
-- `packages/python-symbol-extractor/` — Python public API symbol extractor used by the Python compliance workflow. Built on griffe; discovers packages from `pyproject.toml` files and follows `__all__` re-exports out of `_`-prefixed modules.
+- `packages/python-symbol-extractor/`: Python public API symbol extractor used by the Python compliance workflow. Built on griffe; discovers packages from `pyproject.toml` files and follows `__all__` re-exports out of `_`-prefixed modules.
 - `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
 - `packages/typegen/`: the language registry for `supabase gen types --lang`. `languages` maps each name to a generator, either in-process (the four bundled in postgrest-typegen) or an external tool run in the user's project (Dart via `dart run supabase_typegen`). The CLI dispatches through it, so adding a language is a pull request here plus a CLI dependency bump. See its own `CLAUDE.md`.
 
@@ -63,7 +63,7 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 - `normalize-typedoc-cli.ts` — merge form: `--out <out.json> <in.json>…` concatenates several TypeDoc JSONs (for monorepos)
 - `swift-parser.ts` — line-by-line scanner (not AST); extracts `public`/`open` symbols from classes, structs, actors, enums, extensions
 - `packages/dart-symbol-extractor/` — sibling Dart package (Dart package name `dart_symbol_extractor`); `dart run bin/extract.dart <sdk-root>`; parses without `pub get`
-- `packages/python-symbol-extractor/` — sibling Python package managed with uv; `uv run --frozen --no-dev python -m python_symbol_extractor <sdk-root>`; loads the target statically through griffe, so it needs no installation of the SDK
+- `packages/python-symbol-extractor/`: sibling Python package managed with uv; `uv run --frozen --no-dev python -m python_symbol_extractor <sdk-root>`; loads the target statically through griffe, so it needs no installation of the SDK
 - `parse-ignore.ts` — `.sdk-parse-ignore` (gitignore syntax) excludes paths from Swift parsing; TypeScript uses TypeDoc entrypoints instead
 - `api-check.ts` / `check-api-symbols.ts` — blocking public API coverage logic + CLI; `additions` mode diffs a PR against its base, while `full` mode statically audits one checkout
 

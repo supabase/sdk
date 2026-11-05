@@ -27,8 +27,11 @@ Every directory under the SDK root with a `pyproject.toml` is a project. A
 project's packages are the directories with an `__init__.py` directly under
 its `src/` directory, or directly under the project directory when it has no
 `src/`. Directories named `test` or `tests`, hidden directories, `build`,
-`dist`, `node_modules` and `*.egg-info` are never packages, and neither is
-anything matched by `.sdk-parse-ignore`.
+`dist`, `node_modules`, `*.egg-info` and anything matched by
+`.sdk-parse-ignore` are never entered, so neither they nor projects nested
+inside them count. Two projects defining a package with the same name fail
+the extraction, since griffe can load only one of them. A package whose
+`__init__.py` fails to parse is skipped as a whole, with a warning.
 
 ## What counts as public
 
@@ -39,7 +42,12 @@ anything matched by `.sdk-parse-ignore`.
   re-exports it: an import the importing module lists in its `__all__`, or
   that a wildcard import exposes when the module has no `__all__`. The
   symbol keeps the name, file and line it was defined with, even when the
-  re-export renames it.
+  re-export renames it. The one exception is a definition whose own name
+  starts with `_`: it is reported under the re-export's name, the only public
+  name it has.
+- A private module that a public module re-exports the same way, such as
+  `from . import _impl as impl` with `impl` in `__all__`, is read as if it
+  were public.
 - `@property` and `@cached_property` methods are properties. Property setters
   and deleters, and `@overload` signatures, fold into the single symbol they
   belong to. Plain attributes and module-level constants are not reported.

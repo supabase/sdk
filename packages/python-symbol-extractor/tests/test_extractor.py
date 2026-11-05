@@ -208,3 +208,83 @@ class TestRules:
             },
         )
         assert names(parse_python_project(tmp_path)) == {"Typed", "Attempted"}
+
+    def test_private_name_re_exported_under_a_public_name(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": """
+                    from ._impl import _Thing as Thing
+
+                    __all__ = ["Thing"]
+                """,
+                "pkg/_impl.py": "class _Thing:\n    def go(self): ...\n",
+            },
+        )
+        symbols = parse_python_project(tmp_path)
+        assert names(symbols) == {"Thing", "Thing.go"}
+        assert by_name(symbols, "Thing").file == "pkg/_impl.py"
+
+    def test_re_exported_private_module_is_read_as_public(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": """
+                    from . import _impl as impl
+
+                    __all__ = ["impl"]
+                """,
+                "pkg/_impl/__init__.py": "from .core import *\n",
+                "pkg/_impl/core.py": """
+                    __all__ = ["Core"]
+
+                    class Core: ...
+
+                    class Hidden: ...
+                """,
+                "pkg/_impl/_deeper.py": "class Deeper: ...\n",
+            },
+        )
+        assert names(parse_python_project(tmp_path)) == {"Core", "Hidden"}
+
+    def test_projects_nested_in_test_directories_are_not_read(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": "class Kept: ...\n",
+                "tests/fixtures/sample_app/pyproject.toml": "",
+                "tests/fixtures/sample_app/app/__init__.py": "class Fixture: ...\n",
+            },
+        )
+        assert names(parse_python_project(tmp_path)) == {"Kept"}
+
+    def test_duplicate_package_names_fail(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "a/pyproject.toml": "",
+                "a/src/common/__init__.py": "class FromA: ...\n",
+                "b/pyproject.toml": "",
+                "b/src/common/__init__.py": "class FromB: ...\n",
+            },
+        )
+        with pytest.raises(ValueError, match="a/src/common and b/src/common"):
+            parse_python_project(tmp_path)
+
+    def test_package_whose_init_fails_to_parse_is_skipped_with_a_warning(
+        self, tmp_path, capsys
+    ):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "broken/__init__.py": "def oops(:\n",
+                "broken/ok.py": "class Fine: ...\n",
+                "pkg/__init__.py": "class Kept: ...\n",
+            },
+        )
+        assert names(parse_python_project(tmp_path)) == {"Kept"}
+        assert "warning: skipped broken:" in capsys.readouterr().err

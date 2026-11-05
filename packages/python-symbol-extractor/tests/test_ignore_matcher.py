@@ -9,13 +9,7 @@ def test_load_without_file_ignores_nothing(tmp_path):
 
 def test_matches_directory_and_glob_patterns_honouring_negation():
     matcher = IgnoreMatcher.parse(
-        """
-        # comment
-        **/example/**
-        *_pb2.py
-        build/
-        !keep/build/
-        """
+        "# comment\n**/example/**\n*_pb2.py\nbuild/\n!keep/build/\n"
     )
     assert matcher.ignores("packages/auth/example/main.py")
     assert matcher.ignores("packages/auth/src/models_pb2.py")
@@ -49,3 +43,10 @@ def test_leading_slash_anchors_and_question_mark_matches_one_character():
     assert not matcher.ignores("packages/docs/conf.py")
     assert matcher.ignores("src/v1.py")
     assert not matcher.ignores("src/v10.py")
+
+
+def test_character_classes_and_escapes():
+    matcher = IgnoreMatcher.parse("*_pb[0-9].py\n\\#notes.py\n")
+    assert matcher.ignores("src/models_pb2.py")
+    assert not matcher.ignores("src/models_pbx.py")
+    assert matcher.ignores("src/#notes.py")

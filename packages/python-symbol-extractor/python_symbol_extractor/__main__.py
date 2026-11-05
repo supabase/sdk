@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 
 from .extractor import parse_python_project
@@ -12,6 +13,7 @@ def main(argv: list[str]) -> int:
         )
         return 1
 
+    logging.getLogger("griffe").addHandler(logging.NullHandler())
     try:
         symbols = parse_python_project(argv[0])
     except Exception as error:

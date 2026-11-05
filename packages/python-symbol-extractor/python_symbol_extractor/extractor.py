@@ -1,6 +1,6 @@
 import os
 import sys
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 import griffe
@@ -8,8 +8,7 @@ import griffe
 from .ignore_matcher import IgnoreMatcher
 from .parsed_symbol import ParsedSymbol, SymbolKind
 
-_SKIPPED_DIRECTORIES = {"__pycache__", "node_modules", "build", "dist"}
-_SKIPPED_PACKAGE_NAMES = {"test", "tests"}
+_SKIPPED_DIRECTORIES = {"__pycache__", "node_modules", "build", "dist", "test", "tests"}
 
 
 def parse_python_project(project_root: str | Path) -> list[ParsedSymbol]:
@@ -32,20 +31,32 @@ def parse_python_project(project_root: str | Path) -> list[ParsedSymbol]:
             {str(package_root.parent) for package_root in package_roots}
         )
     )
+    loaded = []
     for package_root in package_roots:
-        loader.load(package_root.name, try_relative_path=False)
+        try:
+            loader.load(package_root.name, try_relative_path=False)
+        except griffe.LoadingError as error:
+            relative = package_root.relative_to(root).as_posix()
+            print(f"warning: skipped {relative}: {error}", file=sys.stderr)
+            continue
+        loaded.append(package_root)
     loader.resolve_aliases(external=False)
-    _warn_about_skipped_files(root, package_roots, loader)
+    _warn_about_skipped_files(root, loaded, loader)
 
     collector = _Collector(root, ignore)
-    for package_root in package_roots:
+    for package_root in loaded:
         collector.walk_module(loader.modules_collection[package_root.name])
     return sorted(collector.symbols, key=lambda s: (s.name, s.file, s.line or 0))
 
 
 def find_package_roots(root: Path, ignore: IgnoreMatcher) -> list[Path]:
-    """Lists the package directories of every project under `root`."""
-    package_roots = []
+    """Lists the package directories of every project under `root`.
+
+    Griffe can load only one package per name, so two projects defining a
+    package with the same name fail the extraction instead of shadowing each
+    other.
+    """
+    package_roots: dict[str, Path] = {}
     for dirpath, dirnames, filenames in os.walk(root):
         directory = Path(dirpath)
         dirnames[:] = sorted(
@@ -60,13 +71,19 @@ def find_package_roots(root: Path, ignore: IgnoreMatcher) -> list[Path]:
         if not layout.is_dir():
             layout = directory
         for child in sorted(layout.iterdir()):
-            if (
-                (child / "__init__.py").is_file()
-                and child.name not in _SKIPPED_PACKAGE_NAMES
-                and not _skip_directory(root, child, ignore)
+            if not (child / "__init__.py").is_file() or _skip_directory(
+                root, child, ignore
             ):
-                package_roots.append(child)
-    return package_roots
+                continue
+            previous = package_roots.get(child.name)
+            if previous is not None:
+                raise ValueError(
+                    f"package {child.name} is defined in both "
+                    f"{previous.relative_to(root).as_posix()} and "
+                    f"{child.relative_to(root).as_posix()}"
+                )
+            package_roots[child.name] = child
+    return list(package_roots.values())
 
 
 def _skip_directory(root: Path, directory: Path, ignore: IgnoreMatcher) -> bool:
@@ -97,7 +114,9 @@ def _warn_about_skipped_files(
             )
 
 
-def _all_modules(objects) -> Iterator[griffe.Module]:
+def _all_modules(
+    objects: Iterable[griffe.Object | griffe.Alias],
+) -> Iterator[griffe.Module]:
     for obj in objects:
         if obj.is_alias or not obj.is_module:
             continue
@@ -117,9 +136,11 @@ class _Collector:
     nor any module on the path to it starts with `_`. A definition in a private
     module also counts as public when a public module re-exports it, which is
     an import that griffe considers public: listed in the importing module's
-    `__all__`, or exposed by a wildcard import when there is no `__all__`.
-    Re-exported definitions are reported under the name, file and line they
-    were defined with.
+    `__all__`, or exposed by a wildcard import when there is no `__all__`. The
+    same applies to a private module that a public module re-exports: it is
+    read as if it were public. Re-exported definitions are reported under the
+    name, file and line they were defined with, except that a private name
+    takes the re-export's name, since that is the only public one it has.
     """
 
     def __init__(self, root: Path, ignore: IgnoreMatcher) -> None:
@@ -131,6 +152,9 @@ class _Collector:
     def walk_module(self, module: griffe.Module) -> None:
         if module.name.startswith("_"):
             return
+        self._walk_members(module)
+
+    def _walk_members(self, module: griffe.Module) -> None:
         for member in module.members.values():
             if member.is_alias:
                 self._collect_reexport(member)
@@ -146,11 +170,19 @@ class _Collector:
             target = alias.final_target
         except (griffe.AliasResolutionError, griffe.CyclicAliasError):
             return
-        if not target.is_module:
-            self._collect(target, prefix="", in_class=False)
+        if target.is_module:
+            if target.path not in self._seen:
+                self._seen.add(target.path)
+                self._walk_members(target)
+        else:
+            name = alias.name if target.name.startswith("_") else target.name
+            self._collect(target, prefix="", in_class=False, name=name)
 
-    def _collect(self, obj: griffe.Object, prefix: str, in_class: bool) -> None:
-        if obj.name.startswith("_"):
+    def _collect(
+        self, obj: griffe.Object, prefix: str, in_class: bool, name: str | None = None
+    ) -> None:
+        name = name or obj.name
+        if name.startswith("_"):
             return
         kind = _kind(obj, in_class)
         if kind is None or obj.path in self._seen:
@@ -161,14 +193,14 @@ class _Collector:
         if file is None or self._ignore.ignores(file):
             return
 
-        name = f"{prefix}.{obj.name}" if prefix else obj.name
+        qualified = f"{prefix}.{name}" if prefix else name
         self.symbols.append(
-            ParsedSymbol(name=name, kind=kind, file=file, line=obj.lineno)
+            ParsedSymbol(name=qualified, kind=kind, file=file, line=obj.lineno)
         )
         if kind is SymbolKind.CLASS:
             for member in obj.members.values():
                 if not member.is_alias:
-                    self._collect(member, prefix=name, in_class=True)
+                    self._collect(member, prefix=qualified, in_class=True)
 
     def _relative_file(self, obj: griffe.Object) -> str | None:
         filepath = obj.filepath

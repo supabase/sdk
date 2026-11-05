@@ -5,6 +5,7 @@ description = "Extracts the public API surface of Python packages into the Parse
 requires-python = ">=3.11"
 dependencies = [
     "griffelib>=2.4.1",
+    "pathspec>=1.1.1",
 ]
 
 [dependency-groups]
