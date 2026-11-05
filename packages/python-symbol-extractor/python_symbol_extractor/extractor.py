@@ -1,3 +1,4 @@
+import ast
 import os
 import sys
 from collections.abc import Iterable, Iterator
@@ -9,6 +10,7 @@ from .ignore_matcher import IgnoreMatcher
 from .parsed_symbol import ParsedSymbol, SymbolKind
 
 _SKIPPED_DIRECTORIES = {"__pycache__", "node_modules", "build", "dist", "test", "tests"}
+_SKIPPED_MODULES = {"test", "tests", "conftest"}
 
 
 def parse_python_project(project_root: str | Path) -> list[ParsedSymbol]:
@@ -25,26 +27,24 @@ def parse_python_project(project_root: str | Path) -> list[ParsedSymbol]:
 
     ignore = IgnoreMatcher.load(root)
     package_roots = find_package_roots(root, ignore)
+    if not package_roots:
+        raise ValueError(
+            f"no Python packages found under {root}: expected a pyproject.toml with a "
+            "package directory under src/ or next to it"
+        )
 
     loader = griffe.GriffeLoader(
         search_paths=sorted(
             {str(package_root.parent) for package_root in package_roots}
         )
     )
-    loaded = []
     for package_root in package_roots:
-        try:
-            loader.load(package_root.name, try_relative_path=False)
-        except griffe.LoadingError as error:
-            relative = package_root.relative_to(root).as_posix()
-            print(f"warning: skipped {relative}: {error}", file=sys.stderr)
-            continue
-        loaded.append(package_root)
+        loader.load(package_root.name, try_relative_path=False)
     loader.resolve_aliases(external=False)
-    _warn_about_skipped_files(root, loaded, loader)
+    _check_unloaded_files(root, package_roots, loader, ignore)
 
     collector = _Collector(root, ignore)
-    for package_root in loaded:
+    for package_root in package_roots:
         collector.walk_module(loader.modules_collection[package_root.name])
     return sorted(collector.symbols, key=lambda s: (s.name, s.file, s.line or 0))
 
@@ -97,21 +97,54 @@ def _skip_directory(root: Path, directory: Path, ignore: IgnoreMatcher) -> bool:
     return ignore.ignores(directory.relative_to(root).as_posix(), is_directory=True)
 
 
-def _warn_about_skipped_files(
-    root: Path, package_roots: list[Path], loader: griffe.GriffeLoader
+def _check_unloaded_files(
+    root: Path,
+    package_roots: list[Path],
+    loader: griffe.GriffeLoader,
+    ignore: IgnoreMatcher,
 ) -> None:
+    """Fails on source files griffe could not parse, unless they are ignored.
+
+    A parse failure drops every symbol in the file on both the pull request
+    and its base, which would let new public API through unnoticed, so it is
+    an error rather than a warning. A parseable file griffe left out for
+    another reason is only reported.
+    """
     loaded = {
         Path(filepath)
         for module in _all_modules(loader.modules_collection.members.values())
         for filepath in _filepaths(module)
     }
+    failures = []
     for package_root in package_roots:
         for path in sorted(package_root.rglob("*.py")):
-            if "__pycache__" in path.parts or path in loaded:
+            relative = path.relative_to(root).as_posix()
+            if path in loaded or _is_skipped_source(
+                path.relative_to(package_root), ignore, relative
+            ):
                 continue
-            print(
-                f"warning: skipped {path.relative_to(root).as_posix()}", file=sys.stderr
-            )
+            try:
+                ast.parse(path.read_text(encoding="utf-8"), filename=relative)
+            except (SyntaxError, ValueError) as error:
+                failures.append(f"{relative}: {error}")
+            else:
+                print(f"warning: skipped {relative}", file=sys.stderr)
+    if failures:
+        raise ValueError(
+            "failed to parse source files, add them to .sdk-parse-ignore if they are "
+            "not public API:\n  " + "\n  ".join(failures)
+        )
+
+
+def _is_skipped_source(
+    within_package: Path, ignore: IgnoreMatcher, relative: str
+) -> bool:
+    directories = within_package.parts[:-1]
+    if any(name in _SKIPPED_MODULES or name.startswith(".") for name in directories):
+        return True
+    if within_package.stem in _SKIPPED_MODULES:
+        return True
+    return ignore.ignores(relative)
 
 
 def _all_modules(
@@ -150,7 +183,7 @@ class _Collector:
         self.symbols: list[ParsedSymbol] = []
 
     def walk_module(self, module: griffe.Module) -> None:
-        if module.name.startswith("_"):
+        if module.name.startswith("_") or module.name in _SKIPPED_MODULES:
             return
         self._walk_members(module)
 

@@ -17,9 +17,13 @@ The JSON dump goes to stdout, sorted by name.
 
 Each symbol has a `name`, a `kind`, a `file` and a `line`. `kind` is one of
 `class`, `method`, `property` or `function`. Methods are reported as
-`ClassName.method`, nested classes as `Outer.Inner`. Files that fail to parse
-are skipped with a warning on stderr, and any other failure exits with status
-1.
+`ClassName.method`, nested classes as `Outer.Inner`.
+
+Every failure exits with status 1, including a source file that does not
+parse: a parse failure would drop the file's symbols on the pull request and
+its base alike, so new public API could pass the check unnoticed. Add such a
+file to `.sdk-parse-ignore` if it is not public API. A parseable file that
+griffe leaves out for another reason is skipped with a warning on stderr.
 
 ## Which packages are read
 
@@ -28,10 +32,13 @@ project's packages are the directories with an `__init__.py` directly under
 its `src/` directory, or directly under the project directory when it has no
 `src/`. Directories named `test` or `tests`, hidden directories, `build`,
 `dist`, `node_modules`, `*.egg-info` and anything matched by
-`.sdk-parse-ignore` are never entered, so neither they nor projects nested
-inside them count. Two projects defining a package with the same name fail
-the extraction, since griffe can load only one of them. A package whose
-`__init__.py` fails to parse is skipped as a whole, with a warning.
+`.sdk-parse-ignore` are never entered during discovery, so neither they nor
+projects nested inside them count. Finding no package at all is an error, so
+a layout the extractor does not understand fails loudly instead of passing
+the check with an empty surface. Two projects defining a package with the
+same name fail the extraction too, since griffe can load only one of them.
+
+Inside a package, submodules named `test`, `tests` or `conftest` are skipped.
 
 ## What counts as public
 
@@ -58,6 +65,8 @@ the extraction, since griffe can load only one of them. A package whose
 
 Loading is static, through [griffe](https://mkdocstrings.github.io/griffe/),
 so the target packages need neither installation nor importable dependencies.
+The interpreter is pinned in `.python-version`, since griffe parses with the
+running interpreter's `ast` and a floating version would change what parses.
 Re-exports resolve only between the packages found under the root; an import
 from a package outside the tree is left alone.
 

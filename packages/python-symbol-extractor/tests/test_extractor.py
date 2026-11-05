@@ -1,6 +1,7 @@
 import textwrap
 from pathlib import Path
 
+import griffe
 import pytest
 
 from python_symbol_extractor import ParsedSymbol, SymbolKind, parse_python_project
@@ -99,12 +100,8 @@ class TestSampleProject:
     def test_sorted_by_name(self, symbols):
         assert [s.name for s in symbols] == sorted(s.name for s in symbols)
 
-    def test_warns_about_unparseable_files(self, capsys):
-        parse_python_project(FIXTURE)
-        assert (
-            "warning: skipped packages/auth/src/auth/broken.py"
-            in capsys.readouterr().err
-        )
+    def test_ignored_unparseable_files_do_not_fail(self, symbols):
+        assert "packages/auth/src/auth/broken.py" not in {s.file for s in symbols}
 
 
 class TestRules:
@@ -114,7 +111,8 @@ class TestRules:
 
     def test_directories_without_pyproject_are_not_projects(self, tmp_path):
         write_project(tmp_path, {"pkg/__init__.py": "class Thing: ...\n"})
-        assert parse_python_project(tmp_path) == []
+        with pytest.raises(ValueError, match="no Python packages found"):
+            parse_python_project(tmp_path)
 
     def test_wildcard_re_export_follows_all(self, tmp_path):
         write_project(
@@ -274,17 +272,53 @@ class TestRules:
         with pytest.raises(ValueError, match="a/src/common and b/src/common"):
             parse_python_project(tmp_path)
 
-    def test_package_whose_init_fails_to_parse_is_skipped_with_a_warning(
-        self, tmp_path, capsys
-    ):
+    def test_unparseable_file_fails(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": "",
+                "pkg/sub/__init__.py": "def oops(:\n",
+                "pkg/sub/good.py": "class Lost: ...\n",
+            },
+        )
+        with pytest.raises(ValueError, match=r"pkg/sub/__init__\.py: invalid syntax"):
+            parse_python_project(tmp_path)
+
+    def test_unparseable_file_in_ignored_path_is_tolerated(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                ".sdk-parse-ignore": "pkg/vendored/\n",
+                "pkg/__init__.py": "class Kept: ...\n",
+                "pkg/vendored/__init__.py": "def oops(:\n",
+            },
+        )
+        assert names(parse_python_project(tmp_path)) == {"Kept"}
+
+    def test_package_whose_init_fails_to_parse_fails(self, tmp_path):
         write_project(
             tmp_path,
             {
                 "pyproject.toml": "",
                 "broken/__init__.py": "def oops(:\n",
-                "broken/ok.py": "class Fine: ...\n",
                 "pkg/__init__.py": "class Kept: ...\n",
             },
         )
+        with pytest.raises(griffe.LoadingError):
+            parse_python_project(tmp_path)
+
+    def test_test_modules_inside_a_package_are_skipped(self, tmp_path):
+        write_project(
+            tmp_path,
+            {
+                "pyproject.toml": "",
+                "pkg/__init__.py": "class Kept: ...\n",
+                "pkg/conftest.py": "def fixture_thing(): ...\n",
+                "pkg/tests/__init__.py": "",
+                "pkg/tests/test_x.py": "class TestInsidePkg: ...\n",
+                "pkg/tests/broken.py": "def oops(:\n",
+            },
+        )
         assert names(parse_python_project(tmp_path)) == {"Kept"}
-        assert "warning: skipped broken:" in capsys.readouterr().err
