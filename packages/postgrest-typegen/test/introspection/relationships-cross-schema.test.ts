@@ -39,6 +39,17 @@ beforeAll(async () => {
     );
     create view public.projects as select * from private.projects;
     create view public.members as select * from private.members;
+
+    create schema api;
+    create schema extra;
+    create table api.accounts (id int primary key);
+    create table private.invoices (
+      id int primary key,
+      account_id int not null
+        constraint invoices_account_id_fkey references api.accounts (id)
+    );
+    create view extra.invoices as select * from private.invoices;
+    create view api.invoices as select * from extra.invoices;
   `);
   metadata = await introspect(pool, { includedSchemas: ["public"] });
 }, 180_000);
@@ -155,5 +166,34 @@ describe("view relationships over tables in a schema that is not requested", () 
           }
           "
     `);
+  });
+});
+
+describe("view relationships through a view in an extra search path schema", () => {
+  const invoiceRelationships = async (extraSearchPath?: string[]) =>
+    (
+      await introspect(pool, {
+        includedSchemas: ["api"],
+        ...(extraSearchPath ? { extraSearchPath } : {}),
+      })
+    ).relationships;
+
+  test("resolve to the base table's foreign key when the schema is passed", async () => {
+    expect(await invoiceRelationships(["extra"])).toEqual([
+      {
+        foreign_key_name: "invoices_account_id_fkey",
+        schema: "api",
+        relation: "invoices",
+        columns: ["account_id"],
+        is_one_to_one: false,
+        referenced_schema: "api",
+        referenced_relation: "accounts",
+        referenced_columns: ["id"],
+      },
+    ]);
+  });
+
+  test("stay unresolved without it", async () => {
+    expect(await invoiceRelationships()).toEqual([]);
   });
 });
