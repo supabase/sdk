@@ -8,8 +8,8 @@ The foreground signal is the platform's notification that the app moved from the
 
 On the foreground signal, while the connection is connected, the SDK:
 
-- Sends a heartbeat at once, outside the heartbeat schedule, and restarts the heartbeat interval from that moment. When a heartbeat is already waiting for its reply, the SDK sends no second one and the probe waits for that reply.
-- Starts a probe deadline of 5 seconds.
+- Sends a heartbeat at once, outside the heartbeat schedule, and restarts the heartbeat interval from that moment. When a heartbeat is already waiting for its reply, the SDK sends no second one, and the reply to that heartbeat ends the probe.
+- Starts a probe deadline of 5 seconds at once, whether or not it sent a heartbeat.
 
 A reply to the heartbeat before the deadline ends the probe. Nothing else changes.
 
@@ -28,8 +28,8 @@ flowchart TB
     C -- no --> N(["No probe"])
     C -- yes --> P{"Heartbeat already waiting for its reply?"}
     P -- no --> S["Send a heartbeat now.<br>Restart the heartbeat interval."]
-    P -- yes --> W["Send nothing.<br>Wait for that reply."]
-    S --> D["Start the 5 second probe deadline"]
+    P -- yes --> W["Send nothing.<br>The reply to that heartbeat counts."]
+    S --> D["Start the 5 second probe deadline at once.<br>It runs while the SDK waits for the reply."]
     W --> D
     D --> R{"Reply before the deadline?"}
     R -- yes --> OK(["Probe ends. Nothing else changes."])
