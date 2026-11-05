@@ -14,6 +14,23 @@ In every other state the SDK ignores a wake hint. It does not open a socket whil
 
 The hint is never a gate. The SDK starts reconnect attempts on the backoff schedule when the monitor reports no usable path, and a connect call neither waits for the monitor nor fails because of it.
 
+```mermaid
+---
+title: Handling a network path report
+---
+flowchart TB
+    A["Network path report"] --> F{"First report since the monitor started?"}
+    F -- yes --> I1(["Ignore. It describes the current path."])
+    F -- no --> S{"Path satisfied?"}
+    S -- "no: unsatisfied, or a connection attempt may bring a path up" --> I2(["Ignore"])
+    S -- yes --> H["Wake hint"]
+    H --> ST{"Connection state"}
+    ST -- "waiting out a reconnect backoff" --> R(["Cancel the wait. Reconnect at once.<br>The attempt count goes on from the failed attempt."])
+    ST -- connected --> I3(["Ignore. Do not close or probe the socket."])
+    ST -- "connect attempt in flight" --> I4(["Ignore. Do not interrupt the attempt."])
+    ST -- disconnected --> I5(["Ignore. Open no socket, even after an explicit disconnect."])
+```
+
 ## Notes
 
 Some platforms keep reporting an unsatisfied path to ordinary apps, so the hint cannot decide whether to connect. It can only make a wait shorter.

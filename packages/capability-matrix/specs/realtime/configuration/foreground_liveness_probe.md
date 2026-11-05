@@ -19,6 +19,45 @@ The probe runs only while the connection is connected. In every other connection
 
 The SDK does not disconnect on the background signal, and sends no frame of its own while the app is in the background.
 
+```mermaid
+---
+title: Handling the foreground signal
+---
+flowchart TB
+    A["Foreground signal"] --> C{"Connection connected?"}
+    C -- no --> N(["No probe"])
+    C -- yes --> P{"Heartbeat already waiting for its reply?"}
+    P -- no --> S["Send a heartbeat now.<br>Restart the heartbeat interval."]
+    P -- yes --> W["Send nothing.<br>Wait for that reply."]
+    S --> D["Start the 5 second probe deadline"]
+    W --> D
+    D --> R{"Reply before the deadline?"}
+    R -- yes --> OK(["Probe ends. Nothing else changes."])
+    R -- no --> T["1. Publish the timeout heartbeat event. 2. Close the socket."]
+    T --> RC(["Reconnect at once, with no backoff wait.<br>A failed attempt follows the normal backoff."])
+```
+
+On a dead socket the probe replaces a wait of up to two heartbeat intervals with one deadline:
+
+```mermaid
+---
+title: Foreground signal on a dead socket
+---
+sequenceDiagram
+    participant App
+    participant SDK
+    participant Server
+    Note over App,Server: The platform suspended the app. The socket stays open and silent.
+    App->>SDK: Foreground signal
+    SDK->>Server: Heartbeat, sent now
+    Note over SDK: Probe deadline starts, 5 seconds
+    Server--xSDK: No reply
+    Note over SDK: Deadline passes
+    SDK->>SDK: Publish timeout heartbeat event, close the socket
+    SDK->>Server: Open a new socket, no backoff wait
+    Server-->>SDK: Connected
+```
+
 ## Notes
 
 The probe needs a platform that reports when an app enters the foreground. Runtimes without that signal have no probe, and `not_applicable` is the right compliance status for them.
