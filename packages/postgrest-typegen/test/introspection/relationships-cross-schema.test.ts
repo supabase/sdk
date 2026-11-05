@@ -9,7 +9,10 @@ import { Wait } from "testcontainers";
 
 import { generateTypescript } from "../../src/generation/typescript.ts";
 import { introspect } from "../../src/introspection/index.ts";
-import type { GeneratorMetadata } from "../../src/types.ts";
+import type {
+  GeneratorMetadata,
+  PostgresRelationship,
+} from "../../src/types.ts";
 
 let container: StartedPostgreSqlContainer;
 let pool: Pool;
@@ -50,6 +53,11 @@ beforeAll(async () => {
     );
     create view extra.invoices as select * from private.invoices;
     create view api.invoices as select * from extra.invoices;
+    create table api.payments (
+      id int primary key,
+      invoice_id int not null
+        constraint payments_invoice_id_fkey references private.invoices (id)
+    );
   `);
   metadata = await introspect(pool, { includedSchemas: ["public"] });
 }, 180_000);
@@ -170,16 +178,29 @@ describe("view relationships over tables in a schema that is not requested", () 
 });
 
 describe("view relationships through a view in an extra search path schema", () => {
-  const invoiceRelationships = async (extraSearchPath?: string[]) =>
+  const apiRelationships = async (
+    foreignKeyName: string,
+    extraSearchPath?: string[],
+  ) =>
     (
-      await introspect(pool, {
-        includedSchemas: ["api"],
-        ...(extraSearchPath ? { extraSearchPath } : {}),
-      })
-    ).relationships;
+      await introspect(pool, { includedSchemas: ["api"], extraSearchPath })
+    ).relationships.filter((r) => r.foreign_key_name === foreignKeyName);
 
-  test("resolve to the base table's foreign key when the schema is passed", async () => {
-    expect(await invoiceRelationships(["extra"])).toEqual([
+  const paymentsToPrivateInvoices: PostgresRelationship = {
+    foreign_key_name: "payments_invoice_id_fkey",
+    schema: "api",
+    relation: "payments",
+    columns: ["invoice_id"],
+    is_one_to_one: false,
+    referenced_schema: "private",
+    referenced_relation: "invoices",
+    referenced_columns: ["id"],
+  };
+
+  test("a view gets its base table's foreign key when the schema is passed", async () => {
+    expect(
+      await apiRelationships("invoices_account_id_fkey", ["extra"]),
+    ).toEqual([
       {
         foreign_key_name: "invoices_account_id_fkey",
         schema: "api",
@@ -193,7 +214,22 @@ describe("view relationships through a view in an extra search path schema", () 
     ]);
   });
 
-  test("stay unresolved without it", async () => {
-    expect(await invoiceRelationships()).toEqual([]);
+  test("a foreign key to the base table reaches the view when the schema is passed", async () => {
+    expect(
+      await apiRelationships("payments_invoice_id_fkey", ["extra"]),
+    ).toEqual([
+      paymentsToPrivateInvoices,
+      {
+        ...paymentsToPrivateInvoices,
+        referenced_schema: "api",
+      },
+    ]);
+  });
+
+  test("both stay unresolved without it", async () => {
+    expect(await apiRelationships("invoices_account_id_fkey")).toEqual([]);
+    expect(await apiRelationships("payments_invoice_id_fkey")).toEqual([
+      paymentsToPrivateInvoices,
+    ]);
   });
 });
