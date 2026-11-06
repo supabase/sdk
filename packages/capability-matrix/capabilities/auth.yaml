@@ -114,7 +114,7 @@ features:
     group: mfa
   - id: auth.mfa.enroll
     name: MFA Enroll
-    description: Enroll a new MFA factor (TOTP or phone) for the current user.
+    description: Enroll a new MFA factor (TOTP, phone, or WebAuthn) for the current user.
     group: mfa
   - id: auth.mfa.get_authenticator_assurance_level
     name: MFA Get Authenticator Assurance Level
