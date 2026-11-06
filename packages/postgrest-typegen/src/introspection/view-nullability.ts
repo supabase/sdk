@@ -36,7 +36,7 @@ export function applyViewColumnNullability<T extends PostgresColumn>(
   rows: ViewDefinitionRow[],
 ): T[] {
   const viewIds = new Set(rows.map((row) => String(row.view_id)));
-  const nonNull = inferNonNullViewColumns(rows);
+  const nonNull = queryNullability(rows).nonNullViewColumns();
   return columns.map((column) =>
     column.is_nullable &&
     viewIds.has(String(column.table_id)) &&
@@ -46,22 +46,35 @@ export function applyViewColumnNullability<T extends PostgresColumn>(
   );
 }
 
+/** Which output columns of a query tree can never be null. */
+export interface QueryNullability {
+  /** The ids (`<view oid>.<attnum>`) of the non-null columns of the views. */
+  nonNullViewColumns(): Set<string>;
+  /** The `resno` of the non-null output columns of `query`. */
+  nonNullOutputColumns(query: NodeTreeNode): Set<number>;
+}
+
 /**
- * The ids (`<view oid>.<attnum>`) of the view columns that can never be null.
- * A column qualifies when it is a plain reference to a `NOT NULL` column, or
- * to a view column that qualifies, followed through joins, subqueries,
- * non-recursive CTEs and `GROUP BY`, and nothing on the way puts it on the
- * nullable side of an outer join, in a set operation or under grouping sets.
- * The outer-join check walks the join tree instead of reading
+ * Resolves output column nullability over the views of `rows` and the
+ * `NOT NULL` base columns they, and `baseColumns`, reference.
+ *
+ * An output column can never be null when it is a plain reference to a
+ * `NOT NULL` column, or to a view column that qualifies, followed through
+ * joins, subqueries, non-recursive CTEs and `GROUP BY`, and nothing on the way
+ * puts it on the nullable side of an outer join, in a set operation or under
+ * grouping sets. The outer-join check walks the join tree instead of reading
  * `varnullingrels`, which PostgreSQL 15 does not have.
  */
-function inferNonNullViewColumns(rows: ViewDefinitionRow[]): Set<string> {
+export function queryNullability(
+  rows: ViewDefinitionRow[],
+  baseColumns: ViewDefinitionRow["non_null_columns"] = [],
+): QueryNullability {
   const definitions = new Map(
     rows.map((row) => [String(row.view_id), row.definition]),
   );
   const nonNullBaseColumns = new Set(
-    rows.flatMap((row) =>
-      row.non_null_columns.map(([relation, attnum]) => `${relation}.${attnum}`),
+    [...rows.flatMap((row) => row.non_null_columns), ...baseColumns].map(
+      ([relation, attnum]) => `${relation}.${attnum}`,
     ),
   );
   const resolved = new Map<string, Set<number>>();
@@ -85,19 +98,30 @@ function inferNonNullViewColumns(rows: ViewDefinitionRow[]): Set<string> {
     try {
       const tree = parseNodeTree(definitions.get(viewId) ?? "");
       const query = Array.isArray(tree) ? tree[0] : tree;
-      if (isNode(query, "QUERY") && allowsNonNull(query)) {
-        for (const entry of list(query.fields.targetList)) {
-          if (
-            isNode(entry, "TARGETENTRY") &&
-            entry.fields.resjunk !== "true" &&
-            isNonNullExpression(entry.fields.expr, [query])
-          ) {
-            columns.add(Number(entry.fields.resno));
-          }
+      if (isNode(query, "QUERY")) {
+        for (const resno of nonNullOutputColumns(query)) {
+          columns.add(resno);
         }
       }
     } catch {
       columns.clear();
+    }
+    return columns;
+  };
+
+  const nonNullOutputColumns = (query: NodeTreeNode): Set<number> => {
+    const columns = new Set<number>();
+    if (!allowsNonNull(query)) {
+      return columns;
+    }
+    for (const entry of list(query.fields.targetList)) {
+      if (
+        isNode(entry, "TARGETENTRY") &&
+        entry.fields.resjunk !== "true" &&
+        isNonNullExpression(entry.fields.expr, [query])
+      ) {
+        columns.add(Number(entry.fields.resno));
+      }
     }
     return columns;
   };
@@ -188,13 +212,18 @@ function inferNonNullViewColumns(rows: ViewDefinitionRow[]): Set<string> {
     );
   };
 
-  const result = new Set<string>();
-  for (const viewId of definitions.keys()) {
-    for (const attnum of nonNullColumnsOfView(viewId)) {
-      result.add(`${viewId}.${attnum}`);
-    }
-  }
-  return result;
+  return {
+    nonNullViewColumns: () => {
+      const result = new Set<string>();
+      for (const viewId of definitions.keys()) {
+        for (const attnum of nonNullColumnsOfView(viewId)) {
+          result.add(`${viewId}.${attnum}`);
+        }
+      }
+      return result;
+    },
+    nonNullOutputColumns,
+  };
 }
 
 function allowsNonNull(query: NodeTreeNode): boolean {
