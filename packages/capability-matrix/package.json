@@ -11,7 +11,6 @@
     "sync-compliance": "bun src/sync-compliance-cli.ts",
     "normalize-typedoc": "bun src/normalize-typedoc-cli.ts",
     "normalize-symbolgraph": "bun src/normalize-symbolgraph-cli.ts",
-    "normalize-griffe": "bun src/normalize-griffe-cli.ts",
     "check-api-symbols": "bun src/check-api-symbols.ts",
     "coverage-mode": "bun src/coverage-mode-cli.ts",
     "check-drift": "bun src/check-drift.ts",
