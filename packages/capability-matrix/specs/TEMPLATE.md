@@ -34,6 +34,15 @@
      covers it, otherwise the handler. An SDK implementer who wants to know what a delete
      removes reads the guide, not this file.
 
+     Add a Mermaid diagram when a rule has branches, an order, or timing that prose makes
+     the reader hold in their head: a decision with three or more outcomes, a fixed order of
+     checks, a retry loop, or the app, the SDK, and the server acting at the same time. Use a
+     `flowchart` for decisions and orders, and a `sequenceDiagram` for timing. A list of
+     independent facts stays a list or a table. The prose stays complete and normative: a
+     diagram restates it, adds no rule, and uses its exact names, and when the two disagree
+     the prose is right. Put the diagram after the prose it shows, quote node labels, and
+     check that it renders.
+
      Before opening a PR, apply four tests to every sentence:
      1. Removal: delete it if an implementer could reconstruct it from the linked API spec.
         If only the API section is left, the feature does not need a spec file.
