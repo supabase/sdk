@@ -22,6 +22,18 @@ While the stored session cannot be read, the SDK does not know whether a user is
 
 A stored session that the SDK cannot decode is removed from storage, and the client is signed out with the reason session-missing (see [Sign-Out Reason](../../auth/session/sign_out_reason.md)). A read cannot repair that data, so the SDK does not retry it.
 
+What the SDK makes of a read of the session key:
+
+```mermaid
+flowchart TD
+  read(["Read the session key"]) --> result{"Result"}
+  result -- "a value" --> decodes{"Does it decode?"}
+  decodes -- yes --> signedIn["Signed in with that session"]
+  decodes -- no --> removed["Remove the value,<br/>signed out with reason session-missing"]
+  result -- "absent" --> signedOut["Signed out"]
+  result -- "the read fails" --> unknown["State not yet known, no event,<br/>read again later"]
+```
+
 ### Write and remove failures
 
 A write or a remove that fails fails the operation that needed it with the storage's error. The SDK never ignores a failed write. The failed operation changes nothing the app can see: the state the app reads stays as it was, and the SDK emits no auth event, so the app never hears of a session that was not stored. The SDK writes the new session to storage before it updates that state and before it emits the event, so an app that reads the session while it handles an event reads the state the event describes.

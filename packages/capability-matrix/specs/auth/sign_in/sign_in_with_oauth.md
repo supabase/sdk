@@ -37,6 +37,26 @@ The presented form hands the redirect URL to the SDK's redirect handling with th
 
 A sign-out that commits while the provider page is open wins over the redirect. The SDK stores no session, emits no event, and fails the call with its cancellation error.
 
+The presented form, from the call to the session:
+
+```mermaid
+sequenceDiagram
+  participant A as App
+  participant S as SDK
+  participant W as Web authentication
+  participant U as Auth server
+  A->>S: sign in with a provider
+  S->>S: store the flow record (purpose sign_in, verifier)
+  S->>W: open the /authorize URL
+  W->>U: GET /authorize
+  U-->>W: provider sign-in, then redirect_to with a code
+  W-->>S: redirect URL
+  S->>U: POST /token?grant_type=pkce (code, verifier)
+  U-->>S: session
+  S->>S: remove the flow record, store the session
+  S-->>A: SIGNED_IN and the session
+```
+
 ### What happens to the flow record
 
 | Event                                                     | Record                                        |

@@ -33,6 +33,23 @@ What the call does with the record on a failure depends on how the verifier was 
 
 A record the SDK chose is kept on every failure, because a rejection does not show that the code belongs to that flow. The record expires on its own, as Concurrent PKCE Flows defines.
 
+The outcomes after the SDK selects a record:
+
+```mermaid
+flowchart TD
+  start(["Exchange a code"]) --> pick["Select the record,<br/>see Concurrent PKCE Flows"]
+  pick -- "no record" --> noFlow["Fail before any request"]
+  pick -- "record" --> send["POST /token?grant_type=pkce"]
+  send -- "HTTP error" --> named{"Did the app<br/>name the flow?"}
+  named -- yes --> drop["Remove the record, fail"]
+  named -- no --> keep["Keep the record, fail<br/>(bad_code_verifier: try the next older flow)"]
+  send -- "no response" --> keepAll["Keep the record, fail"]
+  send -- success --> remove["Remove the record"]
+  remove --> out{"Sign-out since<br/>the call started?"}
+  out -- yes --> cancel["Store nothing, emit nothing,<br/>cancellation error"]
+  out -- no --> store["Store the session,<br/>emit the event of the flow's purpose"]
+```
+
 ### Repeated calls
 
 The call is not deduplicated. A second call with the same code sends a second request, and the server rejects it because the code is spent. A redirect URL that a platform can deliver more than once is handled through the SDK's redirect handling, which deduplicates it (see Session URL Detection, `client.authentication_integration.session_url_detection`).
