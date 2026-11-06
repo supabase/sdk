@@ -224,7 +224,11 @@ export function resolveRpcFunctions(
 
     const tableColumns = fn.args
       .filter(({ mode }) => mode === "table")
-      .map(({ name, type_id }) => ({ name, ...typeReference(type_id) }))
+      .map(({ name, type_id, is_nullable }) => ({
+        name,
+        ...typeReference(type_id),
+        is_nullable: is_nullable ?? true,
+      }))
       .sort((a, b) => compareStrings(a.name, b.name));
 
     const relationName = returnRelationName(fn);
