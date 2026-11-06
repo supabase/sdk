@@ -132,6 +132,25 @@ null where the type says otherwise:
 - A materialized view keeps the rows of its last refresh, including nulls from
   before its source column became `NOT NULL`.
 
+### `RETURNS TABLE` column nullability
+
+PostgreSQL records no nullability for the columns of a `RETURNS TABLE (…)`
+function either, so `introspect()` sets `is_nullable` on the function's `table`
+arguments, and `rpcFunctions` carries it on `returns.columns`. A column is not
+nullable when the last statement of a `BEGIN ATOMIC` body proves it, with the
+rules views follow, or when a line of the function comment starting with
+`@notNull` names it:
+
+```sql
+comment on function top_books(int) is E'The best books.\n@notNull id, title';
+```
+
+A bare `@notNull` line marks every result column. A function whose body is a
+string, such as any `plpgsql` function, proves nothing by itself, since
+PostgreSQL stores no query tree for it. A document produced before the field
+was added has no `is_nullable` on these columns, which reads as `true`. The
+bundled TypeScript generator types these columns as they were typed before.
+
 ### Runtime validation (opt-in)
 
 `GeneratorMetadata` is backed by an [ArkType](https://arktype.io) schema, so a

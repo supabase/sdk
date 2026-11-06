@@ -2,9 +2,10 @@ import type { SchemaFilterProps } from "./common.ts";
 
 /**
  * The query tree of every view and materialized view in the filtered schemas,
- * plus every view they read from in any schema, with the `NOT NULL` columns
- * each one references. `inferNonNullViewColumns` resolves view column
- * nullability from it.
+ * plus every view they, or a `RETURNS TABLE` function of those schemas, read
+ * from in any schema, with the `NOT NULL` columns each one references.
+ * `queryNullability` resolves view and function result column nullability
+ * from it.
  */
 export const VIEW_DEFINITIONS_SQL = (props: SchemaFilterProps) => /* SQL */ `
 WITH RECURSIVE view_closure(oid) AS (
@@ -14,6 +15,17 @@ WITH RECURSIVE view_closure(oid) AS (
   WHERE
     ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
     c.relkind IN ('v', 'm')
+  UNION
+  SELECT dep.refobjid
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  JOIN pg_depend dep ON dep.classid = 'pg_proc' :: regclass
+    AND dep.objid = p.oid
+    AND dep.refclassid = 'pg_class' :: regclass
+  JOIN pg_class rc ON rc.oid = dep.refobjid AND rc.relkind IN ('v', 'm')
+  WHERE
+    ${props.schemaFilter ? `n.nspname ${props.schemaFilter} AND` : ""}
+    't' = ANY (p.proargmodes)
   UNION
   SELECT dep.refobjid
   FROM view_closure vc

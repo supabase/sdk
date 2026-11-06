@@ -7,6 +7,7 @@ import { normalizeRows } from "./normalize.ts";
 import { listRelationships } from "./relationships.ts";
 import { COLUMNS_SQL } from "./sql/columns.sql.ts";
 import { FOREIGN_TABLES_SQL } from "./sql/foreign_tables.sql.ts";
+import { FUNCTION_RESULTS_SQL } from "./sql/function_results.sql.ts";
 import { FUNCTIONS_SQL } from "./sql/functions.sql.ts";
 import { DEFAULT_SYSTEM_SCHEMAS, filterByList } from "./sql/helpers.ts";
 import { MATERIALIZED_VIEWS_SQL } from "./sql/materialized_views.sql.ts";
@@ -16,6 +17,7 @@ import { TABLES_SQL } from "./sql/table.sql.ts";
 import { TYPES_SQL } from "./sql/types.sql.ts";
 import { VIEW_DEFINITIONS_SQL } from "./sql/view_definitions.sql.ts";
 import { VIEWS_SQL } from "./sql/views.sql.ts";
+import { applyFunctionResultNullability } from "./function-result-nullability.ts";
 import { applyViewColumnNullability } from "./view-nullability.ts";
 
 /**
@@ -81,6 +83,7 @@ export async function introspect(
     functions,
     types,
     viewDefinitions,
+    functionResults,
   ] = await Promise.all([
     queryRows(SCHEMAS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(TABLES_SQL({ schemaFilter: systemExcludingFilter })),
@@ -93,6 +96,7 @@ export async function introspect(
     queryRows(FUNCTIONS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(TYPES_SQL),
     queryRows(VIEW_DEFINITIONS_SQL({ schemaFilter: systemExcludingFilter })),
+    queryRows(FUNCTION_RESULTS_SQL({ schemaFilter: systemExcludingFilter })),
   ]);
 
   const metadata = {
@@ -105,8 +109,13 @@ export async function introspect(
     columns: applyViewColumnNullability(columns, viewDefinitions),
     primaryKeys,
     relationships,
-    functions: functions.filter(
-      ({ return_type }) => !["trigger", "event_trigger"].includes(return_type),
+    functions: applyFunctionResultNullability(
+      functions.filter(
+        ({ return_type }) =>
+          !["trigger", "event_trigger"].includes(return_type),
+      ),
+      functionResults,
+      viewDefinitions,
     ),
     types,
   } as GeneratorMetadata;
