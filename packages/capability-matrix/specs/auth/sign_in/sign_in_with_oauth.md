@@ -39,13 +39,13 @@ A sign-out that commits while the provider page is open wins over the redirect. 
 
 ### What happens to the flow record
 
-| Event | Record |
-| --- | --- |
-| The platform's mechanism fails, or the user cancels it | removed |
-| The code exchange succeeds | removed |
-| The Auth server answers the exchange with an HTTP error | removed |
-| The redirect carries an error, or is not an auth redirect | removed |
-| The exchange gets no response | kept, so the app can retry with the same code |
+| Event                                                     | Record                                        |
+| --------------------------------------------------------- | --------------------------------------------- |
+| The platform's mechanism fails, or the user cancels it    | removed                                       |
+| The code exchange succeeds                                | removed                                       |
+| The Auth server answers the exchange with an HTTP error   | removed                                       |
+| The redirect carries an error, or is not an auth redirect | removed                                       |
+| The exchange gets no response                             | kept, so the app can retry with the same code |
 
 ## Errors
 

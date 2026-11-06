@@ -26,10 +26,10 @@ When a sign-out committed after the call started and before the session was stor
 
 What the call does with the record on a failure depends on how the verifier was chosen:
 
-| Failure | Record the app named by flow ID | Record the SDK chose |
-| --- | --- | --- |
-| The server answers with an HTTP error | removed | kept |
-| No response arrives | kept | kept |
+| Failure                               | Record the app named by flow ID | Record the SDK chose |
+| ------------------------------------- | ------------------------------- | -------------------- |
+| The server answers with an HTTP error | removed                         | kept                 |
+| No response arrives                   | kept                            | kept                 |
 
 A record the SDK chose is kept on every failure, because a rejection does not show that the code belongs to that flow. The record expires on its own, as Concurrent PKCE Flows defines.
 
