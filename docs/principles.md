@@ -49,17 +49,24 @@ The request becomes an issue in the service's repository.
 The service validates its input. The SDK sends the request and returns the service's
 answer as an error. It does not check the input first.
 
+Validation here means any check on a value that the service also judges: an empty
+string, a number out of range, a string format, a size limit, a required field.
+
 The reason is that a rule copied into the SDK is a second copy. When the service changes
 the rule, every SDK is wrong until it ships a new release, and users on old versions
-stay wrong.
+stay wrong. A value that the service rejects today, such as an empty string, may be
+allowed tomorrow.
 
 Example: the service accepts a payload of at most 5 MB. The SDK does not check the size
 before it sends the request. The service rejects a larger payload, and the SDK returns
 that error. If the service raises the limit to 10 MB, every SDK version, old and new,
 accepts the larger payload on the same day.
 
-A check before the request is the exception. It needs a spec, and the spec states why
-the service's own answer would mislead the caller.
+A check before the request is a rare exception, not a pattern to repeat. It is allowed
+only when a spec defines it and states how the service's own answer would mislead the
+caller, for example a malformed ID that the service answers with the same status as a
+missing record. "The service would reject it anyway" and "the SDK can give a clearer
+error" are not reasons. Without such a spec, the SDK does not check.
 
 ### The service owns its defaults
 
