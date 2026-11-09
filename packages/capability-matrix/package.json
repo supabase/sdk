@@ -1,6 +1,6 @@
 {
   "name": "@supabase/capability-matrix-validator",
-  "version": "1.20.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Validator for the Supabase SDK capability matrix.",
   "type": "module",
@@ -11,7 +11,6 @@
     "sync-compliance": "bun src/sync-compliance-cli.ts",
     "normalize-typedoc": "bun src/normalize-typedoc-cli.ts",
     "normalize-symbolgraph": "bun src/normalize-symbolgraph-cli.ts",
-    "normalize-griffe": "bun src/normalize-griffe-cli.ts",
     "check-api-symbols": "bun src/check-api-symbols.ts",
     "coverage-mode": "bun src/coverage-mode-cli.ts",
     "check-drift": "bun src/check-drift.ts",
@@ -33,10 +32,10 @@
   "devDependencies": {
     "@types/bun": "^1.4.4",
     "@types/node": "^26",
-    "knip": "^6.44.0",
+    "knip": "^6.44.1",
     "oxfmt": "0.66.0",
-    "oxlint": "1.90.0",
-    "oxlint-tsgolint": "7.0.2005",
+    "oxlint": "1.91.0",
+    "oxlint-tsgolint": "7.0.2006",
     "typescript": "^7.0.2"
   }
 }

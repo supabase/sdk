@@ -284,7 +284,7 @@ This job covers TypeScript only. Findings in the Go and Python generators stay w
 
 ## Releasing
 
-Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm. Once npm serves the new version, the same workflow opens a pull request that bumps the exact pin in `packages/typegen`.
+Unlike the rest of this repo, merging a change here does not open a release pull request on its own. Releases are cut on demand: run the `Release postgrest-typegen` workflow from the Actions tab, which runs release-please against `release-please-config.postgrest-typegen.json` and opens (or updates) the release pull request for this package. Merging that pull request tags the release and publishes to npm. Once npm serves the new version, the same workflow opens the `@supabase/typegen` release pull request, which bumps the exact pin in `packages/typegen`. Merging it releases `@supabase/typegen`.
 
 ## License
 

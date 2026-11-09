@@ -31,6 +31,12 @@ export interface Queryable {
 export interface IntrospectOptions {
   includedSchemas?: string[];
   excludedSchemas?: string[];
+  /**
+   * PostgREST's `db-extra-search-path` schemas. A view in a generated schema
+   * that selects from a view in one of them keeps the relationships of the
+   * underlying tables, as in PostgREST. Nothing in these schemas is generated.
+   */
+  extraSearchPath?: string[];
 }
 
 /**
@@ -83,7 +89,7 @@ export async function introspect(
     queryRows(MATERIALIZED_VIEWS_SQL({ schemaFilter: plainFilter })),
     queryRows(COLUMNS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(PRIMARY_KEYS_SQL({ schemaFilter: systemExcludingFilter })),
-    listRelationships(db, systemExcludingFilter),
+    listRelationships(db, systemExcludingFilter, opts.extraSearchPath),
     queryRows(FUNCTIONS_SQL({ schemaFilter: systemExcludingFilter })),
     queryRows(TYPES_SQL),
     queryRows(VIEW_DEFINITIONS_SQL({ schemaFilter: systemExcludingFilter })),

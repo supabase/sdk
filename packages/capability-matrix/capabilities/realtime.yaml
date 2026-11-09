@@ -146,6 +146,14 @@ features:
     name: Custom Logger
     description: Provide a custom logging function and log level filter at construction time to route Realtime client diagnostics to an application logger.
     group: configuration
+  - id: realtime.configuration.foreground_liveness_probe
+    name: Foreground Liveness Probe
+    description: When the app returns to the foreground, send a heartbeat at once and reconnect without waiting for the heartbeat interval if the server does not answer within a short deadline.
+    group: configuration
+  - id: realtime.configuration.network_path_wake
+    name: Network Path Wake
+    description: Treat the platform's report that the network is reachable as a hint that cuts a reconnect backoff wait short; the hint never blocks a connection attempt.
+    group: configuration
   - id: realtime.configuration.binary_protocol
     name: Binary Message Protocol
     description: Select protocol version 2.0.0 for binary-serialized messages over the WebSocket connection.

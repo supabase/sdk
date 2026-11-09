@@ -81,6 +81,14 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
 
      A check the SDK makes before the wire is defined under Errors, not here.
 
+     When the behavior is a flow, a sequence across capabilities, or a state machine, add a
+     Mermaid diagram in a fenced mermaid block next to the prose it illustrates:
+     sequenceDiagram for exchanges between the SDK, the service, and the app,
+     stateDiagram-v2 for states and transitions, flowchart for branching decisions. Skip it
+     for a single request and response. The diagram illustrates and the prose defines:
+     every state, transition, and trigger in the diagram is also in the prose, and the two
+     agree. A diagram names no SDK and does not show the service's internals.
+
      Not here: field-by-field request or response descriptions, status code tables, error
      code catalogs, what the service does beyond the premise of an SDK obligation,
      language-specific function signatures, or what any named SDK does today. -->
