@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.2.0...capability-matrix/v2.3.0) (2026-11-09)
+
+
+### Features
+
+* **capability-matrix:** rewrite the Python symbol extractor in Python ([33d9f4f](https://github.com/supabase/sdk/commit/33d9f4fa8af2c0f04e5da1723d4da6dabd381b79))
+* **storage:** add storage.vector_buckets.get_vector_bucket ([#320](https://github.com/supabase/sdk/issues/320)) ([091b0e5](https://github.com/supabase/sdk/commit/091b0e58db8b075090fe5ddf65cef77ea2710a6a))
+
 ## [2.2.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.1.0...capability-matrix/v2.2.0) (2026-11-05)
 
 
