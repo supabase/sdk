@@ -15,6 +15,9 @@ export interface FunctionResultRow {
   non_null_columns: [number | string, number | string][];
 }
 
+/** `CmdType.CMD_SELECT` as PostgreSQL prints a query's `commandType`. */
+const CMD_SELECT = "1";
+
 const NOT_NULL_DIRECTIVE = /^[ \t]*@notNull(?:[ \t]+(.*?))?[ \t]*$/gm;
 
 /**
@@ -81,15 +84,19 @@ function inferredNonNullColumns(
 }
 
 /**
- * The query of the last statement: a `BEGIN ATOMIC` body is stored as a list
- * holding the list of its statements.
+ * The query of the last statement when it is a `SELECT`: a `BEGIN ATOMIC`
+ * body is stored as a list holding the list of its statements. The target
+ * list of an `INSERT`, `UPDATE` or `DELETE` holds the columns it assigns, not
+ * the ones its `RETURNING` clause returns.
  */
 function lastQuery(tree: NodeTreeValue) {
   let value: NodeTreeValue | undefined = tree;
   while (Array.isArray(value)) {
     value = value.at(-1);
   }
-  return isNode(value, "QUERY") ? value : null;
+  return isNode(value, "QUERY") && value.fields.commandType === CMD_SELECT
+    ? value
+    : null;
 }
 
 /** The result columns the comment's `@notNull` lines name. */

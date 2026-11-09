@@ -46,6 +46,12 @@ const SCHEMA = /* SQL */ `
     select id, name from private.author_names;
   end;
 
+  create function public.atomic_returning()
+  returns table (name text, bio text)
+  begin atomic
+    update private.authors set name = name where false returning name, bio;
+  end;
+
   create function public.string_body()
   returns table (id int, title text)
   language sql stable
@@ -116,6 +122,13 @@ describe.each(["15", "17", "18"])(
       expect(resultNullability(metadata, "atomic_from_view")).toEqual({
         id: false,
         name: false,
+      });
+    });
+
+    test("a RETURNING clause proves nothing", () => {
+      expect(resultNullability(metadata, "atomic_returning")).toEqual({
+        bio: true,
+        name: true,
       });
     });
 
