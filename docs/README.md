@@ -12,8 +12,8 @@ This tier is about how we work. What each feature does is in the
 This document and other documents in this folder are intended for reading by humans
 and AI agents alike.
 
-Agents load this README first, then load only the pages their task needs. They cite a
-principle by its ID in findings and PR descriptions.
+Agents load this README first, then load only the documents their task needs. They
+cite a principle by a link to its heading in findings and PR descriptions.
 
 ## Layers
 
@@ -28,27 +28,28 @@ does not repeat it.
 
 [code-standards]: https://github.com/supabase/agent-os/blob/main/plugins/engineering/engineering-standards/code-standards/SKILL.md
 
-When two layers conflict, the more specific layer wins inside its scope. The page that
-deviates states the deviation and the reason.
+When two layers conflict, the more specific layer wins inside its scope. The document
+that deviates states the deviation and the reason.
 
 ## Cite a principle
 
-Each `##` heading in [principles.md](principles.md) is one principle. Its ID is the
-page path without `.md`, then `#`, then the heading slug:
+Cite a principle with a link to its heading:
 
 ```
-principles#validation-belongs-to-the-service
+https://github.com/supabase/sdk/blob/main/docs/principles.md#validation-belongs-to-the-service
 ```
 
-A heading slug never changes. A principle that no longer applies is marked deprecated
-and keeps its heading.
+A heading never changes, so the link stays valid. A principle that no longer applies is
+marked deprecated and keeps its heading.
 
-## Pages
+## Documents
 
 - [principles.md](principles.md): the engineering principles, starting with thin
   clients, logic, validation, and defaults in the server, and decoding that accepts new
-  values. Read once.
+  values.
 
-## Change a page
+## Change a document
 
-Open a pull request in `supabase/sdk`. Use the commit type `docs`, with no scope.
+Changes come through a pull request in `supabase/sdk`. Only repository collaborators can
+open one there; see [CONTRIBUTING.md](../CONTRIBUTING.md). Use the commit type `docs`,
+with no scope.
