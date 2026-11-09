@@ -39,6 +39,8 @@ X-Client-Info: supabase-example/1.4.0; platform=Android; platform-version=15; ru
 
 A value that is not listed for `runtime` or `framework` is added to this file before an SDK sends it, so it can be aggregated across SDKs.
 
+`runtime` names the language runtime, never the host or framework it runs in. JavaScript in a web browser sends `platform=browser` and leaves out `runtime` and `runtime-version`. JavaScript in React Native sends the device's platform, such as `platform=iOS`, together with `framework=react-native`, and leaves out `runtime` and `runtime-version`.
+
 ### Platform names
 
 A platform in this table is sent with the name and casing given here. Any other platform is sent with the name the runtime reports for it, so it stays visible in aggregates until it is added here.
