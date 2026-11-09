@@ -38,4 +38,5 @@ Spec: [https://supabase.github.io/storage/](https://supabase.github.io/storage/)
 - Download with Image Transform (`storage.file_buckets.download_with_transform`): the same modes apply to a transformed image, which the server sends without a `Content-Length`
 - Cancel In-Flight Request (`storage.file_buckets.request_cancellation`): cancelling closes the connection while the body streams
 - Automatic Retry (`storage.configuration.auto_retry`): retries end when the download call returns
+- [Retry Options](../../client/request_configuration/retry_options.md): the sequence a retried download runs before the call returns
 - Service Error Codes (`storage.errors.error_codes`): the code a non-2xx download raises

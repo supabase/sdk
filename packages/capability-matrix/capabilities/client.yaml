@@ -44,6 +44,10 @@ features:
     name: Global Request Headers
     description: Attach extra HTTP headers to every request made by all sub-clients at construction time.
     group: request_configuration
+  - id: client.request_configuration.retry_options
+    name: Retry Options
+    description: Configure at construction time whether a sub-client sends a request again after a transient failure, and how many times; the retry sequence itself, exponential backoff with jitter under an attempt limit or deadline that honours Retry-After, is shared by every capability that retries.
+    group: request_configuration
   - id: client.observability.trace_propagation
     name: Distributed Trace Context Propagation
     description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.

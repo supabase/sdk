@@ -16,6 +16,10 @@ and expiry time (`expires_at`), and the user object.
 `expires_in` is relative to when the response was sent, so an SDK does not use
 it to judge expiry.
 
+This spec calls the place a session is kept the **store**. It can be memory, a
+database, a file, or a combination of them. What matters is that reads and
+writes of it are serializable, that is, safe against read and write races.
+
 ## API
 
 Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
@@ -33,15 +37,23 @@ mode, and the mode decides what the refresh does to local state:
   refresh token. A bound refresh writes its outcome back to the stored
   session and emits events, as the flowchart below defines. Every refresh the
   SDK starts on its own is bound.
+
 - **Supplied**: the app supplies a refresh token that differs from the stored
   session's. On success the SDK stores the result as the new session,
-  replacing any stored session, the same way Set Session
-  (`auth.session.set_session`) stores supplied tokens. It emits the 
-  `TOKEN_REFRESH` event when the new session belongs to the stored session's
-  user, and `SIGNED_IN` when it belongs to another user or no session was
-  stored. On failure, it leaves the stored session alone and emits nothing, 
-  because the token rejected is not the stored session's. A supplied token 
-  equal to the stored session's refresh token runs a bound refresh.
+  replacing any session stored when the request was sent (see
+  [the stored-session check](#checking-the-stored-session-after-the-answer)),
+  the same way Set Session (`auth.session.set_session`) stores supplied
+  tokens.
+
+  It emits the `TOKEN_REFRESHED` event when the new session belongs to
+  the stored session's user, and `SIGNED_IN` when it belongs to another user
+  or no session was stored.
+
+  On any failure it leaves the stored session alone and emits no event: the
+  token sent is not the stored session's, so its fate says nothing about the
+  stored session. A supplied token equal to the stored session's refresh token
+  runs a bound refresh.
+
 - **Detached**: another capability needs a refresh that must not change local
   state. A detached refresh never reads, writes, or removes the stored
   session, emits no events, and makes exactly one attempt. It returns the new
@@ -57,12 +69,16 @@ These are its callers, and the mode each one runs:
   called with one it runs a supplied refresh. In SDKs that hold no session
   (stateless server-side SDKs) the token is required and the refresh is
   detached.
-- Get Session (`auth.session.get_session`) runs a bound refresh when the
-  stored access token is about to expire.
+- [Get Session](get_session.md) runs a bound refresh when the stored access
+  token is about to expire.
 - Auto Refresh (`auth.session.auto_refresh`) runs a bound refresh ahead of
   expiry on a timer.
-- [Sign Out](sign_out.md) runs a bound refresh under the `others` and `global`
-  scopes, and a detached refresh under `local`.
+- [Sign Out](sign_out.md) runs a bound refresh under the `others` scope and a
+  detached refresh under `local`. Under `global` it runs a bound refresh whose
+  rejection it handles itself: the local session is removed at once with the
+  user-initiated reason, whatever the access token has left, and the rejection
+  is returned. A retryable or other failure keeps the session as for any bound
+  refresh.
 
 ### Lifecycle of a bound refresh
 
@@ -84,7 +100,7 @@ flowchart TB
     OK --> OKR(["Return the new session"])
     G -- "removed or replaced" --> D1(["Discard the response.<br>Return refresh-discarded error"])
 
-    R -- "network failure, 5xx,<br>408, 409, 429" --> B{"No wait has<br>reached 30 s yet?"}
+    R -- "network failure, 5xx,<br>408, 409, 429" --> B{"Next wait ends within 30 s<br>of the first attempt?"}
     B -- yes --> W["Wait out the backoff,<br>or Retry-After if longer"]
     W --> R
     B -- no --> K["Keep the stored session.<br>No events."]
@@ -102,8 +118,8 @@ flowchart TB
     RM --> EE(["Return refresh error"])
 ```
 
-The flowchart is the exact logic. The sections below give the reasons and the
-details that do not fit on it.
+The flowchart shows the whole bound flow. The sections below define each step
+and give the reasons.
 
 A supplied or detached refresh runs a subset of the same steps:
 
@@ -114,7 +130,7 @@ A supplied or detached refresh runs a subset of the same steps:
 | [Remembered rejection](#remembered-rejections)                                         | Read and write                                               | Read and write                                                                              | Neither         |
 | [Retries](#retryable-failures)                                                         | Yes                                                          | Yes                                                                                         | No, one attempt |
 | [Stored-session check](#checking-the-stored-session-after-the-answer) after the answer | Yes                                                          | Yes: store only when the stored session is unchanged since the request was sent             | No              |
-| On success                                                                             | Store, emit token-refreshed                                  | Store, replacing any session; emit token-refreshed for the same user, `SIGNED_IN` otherwise | Return only     |
+| On success                                                                             | Store, emit `TOKEN_REFRESHED`                                | Store, replacing any session; emit `TOKEN_REFRESHED` for the same user, `SIGNED_IN` otherwise | Return only     |
 | On rejection                                                                           | Keep until 30 s before the access token expires, then remove | Leave the stored session alone, emit nothing                                                | Return only     |
 | On any other failure                                                                   | Keep the stored session                                      | Keep the stored session                                                                     | Return only     |
 
@@ -123,10 +139,11 @@ A supplied or detached refresh runs a subset of the same steps:
 An SDK instance runs at most one refresh of a given refresh token at a time. A
 refresh that starts while a refresh of the same token is in flight sends no
 request and returns the result of the one in flight. A detached refresh is the
-exception: it never joins a refresh in flight, and none joins it. Two requests with the same
-refresh token would make the server answer the later one with the token the
-earlier one already received at best, and with `400 refresh_token_already_used`,
-ending the session, at worst (see [Server settings](#server-settings)).
+exception: it never joins a refresh in flight, and none joins it. Two requests
+with the same refresh token would make the server answer the later one with the
+token the earlier one already received at best, and with
+`400 refresh_token_already_used`, ending the session, at worst (see
+[Server settings](#server-settings)).
 
 Instances that share storage, such as browser tabs or app extensions, cannot
 share an in-flight request. The checks on the stored session after the answer,
@@ -134,31 +151,41 @@ described next, cover them.
 
 ### Checking the stored session after the answer
 
-Before it acts on an answer, a bound or supplied refresh reads the stored
-session again and compares its refresh token with the one it sent. Another actor
-may have changed the stored session while the request was in flight: a sign-out 
-removed it, a sign-in replaced it, or another instance on the same storage
-refreshed it first. The comparison has three outcomes:
+Before sending a bound or supplied refresh, the SDK takes a snapshot of the
+stored session.
 
-- **Unchanged**: the stored refresh token is the one sent, and the answer
-  applies to the stored session.
-- **Removed**: there is no stored session. The SDK must not write a session
-  back, which would undo the sign-out, and must not emit a second sign-out
-  event.
-- **Replaced**: the stored refresh token differs from the one sent. The stored
-  session is newer than the answer, so the SDK leaves it alone and emits
-  nothing, since the actor that stored it emitted its own event.
+Before the SDK acts on the server's answer, it compares the snapshot with the
+current stored session. Another actor may have changed the stored session
+while the request was in flight, for example a sign-out, or another refresh
+that completed first. The comparison has three outcomes:
+
+- **Unchanged**: the stored session holds the snapshot's refresh token, or
+  there is no stored session and the snapshot held none. The answer applies.
+- **Removed**: the snapshot held a session and there is no stored session now.
+  The SDK must not write a session back, which would undo the sign-out, and
+  must not emit a second sign-out event.
+- **Replaced**: the stored session holds a refresh token the snapshot did not.
+  The stored session is newer than the answer, so the SDK leaves it alone and
+  emits nothing, since the actor that stored it emitted its own event.
 
 In both the removed and the replaced case the SDK returns an error rather than
-a session: on success its own refresh-discarded error, since the response was
-not stored, and on a rejection the server's error. The caller reads the
-stored session again if it wants the current one.
+a session. The caller reads the stored session again if it wants the current
+one.
 
-The read, the store, and the removal must not interleave with a concurrent
-sign-out. SDKs that serialize session operations behind a lock meet this by
-running the whole refresh under it. SDKs that do not must re-check after
-writing that no removal happened during the write, and undo the write if one
-did, without emitting another event.
+- On success, its own refresh-discarded error, since the response was not
+  stored. It is the SDK's own error, not a server error. An SDK in which a
+  removal is the only change that can discard an answer may use its signed-out
+  error for it, since that error already names the one thing that can have
+  happened.
+- On a rejection, the server's error.
+
+The read, the check, the store, and the removal must not interleave with a
+concurrent sign-out, sign-in, or refresh. SDKs that serialize session
+operations behind a lock meet this by running the whole refresh under it. SDKs
+that do not must make the check and the write one atomic step. An SDK whose
+storage no other instance writes may compare against its own in-memory session
+instead of reading storage again, since only its own operations can have
+changed it.
 
 ### Success
 
@@ -179,28 +206,20 @@ The session may still be alive, so the SDK keeps the stored session, emits no
 event, and returns an error the app can identify as retryable.
 
 A bound or supplied refresh retries a retryable failure with the same refresh
-token, using exponential backoff:
+token, running the sequence
+[Retry Options](../../client/request_configuration/retry_options.md) defines
+with a `baseDelay` of 200 ms, no `maxDelay`, and, in place of `maxRetries`, a
+deadline of 30 seconds after the first attempt was sent. The retryable answers
+are the ones listed above, not `retryableStatusCodes`. The jitter, how the
+deadline is judged, `Retry-After`, and a cancellation the caller issues are as
+that spec defines.
 
-- The first retry waits 200 ms, and each later wait doubles, up to at most
-  30 seconds: 200 ms, 400 ms, …, 25.6 s.
-- Each wait is then randomized by up to 25% in either direction. The
-  30-second limit applies before randomizing, so a randomized wait may exceed
-  it. The jitter prevents a thundering herd, clients that failed at the same
-  moment do not all retry at the same moment.
-- The retry after the first wait that reaches 30 seconds is the last. When it
-  fails, the SDK returns its retryable error.
-
-Only the waits count, not the time the requests themselves take. This makes
-the total time less predictable, but simplifies the implementation, as the SDK
-never has to interrupt a request in flight.
-
-When every retry runs. Their waits add up to 81 seconds without jitter, and to 
-between 60.75 and 101.25 seconds with it, plus the time of the 10 requests.
-
-When a response carries a `Retry-After` header, the SDK waits that long before
-the next attempt, or the backoff wait when that is longer. A wait that
-`Retry-After` brings to 30 seconds or more counts as reaching 30 seconds, so
-the retry after it is the last.
+When every retry runs, that is seven retries, eight requests in all, with
+waits adding up to 25.4 seconds before jitter. The deadline matches the
+[safety margin](#safety-margin): a refresh that starts as the access token
+enters the margin has stopped retrying by about the time the token expires,
+so a caller that waits for the refresh, such as Get Session, is not left
+waiting long past the token's remaining life.
 
 Auth does not send `Retry-After` itself, so the header always comes from a
 proxy or gateway in front of it.
@@ -253,6 +272,11 @@ persists for the user:
 - every stored PKCE code verifier
 - any separately stored copy of the user object
 
+The refresh [Sign Out](sign_out.md) runs under `global` is the exception: Sign
+Out owns the rejection, removing the local session at once with the
+user-initiated reason, whatever the access token has left, so the refresh
+itself removes nothing and emits no event.
+
 #### Remembered rejections
 
 - The SDK treats a rejection as final and never sends that refresh token
@@ -304,8 +328,8 @@ token that fails unpredictably, so the SDK removes it 30 seconds early.
 - While the session is kept, no event is emitted. The caller of the refresh
   gets the error.
 - An app that did not call the refresh itself, because auto-refresh did,
-  learns of the rejection from the sign-out event emitted by the first refresh
-  once the access token expires within 30 seconds.
+  learns of the rejection from the sign-out event the next bound refresh
+  emits once the access token expires within 30 seconds.
 
 ### Server settings
 
@@ -405,26 +429,33 @@ The reason for each row:
 ## Notes
 
 - Which tokens an SDK proactively refreshes, and how long before expiry, is
-  defined by Get Session (`auth.session.get_session`) and Auto Refresh
-  (`auth.session.auto_refresh`), not by this spec.
+  defined by [Get Session](get_session.md) and Auto Refresh
+  (`auth.session.auto_refresh`), not by this spec. What Get Session hands back
+  when the refresh fails and this spec has kept the session is defined there
+  too.
 
-- When a proxy sends a `Retry-After` header of more than 30 seconds, the SDK
-  can stop earlier than the backoff alone would. Example: the first request
-  fails with `Retry-After: 31`. The SDK retries only once, after 31 seconds,
-  and then fails. This is intentional, to keep the SDK logic simple and to
-  avoid reasoning about a soft upper limit.
+- A `Retry-After` header can end the sequence at its first answer. Example:
+  the first request fails with `Retry-After: 31`. That wait would end past the
+  30-second deadline, so the SDK returns the retryable error without a retry.
+  This is intentional, to keep every refresh inside the deadline rather than
+  reasoning about a soft upper limit.
 
 ## Related
 
 - [Sign Out](sign_out.md): refreshes before the logout request, bound under
-  `global` and `others`, detached under `local`.
+  `global` and `others`, detached under `local`. Under `global` it handles a
+  rejected refresh itself.
 - [Sign-Out Reason](sign_out_reason.md): a rejected refresh produces the
-  session-expired reason.
+  session-expired reason, except under `global` sign-out, where Sign Out
+  removes the session with the user-initiated reason.
 - Subscribe to Auth Events (`auth.session.subscribe_auth_events`): the stream
   the token-refreshed and sign-out events are emitted on.
-- Get Session (`auth.session.get_session`): starts a bound refresh when the
-  access token is about to expire.
+- [Get Session](get_session.md): starts a bound refresh when the access token
+  is about to expire, and defines what it hands back when that refresh fails
+  and this spec has kept the session.
 - Auto Refresh (`auth.session.auto_refresh`): starts a bound refresh on a
   timer.
 - Set Session (`auth.session.set_session`): stores a session from supplied
   tokens, the same way a supplied refresh stores its result.
+- [Retry Options](../../client/request_configuration/retry_options.md):
+  the sequence a retryable failure runs, with the parameters this spec sets.

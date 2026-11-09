@@ -6,6 +6,8 @@ Keep every sub-client (database, realtime, storage, functions) authenticated wit
 
 After sign-in, token refresh, or sign-out, the next request from every sub-client the top-level client manages carries the current user's JWT, or the project API key in its place after sign-out. The application never calls a sub-client-specific "set token" method itself under normal use.
 
+The key fallback belongs to a client whose sub-clients serve whoever is currently signed in. A sub-client bound to one user's session, as a server-side SDK's per-user data-plane clients are, does not fall back to the key: a request made after that session was removed fails with the SDK's no-session error, because a request the application makes as a user must not quietly run as another role.
+
 The mechanism is open. The top-level client may push the token to each sub-client on auth state change events, or each sub-client may resolve it from the top-level client on every request. Resolving per request is preferred where the sub-client attaches the token per request, since it leaves no stored token to go stale. Realtime is the exception: it holds a live socket, so a new token has to be pushed over it.
 
 The source of the JWT depends on which auth capability is active on the client:

@@ -31,3 +31,4 @@ Report how many bytes an upload or a download has moved so far, and the total wh
 - Resumable Upload (`storage.file_buckets.resumable_upload`): its own progress, which follows the server-confirmed offset
 - Upload File (`storage.file_buckets.upload`): the single-request upload this reports on
 - Automatic Retry (`storage.configuration.auto_retry`): a retried upload restarts its count
+- [Retry Options](../../client/request_configuration/retry_options.md): the sequence a retried upload runs; each retry restarts the count

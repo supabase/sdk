@@ -26,3 +26,4 @@ Spec: [https://supabase.github.io/storage/](https://supabase.github.io/storage/)
 - [Download File as Stream](./download_as_stream.md): the range format and the error mapping this capability shares, and the download to use when a caller handles a 200 to a ranged request
 - [Transfer Progress](./transfer_progress.md): a download rejected for a 200 to a ranged request reports no progress
 - Service Error Codes (`storage.errors.error_codes`): the code a non-2xx download raises
+- [Retry Options](../../client/request_configuration/retry_options.md): the sequence a retried download runs; a 200 to a ranged request never enters it

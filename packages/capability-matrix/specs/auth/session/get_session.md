@@ -11,8 +11,8 @@ leave that up to users of the SDK are not covered by it.
 
 ## API
 
-"Get Session" sends no request of its own, but if a refresh is needed it goes 
-through [Refresh Session](refresh_session.md) and 
+"Get Session" sends no request of its own, but if a refresh is needed it goes
+through [Refresh Session](refresh_session.md) and
 `POST /token?grant_type=refresh_token`.
 
 This functionality should be exposed through the Auth Client.
@@ -20,8 +20,8 @@ This functionality should be exposed through the Auth Client.
 ## Behavior
 
 "Get Session" takes no input and answers with one of three things: a session,
-no session, or an error. No session is not a failure. The flowchart is the 
-exact logic.
+no session, or an error. No session is not a failure. The flowchart shows the
+whole flow.
 
 ```mermaid
 ---
@@ -43,7 +43,7 @@ flowchart TB
     X -- no --> ER(["Return the refresh error"])
 ```
 
-The sections below give the reasons and further details.
+The sections below define each step and give the reasons.
 
 ### Reading the stored session
 
@@ -70,6 +70,16 @@ because a refresh revokes no access token, so sending it for the seconds
 after a refresh is harmless. A refresh token the app has read may already
 have been used by a later refresh, so an app does not keep it to refresh with
 later.
+
+A call made after the local session was removed answers no session, however
+the removal happened: a sign-out, a rejected refresh, or an unusable stored
+value. A read that must produce a value, such as an access-token accessor on a
+per-user session value, cannot answer no session; it raises the SDK's
+no-session error instead. Neither substitutes another credential, such as the
+project API key, for the removed session's. What an unauthenticated request
+from a sub-client carries after a sign-out is Cross-Client Token
+Synchronization's (`client.authentication_integration.cross_client_token_sync`)
+to define, not this capability's.
 
 An SDK that loads the stored session asynchronously at start-up answers a Get
 Session call made before that load completes only once it has completed.
@@ -137,11 +147,13 @@ same storage may have replaced it while the request was in flight.
   error of its own for it.
 
 The whole retry sequence of the refresh runs inside the call, so a Get
-Session call can take as long as
-[the refresh's retries](refresh_session.md#retryable-failures). Because those
-waits exceed the 30-second margin, a retryable failure usually comes back
-after the access token has expired, and the caller gets the error. The kept
-session is returned mostly after a failure the refresh does not retry.
+Session call can take up to the 30-second deadline of
+[the refresh's retries](refresh_session.md#retryable-failures). That deadline
+matches the margin: a refresh that starts inside the margin has stopped
+retrying by about the time the access token expires, so a retryable failure
+that exhausted its retries usually comes back with the token expired, and the
+caller gets the error. The kept session is returned mostly after a failure the
+refresh does not retry.
 
 ### Events
 
