@@ -20,14 +20,14 @@ that feel native in the language, and it keeps the state that only the client ca
 hold (for example the session, the Realtime connection or the user's configuration).
 It does not add its own product on top.
 
-A feature that one SDK adds on top of the service does not stay in that SDK. Users of
-the other SDKs ask for it too. Then every SDK must build, test, and maintain the same
-feature, or the SDKs drift apart.
+A feature that one SDK adds on top of the service should not live only in that SDK.
+Users of the other SDKs ask for it too. Then every SDK must build, test, and maintain
+the same feature, or the SDKs drift apart.
 
 Example: when users want a helper that combines two service calls into one workflow,
 the helper goes in an example or a guide, not into the client.
 
-### Logic belongs in the server
+### Logic belongs in the service
 
 When logic can run in the service, it runs in the service. Put logic in the client only
 when it must run there:

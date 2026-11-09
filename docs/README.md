@@ -45,7 +45,7 @@ marked deprecated and keeps its heading.
 ## Documents
 
 - [principles.md](principles.md): the engineering principles, starting with thin
-  clients, logic, validation, and defaults in the server, and decoding that accepts new
+  clients, logic, validation, and defaults in the service, and decoding that accepts new
   values.
 
 ## Change a document
