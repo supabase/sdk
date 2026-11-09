@@ -39,22 +39,25 @@ X-Client-Info: supabase-example/1.4.0; platform=Android; platform-version=15; ru
 
 A value that is not listed for `runtime` or `framework` is added to this file before an SDK sends it, so it can be aggregated across SDKs.
 
-`runtime` names the language runtime, never the host or framework it runs in. JavaScript in a web browser sends `platform=browser` and leaves out `runtime` and `runtime-version`. JavaScript in React Native sends the device's platform, such as `platform=iOS`, together with `framework=react-native`, and leaves out `runtime` and `runtime-version`.
+`runtime` names the language runtime, never the host or framework it runs in. JavaScript in a web browser sends `platform=browser` and leaves out `runtime` and `runtime-version`. JavaScript in React Native sends the device's platform, such as `platform=iOS`, together with `framework=react-native`, and leaves out `runtime` and `runtime-version`. JavaScript on Cloudflare Workers or the Vercel Edge Runtime sends `platform=cloudflare-workers` or `platform=vercel-edge-runtime` and leaves out `runtime` and `runtime-version`, because the runtime there is not one of the values above. Supabase Edge Runtime and Netlify Edge Functions run Deno, so they send `runtime=deno` together with their platform.
 
 ### Platform names
 
 A platform in this table is sent with the name and casing given here. Any other platform is sent with the name the runtime reports for it, so it stays visible in aggregates until it is added here.
 
-| Platform                               | Name           |
-| -------------------------------------- | -------------- |
-| Android                                | `Android`      |
-| iOS and iPadOS                         | `iOS`          |
-| macOS                                  | `macOS`        |
-| Linux                                  | `Linux`        |
-| Windows                                | `Windows`      |
-| A web browser                          | `browser`      |
-| Supabase Edge Runtime                  | `edge-runtime` |
-| WebAssembly System Interface preview 1 | `WASIp1`       |
+| Platform                                                 | Name                  |
+| -------------------------------------------------------- | --------------------- |
+| Android                                                  | `Android`             |
+| iOS and iPadOS                                           | `iOS`                 |
+| macOS                                                    | `macOS`               |
+| Linux                                                    | `Linux`               |
+| Windows                                                  | `Windows`             |
+| A web browser, including Web Workers and Service Workers | `browser`             |
+| Supabase Edge Runtime                                    | `edge-runtime`        |
+| Netlify Edge Functions                                   | `netlify-edge`        |
+| Cloudflare Workers                                       | `cloudflare-workers`  |
+| Vercel Edge Runtime                                      | `vercel-edge-runtime` |
+| WebAssembly System Interface preview 1                   | `WASIp1`              |
 
 ### Application-supplied value
 
