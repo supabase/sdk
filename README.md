@@ -8,13 +8,14 @@ Shared tooling and specifications for the Supabase client SDKs. This repository 
 
 ## Packages
 
-| Package                                                              | Toolchain  | What it is                                                                                                                                                                                                           |
-| -------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`packages/capability-matrix`](./packages/capability-matrix)         | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
-| [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor) | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                                                                                     |
-| [`packages/go-symbol-extractor`](./packages/go-symbol-extractor)     | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                                                                                         |
-| [`packages/postgrest-typegen`](./packages/postgrest-typegen)         | TypeScript | Introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python.                                                                                  |
-| [`packages/typegen`](./packages/typegen)                             | TypeScript | Language registry for `supabase gen types --lang`: maps each language to its generator (in-process or an external tool) so new languages need no CLI change.                                                        |
+| Package                                                                  | Toolchain  | What it is                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`packages/capability-matrix`](./packages/capability-matrix)             | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
+| [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor)     | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                                                                                     |
+| [`packages/go-symbol-extractor`](./packages/go-symbol-extractor)         | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                                                                                         |
+| [`packages/python-symbol-extractor`](./packages/python-symbol-extractor) | Python     | Public API symbol extractor for Python SDKs, used by the Python compliance workflow.                                                                                                                                 |
+| [`packages/postgrest-typegen`](./packages/postgrest-typegen)             | TypeScript | Introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python.                                                                                  |
+| [`packages/typegen`](./packages/typegen)                                 | TypeScript | Language registry for `supabase gen types --lang`: maps each language to its generator (in-process or an external tool) so new languages need no CLI change.                                                         |
 
 ## Repository layout
 
@@ -38,4 +39,5 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md). Run each package's own toolchain from 
 cd packages/capability-matrix && bun install && bun test
 cd packages/dart-symbol-extractor && dart pub get && dart test
 cd packages/go-symbol-extractor && go test ./...
+cd packages/python-symbol-extractor && uv sync --frozen && uv run --frozen pytest
 ```

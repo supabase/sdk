@@ -60,3 +60,17 @@ updates:
         update-types:
           - minor
           - patch
+
+  - package-ecosystem: uv
+    directory: /packages/python-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      uv:
+        update-types:
+          - minor
+          - patch

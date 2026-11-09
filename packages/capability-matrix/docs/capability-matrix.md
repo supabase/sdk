@@ -47,7 +47,7 @@ CI asks two different questions about an SDK's public API, and each one reads a 
 
 `supporting_symbols` is for the rest of the public surface that hangs off those entry points: option types, result types, schema models, exceptions. These need to be accounted for so the new-symbol check stays meaningful, but they do not evidence a capability and are never drift-verified.
 
-Each language's extractor defines the symbol spelling its compliance file uses. Go symbols are qualified by the package's directory path relative to the SDK root: `auth.Admin.CreateUser` for a module-root package, `auth/customprovider.Builder` for a nested package, with methods and fields appending their member name. The Go extractor fails when a package is not named after its directory, so the spelling is always unambiguous across a multi-module repository.
+Each language's extractor defines the symbol spelling its compliance file uses. Go symbols are qualified by the package's directory path relative to the SDK root: `auth.Admin.CreateUser` for a module-root package, `auth/customprovider.Builder` for a nested package, with methods and fields appending their member name. The Go extractor fails when a package is not named after its directory, so the spelling is always unambiguous across a multi-module repository. Python symbols carry no module prefix: a class is its bare name and a method appends to it (`AsyncClient.rpc`), and a definition re-exported from a private module keeps the name it was defined with.
 
 ```yaml
 storage.analytics.create_table:
