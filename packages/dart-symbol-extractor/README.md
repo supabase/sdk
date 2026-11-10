@@ -1,10 +1,10 @@
 # dart_symbol_extractor
 
 Extracts the public API surface of Dart and Flutter packages as JSON, in the
-`ParsedSymbol` shape the capability-matrix scripts consume. The Dart
-compliance workflow (`validate-sdk-compliance-dart.yml`) runs it on the pull
-request and, in `additions` mode, on the base branch to find newly added public
-symbols that no `sdk-compliance.yaml` entry lists.
+`ParsedSymbol` shape the capability-matrix scripts consume. The Dart compliance
+workflow (`validate-sdk-compliance-dart.yml`) runs it on the pull request and,
+in `additions` mode, on the base branch to find newly added public symbols that
+no `sdk-compliance.yaml` entry lists.
 
 ## Usage
 
@@ -23,9 +23,9 @@ status 1.
 
 ## What counts as public
 
-- Every `pubspec.yaml` under the root with a `lib/` directory is a package,
-  and every `.dart` file under its `lib/` is read. Directories starting with
-  `.` and `build` directories are skipped.
+- Every `pubspec.yaml` under the root with a `lib/` directory is a package, and
+  every `.dart` file under its `lib/` is read. Directories starting with `.` and
+  `build` directories are skipped.
 - A declaration is public when its name does not start with `_`.
 - Declarations annotated with `@internal` from `package:meta` are excluded.
 - Generated files (`.g.dart`, `.freezed.dart`, `.gr.dart`) are skipped.

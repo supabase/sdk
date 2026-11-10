@@ -1,12 +1,12 @@
 # @supabase/typegen
 
 The language registry behind `supabase gen types --lang <language>`. It maps
-each language name to the generator that renders PostgREST types for it, so
-that adding a language is a pull request in this repository plus a dependency
-bump in the Supabase CLI, with no per-language code in the CLI itself.
+each language name to the generator that renders PostgREST types for it, so that
+adding a language is a pull request in this repository plus a dependency bump in
+the Supabase CLI, with no per-language code in the CLI itself.
 
-> **Status:** alpha. The `Host`, `TypegenLanguage`, option and error types
-> are the contract with the CLI and follow semver from `1.0.0` on; before that,
+> **Status:** alpha. The `Host`, `TypegenLanguage`, option and error types are
+> the contract with the CLI and follow semver from `1.0.0` on; before that,
 > minor versions may change them.
 
 ## Where it sits
@@ -29,31 +29,31 @@ Introspection is not part of this package's logic. The consumer runs
 `introspect()` and hands the resulting `GeneratorMetadata` to the language it
 looked up here. `introspect`, `Queryable`, `IntrospectOptions`,
 `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are re-exported from
-`@supabase/postgrest-typegen`, so a consumer depends on this package alone:
-one dependency to bump, and the document is always produced by the same
-`postgrest-typegen` version the in-process generators were built against.
-That is why the dependency is pinned to an exact version rather than a
-range. As soon as each release is on npm, the `Release postgrest-typegen`
-workflow opens a typegen release pull request that bumps the pin.
-Depending on both packages directly would let a lockfile resolve two
-versions, introspecting with one and generating with the other.
+`@supabase/postgrest-typegen`, so a consumer depends on this package alone: one
+dependency to bump, and the document is always produced by the same
+`postgrest-typegen` version the in-process generators were built against. That
+is why the dependency is pinned to an exact version rather than a range. As soon
+as each release is on npm, the `Release postgrest-typegen` workflow opens a
+typegen release pull request that bumps the pin. Depending on both packages
+directly would let a lockfile resolve two versions, introspecting with one and
+generating with the other.
 
 The two kinds of generator relate to `postgrest-typegen` differently:
 
-- In-process generators import its types, so they depend on it. Today those
-  are the three bundled inside `postgrest-typegen`; permanently it will be the
+- In-process generators import its types, so they depend on it. Today those are
+  the three bundled inside `postgrest-typegen`; permanently it will be the
   TypeScript generator once it lives in supabase-js and is published to npm.
-- Out-of-process generators depend on nothing here. They read the JSON
-  document, whose shape is published as `generatorMetadataJsonSchema` and
-  versioned by `GENERATOR_METADATA_VERSION`, and can be written in any
-  language. `supabase_typegen` for Dart was the first; `supabase-typegen` for
-  Swift is the second.
+- Out-of-process generators depend on nothing here. They read the JSON document,
+  whose shape is published as `generatorMetadataJsonSchema` and versioned by
+  `GENERATOR_METADATA_VERSION`, and can be written in any language.
+  `supabase_typegen` for Dart was the first; `supabase-typegen` for Swift is the
+  second.
 
 This is why the registry is its own package rather than part of
-`postgrest-typegen`: once the TypeScript generator is imported from
-supabase-js, which itself imports `postgrest-typegen`'s types, a registry
-inside `postgrest-typegen` would close a dependency cycle. A registry above
-both does not.
+`postgrest-typegen`: once the TypeScript generator is imported from supabase-js,
+which itself imports `postgrest-typegen`'s types, a registry inside
+`postgrest-typegen` would close a dependency cycle. A registry above both does
+not.
 
 ## Languages
 
@@ -72,8 +72,8 @@ notice nothing but a dependency bump.
 
 Swift moved first. `supabase-typegen` is a prebuilt executable from the
 supabase-swift releases, not a package dependency: as a SwiftPM product its
-swift-format dependency would pin every app's swift-syntax, and an Xcode
-project without a `Package.swift` has nothing to `swift run` from.
+swift-format dependency would pin every app's swift-syntax, and an Xcode project
+without a `Package.swift` has nothing to `swift run` from.
 
 The output targets one version's `@Table` macro, so the binary must match the
 project's supabase-swift. The entry reads that version from the nearest
@@ -84,8 +84,8 @@ macOS, `~/.cache` elsewhere) and runs it. Without a version pin, or on a
 platform with no asset (anything but macOS and Linux x86_64), it runs
 `supabase-typegen` from PATH. `SUPABASE_TYPEGEN=<path>` overrides both.
 
-`--swift-access-control` lost `private` and `package`, which the new
-generator does not accept.
+`--swift-access-control` lost `private` and `package`, which the new generator
+does not accept.
 
 ## Using the registry
 
@@ -117,13 +117,13 @@ defaults; unknown names and values outside a choice raise an
 `InvalidOptionError`.
 
 `audience` says who sets an option. `user` options are the CLI flags; render
-`options.filter((option) => option.audience === "user")`. `consumer` options
-are set by the calling program from what it knows about the target and never
-shown to users. TypeScript has three: `detect-one-to-one-relationships`
-(default on; the consumer turns it off for PostgREST 9 and below, where
-one-to-one joins come back as arrays), `postgrest-version` (emitted as
-`__InternalSupabase.PostgrestVersion`) and `default-schema` (default
-`public`). postgres-meta's hosted route sets them from its
+`options.filter((option) => option.audience === "user")`. `consumer` options are
+set by the calling program from what it knows about the target and never shown
+to users. TypeScript has three: `detect-one-to-one-relationships` (default on;
+the consumer turns it off for PostgREST 9 and below, where one-to-one joins come
+back as arrays), `postgrest-version` (emitted as
+`__InternalSupabase.PostgrestVersion`) and `default-schema` (default `public`).
+postgres-meta's hosted route sets them from its
 `detect_one_to_one_relationships` query parameter, `POSTGREST_VERSION` and
 `GENERATE_TYPES_DEFAULT_SCHEMA`. The Supabase CLI already sniffs the local
 stack's PostgREST version and used to expose the first one inverted as
@@ -152,29 +152,29 @@ A `Host` is what the consumer knows and the registry does not:
 - `env`: environment for spawned tools, usually `process.env`.
 - `signal`: optional `AbortSignal`; aborting cancels the generation and kills a
   spawned tool.
-- `spawn(request)`: optional. Runs a command to completion and resolves with
-  its exit code, stdout and stderr. It must reject with an error whose `code`
-  is `"ENOENT"` when the executable is not found, as Node's `child_process`
-  does. A host that cannot run processes leaves it out; an out-of-process
-  language then fails with `SpawnUnavailableError`, so hosted consumers offer
-  only `inProcess` languages.
+- `spawn(request)`: optional. Runs a command to completion and resolves with its
+  exit code, stdout and stderr. It must reject with an error whose `code` is
+  `"ENOENT"` when the executable is not found, as Node's `child_process` does. A
+  host that cannot run processes leaves it out; an out-of-process language then
+  fails with `SpawnUnavailableError`, so hosted consumers offer only `inProcess`
+  languages.
 - `format(code, fileName)`: optional. Replaces the formatter of in-process
   generators that format their own output. Only TypeScript does today, through
   `oxfmt`, with the file name `output.ts`. The CLI passes an identity function
   so its output stays byte-identical to what it emits today and `oxfmt` stays
   out of its bundle. Leave it out to get each generator's default, which for
   TypeScript needs `oxfmt` installed: it is an optional peer dependency, loaded
-  only when the default formatter runs, so hosts that always pass `format`
-  never need it.
+  only when the default formatter runs, so hosts that always pass `format` never
+  need it.
 
 `createNodeHost({ cwd, env, signal, format })` is a ready-made `Host` on
-`node:child_process` for consumers without their own process runner. On
-Windows it resolves the command through `PATH` and `PATHEXT` and runs `.bat`
-and `.cmd` scripts through the command interpreter, since Flutter ships `dart`
-as `dart.bat` there and `spawn` cannot start those directly; a command it
-cannot find is reported as `ENOENT` like everywhere else. A host built on
-another process runner needs the same treatment; `planSpawn` is exported so
-it starts the same `cmd.exe` line, and the pieces it is built from
+`node:child_process` for consumers without their own process runner. On Windows
+it resolves the command through `PATH` and `PATHEXT` and runs `.bat` and `.cmd`
+scripts through the command interpreter, since Flutter ships `dart` as
+`dart.bat` there and `spawn` cannot start those directly; a command it cannot
+find is reported as `ENOENT` like everywhere else. A host built on another
+process runner needs the same treatment; `planSpawn` is exported so it starts
+the same `cmd.exe` line, and the pieces it is built from
 (`resolveWindowsCommand`, `isWindowsScript`, `quoteForCmd`) are exported for a
 host that has to assemble the line itself. A token holding a double quote or a
 line break is refused, since cmd.exe toggles quoting on every `"` and nothing
@@ -206,10 +206,10 @@ executable, passes through unchanged.
 
 Add an entry to `src/languages/` and list it in `languages`. Two shapes exist:
 
-**In-process** (`inProcessLanguage`): wraps a generator function called in
-this process. Every dependency of that generator lands in the CLI bundle, so
-this is reserved for the transitional entries and, permanently, for TypeScript
-imported from supabase-js.
+**In-process** (`inProcessLanguage`): wraps a generator function called in this
+process. Every dependency of that generator lands in the CLI bundle, so this is
+reserved for the transitional entries and, permanently, for TypeScript imported
+from supabase-js.
 
 **Out-of-process** (`externalLanguage`): describes a command line. The registry
 runs it in the host's `cwd` with the sorted document from
@@ -221,8 +221,8 @@ code. The tool's contract:
   both from `@supabase/postgrest-typegen`.
 - Write only the generated code to stdout; diagnostics and summaries go to
   stderr.
-- Exit `0` on success. The entry's `classify` maps the tool's other exits to
-  the typed failures, for example Dart's exit `65` (data error) to
+- Exit `0` on success. The entry's `classify` maps the tool's other exits to the
+  typed failures, for example Dart's exit `65` (data error) to
   `MetadataRejectedError` and its "could not find package" stderr to
   `ToolNotInstalledError` with a `dart pub add` hint.
 
@@ -251,8 +251,8 @@ bun run build                # emits dist/
 
 ## Releases
 
-Released with release-please as its own component, tagged `typegen/vX.Y.Z`,
-and published to npm as `@supabase/typegen` through OIDC trusted publishing.
-A change to the `--lang` list or to the `Host`, option or error types is a
-change to the CLI's public surface: describe it in the pull request so it
-reaches the release notes the CLI reads before bumping.
+Released with release-please as its own component, tagged `typegen/vX.Y.Z`, and
+published to npm as `@supabase/typegen` through OIDC trusted publishing. A
+change to the `--lang` list or to the `Host`, option or error types is a change
+to the CLI's public surface: describe it in the pull request so it reaches the
+release notes the CLI reads before bumping.
