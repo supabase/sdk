@@ -15,7 +15,9 @@ The body carries the payload in one of two forms:
 - A JSON payload: the SDK JSON-encodes it and sets `Content-Type: application/json`.
 - Raw bytes: the SDK sends them unchanged and sets `Content-Type: application/octet-stream`.
 
-The request starts from the headers the Realtime client is configured with. Those headers include `X-Client-Info` and, when the Realtime client belongs to an umbrella client, the umbrella client's global headers and `apikey`. The SDK then sets `Content-Type` as above and `Authorization: Bearer <access token>`, where the token is the client's current access token. These two headers replace any configured header of the same name.
+The request starts from the headers the Realtime client is configured with. Those headers include `X-Client-Info` and, when the Realtime client belongs to an umbrella client, the umbrella client's global headers and `apikey`. The SDK then sets `Content-Type` as above. When the client has an access token, it also sets `Authorization: Bearer <access token>`. These headers replace any configured header of the same name.
+
+`apikey` alone authenticates the request on a public channel, so the SDK sends the request without `Authorization` when it has no access token. A private channel needs a token that the channel's RLS policies accept; without one the server refuses the request.
 
 The send succeeds on HTTP 202. Any other status fails with a server error. Its message is the `error` field of the response body when the body is a JSON object with that field, otherwise the `message` field when present.
 
@@ -27,11 +29,9 @@ The call takes an optional timeout. It bounds the whole call, with the same mean
 
 The client's HTTP idle timeout still applies to the request underneath: the request fails as a transport error once no data has moved for that long.
 
-### Retry and cancellation
+### Retry
 
 The SDK never retries this request, on any status or transport error, because a replay can deliver the broadcast to subscribers twice.
-
-Cancelling the calling task cancels the request, and the call surfaces as cancellation, not as a transport or server error.
 
 ## Prerequisites
 
@@ -39,7 +39,6 @@ Cancelling the calling task cancels the request, and the call surfaces as cancel
 
 ## Errors
 
-- No access token: the SDK fails the call with its own error and sends nothing, because the request needs `Authorization: Bearer <access token>`.
 - Any status other than 202: a server error carrying the message rule under Behavior.
 
 ## Related
