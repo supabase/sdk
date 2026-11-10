@@ -9,8 +9,10 @@ root=$(git rev-parse --show-toplevel)
 oxfmt="$root/node_modules/.bin/oxfmt"
 cd "$root"
 
-files=$(git diff --cached --name-only --diff-filter=ACMR)
-[ -n "$files" ] || exit 0
+# Nothing to format when the commit only deletes files.
+if git diff --cached --quiet --diff-filter=ACMR; then
+  exit 0
+fi
 
 # Formatting is a convenience here: the Format workflow enforces it on every
 # PR. So a missing install never blocks a commit, which matters for worktrees:
@@ -34,36 +36,6 @@ else
   skip "neither Node nor bun is on PATH, so oxfmt cannot run."
 fi
 
-run_oxfmt() {
-  "$runtime" "$oxfmt" "$@"
-}
-
-# A file with unstaged changes is only checked: formatting it and adding it
-# again would also stage the changes that were deliberately left out.
-partial=$(git diff --name-only)
-to_format=""
-to_check=""
-newline='
-'
-IFS=$newline
-for file in $files; do
-  if printf '%s\n' "$partial" | grep -Fxq -- "$file"; then
-    to_check="$to_check$file$newline"
-  else
-    to_format="$to_format$file$newline"
-  fi
-done
-
-# Paths are split on newlines only, so file names may contain spaces.
-# shellcheck disable=SC2086
-if [ -n "$to_format" ]; then
-  run_oxfmt --no-error-on-unmatched-pattern $to_format >/dev/null
-  git add -- $to_format
-fi
-
-# shellcheck disable=SC2086
-if [ -n "$to_check" ] && ! run_oxfmt --check --no-error-on-unmatched-pattern $to_check; then
-  echo "pre-commit: the files above are partly staged and not formatted." >&2
-  echo "Run \`bun run format\` at the repo root, stage the result, and commit again." >&2
-  exit 1
-fi
+# The file handling lives in JavaScript, which gets paths from git exactly
+# and never passes them through a shell.
+exec "$runtime" "$root/.githooks/format-staged.mjs" "$oxfmt"
