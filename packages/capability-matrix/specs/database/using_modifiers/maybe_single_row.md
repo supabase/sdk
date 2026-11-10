@@ -34,7 +34,7 @@ A function call is counted on the client even when the function writes, because 
 
 ## Errors
 
-- HTTP 406 with `PGRST116` on a write, whose `details` contains `0 rows` as whole words (the server sends `The result contains 0 rows`): the write affected no row, so the SDK resolves to Nothing instead of raising. Any other HTTP 406 on a write, including a `PGRST116` whose `details` reports more than one row, surfaces as the Error unchanged.
+- HTTP 406 with `PGRST116` on a write, whose `details` contains `0 rows` as whole words (the server sends `The result contains 0 rows`): the write affected no row, so the SDK resolves to Nothing instead of raising. Where the SDK exposes the HTTP status or the body of a successful result, it reports HTTP 200 and a JSON `null` body, not the 406 answer and its error body. Any other HTTP 406 on a write, including a `PGRST116` whose `details` reports more than one row, surfaces as the Error unchanged.
 - More than one row on a read: the server answered with success, so the SDK builds the Error itself. It may carry HTTP status 406 and code `PGRST116`, the server's answer to more than one row on a write and on [`single_row`](single_row.md), so that a caller handles both modifiers with one check. It carries no other code.
 
 ## Related
