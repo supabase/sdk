@@ -23,11 +23,9 @@ The send succeeds on HTTP 202. Any other status fails with a server error. Its m
 
 ### Timeout
 
-The call takes an optional timeout. It is an idle timeout, with the same meaning as the per-request timeout of the SDK's other modules: the request fails once no data has moved in either direction for that long. It is not a total deadline. An app that needs one wraps the call.
+The call takes an optional timeout. It bounds the whole call, with the same meaning as the client's other Realtime timeouts (join, push with acknowledgement, leave). When the app sets no timeout, the client's Realtime request timeout applies, which defaults to 10 seconds. A call that runs past it fails with the same timeout error those operations use.
 
-When the app sets no timeout, the HTTP timeout of the client applies: the timeout of the Realtime module, or the global HTTP timeout when the module has none, which defaults to 60 seconds. The Realtime request and push timeout does not apply to this request.
-
-A request that times out fails as a transport error whose cause is a timeout. There is no dedicated timeout error kind.
+The client's HTTP idle timeout still applies to the request underneath: the request fails as a transport error once no data has moved for that long.
 
 ### Retry and cancellation
 
