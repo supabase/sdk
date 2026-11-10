@@ -91,6 +91,63 @@ bun run build-site                 # render the static site to site/index.html
 
 Run `bun test`, `bun run format-and-lint`, `bun run knip`, and `bun run validate` before opening a PR. CI runs the same checks plus spec file validation.
 
+## Formatting
+
+[`oxfmt`](https://oxc.rs/docs/guide/usage/formatter) formats the whole repo. One
+config at the root, [`.oxfmtrc.json`](./.oxfmtrc.json), applies across all
+packages. It skips:
+
+- `CHANGELOG.md` files, because release-please writes them.
+- YAML and TOML files.
+- Code blocks inside Markdown, so hand-aligned samples keep their layout.
+
+Install it once at the repo root:
+
+```bash
+bun install
+```
+
+Without bun, `npm install` works the same way: the hook runs `oxfmt` with Node
+when Node is available, and with bun otherwise.
+
+This also turns on the pre-commit hook in [`.githooks/`](./.githooks/pre-commit)
+by setting `core.hooksPath`. From then on, every commit formats its staged files
+and stages the result. A file you only partly staged is checked rather than
+rewritten, so changes you left out of the commit stay unstaged. To skip the hook
+once, use `git commit --no-verify`.
+
+The hook never blocks a commit because of your setup. If `oxfmt` is not
+installed, or neither Node nor bun is on the `PATH`, it prints a warning and
+commits without formatting, and the `Format` check on CI catches anything left
+unformatted.
+
+This matters for worktrees: `core.hooksPath` lives in the repository's shared
+git config, so the hook is on in every worktree, but each worktree needs its own
+install at the root before it formats anything.
+
+To format or check by hand from the repo root:
+
+```bash
+bun run format        # rewrite files in place
+bun run format:check  # report unformatted files, as CI does
+```
+
+In Markdown, prose is wrapped at 80 characters. Links, bare URLs and inline code
+are never split, so a line holding one can run past 80. Write a GitHub alert
+with an empty `>` line after the marker, or wrapping joins the marker with the
+text and GitHub no longer renders the callout:
+
+```markdown
+> [!NOTE]
+>
+> The alert text.
+```
+
+The `Format` workflow fails a PR that contains unformatted files. Each package's
+`bun run format-and-lint` uses the same root config. `oxfmt` is pinned to the
+same exact version at the root and in every JavaScript package, and it is
+upgraded in all of them together.
+
 ## Pull requests
 
 - Keep PRs focused on one concern. A new capability and its spec belong in the same PR and the same `feat` commit. A spec on its own, new or changed, is `docs`. Unrelated capabilities and tooling changes get their own PRs.
