@@ -35,7 +35,8 @@ The SDK never retries this request, on any status or transport error, because a 
 
 ## Prerequisites
 
-- The Realtime server is version 2.97.0 or later.
+- The Realtime server is version 2.147.0 or later. The endpoint exists from 2.97.0, but before 2.147.0 the server also reads `private` from a JSON body, so a payload with a top-level `private` key can move a private broadcast to the public topic and skip the private channel's RLS check.
+- `persist` needs version 2.150.0 or later. Older servers ignore it and still answer 202, without storing the message.
 
 ## Errors
 
