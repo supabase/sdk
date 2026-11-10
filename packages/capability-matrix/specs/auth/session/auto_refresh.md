@@ -1,8 +1,8 @@
 # Auto Refresh
 
 Refresh the stored session in the background before its access token expires,
-so that the app, and every platform service client that reads the session,
-holds a valid access token without waiting for a refresh.
+so that while the loop runs, the app and every platform service client that
+reads the session hold a valid access token without waiting for a refresh.
 
 This spec defines when the loop starts a refresh, how long it waits after a
 failed one, and how the app and the platform's lifecycle start and stop it.
@@ -36,14 +36,17 @@ flowchart TB
     S -- yes --> D{"Due now, judged on<br>the stored session read now?"}
     D -- no --> W
     D -- yes --> R["Refresh Session, bound<br>(joins a refresh in flight)"]
-    R -- success --> OK["Reset the failure count.<br>Next refresh due 90 s before expiry"]
+    R --> C{"Stored session still holds<br>the refresh token sent?"}
+    C -- "no, replaced" --> N["Reset the failure count.<br>Schedule from the stored session"]
+    N --> W
+    C -- "no, removed" --> I
+    C -- yes --> O{"Outcome"}
+    O -- success --> OK["Reset the failure count.<br>Next refresh due 90 seconds before expiry"]
     OK --> W
-    R -- "retryable or other failure" --> B["Add one to the failure count.<br>Next refresh due after the backoff wait"]
+    O -- "retryable or other failure" --> B["Add one to the failure count.<br>Next refresh due after the backoff wait"]
     B --> W
-    R -- "rejection, session kept" --> M["Next refresh due when the access<br>token enters the safety margin"]
+    O -- "rejection, session kept" --> M["Next refresh due when the access<br>token enters the safety margin"]
     M --> W
-    R -- "rejection, session removed" --> I
-    R -- "refresh discarded" --> W
 ```
 
 The sections below define each step and give the reasons.
@@ -57,22 +60,28 @@ the local clock. The lead time is three times the
 - A refresh that starts 90 seconds before expiry has finished its
   [retries](refresh_session.md#retryable-failures), which stop 30 seconds
   after the first attempt, while 60 seconds remain.
-- That leaves room for at least one more refresh after a failure before the
+- That leaves room for a second refresh after a failure to start before the
   token enters the safety margin, where [Get Session](get_session.md) starts
-  refreshing on its own and makes its callers wait for the answer.
-- When the loop succeeds, Get Session never finds an access token inside the
-  margin, so the app's calls stay local reads.
+  refreshing on its own and makes its callers wait for the answer. The second
+  refresh's retries can run into the margin, and Get Session calls made then
+  join it.
+- For tokens that live 180 seconds or more, a loop refresh that succeeds
+  before the margin means Get Session never finds an access token inside it,
+  so the app's calls stay local reads.
 
 A refresh is never due sooner than half the access token's lifetime after this
-instance last saw the stored session change, through its own refresh or
-sign-in or through another instance's write. The lifetime is the token's `exp`
-claim minus its `iat` claim, or `expires_in` when the token carries no `iat`.
-Both claims come from the server's clock, so the rule holds whatever the local
-clock says. A session loaded from storage at start-up has no such time, so only
-the 90-second rule applies to it. The rule covers two cases in which the
-90-second rule alone would refresh again as soon as each refresh succeeds:
+instance received the session in an answer from the server, from its own
+refresh or sign-in. The lifetime is the token's `exp` claim minus its `iat`
+claim, or `expires_in` when the token carries no `iat`. The time received is
+on the local clock, so the rule holds whatever offset the local clock has from
+the server's. A session this instance did not receive, one loaded from storage
+at start-up or written by another instance, has no such time, so only the
+90-second rule applies to it. The rule covers two cases in which the 90-second
+rule alone would refresh again as soon as each refresh succeeds:
 
-- A project whose access tokens live less than 180 seconds.
+- A project whose access tokens live less than 180 seconds. With a lifetime
+  of 60 seconds or less the loop's refresh falls due inside the safety margin,
+  and Get Session calls made then join it.
 - A device clock running ahead of the server's by more than the token's
   lifetime minus 90 seconds, so every new token looks about to expire on
   arrival.
@@ -106,15 +115,15 @@ capped at 10 minutes. The SDK multiplies each wait by a factor drawn at random
 between 0.5 and 1.0, once per wait, so devices that failed at the same moment
 do not all refresh again at the same moment:
 
-| Failure | Wait before jitter | Wait after jitter |
-| ------- | ------------------ | ----------------- |
-| 1       | 10 s               | 5 to 10 s         |
-| 2       | 20 s               | 10 to 20 s        |
-| 3       | 40 s               | 20 to 40 s        |
-| 4       | 80 s               | 40 to 80 s        |
-| 5       | 160 s              | 80 to 160 s       |
-| 6       | 320 s              | 160 to 320 s      |
-| 7 on    | 10 min             | 5 to 10 min       |
+| Failure | Wait before jitter | Wait after jitter  |
+| ------- | ------------------ | ------------------ |
+| 1       | 10 seconds         | 5 to 10 seconds    |
+| 2       | 20 seconds         | 10 to 20 seconds   |
+| 3       | 40 seconds         | 20 to 40 seconds   |
+| 4       | 80 seconds         | 40 to 80 seconds   |
+| 5       | 160 seconds        | 80 to 160 seconds  |
+| 6       | 320 seconds        | 160 to 320 seconds |
+| 7 on    | 10 minutes         | 5 to 10 minutes    |
 
 When the last answer of the failed refresh carried a `Retry-After` header with
 a value [Retry Options](../../client/request_configuration/retry_options.md#retry-after)
@@ -129,9 +138,22 @@ defines.
 
 Through a steady failure of `/token`, such as an auth hook that answers `500`
 to every refresh, each refresh sends at most eight requests within its
-30-second deadline. A device then sends at most 56 requests over seven
+30-second deadline. The loop then sends at most 56 requests over seven
 refreshes until the wait reaches its cap, which takes up to 14 minutes, and
-eight every 5 to 10 minutes after that: about one request a minute.
+eight every 5 to 10 minutes after that: about one request a minute. Refreshes
+the app or Get Session start are not part of this budget (see
+[Shared state with other refreshes](#shared-state-with-other-refreshes)).
+
+### When the stored session changed during the refresh
+
+Before acting on a refresh's outcome, the loop reads the stored session. When
+it no longer holds the refresh token the refresh sent, because another actor
+removed or replaced it while the request was in flight, the outcome says
+nothing about the stored session, whatever it was: a success Refresh Session
+discarded, a rejection it returned without acting on, or a failure. The loop
+does not add to the failure count. It resets the count and schedules from the
+stored session as it is now, or idles when none is stored. The sections below
+apply only while the stored session still holds the refresh token sent.
 
 ### After a rejected refresh
 
@@ -148,13 +170,6 @@ does to the stored session:
   request, and removes the local session with the session-expired reason. This
   is how an app that did not call the refresh learns of the rejection on time.
 
-### After a discarded refresh
-
-A refresh whose answer Refresh Session discarded, because the stored session
-was removed or replaced while the request was in flight, does not add to the
-failure count. The loop schedules from the stored session as it is now, or
-idles when none is stored.
-
 ### Does the loop give up
 
 No. While a session is stored, the loop keeps refreshing on the schedule
@@ -165,8 +180,8 @@ above, after the access token has expired too:
   and the stored refresh token works again once it does.
 - The loop never removes the session itself. Only a rejection removes it, as
   Refresh Session defines, and the loop stops sending requests once it has.
-- The backoff cap keeps a device that never reaches the server at about one
-  request a minute.
+- The backoff cap keeps the loop of a device that never reaches the server at
+  about one request a minute.
 
 ### Shared state with other refreshes
 
@@ -184,7 +199,8 @@ and Get Session start, so:
   schedules the refresh at the safety margin.
 - The loop's failure count and backoff wait apply to the loop only. A refresh
   the app or Get Session starts during a backoff wait is sent at once, since a
-  caller is waiting for it.
+  caller is waiting for it. How often those refreshes reach the server during
+  an outage is Refresh Session's to bound, not this spec's.
 
 Instances on the same storage, such as browser tabs or app extensions, each run
 their own loop. They do not have to coordinate. The re-read of the stored
@@ -204,14 +220,20 @@ the next section defines. With it off, the SDK never starts the loop on its own.
 The auth client has public methods to start and stop the loop. They work
 whatever the option says:
 
-- **Start** starts the loop when it is not running. A refresh that is due, or
-  whose backoff wait is still running, starts at once rather than at the end
-  of the wait; the failure count is kept, so a failure continues the backoff
-  sequence where it left off. Starting a running loop does nothing.
+- **Start** starts the loop when it is not running. A start before the initial
+  load of the stored session has completed takes effect once the load has
+  completed, so the loop schedules from the loaded session rather than idling
+  for want of one. A refresh that fell due while the loop was stopped starts
+  at once. A backoff wait keeps running: its end is a point in time on the
+  local clock, set when the failure happened, and stopping and starting the
+  loop does not move it. Without that, an app moved to the foreground and back
+  every few seconds during an outage would refresh on every return. Starting
+  a running loop does nothing.
 - **Stop** stops the loop when it is running. No refresh starts until the loop
   is started again. A refresh in flight is not cancelled, since another
   caller may have joined it, and its outcome is applied to the stored session
-  as Refresh Session defines. Stopping a stopped loop does nothing.
+  as Refresh Session defines. The failure count and the end of a backoff wait
+  are kept. Stopping a stopped loop does nothing.
 
 Once the app calls start or stop, the SDK no longer starts or stops the loop
 on the platform's lifecycle. The app has taken control, and an SDK that
@@ -236,9 +258,17 @@ it when the app returns, as the start and stop methods define:
 - A refresh in the background spends battery and data for a user who is not
   using the app, and browser tabs in the background would each refresh the
   same session.
-- On return, a refresh that fell due in the background starts at once, so the
-  app has a valid access token by the time it sends its first request, or Get
-  Session finds the refresh in flight and joins it.
+- On return, a refresh that fell due in the background starts at once, unless
+  a backoff wait is still running, so the app has a valid access token by the
+  time it sends its first request, or Get Session finds the refresh in flight
+  and joins it.
+
+The cost is that the access token can expire while the app is in the
+background. A connection that stays open there, such as a Realtime channel in
+a hidden browser tab, keeps the access token it last received until the loop
+refreshes on return and the token-refreshed event hands it the new one. What
+such a connection does with an expired token is its own capability's to
+define.
 
 On platforms without such a lifecycle, such as desktop processes and servers,
 the loop runs until it is stopped.

@@ -110,7 +110,7 @@ usually a local read into a request while the token is still good; refreshing
 later would hand out a token the margin says is unreliable. The stored expiry
 equals the `exp` claim, and an SDK may read either.
 
-Get Session refreshes whether or not Auto Refresh (`auth.session.auto_refresh`)
+Get Session refreshes whether or not [Auto Refresh](auto_refresh.md)
 is enabled. That setting controls the timer. The refresh here is what keeps
 Get Session's promise when the timer is off, and when the app was suspended
 past the token's expiry before the timer could run.
@@ -195,7 +195,7 @@ failed refresh's, under the conditions in the table.
 - [Refresh Session](refresh_session.md): the bound refresh Get Session runs
   when the access token is about to expire, and the owner of what that refresh
   does to the stored session.
-- Auto Refresh (`auth.session.auto_refresh`): the timer that refreshes ahead
+- [Auto Refresh](auto_refresh.md): the timer that refreshes ahead
   of expiry; its setting does not change whether Get Session refreshes.
 - [Get User](get_user.md): the server-verified alternative when the session
   must be proven to still exist.

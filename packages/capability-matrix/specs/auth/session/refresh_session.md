@@ -71,7 +71,7 @@ These are its callers, and the mode each one runs:
   detached.
 - [Get Session](get_session.md) runs a bound refresh when the stored access
   token is about to expire.
-- Auto Refresh (`auth.session.auto_refresh`) runs a bound refresh ahead of
+- [Auto Refresh](auto_refresh.md) runs a bound refresh ahead of
   expiry on a timer.
 - [Sign Out](sign_out.md) runs a bound refresh under the `others` scope and a
   detached refresh under `local`. Under `global` it runs a bound refresh whose
@@ -429,10 +429,9 @@ The reason for each row:
 ## Notes
 
 - Which tokens an SDK proactively refreshes, and how long before expiry, is
-  defined by [Get Session](get_session.md) and Auto Refresh
-  (`auth.session.auto_refresh`), not by this spec. What Get Session hands back
-  when the refresh fails and this spec has kept the session is defined there
-  too.
+  defined by [Get Session](get_session.md) and [Auto Refresh](auto_refresh.md),
+  not by this spec. What Get Session hands back when the refresh fails and this
+  spec has kept the session is defined there too.
 
 - A `Retry-After` header can end the sequence at its first answer. Example:
   the first request fails with `Retry-After: 31`. That wait would end past the
@@ -453,7 +452,7 @@ The reason for each row:
 - [Get Session](get_session.md): starts a bound refresh when the access token
   is about to expire, and defines what it hands back when that refresh fails
   and this spec has kept the session.
-- Auto Refresh (`auth.session.auto_refresh`): starts a bound refresh on a
+- [Auto Refresh](auto_refresh.md): starts a bound refresh on a
   timer.
 - Set Session (`auth.session.set_session`): stores a session from supplied
   tokens, the same way a supplied refresh stores its result.
