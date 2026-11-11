@@ -130,13 +130,14 @@ When the stored access token has expired, the SDK refreshes it first and stores
 the new session, as Refresh Session (`auth.session.refresh_session`) does. The
 SDK must store it, because it keeps the local session if the logout then fails,
 and the refresh has replaced the stored refresh token. Sign-out handles a
-rejected refresh itself, though. When the server rejects the refresh with a
-`4xx`, including `400 refresh_token_already_used`, the stored refresh token
-cannot be used again, so the SDK removes the local
-session, emits the sign-out event with the user-initiated reason, and returns
-the refresh error. The user asked to sign this device out, so the reason is
-user-initiated, not session-expired. The error tells the app that the other
-sessions were not revoked.
+rejected refresh itself, though. On a
+[rejected refresh](refresh_session.md#rejected-refresh), including
+`400 refresh_token_already_used`, the stored refresh token cannot be used
+again, so the SDK removes the local session at once, emits the sign-out event
+with the user-initiated reason, and returns the refresh error. The user asked
+to sign this device out, so the reason is user-initiated, not session-expired.
+The error tells the app that the other sessions were not revoked. A retryable
+or other failure keeps the local session, as for any bound refresh.
 
 Removing the local session, after a successful answer or a rejected refresh,
 clears all auth state the SDK persists for the user: the stored session, every
@@ -172,9 +173,9 @@ flowchart TB
     X -- no --> L["POST /logout?scope=global"]
     X -- yes --> RF["Refresh Access Token<br>(new session stored)"]
     RF -- ok --> L
-    RF -- 4xx --> RX["1. Remove local session. 2. Emit (SIGNED_OUT, user-initiated)"]
+    RF -- rejected refresh --> RX["1. Remove local session. 2. Emit (SIGNED_OUT, user-initiated)"]
     RX --> ER(["Return refresh error"])
-    RF -- network failure, 5xx --> K1["Keep local session"]
+    RF -- retryable or other failure --> K1["Keep local session"]
     K1 --> ER
     L -- 204, 403 user_not_found --> RM["1. Remove local session. 2. Emit (SIGNED_OUT, user-initiated)"]
     RM --> OK
@@ -189,12 +190,12 @@ never changes the local session for this scope, and so never emits the sign-out
 event.
 
 When the stored access token has expired, the SDK refreshes it first through
-Refresh Session (`auth.session.refresh_session`), the same refresh that runs
-before any authenticated call. When the server rejects that refresh with a
-`4xx`, Refresh Session has already removed the local session and emitted the
-sign-out event with the session-expired reason by the time sign-out sees the
-error. Sign-out only returns the error. This is the only way this scope ends
-with no local session.
+[Refresh Session](refresh_session.md), the same refresh that runs
+before any authenticated call. On a
+[rejected refresh](refresh_session.md#rejected-refresh), Refresh Session has
+already removed the local session and emitted the sign-out event with the
+session-expired reason by the time sign-out sees the error. Sign-out only
+returns the error. This is the only way this scope ends with no local session.
 
 Unlike `global`, the reason stays session-expired. The user asked to end the
 other sessions, not this one, and this session has expired on its own.
@@ -215,9 +216,9 @@ flowchart TB
     X -- no --> L["POST /logout?scope=others"]
     X -- yes --> RF["Regular session refresh"]
     RF -- ok --> L
-    RF -- 4xx --> RX["Removes local session.<br>Emit (SIGNED_OUT, session-expired)"]
+    RF -- rejected refresh --> RX["Removes local session.<br>Emit (SIGNED_OUT, session-expired)"]
     RX --> ER(["Return refresh error"])
-    RF -- network failure, 5xx --> ER
+    RF -- retryable or other failure --> ER
     L -- 204, 403 user_not_found --> OK(["Return success. Local session untouched."])
     L -- 403 session_not_found, network failure,<br>5xx, anything else --> E(["Return error. Local session untouched."])
 ```
@@ -292,7 +293,7 @@ The reason for each row:
   server leaves the session alive and fails only this request. Under `local`
   the session is therefore still left to revoke. Under `global` and `others`
   the stored refresh token is spent all the same, so the local session is
-  removed as for any other `4xx`.
+  removed as for any other rejected refresh.
 - `5xx` or a network failure: the server never judged the refresh token, so the
   session may still be alive.
 

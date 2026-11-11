@@ -41,4 +41,4 @@ Server-side authentication errors (for example PostgREST's [`PGRST301`](https://
 ## Related
 
 - [Third-Party Auth](../../client/authentication_integration/third_party_auth.md) - construction-time token callback that sources tokens for all sub-clients; this capability scopes a token to specific database requests instead
-- `database.configuration.auto_retry`
+- [Automatic Retry with Backoff](./auto_retry.md) - the attempt limit the renewal re-sends may share
