@@ -106,9 +106,9 @@ pass itself.
 PostgreSQL never marks view columns `NOT NULL`, so `introspect()` works out
 `is_nullable` for view and materialized view columns from the view's query tree.
 A column is not nullable when it is a plain reference to a `NOT NULL` column
-(directly, through another view, a subquery, a non-recursive CTE, a join alias
-or a `GROUP BY` key) and nothing on the way puts it on the nullable side of an
-outer join, in a set operation such as `UNION` or under
+(directly, through another view, a subquery, a non-recursive `SELECT` CTE, a
+join alias or a `GROUP BY` key) and nothing on the way puts it on the nullable
+side of an outer join, in a set operation such as `UNION` or under
 `GROUPING SETS`/`ROLLUP`/`CUBE`. This works the same on every supported
 PostgreSQL version. Expressions stay nullable, even ones that cannot return
 null.
@@ -132,6 +132,25 @@ null where the type says otherwise:
   whose type is a view's row type can hold a row with null fields.
 - A materialized view keeps the rows of its last refresh, including nulls from
   before its source column became `NOT NULL`.
+
+### `RETURNS TABLE` column nullability
+
+PostgreSQL records no nullability for the columns of a `RETURNS TABLE (…)`
+function either, so `introspect()` sets `is_nullable` on the function's `table`
+arguments, and `rpcFunctions` carries it on `returns.columns`. A column is not
+nullable when the last statement of a `BEGIN ATOMIC` body proves it, with the
+rules views follow, or when a line of the function comment starting with
+`@notNull` names it:
+
+```sql
+comment on function top_books(int) is E'The best books.\n@notNull id, title';
+```
+
+A bare `@notNull` line marks every result column. A function whose body is a
+string, such as any `plpgsql` function, proves nothing by itself, since
+PostgreSQL stores no query tree for it. A document produced before the field was
+added has no `is_nullable` on these columns, which reads as `true`. The bundled
+TypeScript generator types these columns as they were typed before.
 
 ### Runtime validation (opt-in)
 
