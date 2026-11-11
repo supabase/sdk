@@ -115,6 +115,7 @@ Then read what survives for voice and precision, which no validator can see. The
 - Placement. A check the SDK makes before the wire is defined under `## Errors`, not `## Behavior`.
 - Diagrams. Apply the Mermaid diagram rule in the `## Behavior` comment of `specs/TEMPLATE.md`: suggest a diagram where it calls for one, and flag a diagram that breaks it.
 - Evidence. For every status, code, message, and server behavior the spec names, find the line in the service's handler that produces it, at a commit, before accepting the sentence. Do not take the API spec's word for a response body: "the server returns the deleted user" is the kind of claim that reads plausibly, is documented upstream, and is false.
+- Diagrams. Suggest a Mermaid diagram where the prose has branches, an order, or timing a reader must hold in their head: a decision with three or more outcomes, a fixed order of checks, a retry loop, or the app, the SDK, and the server acting at the same time (`flowchart` for the first three, `sequenceDiagram` for timing). Flag a diagram of independent facts, which belongs in a list or a table. For every diagram, check that it adds no rule the prose lacks, that its labels use the prose's exact parameter, error code, and event names, and that it renders. The prose is normative, so a disagreement is fixed in the diagram.
 - Siblings. When a sentence fails any test, search `specs/` for the same wording. Specs copy from each other, and the fix is one PR for all of them, not a fix to the file in front of you.
 
 ## Step 6: platform-scope notes
