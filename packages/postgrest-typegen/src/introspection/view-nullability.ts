@@ -19,6 +19,9 @@ const RTE_JOIN = "2";
 const RTE_CTE = "6";
 const RTE_GROUP = "9";
 
+/** `CmdType.CMD_SELECT` as PostgreSQL prints a query's `commandType`. */
+const CMD_SELECT = "1";
+
 const JOIN_INNER = "0";
 const JOIN_LEFT = "1";
 const JOIN_RIGHT = "3";
@@ -226,8 +229,14 @@ export function queryNullability(
   };
 }
 
+/**
+ * Whether the query's target list can prove an output column non-null. The
+ * target list of an `INSERT`, `UPDATE` or `DELETE` holds the columns it
+ * assigns, not the ones its `RETURNING` clause returns.
+ */
 function allowsNonNull(query: NodeTreeNode): boolean {
   return (
+    query.fields.commandType === CMD_SELECT &&
     query.fields.setOperations === null &&
     list(query.fields.groupingSets).length === 0
   );

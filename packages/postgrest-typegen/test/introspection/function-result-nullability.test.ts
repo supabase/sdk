@@ -52,6 +52,13 @@ const SCHEMA = /* SQL */ `
     update private.authors set name = name where false returning name, bio;
   end;
 
+  create function public.atomic_modifying_cte()
+  returns table (id int, bio text)
+  begin atomic
+    with changed as (update private.authors set name = name where false returning id, bio)
+    select id, bio from changed;
+  end;
+
   create function public.string_body()
   returns table (id int, title text)
   language sql stable
@@ -129,6 +136,13 @@ describe.each(["15", "17", "18"])(
       expect(resultNullability(metadata, "atomic_returning")).toEqual({
         bio: true,
         name: true,
+      });
+    });
+
+    test("a data-modifying CTE proves nothing", () => {
+      expect(resultNullability(metadata, "atomic_modifying_cte")).toEqual({
+        bio: true,
+        id: true,
       });
     });
 
