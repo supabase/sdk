@@ -72,7 +72,7 @@ features:
     group: file_buckets
   - id: storage.file_buckets.list_files
     name: List Files
-    description: List files and folders within a path of the bucket, with optional cursor-based pagination.
+    description: List the files and folders under a prefix of the bucket, one cursor-paged page at a time.
     group: file_buckets
   - id: storage.file_buckets.move
     name: Move File
