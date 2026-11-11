@@ -115,8 +115,8 @@ The steps below give the reasons and further details:
    attacker-minted `kid`s decays to a bounded fetch rate while a genuine
    rotation still verifies - immediately when the backoff is clear, via the
    fallback during a storm. If the refetched document still lacks the `kid`,
-   fall back to server-side verification as in step 3. A download that fails -
-   a transport error or timeout, a non-2xx status, or a body that is not a JSON
+   fall back to server-side verification as in step 3. A download that fails - a
+   transport error or timeout, a non-2xx status, or a body that is not a JSON
    object with a `keys` array - returns that failure to the caller and leaves
    the cache as it was. It never takes the step 3 fallback: the server is the
    one that failed to answer. A failed forced refetch also starts or doubles the
@@ -147,11 +147,11 @@ token header:
 - Otherwise, inferred from the JWK's `kty` and `crv`.
 
 The header is attacker-controlled until its signature is verified, while the
-published key set is not, so binding from the JWK removes algorithm confusion
-by construction. The header's `alg` must never select the verification
-algorithm. It is used for routing in step 3, and after binding it must name the
-bound algorithm, the same agreement the server enforces, so a token the server
-would reject is never accepted locally.
+published key set is not, so binding from the JWK removes algorithm confusion by
+construction. The header's `alg` must never select the verification algorithm.
+It is used for routing in step 3, and after binding it must name the bound
+algorithm, the same agreement the server enforces, so a token the server would
+reject is never accepted locally.
 
 Local verification covers these bindings:
 
@@ -189,9 +189,9 @@ fallback. The SDK learns this from the runtime's own rejection at key import or
 verification and turns it into the fallback route, never into an
 invalid-signature error. Only a rejection that says the runtime lacks the
 algorithm or key type counts: a signature of the wrong length or a check that
-returns false is still an invalid-signature error. The cost on such a runtime
-is one server round trip per call, the same cost an HS256 project pays, and not
-a failure.
+returns false is still an invalid-signature error. The cost on such a runtime is
+one server round trip per call, the same cost an HS256 project pays, and not a
+failure.
 
 Parsing the JWK Set accepts keys of any `kty` and members the SDK does not read.
 A key the SDK cannot use stays in the set and still matches by `kid`, so a token
@@ -222,8 +222,8 @@ fallback rather than fail.
   error - `bad_jwt`, `session_not_found` and similar codes pass through from
   [Get User](auth.session.get_user).
 - A failed JWK Set download surfaces as the SDK's usual network or API error,
-  the same one any other failed Auth request produces. It is not a
-  verification failure and does not fall back to the server.
+  the same one any other failed Auth request produces. It is not a verification
+  failure and does not fall back to the server.
 
 ## Notes
 
@@ -234,8 +234,8 @@ fallback rather than fail.
   the server round trip.
 - Verified claims prove identity as of token minting. They cannot prove the
   session still exists: a revoked session's token keeps verifying locally until
-  it expires. Decisions that must respect revocation belong on [Get
-  User](auth.session.get_user).
+  it expires. Decisions that must respect revocation belong on
+  [Get User](auth.session.get_user).
 - Runtime key importers differ on which `alg` an OKP JWK may carry: some accept
   only `EdDSA` (RFC 8037), others also `Ed25519` and `Ed448` (RFC 9864). An SDK
   that hands the JWK to the runtime's importer removes `alg` first. The

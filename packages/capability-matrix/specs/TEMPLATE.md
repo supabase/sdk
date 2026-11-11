@@ -61,7 +61,8 @@
      and it undermines the sentence it hangs off. Fix the API spec upstream, then delete
      the line and its comment together. -->
 
-Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+Spec:
+[https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
 
 - `METHOD /path`
 
@@ -108,7 +109,8 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      check saves them from. Remove this section if there are none. -->
 
 - `error_code`: when the SDK sees it and what it does with it
-- A check before the wire: the input, the form it accepts, the error raised, and the server answer it pre-empts
+- A check before the wire: the input, the form it accepts, the error raised, and
+  the server answer it pre-empts
 
 ## Notes
 

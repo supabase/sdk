@@ -27,9 +27,8 @@ lives in supabase-js.
   `TypegenLanguage`. Changing these is a semver-relevant change for the CLI.
 - `src/errors.ts` -- `TypegenError` and its subclasses (`InvalidOptionError`,
   `SpawnUnavailableError`, `ToolNotInstalledError`, `ToolFailedError`,
-  `MetadataRejectedError`). The
-  CLI maps these to its actionability model generically; keep the fields
-  stable.
+  `MetadataRejectedError`). The CLI maps these to its actionability model
+  generically; keep the fields stable.
 - `src/options.ts` -- `resolveOptions`: defaults plus validation, run at the
   start of every `generate`.
 - `src/languages/in-process.ts` -- `inProcessLanguage`: wraps a generator
@@ -45,17 +44,16 @@ lives in supabase-js.
   release the nearest `Package.resolved` pins into the user cache, then falls
   back to PATH; `SUPABASE_TYPEGEN` overrides both. The only entry that touches
   the network or the file system; `createSwift` takes `fetch` and the platform
-  so tests stay offline.
-  `swift-access-control` maps to `--access-control` and accepts only
-  `internal` and `public`. Exit `65` is a rejected document.
+  so tests stay offline. `swift-access-control` maps to `--access-control` and
+  accepts only `internal` and `public`. Exit `65` is a rejected document.
 - `src/languages/index.ts` -- the three in-process entries and the `languages`
   list. `typescript` has no user options; `detect-one-to-one-relationships`
   (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
-  `postgrest-version` and `default-schema` are consumer options that the CLI
-  and postgres-meta's hosted route set from what they know about the target.
-  It honors `host.format`.
-- `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`,
-  plus the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
+  `postgrest-version` and `default-schema` are consumer options that the CLI and
+  postgres-meta's hosted route set from what they know about the target. It
+  honors `host.format`.
+- `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`, plus
+  the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
   `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts
   start a `.bat` through cmd.exe with the same command line.
 
@@ -64,24 +62,24 @@ lives in supabase-js.
 - User option `name`s are the CLI flag names verbatim (`swift-access-control`).
   `audience: "user"` options are flags; `"consumer"` options are set by the
   calling program and never rendered. `--postgrest-v9-compat` stopped being a
-  registry option on purpose: it targets PostgREST 9 (2022) and only ever
-  worked with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
-- `generate` always sorts before generating and returns complete file
-  contents for every language. The bundled generators end their output with
-  a single newline and in-process entries pass it on verbatim, adding a
-  newline only when a `Host.format` implementation dropped it; out-of-process
-  entries return the tool's stdout verbatim. The CLI writes the result as-is.
-- In-process TypeScript formats through `host.format` when given. The CLI
-  passes identity to keep `oxfmt` out of its bundle and its output unchanged.
+  registry option on purpose: it targets PostgREST 9 (2022) and only ever worked
+  with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
+- `generate` always sorts before generating and returns complete file contents
+  for every language. The bundled generators end their output with a single
+  newline and in-process entries pass it on verbatim, adding a newline only when
+  a `Host.format` implementation dropped it; out-of-process entries return the
+  tool's stdout verbatim. The CLI writes the result as-is.
+- In-process TypeScript formats through `host.format` when given. The CLI passes
+  identity to keep `oxfmt` out of its bundle and its output unchanged.
 - Out-of-process tools: stdout is code, stderr is diagnostics, exit 0 is
   success. `dart run` keeps stdout clean when it is not a terminal.
 - `inProcess` must be accurate: hosted consumers (postgres-meta) filter on it.
 - Keep the dependency list minimal; everything here lands in the CLI bundle.
 - `@supabase/postgrest-typegen` is pinned exactly, not a caret range: the
   registry promises consumers one postgrest-typegen version for introspection
-  and generation alike. The `Release postgrest-typegen` workflow opens a
-  typegen release pull request that bumps the pin after each release;
-  dependabot ignores this dependency.
+  and generation alike. The `Release postgrest-typegen` workflow opens a typegen
+  release pull request that bumps the pin after each release; dependabot ignores
+  this dependency.
 
 ## Commands
 
@@ -107,7 +105,7 @@ postgrest-typegen fix.
 `test/fixtures.ts` holds a deliberately unsorted `GeneratorMetadata` validated
 with `parseGeneratorMetadata`. `test/in-process.test.ts` asserts each bundled
 language's output equals the direct generator call on sorted input (the
-byte-identity acceptance criterion, without Docker). `test/dart.test.ts` and `test/swift.test.ts`
-cover the handoff and every error classification with the fake host from
-`test/helpers.ts`; `test/node-host.test.ts` runs a fake `dart` shell script
-on PATH.
+byte-identity acceptance criterion, without Docker). `test/dart.test.ts` and
+`test/swift.test.ts` cover the handoff and every error classification with the
+fake host from `test/helpers.ts`; `test/node-host.test.ts` runs a fake `dart`
+shell script on PATH.
