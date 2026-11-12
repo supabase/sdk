@@ -145,7 +145,8 @@ jobs:
             # || true: test targets may fail to extract on CI runners; library targets land first
             swift package dump-symbol-graph \
               --minimum-access-level public \
-              --skip-synthesized-members || true
+              --skip-synthesized-members \
+              --include-spi-symbols || true
             # Multi-target packages emit several symbolgraph dirs; collect every
             # symbols file across all of them (paths from .build never contain spaces).
             SGFILES=$(find .build -maxdepth 4 -name "*.symbols.json")
@@ -165,6 +166,16 @@ jobs:
             if [ "$MISSING" = "1" ]; then exit 1; fi
             jq -s '[.[] | .symbols[]]' $SGFILES \
               > "$GITHUB_WORKSPACE/$b-raw.json"
+            # Swift 6.4's default build system ignores --include-spi-symbols with no
+            # warning. Without this guard, every registered @_spi symbol would look
+            # removed or drifted. Only a declaration counts: not an @_spi import or
+            # a doc comment.
+            if ! jq -e 'any(.[]; .spi == true)' "$GITHUB_WORKSPACE/$b-raw.json" >/dev/null \
+              && { grep -rhE --include='*.swift' '^[[:space:]]*@_spi\(' Sources 2>/dev/null || true; } \
+                | grep -v 'import ' | grep -q .; then
+              echo "::error::Sources/ declares @_spi symbols, but the symbol graph has none. This Swift toolchain drops --include-spi-symbols; run the check on Swift 6.3."
+              exit 1
+            fi
           done
 
       - name: Normalize Swift symbol graphs
