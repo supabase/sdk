@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.8.0...postgrest-typegen/v0.8.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** infer nullability on PostgreSQL 14 ([#355](https://github.com/supabase/sdk/issues/355)) ([35647c3](https://github.com/supabase/sdk/commit/35647c301dc80adcbc909913d214a8fed3a8405b))
+
 ## [0.8.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.7.0...postgrest-typegen/v0.8.0) (2026-11-11)
 
 
