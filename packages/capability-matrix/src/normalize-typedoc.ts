@@ -3,6 +3,8 @@ export interface ParsedSymbol {
   kind: "class" | "method" | "property" | "function" | "variable";
   file: string;
   line?: number;
+  // Swift `@_spi` symbols. They count for drift and removal, never for coverage.
+  spi?: true;
 }
 
 export interface ParseResult {

@@ -351,3 +351,30 @@ describe("real fixture smoke test", () => {
     expect(symbols.map((s) => s.name)).toContain("SimpleClass.NestedStruct");
   });
 });
+
+// ---------------------------------------------------------------------------
+// SPI symbols
+// ---------------------------------------------------------------------------
+
+describe("spi symbols", () => {
+  it("marks a symbol the graph flags as spi", () => {
+    const { symbols } = normalizeSymbolGraph(
+      [{ ...sym("swift.struct", ["ResumableUpload"]), spi: true }],
+      "",
+    );
+    expect(symbols[0]).toEqual({
+      name: "ResumableUpload",
+      kind: "class",
+      file: "",
+      spi: true,
+    });
+  });
+
+  it("leaves a public symbol without the spi field", () => {
+    const { symbols } = normalizeSymbolGraph(
+      [sym("swift.struct", ["StorageBucket"])],
+      "",
+    );
+    expect(symbols[0]).not.toHaveProperty("spi");
+  });
+});

@@ -72,7 +72,11 @@ appending their member name. The Go extractor fails when a package is not named
 after its directory, so the spelling is always unambiguous across a multi-module
 repository. Python symbols carry no module prefix: a class is its bare name and
 a method appends to it (`AsyncClient.rpc`), and a definition re-exported from a
-private module keeps the name it was defined with.
+private module keeps the name it was defined with. Swift symbols include `@_spi`
+declarations. Register them like any other symbol: the drift check verifies
+them, and removing a registered one fails the public API check. The public API
+check never requires an `@_spi` symbol to be registered, so experimental API can
+land before it enters the matrix.
 
 ```yaml
 storage.analytics.create_table:
