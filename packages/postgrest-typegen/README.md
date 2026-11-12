@@ -287,6 +287,12 @@ npm install pg
 npm install oxfmt@0.66.0
 ```
 
+## Supported PostgreSQL versions
+
+`introspect()` supports PostgreSQL 14 and later, the same versions the Supabase
+CLI accepts as `db.major_version`. View and `RETURNS TABLE` column nullability
+are inferred the same way on every supported version.
+
 ## postgrest-js type tests
 
 Every pull request that touches this package also runs postgrest-js's type tests

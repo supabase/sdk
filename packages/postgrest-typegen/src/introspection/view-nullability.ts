@@ -66,7 +66,7 @@ export interface QueryNullability {
  * joins, subqueries, non-recursive CTEs and `GROUP BY`, and nothing on the way
  * puts it on the nullable side of an outer join, in a set operation or under
  * grouping sets. The outer-join check walks the join tree instead of reading
- * `varnullingrels`, which PostgreSQL 15 does not have.
+ * `varnullingrels`, which PostgreSQL 14 and 15 do not have.
  */
 export function queryNullability(
   rows: ViewDefinitionRow[],
@@ -152,7 +152,7 @@ export function queryNullability(
       return false;
     }
     const entry = list(query.fields.rtable)[varno - 1];
-    if (!isNode(entry, "RANGETBLENTRY")) {
+    if (!(isNode(entry, "RANGETBLENTRY") || isNode(entry, "RTE"))) {
       return false;
     }
     switch (entry.fields.rtekind) {
