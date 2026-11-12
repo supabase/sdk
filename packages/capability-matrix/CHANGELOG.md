@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.4.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.3.0...capability-matrix/v2.4.0) (2026-11-12)
+
+
+### Features
+
+* **auth:** Update get_claims to be specific about error handling ([#323](https://github.com/supabase/sdk/issues/323)) ([3cfec20](https://github.com/supabase/sdk/commit/3cfec2022d5bd6a5abc8c23bdce869a934fde184))
+* **capability-matrix:** verify Swift @_spi symbols ([#356](https://github.com/supabase/sdk/issues/356)) ([4f67282](https://github.com/supabase/sdk/commit/4f6728274476337c298ab7b00f98c85fe50507e3))
+* **client:** add client_info capability with the X-Client-Info header spec ([#340](https://github.com/supabase/sdk/issues/340)) ([2d2e0ed](https://github.com/supabase/sdk/commit/2d2e0ed57ff5a4846af84cd3400fd6f7b8109ba1))
+
 ## [2.3.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.2.0...capability-matrix/v2.3.0) (2026-11-09)
 
 
