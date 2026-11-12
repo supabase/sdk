@@ -287,6 +287,16 @@ npm install pg
 npm install oxfmt@0.66.0
 ```
 
+## Supported PostgreSQL versions
+
+`introspect()` supports PostgreSQL 14 and later, the same versions the Supabase
+CLI accepts as `db.major_version`. The parity test renders the full test fixture
+on PostgreSQL 14 and on PostgreSQL 15 and compares both against the same golden
+files, so a query that reads a catalog column added in a later version, or any
+other difference in what 14 produces, fails every pull request. Raising the
+minimum changes `MINIMUM_POSTGRES_VERSION` in `test/parity/parity.test.ts` and
+this section together.
+
 ## postgrest-js type tests
 
 Every pull request that touches this package also runs postgrest-js's type tests

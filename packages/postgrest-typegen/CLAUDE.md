@@ -37,7 +37,8 @@ Hard split between **introspection** and **generation**:
   (`pg_proc.prosqlbody`) and reads the function comment's `@notNull` lines (see
   "View column nullability" and "`RETURNS TABLE` column nullability" in the
   README). It reads only the join tree and range table, never `varnullingrels`,
-  so one code path serves PostgreSQL 15 and later.
+  so one code path serves PostgreSQL 14 and later. PostgreSQL 14 names range
+  table entries `RTE` where later versions write `RANGETBLENTRY`.
 - `src/generation/` -- `generateTypescript` / `generateGo` / `generatePython`.
   Pure functions: `GeneratorMetadata` in, the complete source file (ending in a
   single newline) out. No database access.
@@ -150,3 +151,7 @@ extend `sortGeneratorMetadata` instead.
 - Generation unit tests: pure, no Docker, fixture-builder + per-language inline
   snapshots (`src/` and `test/generation/`).
 - Introspection/parity tests: `bun:test` + testcontainers PostgreSQL.
+- PostgreSQL 14 is the minimum supported version. The parity test runs on it and
+  on PostgreSQL 15 against the same goldens, so every introspection query has to
+  run on 14 and produce the same metadata there. The version-specific suites
+  (view and `RETURNS TABLE` nullability) include 14 as well.

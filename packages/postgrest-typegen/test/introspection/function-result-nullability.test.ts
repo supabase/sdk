@@ -87,7 +87,7 @@ const resultNullability = (metadata: GeneratorMetadata, name: string) =>
     ).map((column) => [column.name, column.is_nullable]),
   );
 
-describe.each(["15", "17", "18"])(
+describe.each(["14", "15", "17", "18"])(
   "RETURNS TABLE column nullability (PostgreSQL %s)",
   (version) => {
     let container: StartedPostgreSqlContainer;
