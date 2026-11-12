@@ -154,4 +154,7 @@ extend `sortGeneratorMetadata` instead.
 - PostgreSQL 14 is the minimum supported version. The parity test runs on it and
   on PostgreSQL 15 against the same goldens, so every introspection query has to
   run on 14 and produce the same metadata there. The version-specific suites
-  (view and `RETURNS TABLE` nullability) include 14 as well.
+  (view and `RETURNS TABLE` nullability) include 14 as well. Raising the minimum
+  changes `MINIMUM_POSTGRES_VERSION` in `test/parity/parity.test.ts`, the
+  version lists of those suites and "Supported PostgreSQL versions" in the
+  README together.
