@@ -1,6 +1,6 @@
 {
   "name": "@supabase/postgrest-typegen",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Type generation for PostgREST from PostgreSQL schemas",
   "keywords": [
     "codegen",
@@ -75,8 +75,8 @@
     "@types/pg": "^8.23.1",
     "knip": "^6.32.3",
     "oxfmt": "0.66.0",
-    "oxlint": "1.90.0",
-    "oxlint-tsgolint": "7.0.2005",
+    "oxlint": "1.92.0",
+    "oxlint-tsgolint": "7.0.2006",
     "pg": "^8.23.0",
     "testcontainers": "^12.1.0",
     "typescript": "7.0.2"

@@ -298,3 +298,64 @@ describe("formatRemovedMessage", () => {
     expect(msg).toContain("AuthClient.signIn (swift) → auth.sign_in");
   });
 });
+
+// An @_spi symbol is API a caller can opt into, so a declared one that
+// disappears is drift like any other. Declaring one is optional, though:
+// experimental API should not have to enter the matrix to land.
+describe("spi symbols", () => {
+  function spi(name: string): ParsedSymbol {
+    return { ...sym(name), spi: true };
+  }
+
+  it("does not require a new spi symbol to be registered", () => {
+    const result = checkNewSymbols(
+      [],
+      [spi("AuthClient.passkeys")],
+      compliance,
+    );
+    expect(result.newSymbols).toEqual(["AuthClient.passkeys"]);
+    expect(result.uncoveredSymbols).toEqual([]);
+  });
+
+  it("does not require an spi symbol to be registered in full coverage", () => {
+    const result = checkFullCoverage(
+      [
+        sym("AuthClient.signIn"),
+        sym("AuthClient.signUp"),
+        spi("AuthClient.passkeys"),
+      ],
+      compliance,
+    );
+    expect(result.uncoveredSymbols).toEqual([]);
+  });
+
+  it("reports a registered spi symbol that was removed", () => {
+    const result = checkNewSymbols(
+      [sym("AuthClient.signIn"), spi("AuthClient.signUp")],
+      [sym("AuthClient.signIn")],
+      compliance,
+    );
+    expect(result.removedRegisteredSymbols).toEqual([
+      { symbol: "AuthClient.signUp", featureId: "auth.sign_up" },
+    ]);
+  });
+
+  it("requires registration when an spi symbol becomes public", () => {
+    const result = checkNewSymbols(
+      [spi("AuthClient.passkeys")],
+      [sym("AuthClient.passkeys")],
+      compliance,
+    );
+    expect(result.newSymbols).toEqual(["AuthClient.passkeys"]);
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.passkeys")]);
+  });
+
+  it("still reports an uncovered public symbol next to an spi one", () => {
+    const result = checkNewSymbols(
+      [],
+      [spi("AuthClient.passkeys"), sym("AuthClient.unregistered")],
+      compliance,
+    );
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.unregistered")]);
+  });
+});

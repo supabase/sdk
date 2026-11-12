@@ -89,6 +89,7 @@ interface ExpectedPostgresFunction {
     name: string;
     type_id: number;
     has_default: boolean | null;
+    is_nullable?: boolean;
   }[];
   argument_types: string;
   identity_argument_types: string;
@@ -202,6 +203,7 @@ interface ExpectedRpcFunction {
             format: string | null;
             type_schema: string | null;
             name: string;
+            is_nullable?: boolean;
           }[]
         | null;
     };

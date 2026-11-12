@@ -16,15 +16,19 @@ export function checkNewSymbols(
   prSymbols: ParsedSymbol[],
   compliance: RawCompliance,
 ): CheckResult {
-  const baseNames = new Set(baseSymbols.map((s) => s.name));
+  // An @_spi symbol that turns public is new public API, so only public base
+  // symbols count as already present.
+  const basePublicNames = new Set(
+    baseSymbols.filter((s) => !s.spi).map((s) => s.name),
+  );
   const prNames = new Set(prSymbols.map((s) => s.name));
 
-  const newSymbolObjs = prSymbols.filter((s) => !baseNames.has(s.name));
+  const newSymbolObjs = prSymbols.filter((s) => !basePublicNames.has(s.name));
   const newSymbols = newSymbolObjs.map((s) => s.name);
 
   const symbolIndex = buildSymbolIndex(compliance);
   const uncoveredSymbols = newSymbolObjs.filter(
-    (s) => !symbolIndex.has(s.name),
+    (s) => !s.spi && !symbolIndex.has(s.name),
   );
 
   const removedRegisteredSymbols = baseSymbols
@@ -41,7 +45,7 @@ export function checkFullCoverage(
   const currentNames = new Set(currentSymbols.map((symbol) => symbol.name));
   const symbolIndex = buildSymbolIndex(compliance);
   const uncoveredSymbols = currentSymbols.filter(
-    (symbol) => !symbolIndex.has(symbol.name),
+    (symbol) => !symbol.spi && !symbolIndex.has(symbol.name),
   );
   const removedRegisteredSymbols = [...symbolIndex.entries()]
     .filter(([symbol]) => !currentNames.has(symbol))

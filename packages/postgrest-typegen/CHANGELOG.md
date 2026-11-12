@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.7.0...postgrest-typegen/v0.8.0) (2026-11-11)
+
+
+### Features
+
+* **postgrest-typegen:** infer RETURNS TABLE column nullability ([#338](https://github.com/supabase/sdk/issues/338)) ([5f418f6](https://github.com/supabase/sdk/commit/5f418f6c3a4ffde065df7514f78be542b4ae42b8))
+
 ## [0.7.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.6.0...postgrest-typegen/v0.7.0) (2026-11-05)
 
 

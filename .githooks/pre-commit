@@ -1,0 +1,41 @@
+#!/bin/sh
+# Formats staged files with oxfmt, using the repo-wide .oxfmtrc.json.
+# Turned on by `bun install` or `npm install` at the repo root (the `prepare`
+# script sets core.hooksPath), or by hand with `git config core.hooksPath .githooks`.
+# Skip it once with `git commit --no-verify`.
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+oxfmt="$root/node_modules/.bin/oxfmt"
+cd "$root"
+
+# Nothing to format when the commit only deletes files.
+if git diff --cached --quiet --diff-filter=ACMR; then
+  exit 0
+fi
+
+# Formatting is a convenience here: the Format workflow enforces it on every
+# PR. So a missing install never blocks a commit, which matters for worktrees:
+# core.hooksPath is shared by all of them, but each needs its own install.
+skip() {
+  echo "pre-commit: $1" >&2
+  echo "pre-commit: committing without formatting; the Format check on the PR will catch it." >&2
+  exit 0
+}
+
+if [ ! -e "$oxfmt" ]; then
+  skip "oxfmt is not installed. Run \`bun install\` (or \`npm install\`) at the repo root."
+fi
+
+# The oxfmt launcher is a Node script; bun can run it too.
+if command -v node >/dev/null 2>&1; then
+  runtime=node
+elif command -v bun >/dev/null 2>&1; then
+  runtime=bun
+else
+  skip "neither Node nor bun is on PATH, so oxfmt cannot run."
+fi
+
+# The file handling lives in JavaScript, which gets paths from git exactly
+# and never passes them through a shell.
+exec "$runtime" "$root/.githooks/format-staged.mjs" "$oxfmt"
