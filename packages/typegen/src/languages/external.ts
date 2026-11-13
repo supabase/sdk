@@ -44,7 +44,8 @@ export interface ExternalTool {
   classify?(result: SpawnResult): ToolFailure | undefined;
 }
 
-const isCommandNotFound = (error: unknown): boolean =>
+/** Whether `Host.spawn` rejected because the command is not on PATH. */
+export const isCommandNotFound = (error: unknown): boolean =>
   typeof error === "object" &&
   error !== null &&
   "code" in error &&

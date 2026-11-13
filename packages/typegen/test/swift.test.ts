@@ -1,9 +1,12 @@
-import { beforeAll, beforeEach, describe, expect, test } from "bun:test";
-import { execFileSync } from "node:child_process";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
+  realpathSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -14,6 +17,7 @@ import {
   sortGeneratorMetadata,
 } from "@supabase/postgrest-typegen";
 import {
+  createNodeHost,
   InvalidOptionError,
   MetadataRejectedError,
   swift,
@@ -76,9 +80,7 @@ describe("swift", () => {
     expect(error).toBeInstanceOf(ToolNotInstalledError);
     const notInstalled = error as ToolNotInstalledError;
     expect(notInstalled.tool).toBe("supabase-typegen");
-    expect(notInstalled.installHint).toContain(
-      "https://github.com/supabase/supabase-swift/releases",
-    );
+    expect(notInstalled.installHint).toContain("SUPABASE_TYPEGEN");
   });
 
   test("reports exit 65 as a rejected document", async () => {
@@ -109,105 +111,207 @@ describe("swift", () => {
   });
 });
 
-describe("swift binary resolution", () => {
-  const binary = "#!/bin/sh\necho generated\n";
-  let tarball: Uint8Array;
-  let root: string;
+const REVISION = "0123456789abcdef0123456789abcdef01234567";
 
-  beforeAll(() => {
-    const source = mkdtempSync(join(tmpdir(), "typegen-asset-"));
-    writeFileSync(join(source, "supabase-typegen"), binary, { mode: 0o755 });
-    // The system tar, as the supabase-swift release job uses: bsdtar on macOS adds pax headers.
-    execFileSync(
-      "tar",
-      ["-czf", "asset.tar.gz", "-C", source, "supabase-typegen"],
-      {
-        cwd: source,
-      },
-    );
-    tarball = new Uint8Array(readFileSync(join(source, "asset.tar.gz")));
-  });
+/**
+ * Stand-ins for `git` and `swift`, put alone on PATH. Each appends its command
+ * line to `$FAKE_LOG`. `git` fakes a fetch of the revision it is given, and
+ * checking it out creates `tools/supabase-typegen` unless `FAKE_NO_TYPEGEN` is
+ * set. `swift build` writes a `supabase-typegen` that prints
+ * `$FAKE_TYPEGEN_VERSION` for `--version` and `generated` otherwise. The
+ * `FAKE_*_FAIL` variables make a step fail the way the real tool does. Both
+ * fail if a git repository variable reaches them. They
+ * call coreutils by absolute path because PATH holds only the fakes.
+ */
+const FAKE_GIT = `#!/bin/sh
+echo "git $*" >> "$FAKE_LOG"
+if [ -n "$GIT_DIR$GIT_WORK_TREE$GIT_INDEX_FILE$GIT_OBJECT_DIRECTORY" ]; then
+  echo "a repository variable leaked in" >&2
+  exit 3
+fi
+case "$1" in
+  --version) echo "git version 2.50.0" ;;
+  init) /bin/mkdir .git ;;
+  fetch)
+    if [ -n "$FAKE_FETCH_FAIL" ]; then
+      echo "fatal: remote error: upload-pack: not our ref $5" >&2
+      exit 128
+    fi
+    for argument; do revision=$argument; done
+    echo "$revision" > .git/FAKE_FETCH_HEAD ;;
+  checkout)
+    /bin/cp .git/FAKE_FETCH_HEAD .git/FAKE_HEAD
+    if [ -z "$FAKE_NO_TYPEGEN" ]; then
+      /bin/mkdir -p tools/supabase-typegen
+      echo "// swift-tools-version:6.2" > tools/supabase-typegen/Package.swift
+    fi ;;
+  rev-parse) if [ -n "$FAKE_HEAD" ]; then echo "$FAKE_HEAD"; else /bin/cat .git/FAKE_HEAD; fi ;;
+  *) echo "unexpected git $*" >&2; exit 2 ;;
+esac
+`;
+
+const FAKE_SWIFT = `#!/bin/sh
+echo "swift $*" >> "$FAKE_LOG"
+if [ -n "$GIT_DIR$GIT_WORK_TREE$GIT_INDEX_FILE$GIT_OBJECT_DIRECTORY" ]; then
+  echo "a repository variable leaked in" >&2
+  exit 3
+fi
+case "$1" in
+  --version) echo "Swift version 6.2" ;;
+  build)
+    if [ -n "$FAKE_BUILD_FAIL" ]; then
+      echo "Sources/SupabaseTypegen/Typegen.swift:1:1: error: cannot find 'x' in scope"
+      echo "error: fatalError" >&2
+      exit 1
+    fi
+    /bin/mkdir -p tools/supabase-typegen/.build/release
+    binary=tools/supabase-typegen/.build/release/supabase-typegen
+    printf '#!/bin/sh\\necho "typegen $*" >> "$FAKE_LOG"\\nif [ "$1" = --version ]; then echo %s; exit 0; fi\\n/bin/cat > /dev/null\\necho generated\\n' "\${FAKE_TYPEGEN_VERSION:-3.0.0-alpha.1}" > "$binary"
+    /bin/chmod 755 "$binary" ;;
+  *) echo "unexpected swift $*" >&2; exit 2 ;;
+esac
+`;
+
+describe("swift source build", () => {
+  let root: string;
+  let bin: string;
+  let scratch: string;
+  let logFile: string;
+  let messages: string[];
 
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "typegen-swift-"));
+    root = realpathSync(mkdtempSync(join(tmpdir(), "typegen-swift-")));
+    bin = join(root, "bin");
+    scratch = join(root, "tmp");
+    logFile = join(root, "commands.log");
+    messages = [];
+    mkdirSync(bin);
+    mkdirSync(scratch);
+    writeFileSync(logFile, "");
+    writeFileSync(join(bin, "git"), FAKE_GIT, { mode: 0o755 });
+    writeFileSync(join(bin, "swift"), FAKE_SWIFT, { mode: 0o755 });
   });
 
-  const resolvedV2 = (version: string) =>
+  afterEach(() => {
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  const pin = (state: Record<string, string>) =>
     JSON.stringify({
       pins: [
         {
           identity: "swift-crypto",
           location: "https://github.com/apple/swift-crypto.git",
-          state: { version: "3.0.0" },
+          state: { version: "3.0.0", revision: "f".repeat(40) },
         },
         {
           identity: "supabase-swift",
           location: "https://github.com/supabase/supabase-swift.git",
-          state: { version, revision: "abc" },
+          state,
         },
       ],
       version: 2,
     });
 
+  const versionPin = (version = "3.0.0-alpha.1") =>
+    pin({ version, revision: REVISION });
+
   const project = (files: Record<string, string>) => {
     const cwd = join(root, "app");
+    mkdirSync(cwd, { recursive: true });
     for (const [path, contents] of Object.entries(files)) {
       mkdirSync(dirname(join(cwd, path)), { recursive: true });
       writeFileSync(join(cwd, path), contents);
     }
-    mkdirSync(cwd, { recursive: true });
     return cwd;
   };
 
-  const setup = (
+  const make = (platform = "darwin") =>
+    createSwift({
+      platform,
+      temporaryDirectory: () => scratch,
+      log: (message) => messages.push(message),
+    });
+
+  const run = (
     cwd: string,
-    respond: (url: string) => Response = () =>
-      new Response(tarball, { status: 200 }),
     env: Record<string, string> = {},
-  ) => {
-    const urls: string[] = [];
-    const language = createSwift({
-      platform: "darwin",
-      arch: "arm64",
-      fetch: async (url) => {
-        urls.push(String(url));
-        return respond(String(url));
-      },
-    });
-    const host = createFakeHost(() => success("code\n"), {
-      cwd,
-      env: { HOME: join(root, "home"), ...env },
-    });
-    return { language, host, urls };
-  };
-
-  test("downloads the release the project's Package.resolved pins and runs it", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const { language, host, urls } = setup(cwd);
-
-    expect(await language.generate(unsortedMetadata, {}, host)).toBe("code\n");
-
-    expect(urls).toEqual([
-      "https://github.com/supabase/supabase-swift/releases/download/v2.56.0/supabase-typegen-macos-universal.tar.gz",
-    ]);
-    const command = host.requests[0]!.command;
-    expect(command).toBe(
-      join(
-        root,
-        "home/Library/Caches/supabase/typegen/2.56.0/supabase-typegen",
-      ),
+    platform = "darwin",
+  ) =>
+    make(platform).generate(
+      unsortedMetadata,
+      {},
+      createNodeHost({
+        cwd,
+        env: {
+          PATH: bin,
+          HOME: join(root, "home"),
+          FAKE_LOG: logFile,
+          ...env,
+        },
+      }),
     );
-    expect(readFileSync(command, "utf8")).toBe(binary);
-    expect(statSync(command).mode & 0o777).toBe(0o755);
+
+  const ran = (prefix: string) =>
+    commands().some((line) => line.startsWith(prefix));
+  const commands = () => readFileSync(logFile, "utf8").split("\n").slice(0, -1);
+  const cached = (cache = "home/Library/Caches") =>
+    join(root, cache, "supabase/typegen", REVISION, "supabase-typegen");
+  const leftovers = () => [
+    ...readdirSync(scratch),
+    ...(existsSync(dirname(cached())) ? readdirSync(dirname(cached())) : []),
+  ];
+
+  test("builds the pinned commit from source, caches the binary and runs it", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+
+    expect(await run(cwd)).toBe("generated\n");
+
+    expect(commands()).toEqual([
+      "git --version",
+      "swift --version",
+      "git init",
+      `git fetch --depth 1 https://github.com/supabase/supabase-swift ${REVISION}`,
+      "git checkout --detach FETCH_HEAD",
+      "git rev-parse HEAD",
+      "swift build -c release --package-path tools/supabase-typegen --disable-automatic-resolution",
+      "typegen --version",
+      "typegen --access-control internal",
+    ]);
+    expect(statSync(cached()).mode & 0o777).toBe(0o755);
+    expect(readdirSync(dirname(cached()))).toEqual(["supabase-typegen"]);
+    expect(readdirSync(scratch)).toEqual([]);
+    expect(messages).toHaveLength(1);
+    expect(messages[0]).toContain(
+      "Building supabase-typegen 3.0.0-alpha.1 from source",
+    );
+    expect(messages[0]).toContain("a few minutes");
   });
 
-  test("reuses the cached binary", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const { language, host, urls } = setup(cwd);
-    await language.generate(unsortedMetadata, {}, host);
-    await language.generate(unsortedMetadata, {}, host);
-    expect(urls).toHaveLength(1);
-    expect(host.requests).toHaveLength(2);
+  test("runs the cached binary without git or swift", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    await run(cwd);
+    writeFileSync(logFile, "");
+    messages = [];
+
+    expect(await run(cwd)).toBe("generated\n");
+
+    expect(commands()).toEqual(["typegen --access-control internal"]);
+    expect(messages).toEqual([]);
+  });
+
+  test("builds a branch pin at its revision without a version check", async () => {
+    const cwd = project({
+      "Package.resolved": pin({ branch: "main", revision: REVISION }),
+    });
+
+    expect(await run(cwd)).toBe("generated\n");
+
+    expect(commands()).toContain(
+      `git fetch --depth 1 https://github.com/supabase/supabase-swift ${REVISION}`,
+    );
+    expect(commands()).not.toContain("typegen --version");
+    expect(existsSync(cached())).toBe(true);
   });
 
   test("reads an Xcode project's Package.resolved in the version 1 format", async () => {
@@ -219,135 +323,196 @@ describe("swift binary resolution", () => {
               {
                 package: "Supabase",
                 repositoryURL: "https://github.com/supabase/supabase-swift",
-                state: { version: "2.40.0" },
+                state: { version: "3.0.0-alpha.1", revision: REVISION },
               },
             ],
           },
           version: 1,
         }),
     });
-    const { language, host, urls } = setup(cwd);
-    await language.generate(unsortedMetadata, {}, host);
-    expect(urls[0]).toContain("/download/v2.40.0/");
+    await run(cwd);
+    expect(existsSync(cached())).toBe(true);
   });
 
   test("finds Package.resolved in a parent directory", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
+    const cwd = project({ "Package.resolved": versionPin() });
     mkdirSync(join(cwd, "Sources/App"), { recursive: true });
-    const { language, host, urls } = setup(join(cwd, "Sources/App"));
-    await language.generate(unsortedMetadata, {}, host);
-    expect(urls[0]).toContain("/download/v2.56.0/");
+    await run(join(cwd, "Sources/App"));
+    expect(existsSync(cached())).toBe(true);
   });
 
-  test("picks the Linux asset on Linux x86_64", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const urls: string[] = [];
-    const language = createSwift({
-      platform: "linux",
-      arch: "x64",
-      fetch: async (url) => {
-        urls.push(String(url));
-        return new Response(tarball);
-      },
-    });
-    const host = createFakeHost(() => success(""), {
-      cwd,
-      env: { HOME: join(root, "home"), XDG_CACHE_HOME: join(root, "xdg") },
-    });
-    await language.generate(unsortedMetadata, {}, host);
-    expect(urls[0]).toEndWith("/supabase-typegen-linux-x86_64.tar.gz");
-    expect(host.requests[0]!.command).toBe(
-      join(root, "xdg/supabase/typegen/2.56.0/supabase-typegen"),
+  test("links the Swift runtime statically on Linux", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    await run(cwd, {}, "linux");
+    expect(commands()).toContain(
+      "swift build -c release --package-path tools/supabase-typegen --disable-automatic-resolution --static-swift-stdlib",
     );
   });
 
-  test("falls back to PATH without a version pin", async () => {
-    const branchPin = JSON.stringify({
-      pins: [
-        {
-          identity: "supabase-swift",
-          location: "https://github.com/supabase/supabase-swift",
-          state: { branch: "main", revision: "abc" },
-        },
-      ],
-      version: 3,
-    });
-    for (const cwd of [
-      project({}),
-      project({ "Package.resolved": branchPin }),
-    ]) {
-      const { language, host, urls } = setup(cwd);
-      await language.generate(unsortedMetadata, {}, host);
-      expect(urls).toEqual([]);
-      expect(host.requests.at(-1)!.command).toBe("supabase-typegen");
+  test("uses XDG_CACHE_HOME and ~/.cache outside macOS", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    await run(cwd, {}, "linux");
+    expect(existsSync(cached("home/.cache"))).toBe(true);
+    await run(cwd, { XDG_CACHE_HOME: join(root, "xdg") }, "linux");
+    expect(existsSync(cached("xdg"))).toBe(true);
+  });
+
+  test("ignores an empty or relative XDG_CACHE_HOME", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    for (const XDG_CACHE_HOME of ["", "relative/cache"]) {
+      await run(cwd, { XDG_CACHE_HOME }, "linux");
+      expect(existsSync(cached("home/.cache"))).toBe(true);
     }
   });
 
-  test("falls back to PATH on a platform without a release asset", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const language = createSwift({
-      platform: "win32",
-      arch: "x64",
-      fetch: async () => fail("must not download"),
-    });
+  test("keeps the user's git repository variables away from the build", async () => {
+    // Git exports these to hooks, for example when gen types runs in pre-commit.
+    const cwd = project({ "Package.resolved": versionPin() });
+    const repository = join(root, "user-repo/.git");
+    expect(
+      await run(cwd, {
+        GIT_DIR: repository,
+        GIT_WORK_TREE: dirname(repository),
+        GIT_INDEX_FILE: join(repository, "index"),
+        GIT_OBJECT_DIRECTORY: join(repository, "objects"),
+      }),
+    ).toBe("generated\n");
+  });
+
+  test("two concurrent first runs both succeed", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    expect(await Promise.all([run(cwd), run(cwd)])).toEqual([
+      "generated\n",
+      "generated\n",
+    ]);
+    expect(readdirSync(dirname(cached()))).toEqual(["supabase-typegen"]);
+    expect(readdirSync(scratch)).toEqual([]);
+  });
+
+  test("falls back to PATH without a supabase-swift pin", async () => {
+    const cwd = project({});
+    writeFileSync(
+      join(bin, "supabase-typegen"),
+      '#!/bin/sh\necho "typegen $*" >> "$FAKE_LOG"\necho from-path\n',
+      { mode: 0o755 },
+    );
+    expect(await run(cwd)).toBe("from-path\n");
+    expect(commands()).toEqual(["typegen --access-control internal"]);
+  });
+
+  test("falls back to PATH on Windows", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const language = make("win32");
     const host = createFakeHost(() => success(""), { cwd });
     await language.generate(unsortedMetadata, {}, host);
-    expect(host.requests[0]!.command).toBe("supabase-typegen");
+    expect(host.requests.map((request) => request.command)).toEqual([
+      "supabase-typegen",
+    ]);
   });
 
-  test("SUPABASE_TYPEGEN overrides the download", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const { language, host, urls } = setup(cwd, undefined, {
-      SUPABASE_TYPEGEN: "/opt/dev/supabase-typegen",
+  test("SUPABASE_TYPEGEN overrides the source build", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const host = createFakeHost(() => success(""), {
+      cwd,
+      env: { SUPABASE_TYPEGEN: "/opt/dev/supabase-typegen" },
     });
-    await language.generate(unsortedMetadata, {}, host);
-    expect(urls).toEqual([]);
-    expect(host.requests[0]!.command).toBe("/opt/dev/supabase-typegen");
+    await make().generate(unsortedMetadata, {}, host);
+    expect(host.requests.map((request) => request.command)).toEqual([
+      "/opt/dev/supabase-typegen",
+    ]);
   });
 
-  test("reports a release without the binary as not installed", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.10.0") });
-    const { language, host } = setup(
-      cwd,
-      () => new Response("Not Found", { status: 404 }),
-    );
-    const error = await rejection(
-      language.generate(unsortedMetadata, {}, host),
-    );
+  test("refuses a revision that is not a full commit SHA without running git", async () => {
+    for (const revision of ["abc", "--upload-pack=touch", "A".repeat(40)]) {
+      const cwd = project({
+        "Package.resolved": pin({ version: "3.0.0-alpha.1", revision }),
+      });
+      const error = await rejection(run(cwd));
+      expect(error).toBeInstanceOf(TypegenError);
+      expect((error as TypegenError).message).toContain("40-character");
+      expect(commands()).toEqual([]);
+    }
+  });
+
+  for (const tool of ["git", "swift"]) {
+    test(`names a missing ${tool} and the minimum toolchain before fetching`, async () => {
+      rmSync(join(bin, tool));
+      const cwd = project({ "Package.resolved": versionPin() });
+      const error = await rejection(run(cwd));
+      expect(error).toBeInstanceOf(ToolNotInstalledError);
+      expect((error as ToolNotInstalledError).tool).toBe(tool);
+      expect((error as ToolNotInstalledError).message).toContain(
+        "Swift 6.2 / Xcode 26",
+      );
+      expect(ran("git fetch")).toBe(false);
+      expect(leftovers()).toEqual([]);
+    });
+  }
+
+  test("reports a supabase-swift without supabase-typegen as not installed", async () => {
+    const cwd = project({ "Package.resolved": versionPin("2.56.0") });
+    const error = await rejection(run(cwd, { FAKE_NO_TYPEGEN: "1" }));
     expect(error).toBeInstanceOf(ToolNotInstalledError);
-    expect((error as ToolNotInstalledError).message).toContain("2.10.0");
-    expect(host.requests).toHaveLength(0);
+    expect((error as ToolNotInstalledError).message).toContain(
+      "supabase-swift 2.56.0 has no supabase-typegen; update to 3.0.0-alpha.1 or newer",
+    );
+    expect(ran("swift build")).toBe(false);
+    expect(leftovers()).toEqual([]);
   });
 
-  test("reports any other download failure", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const { language, host } = setup(
-      cwd,
-      () => new Response("", { status: 503 }),
+  test("reports a failed fetch with git's error", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const error = await rejection(run(cwd, { FAKE_FETCH_FAIL: "1" }));
+    expect(error).toBeInstanceOf(TypegenError);
+    expect((error as TypegenError).message).toContain(
+      "upload-pack: not our ref",
     );
+    expect(leftovers()).toEqual([]);
+  });
+
+  test("refuses a checkout whose HEAD is not the pinned revision", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const error = await rejection(run(cwd, { FAKE_HEAD: "e".repeat(40) }));
+    expect(error).toBeInstanceOf(TypegenError);
+    expect((error as TypegenError).message).toContain(REVISION);
+    expect(ran("swift build")).toBe(false);
+    expect(leftovers()).toEqual([]);
+  });
+
+  test("forwards the swift build errors", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const error = await rejection(run(cwd, { FAKE_BUILD_FAIL: "1" }));
+    expect(error).toBeInstanceOf(ToolFailedError);
+    const { message, exitCode, stderr } = error as ToolFailedError;
+    expect(exitCode).toBe(1);
+    expect(stderr).toBe("error: fatalError");
+    expect(message).toContain("swift build");
+    expect(message).toContain("error: cannot find 'x' in scope");
+    expect(message).toContain("error: fatalError");
+    expect(leftovers()).toEqual([]);
+  });
+
+  test("refuses a binary whose --version differs from the pin, and does not cache it", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
     const error = await rejection(
-      language.generate(unsortedMetadata, {}, host),
+      run(cwd, { FAKE_TYPEGEN_VERSION: "3.0.0-alpha.2" }),
     );
     expect(error).toBeInstanceOf(TypegenError);
-    expect((error as TypegenError).message).toContain("503");
+    expect((error as TypegenError).message).toContain("3.0.0-alpha.2");
+    expect(commands()).not.toContain("typegen --access-control internal");
+    expect(leftovers()).toEqual([]);
   });
 
-  test("validates options before downloading", async () => {
-    const cwd = project({ "Package.resolved": resolvedV2("2.56.0") });
-    const { language, host, urls } = setup(cwd);
-    expect(
-      await rejection(
-        language.generate(
-          unsortedMetadata,
-          { "swift-access-control": "open" },
-          host,
-        ),
+  test("validates options before building", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const error = await rejection(
+      make().generate(
+        unsortedMetadata,
+        { "swift-access-control": "open" },
+        createNodeHost({ cwd, env: { PATH: bin, FAKE_LOG: logFile } }),
       ),
-    ).toBeInstanceOf(InvalidOptionError);
-    expect(urls).toEqual([]);
+    );
+    expect(error).toBeInstanceOf(InvalidOptionError);
+    expect(commands()).toEqual([]);
   });
 });
-
-const fail = (message: string): never => {
-  throw new Error(message);
-};

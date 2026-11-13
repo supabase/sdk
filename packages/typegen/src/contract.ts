@@ -8,7 +8,10 @@ export interface SpawnRequest {
   /** Executable name, resolved against `PATH` by the host (for example `dart`). */
   readonly command: string;
   readonly args: readonly string[];
-  /** Directory to run in; always the host's `cwd`, the user's project. */
+  /**
+   * Directory to run in: the host's `cwd`, the user's project, for a
+   * generator, or a directory the language entry chose for a setup step.
+   */
   readonly cwd: string;
   readonly env: Readonly<Record<string, string | undefined>>;
   /** Complete document to write to the child's stdin before closing it. */
