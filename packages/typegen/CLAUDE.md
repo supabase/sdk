@@ -40,16 +40,25 @@ lives in supabase-js.
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
 - `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, built
-  from source (SDK-3043) at the supabase-swift commit the nearest
-  `Package.resolved` pins, with the user's `git` and `swift`, and cached per
-  commit; then falls back to PATH; `SUPABASE_TYPEGEN` overrides both. Before
-  fetching it proves the commit is upstream's (tag for a version pin, ancestry
-  of the branch otherwise), since GitHub serves fork commits by SHA. The build
-  steps run through `host.spawn` with a temporary folder as `cwd`. The only
-  entry that touches the network or the file system; `createSwift` takes the
-  platform, the temporary directory and the progress `log` so tests stay
-  hermetic. `swift-access-control` maps to `--access-control` and accepts only
-  `internal` and `public`. Exit `65` is a rejected document.
+  from source (SDK-3043) at a supabase-swift commit picked in this order
+  (SDK-3045): the `swift-typegen-source` option (a local checkout starting with
+  `./`, `../`, `/` or `~/`, built in place and never cached; a full SHA; a
+  version, resolved through its tag; a branch, resolved on every run, all with
+  `git ls-remote`), the supabase-swift pin of the nearest `Package.resolved`
+  that has one (`cwd` and parents, then up to two levels down, where the pins
+  must agree), or the latest 3.x release with a notice. Each run logs the commit
+  it uses. The binary is cached per commit. There is no PATH fallback and no
+  `SUPABASE_TYPEGEN`; Windows is refused. Before fetching a commit that did not
+  come from upstream's own refs it proves the commit is upstream's (tag for a
+  version pin, ancestry of the branch otherwise), since GitHub serves fork
+  commits by SHA. The value parsing, `git ls-remote` parsing and semver
+  selection are pure exported functions (`parseTypegenSource`, `parseRefs`,
+  `compareVersions`, `latestRelease`) with direct tests. The build steps run
+  through `host.spawn` with a temporary folder as `cwd`. The only entry that
+  touches the network or the file system; `createSwift` takes the platform, the
+  temporary directory and the progress `log` so tests stay hermetic.
+  `swift-access-control` maps to `--access-control` and accepts only `internal`
+  and `public`. Exit `65` is a rejected document.
 - `src/languages/index.ts` -- the three in-process entries and the `languages`
   list. `typescript` has no user options; `detect-one-to-one-relationships`
   (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
