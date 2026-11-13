@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/supabase/sdk/compare/capability-matrix/v2.4.0...capability-matrix/v2.4.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **realtime:** pause the heartbeat schedule while a pending heartbeat serves as the probe ([#336](https://github.com/supabase/sdk/issues/336)) ([7012fd8](https://github.com/supabase/sdk/commit/7012fd855d45b57b1c3a941e1925b1b02914cbe5))
+
 ## [2.4.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.3.0...capability-matrix/v2.4.0) (2026-11-12)
 
 
