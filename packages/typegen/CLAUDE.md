@@ -39,13 +39,26 @@ lives in supabase-js.
 - `src/languages/dart.ts` -- the first out-of-process entry:
   `dart run supabase_typegen --output -`. No `--schema` flag: the document on
   stdin already holds the schemas the consumer introspected.
-- `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, a
-  prebuilt binary from supabase-swift's releases (SDK-2199). It downloads the
-  release the nearest `Package.resolved` pins into the user cache, then falls
-  back to PATH; `SUPABASE_TYPEGEN` overrides both. The only entry that touches
-  the network or the file system; `createSwift` takes `fetch` and the platform
-  so tests stay offline. `swift-access-control` maps to `--access-control` and
-  accepts only `internal` and `public`. Exit `65` is a rejected document.
+- `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, built
+  from source (SDK-3043) at a supabase-swift commit picked in this order
+  (SDK-3045): the `swift-typegen-source` option (a local checkout starting with
+  `./`, `../`, `/` or `~/`, built in place and never cached; a full SHA; a
+  version, resolved through its tag; a branch, resolved on every run, all with
+  `git ls-remote`), the supabase-swift pin of the nearest `Package.resolved`
+  that has one (`cwd` and parents, then up to two levels down, where the pins
+  must agree), or the latest 3.x release with a notice. Each run logs the commit
+  it uses. The binary is cached per commit. There is no PATH fallback and no
+  `SUPABASE_TYPEGEN`; Windows is refused. Before fetching a commit that did not
+  come from upstream's own refs it proves the commit is upstream's (tag for a
+  version pin, ancestry of the branch otherwise), since GitHub serves fork
+  commits by SHA. The value parsing, `git ls-remote` parsing and semver
+  selection are pure exported functions (`parseTypegenSource`, `parseRefs`,
+  `compareVersions`, `latestRelease`) with direct tests. The build steps run
+  through `host.spawn` with a temporary folder as `cwd`. The only entry that
+  touches the network or the file system; `createSwift` takes the platform, the
+  temporary directory and the progress `log` so tests stay hermetic.
+  `swift-access-control` maps to `--access-control` and accepts only `internal`
+  and `public`. Exit `65` is a rejected document.
 - `src/languages/index.ts` -- the three in-process entries and the `languages`
   list. `typescript` has no user options; `detect-one-to-one-relationships`
   (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
@@ -107,5 +120,6 @@ with `parseGeneratorMetadata`. `test/in-process.test.ts` asserts each bundled
 language's output equals the direct generator call on sorted input (the
 byte-identity acceptance criterion, without Docker). `test/dart.test.ts` and
 `test/swift.test.ts` cover the handoff and every error classification with the
-fake host from `test/helpers.ts`; `test/node-host.test.ts` runs a fake `dart`
-shell script on PATH.
+fake host from `test/helpers.ts`. `test/swift.test.ts` also runs the source
+build through `createNodeHost` against fake `git` and `swift` shell scripts on
+PATH; `test/node-host.test.ts` runs a fake `dart` shell script on PATH.

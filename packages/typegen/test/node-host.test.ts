@@ -1,13 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import {
-  chmodSync,
-  mkdirSync,
-  mkdtempSync,
-  realpathSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
+import { chmodSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   serializeGeneratorMetadata,
@@ -24,7 +16,7 @@ import {
   ToolNotInstalledError,
 } from "../src/index.ts";
 import { unsortedMetadata } from "./fixtures.ts";
-import { rejection } from "./helpers.ts";
+import { rejection, temporaryFolder } from "./helpers.ts";
 
 /**
  * A stand-in `dart` on PATH: echoes its arguments and stdin so the test can
@@ -47,7 +39,7 @@ describe("createNodeHost", () => {
   let path: string;
 
   beforeEach(() => {
-    dir = realpathSync(mkdtempSync(join(tmpdir(), "typegen-node-host-")));
+    dir = temporaryFolder("typegen-node-host-");
     bin = join(dir, "bin");
     mkdirSync(bin);
     path = `${bin}:/usr/bin:/bin`;

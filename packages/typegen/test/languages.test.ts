@@ -46,6 +46,12 @@ describe("languages", () => {
         default: "internal",
         help: "Access control for Swift generated types.",
       },
+      {
+        name: "swift-typegen-source",
+        audience: "user",
+        kind: "string",
+        help: "Where to build supabase-typegen from: a supabase-swift version (3.0.0-alpha.1), a branch (main), a full commit SHA, or a local checkout (./supabase-swift). Default: the supabase-swift pin in the nearest Package.resolved, else the latest 3.x release.",
+      },
     ]);
     expect(findLanguage("go")?.options).toEqual([]);
     expect(findLanguage("python")?.options).toEqual([]);

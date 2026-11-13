@@ -62,7 +62,7 @@ not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
-| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, fetched    | `--swift-access-control internal\|public`                                          |
+| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, built      | `--swift-access-control internal\|public`, `--swift-typegen-source <source>`       |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
 The three in-process entries are a transition: as each generator relocates to
@@ -70,19 +70,102 @@ its SDK repository (SDK-1641), its entry here changes to an out-of-process
 command, or for TypeScript to an import of the new npm package, and consumers
 notice nothing but a dependency bump.
 
-Swift moved first. `supabase-typegen` is a prebuilt executable from the
-supabase-swift releases, not a package dependency: as a SwiftPM product its
+Swift moved first. `supabase-typegen` is an executable in supabase-swift's
+`tools/supabase-typegen`, not a package dependency: as a SwiftPM product its
 swift-format dependency would pin every app's swift-syntax, and an Xcode project
 without a `Package.swift` has nothing to `swift run` from.
 
-The output targets one version's `@Table` macro, so the binary must match the
-project's supabase-swift. The entry reads that version from the nearest
-`Package.resolved` (in `cwd` or a parent; SwiftPM's, or Xcode's inside the
-`.xcodeproj` or `.xcworkspace`), downloads that release's asset once into
-`$XDG_CACHE_HOME/supabase/typegen/<version>/` (default `~/Library/Caches` on
-macOS, `~/.cache` elsewhere) and runs it. Without a version pin, or on a
-platform with no asset (anything but macOS and Linux x86_64), it runs
-`supabase-typegen` from PATH. `SUPABASE_TYPEGEN=<path>` overrides both.
+The output targets one commit's `@Table` macro, so the generator must match the
+project's supabase-swift. The entry builds it from source at a supabase-swift
+commit, which it picks in this order:
+
+1. `--swift-typegen-source`, when given. The value is read in a fixed order,
+   without guessing:
+   - A value that starts with `./`, `../`, `/` or `~/` is a local checkout.
+     Relative paths must start with `./` or `../`, so a folder named `3.0.0` is
+     never read as a version, and `~` means the home folder. The entry checks
+     that the checkout has `tools/supabase-typegen`, runs
+     `swift build -c release --package-path <checkout>/tools/supabase-typegen`
+     in the checkout's own `.build` folder, so later builds are incremental, and
+     runs the binary from there. It never caches it, since the working tree can
+     hold uncommitted changes. This is the form for working on the generator, or
+     for a fork.
+   - 40 hex characters are a commit SHA. An abbreviated SHA is refused.
+   - A semantic version, with or without a leading `v`, is the commit its tag
+     `v<version>` (or `<version>`) points at, per `git ls-remote`; an annotated
+     tag's commit wins. A version below 3 is refused, since supabase-swift 2.x
+     has no generator.
+   - Anything else is a branch, resolved to its commit with `git ls-remote` on
+     every run, so new commits are picked up. A branch name that starts with `-`
+     or holds whitespace, `..`, control characters or anything else git could
+     read as an option or a refspec is refused before git runs.
+
+   A lookup that finds nothing names what it looked for, and for a branch name
+   that is also a folder in `cwd`, the `./` form to build it.
+
+2. The supabase-swift pin of the nearest `Package.resolved` that has one: in
+   `cwd` or a parent, SwiftPM's or Xcode's inside the `.xcodeproj` or
+   `.xcworkspace`. Lockfiles without a supabase-swift pin are skipped. For a
+   monorepo run from its root, when no parent has a pin, the entry also looks up
+   to two levels below `cwd`, skipping `.git`, `.build`, `node_modules`, `Pods`
+   and `DerivedData`; the pins found there must agree on the revision, or the
+   run fails and asks for `--swift-typegen-source`. The pin's `revision` is
+   built, so version, branch and revision pins all work.
+3. The latest supabase-swift 3.x release from `git ls-remote --tags`: the
+   highest stable 3.x once there is one, the highest 3.x prerelease before that
+   (with semantic version precedence, so `alpha.10` follows `alpha.9`), and
+   never another major version. A notice on stderr says so and asks to run from
+   the app's directory, or to pass `--swift-typegen-source`, to match the pinned
+   version.
+
+Every run prints the commit it uses to stderr, for example
+``Using branch `main` at `4f2a9c1…`.``. Except for a local checkout, the build
+then goes:
+
+1. Only a 40-character lowercase hex SHA reaches `git` as a revision, a version
+   must be a semantic version and a branch a plain branch name. Only regular
+   files the user owns count as `Package.resolved`, so another user's file in a
+   shared parent such as `/tmp` cannot pick the commit, and a malformed one
+   counts as no pin.
+2. A binary already in `$XDG_CACHE_HOME/supabase/typegen/<revision>/` (default
+   `~/Library/Caches` on macOS, `~/.cache` elsewhere; an empty or relative
+   `XDG_CACHE_HOME` is ignored) runs with no build.
+3. Otherwise it checks that `git` and `swift` (Swift 6.2 / Xcode 26 or newer)
+   are on PATH and, for a commit that did not come from upstream's own tags or
+   branches, that it is upstream's. GitHub serves every commit of the fork
+   network through the upstream URL, pull request heads included, so a version
+   pin's tag (`<version>` or `v<version>`, per `git ls-remote`) must point at
+   the revision, and a branch pin's revision must be an ancestor of that
+   upstream branch (a bare revision pin, or a SHA passed to
+   `--swift-typegen-source`: the default branch), checked in a commits-only
+   clone (`--filter=tree:0`, about 1.5 MB and a second). It then fetches the
+   single commit into a temporary folder, checks that `HEAD` is the revision,
+   and runs
+   `swift build -c release --package-path tools/supabase-typegen --disable-automatic-resolution`.
+   The flag builds the generator's committed `Package.resolved` exactly and
+   fails rather than resolve other dependency versions. Linux adds
+   `--static-swift-stdlib`, so the cached binary keeps working after the
+   toolchain that built it is removed or upgraded. Git's repository variables
+   (`GIT_DIR`, `GIT_INDEX_FILE` and the rest of
+   `git rev-parse --local-env-vars`) are removed from these steps, so running
+   inside a git hook cannot touch the user's repository.
+4. For a version, from the pin, the flag or the latest release,
+   `supabase-typegen --version` must print that version.
+5. The binary is copied beside its cache path and renamed into place, so
+   concurrent runs are safe. The temporary folder is removed in every case.
+
+The first build prints a line to stderr and takes a few minutes, mostly
+compiling swift-syntax: about 5.5 minutes on an Apple M3 with Swift 6.4, and
+about the same on Linux aarch64 with Swift 6.2 in Docker on that machine. A
+pinned build trusts nothing the app does not already run: the supabase-swift
+source at the pinned commit, the generator's pinned dependencies and the user's
+toolchain. A version or the latest release trusts the tag at the time of the
+run, and a branch anyone who can push to it, which is why a branch is never a
+default. supabase-swift 2.x has no `tools/supabase-typegen` and fails with a
+request to update to 3.0.0-alpha.1 or newer. The entry never runs a
+`supabase-typegen` from PATH, and `SUPABASE_TYPEGEN` is gone: a stale binary
+could generate code for the wrong version without a warning, and a local
+checkout covers the development loop. Windows is not supported.
 
 `--swift-access-control` lost `private` and `package`, which the new generator
 does not accept.
