@@ -5,11 +5,12 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import {
   serializeGeneratorMetadata,
   sortGeneratorMetadata,
@@ -199,11 +200,15 @@ describe("swift", () => {
 });
 
 /**
- * A fake tool that appends its command line to `$FAKE_LOG` and fails if a git
- * repository variable reaches it, then runs `body`.
+ * A fake tool that appends its command line to `$FAKE_LOG`, and its working
+ * directory and `GIT_CEILING_DIRECTORIES` to `$FAKE_PLACES` when set, fails
+ * if a git repository variable reaches it, then runs `body`.
  */
 const fakeTool = (name: string, body: string) => `#!/bin/sh
 echo "${name} $*" >> "$FAKE_LOG"
+if [ -n "$FAKE_PLACES" ]; then
+  echo "$(/bin/pwd -P) $GIT_CEILING_DIRECTORIES ${name} $*" >> "$FAKE_PLACES"
+fi
 if [ -n "$GIT_DIR$GIT_WORK_TREE$GIT_INDEX_FILE$GIT_OBJECT_DIRECTORY" ]; then
   echo "a repository variable leaked in" >&2
   exit 3
@@ -610,6 +615,64 @@ describe("swift source build", () => {
         },
       }),
     ).toBe("generated\n");
+  });
+
+  test("runs git lookups in a private folder that git cannot look above", async () => {
+    // Another user can make the shared temporary directory a repository whose config git would read.
+    const places = join(root, "places.log");
+    const cases: [string, { readonly source?: string }][] = [
+      ["Package.resolved", {}],
+      ["", {}],
+      ["", { source: "3.0.0-alpha.1" }],
+      ["", { source: "main" }],
+    ];
+    for (const [file, options] of cases) {
+      rmSync(cached(), { force: true });
+      writeFileSync(places, "");
+      const cwd = project(file ? { [file]: versionPin() } : {});
+      if (!file) {
+        rmSync(join(cwd, "Package.resolved"), { force: true });
+      }
+      await run(cwd, { ...options, env: { FAKE_PLACES: places } });
+      const lookups = readFileSync(places, "utf8")
+        .split("\n")
+        .filter((line) => line.includes(" git ls-remote "));
+      expect(lookups.length).toBeGreaterThan(0);
+      for (const line of lookups) {
+        const [folder = "", ceiling = ""] = line.split(" ");
+        expect(dirname(folder)).toBe(realpathSync(scratch));
+        expect(ceiling.split(delimiter)[0]).toBe(scratch);
+      }
+      expect(readdirSync(scratch)).toEqual([]);
+    }
+  });
+
+  test("keeps the user's GIT_CEILING_DIRECTORIES after the temporary directory", async () => {
+    const places = join(root, "places.log");
+    writeFileSync(places, "");
+    const cwd = project({ "Package.resolved": versionPin() });
+    await run(cwd, {
+      env: { FAKE_PLACES: places, GIT_CEILING_DIRECTORIES: "/home" },
+    });
+    const [line = ""] = readFileSync(places, "utf8").split("\n");
+    expect(line.split(" ")[1]).toBe([scratch, "/home"].join(delimiter));
+  });
+
+  test("escapes control characters in the paths it prints", async () => {
+    const cwd = project({
+      "ios\u001b]0;x\u0007/Package.resolved": versionPin(),
+    });
+    expect(await run(cwd)).toBe("generated\n");
+    expect(messages[0]).toBe(
+      "Using version `3.0.0-alpha.1` at `0123456…`, pinned in ios\\u001b]0;x\\u0007/Package.resolved.",
+    );
+
+    const folder = join(root, "app\u001b[2J");
+    mkdirSync(folder);
+    messages = [];
+    await run(folder);
+    expect(messages[0]).toContain("app\\u001b[2J");
+    expect(messages.join("")).not.toContain("\u001b");
   });
 
   test("two concurrent first runs both succeed", async () => {

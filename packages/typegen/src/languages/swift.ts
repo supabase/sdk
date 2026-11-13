@@ -14,6 +14,7 @@ import {
 import { homedir, tmpdir } from "node:os";
 import {
   basename,
+  delimiter,
   dirname,
   isAbsolute,
   join,
@@ -376,8 +377,12 @@ interface Runner {
   ): Promise<SpawnResult>;
 }
 
-function createRunner(host: Host, spawn: NonNullable<Host["spawn"]>): Runner {
-  const env = buildEnvironment(host.env);
+function createRunner(
+  host: Host,
+  spawn: NonNullable<Host["spawn"]>,
+  dependencies: SwiftDependencies,
+): Runner {
+  const env = buildEnvironment(host.env, dependencies.temporaryDirectory());
   const exec: Runner["exec"] = (command, args, cwd, step) =>
     spawnTool(
       spawn,
@@ -413,7 +418,7 @@ async function resolveBinary(
       `Generating Swift types builds \`${BINARY}\` from supabase-swift's source, which is not supported on Windows. Run supabase gen types --lang swift on macOS or Linux.`,
     );
   }
-  const runner = createRunner(host, spawn);
+  const runner = createRunner(host, spawn, dependencies);
   let target: Target;
   if (source === undefined) {
     target = await defaultTarget(host, dependencies, runner);
@@ -439,6 +444,27 @@ async function resolveBinary(
 }
 
 const abbreviated = (revision: string) => `\`${revision.slice(0, 7)}…\``;
+
+/**
+ * Runs `body` in a new folder that only this user can write, inside the
+ * temporary directory, and removes it afterwards. git reads the config of the
+ * repository its working directory is in, and another user can make the
+ * shared temporary directory one (`/tmp/.git`); `GIT_CEILING_DIRECTORIES`
+ * (`buildEnvironment`) stops git from looking above this folder.
+ */
+async function inPrivateFolder<T>(
+  dependencies: SwiftDependencies,
+  body: (folder: string) => Promise<T>,
+): Promise<T> {
+  const folder = await mkdtemp(
+    join(dependencies.temporaryDirectory(), `${BINARY}-`),
+  );
+  try {
+    return await body(folder);
+  } finally {
+    await rm(folder, { recursive: true, force: true });
+  }
+}
 
 /**
  * Lists `refs/tags/v<version>` and `refs/tags/<version>`, in that order, in
@@ -481,16 +507,18 @@ async function chosenTarget(
           `supabase-swift ${version} has no ${BINARY}; pass ${FIRST_RELEASE} or newer to --${SWIFT_TYPEGEN_SOURCE}.`,
         );
       }
-      const tags = await tagRevisions(
-        (command, args, cwd) =>
-          runner.run(
-            command,
-            args,
-            cwd,
-            `Looking up supabase-swift's tag v${version}`,
-          ),
-        version,
-        dependencies.temporaryDirectory(),
+      const tags = await inPrivateFolder(dependencies, (folder) =>
+        tagRevisions(
+          (command, args, cwd) =>
+            runner.run(
+              command,
+              args,
+              cwd,
+              `Looking up supabase-swift's tag v${version}`,
+            ),
+          version,
+          folder,
+        ),
       );
       const revision = tags.find((tag) => tag.revision !== undefined)?.revision;
       if (revision === undefined) {
@@ -506,17 +534,19 @@ async function chosenTarget(
     case "branch": {
       const { branch } = source;
       const ref = `refs/heads/${branch}`;
-      const listed = await runner.run(
-        "git",
-        ["ls-remote", SOURCE, ref],
-        dependencies.temporaryDirectory(),
-        `Looking up supabase-swift's branch ${branch}`,
+      const listed = await inPrivateFolder(dependencies, (folder) =>
+        runner.run(
+          "git",
+          ["ls-remote", SOURCE, ref],
+          folder,
+          `Looking up supabase-swift's branch ${branch}`,
+        ),
       );
       const revision = parseRefs(listed.stdout).get(ref);
       if (revision === undefined) {
         const folder = resolve(host.cwd, branch);
         const hint = (await exists(folder))
-          ? ` To build the local checkout at ${folder}, pass ./${branch}.`
+          ? ` To build the local checkout at ${shown(folder)}, pass ./${branch}.`
           : "";
         throw swiftError(
           `No branch named \`${branch}\` in supabase/supabase-swift.${hint}`,
@@ -541,7 +571,7 @@ async function defaultTarget(
     return await latestTarget(host, dependencies, runner);
   }
   const { revision, version, branch, file } = pin;
-  const where = relative(host.cwd, file) || file;
+  const where = shown(relative(host.cwd, file) || file);
   const invalid = (field: string, value: string, expected: string) =>
     swiftError(
       `The supabase-swift pin in ${where} has ${field} ${printable(value)}, which is not ${expected}. Resolve the package again, or pass --${SWIFT_TYPEGEN_SOURCE}.`,
@@ -579,11 +609,13 @@ async function latestTarget(
   dependencies: SwiftDependencies,
   runner: Runner,
 ): Promise<Target> {
-  const listed = await runner.run(
-    "git",
-    ["ls-remote", "--tags", SOURCE],
-    dependencies.temporaryDirectory(),
-    "Looking up supabase-swift's releases",
+  const listed = await inPrivateFolder(dependencies, (folder) =>
+    runner.run(
+      "git",
+      ["ls-remote", "--tags", SOURCE],
+      folder,
+      "Looking up supabase-swift's releases",
+    ),
   );
   const refs = parseRefs(listed.stdout);
   const prefix = "refs/tags/";
@@ -596,11 +628,11 @@ async function latestTarget(
   const revision = latest && refs.get(`${prefix}${latest.tag}`);
   if (latest === undefined || revision === undefined) {
     throw swiftError(
-      `No supabase-swift pin found from \`${host.cwd}\`, and supabase/supabase-swift has no ${MAJOR}.x release yet. Run from your app directory, or pass --${SWIFT_TYPEGEN_SOURCE}.`,
+      `No supabase-swift pin found from \`${shown(host.cwd)}\`, and supabase/supabase-swift has no ${MAJOR}.x release yet. Run from your app directory, or pass --${SWIFT_TYPEGEN_SOURCE}.`,
     );
   }
   dependencies.log(
-    `No supabase-swift pin found from \`${host.cwd}\`. Using ${latest.version} (latest) at ${abbreviated(revision)}. Run from your app directory, or pass --${SWIFT_TYPEGEN_SOURCE}, to match your pinned version.`,
+    `No supabase-swift pin found from \`${shown(host.cwd)}\`. Using ${latest.version} (latest) at ${abbreviated(revision)}. Run from your app directory, or pass --${SWIFT_TYPEGEN_SOURCE}, to match your pinned version.`,
   );
   return { revision, version: latest.version };
 }
@@ -618,17 +650,17 @@ async function buildCheckout(
   const packagePath = join(checkout, PACKAGE_PATH);
   if (!(await exists(join(packagePath, "Package.swift")))) {
     throw sourceError(
-      `${checkout} has no ${PACKAGE_PATH}. Pass --${SWIFT_TYPEGEN_SOURCE} a checkout of supabase-swift ${FIRST_RELEASE} or newer.`,
+      `${shown(checkout)} has no ${PACKAGE_PATH}. Pass --${SWIFT_TYPEGEN_SOURCE} a checkout of supabase-swift ${FIRST_RELEASE} or newer.`,
     );
   }
   dependencies.log(
-    `Using the local checkout ${checkout}, with any uncommitted changes. Building ${BINARY} there; the first build takes a few minutes, later ones rebuild only what changed.`,
+    `Using the local checkout ${shown(checkout)}, with any uncommitted changes. Building ${BINARY} there; the first build takes a few minutes, later ones rebuild only what changed.`,
   );
   await runner.run(
     "swift",
     ["build", "-c", "release", "--package-path", packagePath],
     checkout,
-    `Building \`${BINARY}\` in ${checkout}`,
+    `Building \`${BINARY}\` in ${shown(checkout)}`,
   );
   return join(packagePath, ".build", "release", BINARY);
 }
@@ -816,12 +848,17 @@ const GIT_REPOSITORY_VARIABLES = [
 
 function buildEnvironment(
   env: Readonly<Record<string, string | undefined>>,
+  temporaryDirectory: string,
 ): Record<string, string | undefined> {
   return {
     ...env,
     ...Object.fromEntries(
       GIT_REPOSITORY_VARIABLES.map((name) => [name, undefined]),
     ),
+    // git never looks for a repository in the shared temporary directory itself (`inPrivateFolder`).
+    GIT_CEILING_DIRECTORIES: [temporaryDirectory, env.GIT_CEILING_DIRECTORIES]
+      .filter(Boolean)
+      .join(delimiter),
     // A credential prompt would hang the CLI; the repository is public.
     GIT_TERMINAL_PROMPT: "0",
   };
@@ -844,13 +881,16 @@ function cacheDirectory(
   return join(base, "supabase", "typegen");
 }
 
-/** A value for the terminal: quoted, with control characters escaped. */
-const printable = (value: string): string =>
-  JSON.stringify(value).replace(
-    /[\u007f-\u009f]/g,
+/** A path for the terminal, with control characters escaped. */
+const shown = (path: string): string =>
+  path.replace(
+    /\p{Cc}/gu,
     (character) =>
       `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`,
   );
+
+/** A value for the terminal: quoted, with control characters escaped. */
+const printable = (value: string): string => shown(JSON.stringify(value));
 
 interface Pin {
   readonly revision: string;
@@ -899,9 +939,10 @@ async function findPin(
   const revisions = new Set(pins.map((pin) => pin.revision));
   if (revisions.size > 1) {
     throw swiftError(
-      `No supabase-swift pin found in \`${cwd}\` or its parents, and the Package.resolved files below it pin different supabase-swift revisions:\n${pins
+      `No supabase-swift pin found in \`${shown(cwd)}\` or its parents, and the Package.resolved files below it pin different supabase-swift revisions:\n${pins
         .map(
-          (pin) => `  ${relative(cwd, pin.file)}: ${printable(pin.revision)}`,
+          (pin) =>
+            `  ${shown(relative(cwd, pin.file))}: ${printable(pin.revision)}`,
         )
         .join(
           "\n",
