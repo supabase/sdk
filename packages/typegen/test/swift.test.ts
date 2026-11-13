@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { execFileSync } from "node:child_process";
 import {
   existsSync,
   mkdirSync,
@@ -131,6 +132,13 @@ if [ -n "$GIT_DIR$GIT_WORK_TREE$GIT_INDEX_FILE$GIT_OBJECT_DIRECTORY" ]; then
 fi
 case "$1" in
   --version) echo "git version 2.50.0" ;;
+  ls-remote)
+    if [ -n "$FAKE_TAGS" ]; then printf '%b' "$FAKE_TAGS"
+    else printf '%s\\trefs/tags/v3.0.0-alpha.1\\n' ${REVISION}; fi ;;
+  clone)
+    for argument; do directory=$argument; done
+    /bin/mkdir "$directory" ;;
+  merge-base) if [ -n "$FAKE_NOT_ON_BRANCH" ]; then exit 1; fi ;;
   init) /bin/mkdir .git ;;
   fetch)
     if [ -n "$FAKE_FETCH_FAIL" ]; then
@@ -226,11 +234,12 @@ describe("swift source build", () => {
     return cwd;
   };
 
-  const make = (platform = "darwin") =>
+  const make = (platform = "darwin", userId = process.getuid?.()) =>
     createSwift({
       platform,
       temporaryDirectory: () => scratch,
       log: (message) => messages.push(message),
+      userId: () => userId,
     });
 
   const run = (
@@ -270,6 +279,7 @@ describe("swift source build", () => {
     expect(commands()).toEqual([
       "git --version",
       "swift --version",
+      "git ls-remote https://github.com/supabase/supabase-swift refs/tags/3.0.0-alpha.1 refs/tags/3.0.0-alpha.1^{} refs/tags/v3.0.0-alpha.1 refs/tags/v3.0.0-alpha.1^{}",
       "git init",
       `git fetch --depth 1 https://github.com/supabase/supabase-swift ${REVISION}`,
       "git checkout --detach FETCH_HEAD",
@@ -300,18 +310,112 @@ describe("swift source build", () => {
     expect(messages).toEqual([]);
   });
 
-  test("builds a branch pin at its revision without a version check", async () => {
+  test("builds a branch pin once its revision is on that upstream branch", async () => {
     const cwd = project({
-      "Package.resolved": pin({ branch: "main", revision: REVISION }),
+      "Package.resolved": pin({ branch: "release/v3", revision: REVISION }),
     });
 
     expect(await run(cwd)).toBe("generated\n");
 
-    expect(commands()).toContain(
-      `git fetch --depth 1 https://github.com/supabase/supabase-swift ${REVISION}`,
-    );
+    expect(commands().slice(2, 5)).toEqual([
+      "git clone --bare --filter=tree:0 --no-tags --single-branch --branch release/v3 https://github.com/supabase/supabase-swift history.git",
+      `git merge-base --is-ancestor ${REVISION} HEAD`,
+      "git init",
+    ]);
+    expect(ran("git ls-remote")).toBe(false);
     expect(commands()).not.toContain("typegen --version");
     expect(existsSync(cached())).toBe(true);
+  });
+
+  test("checks a bare revision pin against the default branch", async () => {
+    const cwd = project({ "Package.resolved": pin({ revision: REVISION }) });
+    await run(cwd);
+    expect(commands()).toContain(
+      "git clone --bare --filter=tree:0 --no-tags --single-branch https://github.com/supabase/supabase-swift history.git",
+    );
+  });
+
+  test("refuses a revision that is not on its upstream branch, such as a fork's commit", async () => {
+    const cwd = project({
+      "Package.resolved": pin({ branch: "main", revision: REVISION }),
+    });
+    const error = await rejection(run(cwd, { FAKE_NOT_ON_BRANCH: "1" }));
+    expect(error).toBeInstanceOf(TypegenError);
+    expect((error as TypegenError).message).toContain(
+      `${REVISION} is not on supabase-swift's main branch`,
+    );
+    expect(ran("git fetch")).toBe(false);
+    expect(leftovers()).toEqual([]);
+  });
+
+  test("accepts an annotated tag through its peeled commit", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const tag = "f".repeat(40);
+    expect(
+      await run(cwd, {
+        FAKE_TAGS: `${tag}\\trefs/tags/3.0.0-alpha.1\\n${REVISION}\\trefs/tags/3.0.0-alpha.1^{}\\n`,
+      }),
+    ).toBe("generated\n");
+  });
+
+  test("refuses a version pin whose tag points at another commit", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    for (const tags of [
+      `${"e".repeat(40)}\\trefs/tags/v3.0.0-alpha.1\\n`,
+      "",
+    ]) {
+      writeFileSync(logFile, "");
+      const error = await rejection(run(cwd, { FAKE_TAGS: tags || "\\c" }));
+      expect(error).toBeInstanceOf(TypegenError);
+      expect((error as TypegenError).message).toContain(
+        `supabase-swift's 3.0.0-alpha.1 tag does not point at ${REVISION}`,
+      );
+      expect(ran("git fetch")).toBe(false);
+      expect(leftovers()).toEqual([]);
+    }
+  });
+
+  test("refuses a malformed version or branch before running git", async () => {
+    const states: Record<string, string>[] = [
+      { version: "3.0.0\u001b]0;x\u0007", revision: REVISION },
+      { version: "--upload-pack=x", revision: REVISION },
+      { branch: "--upload-pack=x", revision: REVISION },
+      { branch: "main:refs/heads/x", revision: REVISION },
+    ];
+    for (const state of states) {
+      const cwd = project({ "Package.resolved": pin(state) });
+      const error = await rejection(run(cwd));
+      expect(error).toBeInstanceOf(TypegenError);
+      expect((error as TypegenError).message).not.toContain("\u001b");
+      expect(commands()).toEqual([]);
+    }
+  });
+
+  test("skips a Package.resolved owned by another user", async () => {
+    const cwd = project({ "Package.resolved": versionPin() });
+    const error = await rejection(
+      make("darwin", (process.getuid?.() ?? 0) + 1).generate(
+        unsortedMetadata,
+        {},
+        createNodeHost({ cwd, env: { PATH: bin, FAKE_LOG: logFile } }),
+      ),
+    );
+    expect(error).toBeInstanceOf(ToolNotInstalledError);
+    expect((error as ToolNotInstalledError).tool).toBe("supabase-typegen");
+    expect(ran("git")).toBe(false);
+  });
+
+  test("skips malformed and non-regular Package.resolved files", async () => {
+    for (const contents of ["null", '{"pins":{}}', '{"pins":[null]}', "[1]"]) {
+      const cwd = project({ "Package.resolved": contents });
+      const error = await rejection(run(cwd));
+      expect(error).toBeInstanceOf(ToolNotInstalledError);
+    }
+    const cwd = project({});
+    rmSync(join(cwd, "Package.resolved"), { force: true });
+    execFileSync("/usr/bin/mkfifo", [join(cwd, "Package.resolved")]);
+    expect(await rejection(run(cwd))).toBeInstanceOf(ToolNotInstalledError);
+    expect(commands()).toEqual([]);
   });
 
   test("reads an Xcode project's Package.resolved in the version 1 format", async () => {
@@ -451,7 +555,12 @@ describe("swift source build", () => {
 
   test("reports a supabase-swift without supabase-typegen as not installed", async () => {
     const cwd = project({ "Package.resolved": versionPin("2.56.0") });
-    const error = await rejection(run(cwd, { FAKE_NO_TYPEGEN: "1" }));
+    const error = await rejection(
+      run(cwd, {
+        FAKE_NO_TYPEGEN: "1",
+        FAKE_TAGS: `${REVISION}\\trefs/tags/2.56.0\\n`,
+      }),
+    );
     expect(error).toBeInstanceOf(ToolNotInstalledError);
     expect((error as ToolNotInstalledError).message).toContain(
       "supabase-swift 2.56.0 has no supabase-typegen; update to 3.0.0-alpha.1 or newer",

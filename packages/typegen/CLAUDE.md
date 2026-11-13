@@ -42,7 +42,9 @@ lives in supabase-js.
 - `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, built
   from source (SDK-3043) at the supabase-swift commit the nearest
   `Package.resolved` pins, with the user's `git` and `swift`, and cached per
-  commit; then falls back to PATH; `SUPABASE_TYPEGEN` overrides both. The build
+  commit; then falls back to PATH; `SUPABASE_TYPEGEN` overrides both. Before
+  fetching it proves the commit is upstream's (tag for a version pin, ancestry
+  of the branch otherwise), since GitHub serves fork commits by SHA. The build
   steps run through `host.spawn` with a temporary folder as `cwd`. The only
   entry that touches the network or the file system; `createSwift` takes the
   platform, the temporary directory and the progress `log` so tests stay

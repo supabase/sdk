@@ -81,14 +81,23 @@ nearest `Package.resolved` (in `cwd` or a parent; SwiftPM's, or Xcode's inside
 the `.xcodeproj` or `.xcworkspace`) and builds the generator from source at the
 pin's `revision`, so version, branch and revision pins all work:
 
-1. The revision must be a 40-character lowercase hex SHA; nothing else reaches
-   `git`.
+1. The revision must be a 40-character lowercase hex SHA, a version must be a
+   semantic version and a branch a plain branch name; nothing else reaches
+   `git`. Only regular files the user owns count as `Package.resolved`, so
+   another user's file in a shared parent such as `/tmp` cannot pick the commit,
+   and a malformed one counts as no pin.
 2. A binary already in `$XDG_CACHE_HOME/supabase/typegen/<revision>/` (default
    `~/Library/Caches` on macOS, `~/.cache` elsewhere; an empty or relative
    `XDG_CACHE_HOME` is ignored) runs with no build.
 3. Otherwise it checks that `git` and `swift` (Swift 6.2 / Xcode 26 or newer)
-   are on PATH, fetches the single commit into a temporary folder, checks that
-   `HEAD` is the revision, and runs
+   are on PATH and that the commit is upstream's. GitHub serves every commit of
+   the fork network through the upstream URL, pull request heads included, so a
+   version pin's tag (`<version>` or `v<version>`, per `git ls-remote`) must
+   point at the revision, and a branch pin's revision must be an ancestor of
+   that upstream branch (a bare revision pin: the default branch), checked in a
+   commits-only clone (`--filter=tree:0`, about 1.5 MB and a second). It then
+   fetches the single commit into a temporary folder, checks that `HEAD` is the
+   revision, and runs
    `swift build -c release --package-path tools/supabase-typegen --disable-automatic-resolution`.
    The flag builds the generator's committed `Package.resolved` exactly and
    fails rather than resolve other dependency versions. Linux adds

@@ -8,6 +8,7 @@ import {
   readFile,
   rename,
   rm,
+  stat,
 } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { basename, dirname, isAbsolute, join } from "node:path";
@@ -35,6 +36,10 @@ const TOOLCHAIN = "Swift 6.2 / Xcode 26";
 const FIRST_RELEASE = "3.0.0-alpha.1";
 /** The only revision form ever passed to git, so a pin cannot smuggle in an option. */
 const COMMIT = /^[0-9a-f]{40}$/;
+/** Semantic versions only: a pinned version reaches git as a tag name and the terminal as text. */
+const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+/** Branch names git accepts, minus anything that could read as an option or a refspec. */
+const BRANCH = /^(?!-)(?!.*\.\.)[A-Za-z0-9._/-]+$/;
 
 /**
  * The flag `supabase gen types` already exposes, narrowed to the two levels
@@ -59,6 +64,12 @@ export interface SwiftDependencies {
   readonly temporaryDirectory: () => string;
   /** Progress the user should see while the generator builds. */
   readonly log: (message: string) => void;
+  /**
+   * `process.getuid()`. A `Package.resolved` owned by anyone else is ignored,
+   * so another user's file in a shared parent such as `/tmp` cannot pick the
+   * commit that gets built. `undefined` skips the check.
+   */
+  readonly userId: () => number | undefined;
 }
 
 /**
@@ -76,7 +87,10 @@ export interface SwiftDependencies {
  *
  * A source build trusts nothing beyond what the app already runs: the
  * supabase-swift source at the pinned commit, the generator's committed
- * `Package.resolved`, and the user's toolchain. It is a separate executable,
+ * `Package.resolved`, and the user's toolchain. GitHub serves every commit of
+ * the fork network, pull request heads included, through the upstream URL, so
+ * the commit must first be shown to be upstream's: a version pin's tag must
+ * point at it, and any other pin must be on its upstream branch. It is a separate executable,
  * not a package dependency, because its swift-format dependency would pin
  * every app's swift-syntax, and because an Xcode project without a
  * `Package.swift` has nothing to `swift run` from. No `--schema` is passed:
@@ -88,6 +102,7 @@ export function createSwift(
     platform: process.platform,
     temporaryDirectory: tmpdir,
     log: (message) => process.stderr.write(`${message}\n`),
+    userId: () => process.getuid?.(),
   },
 ): TypegenLanguage {
   const options = [swiftAccessControl];
@@ -127,16 +142,28 @@ async function resolveBinary(
   if (dependencies.platform === "win32" || spawn === undefined) {
     return BINARY;
   }
-  const pin = await pinnedState(host.cwd);
+  const pin = await pinnedState(host.cwd, dependencies.userId());
   if (pin?.revision === undefined) {
     return BINARY;
   }
-  const { revision, version } = pin;
-  if (!COMMIT.test(revision)) {
-    throw new TypegenError({
+  const { revision, version, branch } = pin;
+  const invalid = (field: string, value: string, expected: string) =>
+    new TypegenError({
       language: "swift",
-      message: `The supabase-swift pin in ${host.cwd}'s Package.resolved has revision "${revision}", which is not a 40-character lowercase hex commit SHA. Resolve the package again, or: ${installHint}`,
+      message: `The supabase-swift pin in ${host.cwd}'s Package.resolved has ${field} ${JSON.stringify(value)}, which is not ${expected}. Resolve the package again, or: ${installHint}`,
     });
+  if (!COMMIT.test(revision)) {
+    throw invalid(
+      "revision",
+      revision,
+      "a 40-character lowercase hex commit SHA",
+    );
+  }
+  if (version !== undefined && !VERSION.test(version)) {
+    throw invalid("version", version, "a semantic version");
+  }
+  if (version === undefined && branch !== undefined && !BRANCH.test(branch)) {
+    throw invalid("branch", branch, "a plain branch name");
   }
   const path = join(
     cacheDirectory(host.env, dependencies.platform),
@@ -144,7 +171,13 @@ async function resolveBinary(
     BINARY,
   );
   if (!existsSync(path)) {
-    await build({ host, spawn, dependencies, revision, version, path });
+    await build({
+      host,
+      spawn,
+      dependencies,
+      pin: { revision, version, branch },
+      path,
+    });
   }
   return path;
 }
@@ -153,28 +186,29 @@ interface Build {
   readonly host: Host;
   readonly spawn: NonNullable<Host["spawn"]>;
   readonly dependencies: SwiftDependencies;
-  readonly revision: string;
-  readonly version: string | undefined;
+  /** A validated pin: the revision is a SHA, the version a semantic version, the branch plain. */
+  readonly pin: { readonly revision: string } & PinState;
   /** Where the finished binary goes in the cache. */
   readonly path: string;
 }
 
 /**
- * Checks out `revision` into a scratch folder, builds the generator with its
- * committed dependency versions and moves the binary to `path`. The scratch
- * folder is removed whatever happens, and the cache only ever receives a
- * binary that built and, for a version pin, reports that version.
+ * Checks that `pin.revision` is upstream's, checks it out into a scratch
+ * folder, builds the generator with its committed dependency versions and
+ * moves the binary to `path`. The scratch folder is removed whatever happens,
+ * and the cache only ever receives a binary that built and, for a version pin,
+ * reports that version.
  */
 async function build({
   host,
   spawn,
   dependencies,
-  revision,
-  version,
+  pin,
   path,
 }: Build): Promise<void> {
+  const { revision, version, branch } = pin;
   const label = version ?? revision;
-  const run = async (
+  const exec = async (
     command: string,
     args: readonly string[],
     cwd: string,
@@ -187,9 +221,8 @@ async function build({
       stdin: "",
       signal: host.signal,
     };
-    let result: SpawnResult;
     try {
-      result = await spawn(request);
+      return await spawn(request);
     } catch (error) {
       if (isCommandNotFound(error)) {
         throw new ToolNotInstalledError({
@@ -202,6 +235,13 @@ async function build({
       }
       throw error;
     }
+  };
+  const run = async (
+    command: string,
+    args: readonly string[],
+    cwd: string,
+  ): Promise<SpawnResult> => {
+    const result = await exec(command, args, cwd);
     if (result.exitCode !== 0) {
       const commandLine = [command, ...args];
       const output = [result.stdout.trim(), result.stderr.trim()]
@@ -232,18 +272,73 @@ async function build({
   );
   // Named after the scratch folder, which is unique, so concurrent runs never share one.
   const partial = `${path}.${process.pid}.${basename(scratch)}.partial`;
+  const checkout = join(scratch, "src");
   try {
-    await run("git", ["init"], scratch);
-    await run("git", ["fetch", "--depth", "1", SOURCE, revision], scratch);
-    await run("git", ["checkout", "--detach", "FETCH_HEAD"], scratch);
-    const head = (await run("git", ["rev-parse", "HEAD"], scratch)).stdout;
+    if (version !== undefined) {
+      // A tag can only come from upstream's maintainers; annotated tags list the commit as `^{}`.
+      const tags = [version, `v${version}`].map((name) => `refs/tags/${name}`);
+      const listed = await run(
+        "git",
+        ["ls-remote", SOURCE, ...tags.flatMap((tag) => [tag, `${tag}^{}`])],
+        scratch,
+      );
+      const commits = new Map(
+        listed.stdout
+          .split("\n")
+          .map((line) => line.split("\t"))
+          .map(([sha, ref]) => [ref?.trim(), sha?.trim()]),
+      );
+      if (
+        !tags.some(
+          (tag) => (commits.get(`${tag}^{}`) ?? commits.get(tag)) === revision,
+        )
+      ) {
+        throw new TypegenError({
+          language: "swift",
+          message: `supabase-swift's ${version} tag does not point at ${revision}, the revision Package.resolved pins. Resolve the package again; a revision from a fork or a pull request is not built.`,
+        });
+      }
+    } else {
+      // Only the commits of one branch, about 1.5 MB, to show the revision is on it.
+      const branchArgs = branch === undefined ? [] : ["--branch", branch];
+      await run(
+        "git",
+        [
+          "clone",
+          "--bare",
+          "--filter=tree:0",
+          "--no-tags",
+          "--single-branch",
+          ...branchArgs,
+          SOURCE,
+          "history.git",
+        ],
+        scratch,
+      );
+      const ancestry = await exec(
+        "git",
+        ["merge-base", "--is-ancestor", revision, "HEAD"],
+        join(scratch, "history.git"),
+      );
+      if (ancestry.exitCode !== 0) {
+        throw new TypegenError({
+          language: "swift",
+          message: `${revision} is not on supabase-swift's ${branch ?? "default"} branch. Resolve the package again; a revision from a fork or a pull request is not built.`,
+        });
+      }
+    }
+    await mkdir(checkout);
+    await run("git", ["init"], checkout);
+    await run("git", ["fetch", "--depth", "1", SOURCE, revision], checkout);
+    await run("git", ["checkout", "--detach", "FETCH_HEAD"], checkout);
+    const head = (await run("git", ["rev-parse", "HEAD"], checkout)).stdout;
     if (head.trim() !== revision) {
       throw new TypegenError({
         language: "swift",
         message: `Fetching supabase-swift ${revision} checked out ${head.trim()} instead.`,
       });
     }
-    if (!existsSync(join(scratch, PACKAGE_PATH, "Package.swift"))) {
+    if (!existsSync(join(checkout, PACKAGE_PATH, "Package.swift"))) {
       throw new ToolNotInstalledError({
         language: "swift",
         tool: BINARY,
@@ -265,11 +360,13 @@ async function build({
         "--disable-automatic-resolution",
         ...(dependencies.platform === "linux" ? ["--static-swift-stdlib"] : []),
       ],
-      scratch,
+      checkout,
     );
-    const built = join(scratch, PACKAGE_PATH, ".build", "release", BINARY);
+    const built = join(checkout, PACKAGE_PATH, ".build", "release", BINARY);
     if (version !== undefined) {
-      const reported = (await run(built, ["--version"], scratch)).stdout.trim();
+      const reported = (
+        await run(built, ["--version"], checkout)
+      ).stdout.trim();
       if (reported !== version) {
         throw new TypegenError({
           language: "swift",
@@ -343,16 +440,21 @@ function cacheDirectory(
 
 interface PinState {
   readonly version?: string;
+  readonly branch?: string;
   readonly revision?: string;
 }
 
 /**
  * The supabase-swift pin of the nearest `Package.resolved` that has one,
- * looking in `cwd` and then each parent.
+ * looking in `cwd` and then each parent. Only regular files that `userId`
+ * owns count.
  */
-async function pinnedState(cwd: string): Promise<PinState | undefined> {
+async function pinnedState(
+  cwd: string,
+  userId: number | undefined,
+): Promise<PinState | undefined> {
   for (let directory = cwd; ; directory = dirname(directory)) {
-    for (const file of await resolvedFiles(directory)) {
+    for (const file of await resolvedFiles(directory, userId)) {
       const state = stateIn(await readFile(file, "utf8"));
       if (state) {
         return state;
@@ -364,9 +466,12 @@ async function pinnedState(cwd: string): Promise<PinState | undefined> {
   }
 }
 
-async function resolvedFiles(directory: string): Promise<string[]> {
+async function resolvedFiles(
+  directory: string,
+  userId: number | undefined,
+): Promise<string[]> {
   const entries = await readdir(directory).catch(() => []);
-  return [
+  const candidates = [
     join(directory, "Package.resolved"),
     ...entries
       .filter((entry) => entry.endsWith(".xcworkspace"))
@@ -382,25 +487,55 @@ async function resolvedFiles(directory: string): Promise<string[]> {
           "project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
         ),
       ),
-  ].filter((file) => existsSync(file));
+  ];
+  const usable = await Promise.all(
+    candidates.map(async (file) => {
+      const status = await stat(file).catch(() => undefined);
+      // A FIFO would block the read forever; a file of another user is not the project's.
+      return (
+        status?.isFile() === true &&
+        (userId === undefined || status.uid === userId)
+      );
+    }),
+  );
+  return candidates.filter((_file, index) => usable[index]);
 }
 
-interface Pin {
-  readonly location?: string;
-  readonly repositoryURL?: string;
-  readonly state?: PinState;
-}
+const record = (value: unknown): Record<string, unknown> | undefined =>
+  typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 
-/** Reads every `Package.resolved` format: version 1 nests the pins under `object`. */
+const text = (value: unknown): string | undefined =>
+  typeof value === "string" ? value : undefined;
+
+/**
+ * Reads every `Package.resolved` format (version 1 nests the pins under
+ * `object`). Anything that is not the expected shape counts as no pin.
+ */
 function stateIn(contents: string): PinState | undefined {
-  let parsed: { pins?: Pin[]; object?: { pins?: Pin[] } };
+  let parsed: unknown;
   try {
     parsed = JSON.parse(contents);
   } catch {
     return undefined;
   }
-  const pins = parsed.pins ?? parsed.object?.pins ?? [];
-  return pins.find((pin) =>
-    REPOSITORY.test(pin.location ?? pin.repositoryURL ?? ""),
-  )?.state;
+  const root = record(parsed);
+  const pins = root?.pins ?? record(root?.object)?.pins;
+  if (!Array.isArray(pins)) {
+    return undefined;
+  }
+  for (const entry of pins) {
+    const pin = record(entry);
+    const location = text(pin?.location) ?? text(pin?.repositoryURL) ?? "";
+    if (REPOSITORY.test(location)) {
+      const state = record(pin?.state);
+      return {
+        version: text(state?.version),
+        branch: text(state?.branch),
+        revision: text(state?.revision),
+      };
+    }
+  }
+  return undefined;
 }
