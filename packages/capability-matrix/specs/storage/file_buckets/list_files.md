@@ -5,7 +5,7 @@
 Spec: [https://supabase.github.io/storage/](https://supabase.github.io/storage/)
 
 - `POST /object/list-v2/{bucketName}`: one page of a cursor-paged listing
-- `POST /object/list/{bucketName}`: the legacy offset-paged listing
+- `POST /object/list/{bucketName}`: the legacy offset-paged listing, deprecated
 
 The API spec documents no success body for `POST /object/list-v2/{bucketName}`.
 The handler,
@@ -59,22 +59,36 @@ does not return a folder as an object: a folder entry has a `null` id and no
 metadata, and its timestamps are those of one of the objects below it.
 
 **Names.** Object names and folder names in a list-v2 page are full keys. The
-SDK returns them as the server sends them and does not strip the prefix.
+SDK returns them as the server sends them and does not strip the prefix. The
+server sends `key`, the last path segment of an object, only on some listings
+with `with_delimiter: true`: never without `with_delimiter`, never with
+`exactMatch: true`, never on a folder entry, and not from storage schemas that
+predate the `search_v2` function. The SDK therefore exposes `key` as an optional
+field next to the name, as sent, and does not derive it from the name.
 
 **Page size.** The SDK sends `limit` only when the caller sets it. The server
 default and maximum are both 1000, and the server lowers a larger `limit` to
 1000 without an error, so a page never holds more than 1000 entries.
 
-**The legacy listing.** `POST /object/list/{bucketName}` is a separate operation
-with different results: offset paging, a `search` filter, one level only, names
-relative to the prefix, and folders returned as rows whose `id` is `null`. The
-server appends `/` to a non-empty prefix that lacks one, unless `exactMatch` is
-`true`. For this call the SDK sends `prefix` as the empty string when the caller
-gives none, because the server requires the field, and it fills in `limit: 100`,
-`offset: 0`, and `sortBy: { column: "name", order: "asc" }` for each of them the
-caller does not set; a caller who sets only `sortBy.column` keeps the default
-`order`. The SDK never switches between the two endpoints on its own, because
-the names and the paging of their results differ.
+**The legacy listing.** `POST /object/list/{bucketName}` is deprecated. An SDK
+does not add a call for it. An SDK that has one marks it deprecated, naming the
+list-v2 call as its replacement, and removes it in its next major version. The
+migration notes of that version map the legacy options onto list-v2: the path
+and `search` become one `prefix`, matched case-sensitively where the legacy
+listing lowercased both sides, and `offset` paging becomes cursor paging. They
+also state that listing then requires Supabase Storage v1.19.0 or newer, where
+list-v2 first shipped, and that a project whose storage schema predates list-v2
+gets `FeatureNotEnabled`, described under Errors. Until the removal, the legacy
+call is a separate operation with different results: offset paging, a `search`
+filter, one level only, names relative to the prefix, and folders returned as
+rows whose `id` is `null`. The server appends `/` to a non-empty prefix that
+lacks one, unless `exactMatch` is `true`. For this call the SDK sends `prefix`
+as the empty string when the caller gives none, because the server requires the
+field, and it fills in `limit: 100`, `offset: 0`, and
+`sortBy: { column: "name", order: "asc" }` for each of them the caller does not
+set; a caller who sets only `sortBy.column` keeps the default `order`. The SDK
+never switches between the two endpoints on its own, because the names and the
+paging of their results differ.
 
 ## Errors
 
