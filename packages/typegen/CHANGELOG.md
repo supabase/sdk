@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/supabase/sdk/compare/typegen/v0.3.4...typegen/v0.4.0) (2026-11-13)
+
+
+### Features
+
+* **typegen:** pick the supabase-typegen source with swift-typegen-source ([#361](https://github.com/supabase/sdk/issues/361)) ([95ae8d0](https://github.com/supabase/sdk/commit/95ae8d04fd50912164f5ddbfd8c023356bd3e4e9))
+
 ## [0.3.4](https://github.com/supabase/sdk/compare/typegen/v0.3.3...typegen/v0.3.4) (2026-11-12)
 
 

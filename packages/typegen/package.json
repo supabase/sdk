@@ -1,6 +1,6 @@
 {
   "name": "@supabase/typegen",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "description": "Language registry for supabase gen types: maps each --lang to its generator",
   "keywords": [
     "codegen",
