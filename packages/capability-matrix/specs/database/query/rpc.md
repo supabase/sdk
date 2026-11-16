@@ -58,6 +58,12 @@ option sends, when any argument cannot reach the function as a query parameter:
   ([Embedded Filters](https://docs.postgrest.org/en/latest/references/api/resource_embedding.html#embedded-filters)).
 - Its value is `null`, which a query parameter can only carry as the text
   `null`.
+- Its value is a JSON array or object. As a query parameter it travels as text
+  whose form depends on the parameter's type, which the SDK does not know: an
+  array parameter such as `int[]` takes an array literal such as `{1,2}`, while
+  a `json` or `jsonb` parameter takes JSON text such as `[1,2]`. A `POST` body
+  needs neither, since PostgREST converts each JSON value to the type of its
+  parameter.
 - Its value, written as a query parameter, starts with `not.`, or starts like a
   filter: one of the operators `eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`,
   `ilike`, `match`, `imatch`, `cs`, `cd`, `ov`, `sl`, `sr`, `nxl`, `nxr`, `adj`,
