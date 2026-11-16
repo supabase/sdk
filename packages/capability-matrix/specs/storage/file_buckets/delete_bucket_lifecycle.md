@@ -8,11 +8,13 @@ Remove the lifecycle policy from a Standard file bucket.
 
 ## Behavior
 
-Deletes the stored policy. The call is idempotent: deleting when no policy is stored still succeeds.
+Deletes the stored policy. The call is idempotent: deleting when no policy is
+stored still succeeds.
 
 ## Prerequisites
 
-Lifecycle support must be enabled on the Storage API. The bucket must be a Standard file bucket.
+Lifecycle support must be enabled on the Storage API. The bucket must be a
+Standard file bucket.
 
 ## Errors
 

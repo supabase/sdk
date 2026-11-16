@@ -52,3 +52,7 @@ features:
     name: Diagnostic Logging
     description: Supply a logger at construction time to receive the SDK's log emissions, such as request outcomes, retry decisions and background-work lifecycle events. The SDK is silent by default and never logs credentials, tokens or payloads.
     group: observability
+  - id: client.observability.client_info
+    name: Client Info Header
+    description: Identify the SDK, its version and the environment it runs in (platform, runtime, framework) in a structured X-Client-Info header on every request, together with the SDK features the request was built with.
+    group: observability

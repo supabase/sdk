@@ -11,10 +11,11 @@ import { introspect } from "../../src/introspection/index.ts";
 import type { GeneratorMetadata } from "../../src/types.ts";
 
 /**
- * Integration coverage for view column nullability. PostgreSQL 15 has no
- * `varnullingrels`, PostgreSQL 18 routes grouped columns through a group range
- * table entry, and PostgreSQL 17 is what Supabase projects run, so each of them
- * must resolve the same columns as non-null.
+ * Integration coverage for view column nullability. PostgreSQL 14 names range
+ * table entries `RTE`, PostgreSQL 14 and 15 have no `varnullingrels`,
+ * PostgreSQL 18 routes grouped columns through a group range table entry, and
+ * PostgreSQL 17 is what Supabase projects run, so each of them must resolve the
+ * same columns as non-null.
  */
 const SCHEMA = /* SQL */ `
   create schema private;
@@ -71,7 +72,7 @@ const nullability = (metadata: GeneratorMetadata, view: string) =>
       .map((column) => [column.name, column.is_nullable]),
   );
 
-describe.each(["15", "17", "18"])(
+describe.each(["14", "15", "17", "18"])(
   "view column nullability (PostgreSQL %s)",
   (version) => {
     let container: StartedPostgreSqlContainer;

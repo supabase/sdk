@@ -1,21 +1,52 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## What This Repo Is
 
-This is a lightweight monorepo of shared tooling for the Supabase client SDKs. Projects live as flat siblings under `packages/`, each with a single toolchain and no monorepo build tooling on top:
+This is a lightweight monorepo of shared tooling for the Supabase client SDKs.
+Projects live as flat siblings under `packages/`, each with a single toolchain
+and no monorepo build tooling on top:
 
-- `packages/capability-matrix/` — the **canonical feature registry** for all Supabase client SDKs — not the SDKs themselves. It defines what features exist (name, description, grouping) across 7 client SDKs (JavaScript, Flutter, Python, Swift, C#, Go, Kotlin). SDKs declare compliance separately in their own repos via `sdk-compliance.yaml` files. The output is a static capability matrix website at https://supabase.github.io/sdk/ showing which features each SDK implements.
-- `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by the Dart compliance workflow.
-- `packages/go-symbol-extractor/` — Go public API symbol extractor used by the Go compliance workflow.
-- `packages/python-symbol-extractor/`: Python public API symbol extractor used by the Python compliance workflow. Built on griffe; discovers packages from `pyproject.toml` files and follows `__all__` re-exports out of `_`-prefixed modules.
-- `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
-- `packages/typegen/`: the language registry for `supabase gen types --lang`. `languages` maps each name to a generator, either in-process (the four bundled in postgrest-typegen) or an external tool run in the user's project (Dart via `dart run supabase_typegen`). The CLI dispatches through it, so adding a language is a pull request here plus a CLI dependency bump. See its own `CLAUDE.md`.
+- `packages/capability-matrix/` — the **canonical feature registry** for all
+  Supabase client SDKs — not the SDKs themselves. It defines what features exist
+  (name, description, grouping) across 7 client SDKs (JavaScript, Flutter,
+  Python, Swift, C#, Go, Kotlin). SDKs declare compliance separately in their
+  own repos via `sdk-compliance.yaml` files. The output is a static capability
+  matrix website at https://supabase.github.io/sdk/ showing which features each
+  SDK implements.
+- `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by
+  the Dart compliance workflow.
+- `packages/go-symbol-extractor/` — Go public API symbol extractor used by the
+  Go compliance workflow.
+- `packages/python-symbol-extractor/`: Python public API symbol extractor used
+  by the Python compliance workflow. Built on griffe; discovers packages from
+  `pyproject.toml` files and follows `__all__` re-exports out of `_`-prefixed
+  modules.
+- `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the
+  `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go,
+  and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and
+  the CLI consume it.
+- `packages/typegen/`: the language registry for `supabase gen types --lang`.
+  `languages` maps each name to a generator, either in-process (the four bundled
+  in postgrest-typegen) or an external tool run in the user's project (Dart via
+  `dart run supabase_typegen`). The CLI dispatches through it, so adding a
+  language is a pull request here plus a CLI dependency bump. See its own
+  `CLAUDE.md`.
 
 ## Commands
 
-The capability-matrix scripts live under `packages/capability-matrix/`. Run them from that directory:
+Formatting runs from the repo root, but also runs as a pre-commit hook:
+
+```bash
+bun install                     # Install oxfmt and turn on the pre-commit hook
+bun run format                  # Format the whole repo in place
+bun run format:check            # What CI runs
+```
+
+The capability-matrix scripts live under `packages/capability-matrix/`. Run them
+from that directory:
 
 ```bash
 cd packages/capability-matrix
@@ -33,9 +64,11 @@ bun run build-site              # Build HTML site (uses cached compliance data)
 bun run build-site <compliance.json>  # Build with specific compliance data
 ```
 
-`bun run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls back to anonymous requests, which GitHub limits to 60 per hour per IP address.
+`bun run aggregate` uses `GITHUB_TOKEN` when it is set. Without one it falls
+back to anonymous requests, which GitHub limits to 60 per hour per IP address.
 
 To run a single test file:
+
 ```bash
 bun test test/schema.test.ts
 ```
@@ -52,38 +85,151 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
 
 ### Key Directories (under `packages/capability-matrix/`)
 
-- `capabilities/` — YAML files, one per product area (auth, database, storage, realtime, functions, client). These are the source of truth for feature IDs and definitions.
-- `schema/capability-matrix.schema.json` — JSON Schema that validates capability YAML files. Feature IDs must follow three-segment format: `area.group_namespace.feature`.
-- `specs/` — Optional Markdown specs for individual features, at `specs/{area}/{group}/{method}.md`. A spec is additive: it covers only what the SDK layer adds on top of the service's API spec, never the wire itself.
+- `capabilities/` — YAML files, one per product area (auth, database, storage,
+  realtime, functions, client). These are the source of truth for feature IDs
+  and definitions.
+- `schema/capability-matrix.schema.json` — JSON Schema that validates capability
+  YAML files. Feature IDs must follow three-segment format:
+  `area.group_namespace.feature`.
+- `specs/` — Optional Markdown specs for individual features, at
+  `specs/{area}/{group}/{method}.md`. A spec is additive: it covers only what
+  the SDK layer adds on top of the service's API spec, never the wire itself.
 - `src/` — TypeScript source for validation, aggregation, and site generation.
 - `test/` — `bun:test` suite with fixtures in `test/fixtures/`.
 
 ### Key Source Files
 
-- `normalize-typedoc-cli.ts` — merge form: `--out <out.json> <in.json>…` concatenates several TypeDoc JSONs (for monorepos)
-- `swift-parser.ts` — line-by-line scanner (not AST); extracts `public`/`open` symbols from classes, structs, actors, enums, extensions
-- `packages/dart-symbol-extractor/` — sibling Dart package (Dart package name `dart_symbol_extractor`); `dart run bin/extract.dart <sdk-root>`; parses without `pub get`
-- `packages/python-symbol-extractor/`: sibling Python package managed with uv; `uv run --frozen --no-dev python -m python_symbol_extractor <sdk-root>`; loads the target statically through griffe, so it needs no installation of the SDK
-- `parse-ignore.ts` — `.sdk-parse-ignore` (gitignore syntax) excludes paths from Swift parsing; TypeScript uses TypeDoc entrypoints instead
-- `api-check.ts` / `check-api-symbols.ts` — blocking public API coverage logic + CLI; `additions` mode diffs a PR against its base, while `full` mode statically audits one checkout
+- `normalize-typedoc-cli.ts` — merge form: `--out <out.json> <in.json>…`
+  concatenates several TypeDoc JSONs (for monorepos)
+- `swift-parser.ts` — line-by-line scanner (not AST); extracts `public`/`open`
+  symbols from classes, structs, actors, enums, extensions
+- `packages/dart-symbol-extractor/` — sibling Dart package (Dart package name
+  `dart_symbol_extractor`); `dart run bin/extract.dart <sdk-root>`; parses
+  without `pub get`
+- `packages/python-symbol-extractor/`: sibling Python package managed with uv;
+  `uv run --frozen --no-dev python -m python_symbol_extractor <sdk-root>`; loads
+  the target statically through griffe, so it needs no installation of the SDK
+- `parse-ignore.ts` — `.sdk-parse-ignore` (gitignore syntax) excludes paths from
+  Swift parsing; TypeScript uses TypeDoc entrypoints instead
+- `api-check.ts` / `check-api-symbols.ts` — blocking public API coverage logic +
+  CLI; `additions` mode diffs a PR against its base, while `full` mode
+  statically audits one checkout
 
 ### CI Workflows
 
-- `capability-matrix-validate.yml` — Runs on push to main, PRs, and nightly; Tier 1: schema/tests/typecheck/structural; Tier 2 (PRs + nightly): reference checks against GitHub. Its display name (`Validate Capabilities`) is referenced by `release.yml`'s `workflow_run` trigger — keep them in sync
-- `validate-sdk-compliance-<language>.yml` — One **reusable workflow** per language (`swift`, `javascript`, `python`, `dart`), called by SDK repos; validates `sdk-compliance.yaml` and applies its `api_coverage` policy. `additions` (the default) checks PR-only API changes against the base branch, while `full` checks the complete current surface on PR, push, or dispatch events without a base checkout. Splitting per language avoids gating every step on a `language` input. For `javascript` (the supabase-js pnpm monorepo) pass `typedoc-packages` — comma-separated package dirs, each with a `docs:json` script that owns its TypeDoc entrypoints; the JS path installs with pnpm and merges all packages. The `python` wrapper takes no package inputs: the extractor discovers packages from `pyproject.toml` files. Shared steps live in composite actions under `packages/capability-matrix/actions/sdk-compliance-*` (`-validate`, `-check-setup`, `-check-symbols`, `-check-drift`), referenced through the `_sdk-spec` checkout (`./_sdk-spec/packages/capability-matrix/actions/...`) that the wrappers pin to `job.workflow_sha`, so wrapper and action code always come from the same commit. The wrappers themselves must stay in `.github/workflows/` (a GitHub requirement for `workflow_call`); keep them thin shims, since wrapper-only commits do not bump the capability-matrix component — force a release with a `Release-As: x.y.z` commit footer if one ever needs to ship alone. The Swift wrapper's check job is slow because `swift package dump-symbol-graph` cold-builds the whole package, so it takes a `runner` input (macOS label, default `macos-latest`), skips pull requests that touch none of `public-api-paths` or the compliance file (the `api-paths` input of the setup action), and caches compiled dependencies and base-commit symbols. Pull requests can read caches only from their own ref and the base branch, so a push to the default branch in additions mode (`warm-cache`) extracts once and saves them; pull requests only restore the build cache
-- `postgrest-typegen-validate.yml`: type check, lint, build and tests for postgrest-typegen, plus `postgrest-js type tests`, which starts the postgrest-js fixture database from supabase-js `master`, generates its types with the pull request's generator and runs postgrest-js's own type tests against them (SDK-1736). The second job is a required check on `main`, which is why `pull_request` triggers the workflow without a path filter: a `changes` job asks the API which files the pull request touches and the real jobs run only when `packages/postgrest-typegen` or the workflow changed, since a skipped job satisfies a required check while a workflow that never ran does not
-- `capability-matrix-deploy-pages.yml` — Fetches all SDK compliance data, rebuilds the site, and deploys to GitHub Pages (main push, daily cron, manual dispatch)
-- `release.yml` — release-please for capability-matrix; postgrest-typegen and typegen run release-please from their own workflows, so three components are released in total. The repo root is deliberately not versioned anymore (the historical `vX.Y.Z` tags up to 1.5.0 remain for consumers pinned to them). Both configs set `tag-separator: "/"` because dependabot only recognizes `package/vX.Y.Z` tags; releases before the switch used a `-` separator (`capability-matrix-vX.Y.Z`), which release-please still finds since it matches previous releases by component and version, not by separator. `packages/capability-matrix` (`node`, tags `capability-matrix/vX.Y.Z`) gets a changelog and version bump only, nothing is published; its tags are what SDK repos pin the reusable compliance workflows at, since the compliance logic lives in the package. The symbol extractors are not release-managed at all. `packages/postgrest-typegen` (`node`, tags `postgrest-typegen/vX.Y.Z`) additionally publishes: when its release is created, the `publish-postgrest-typegen` job builds with bun and publishes `@supabase/postgrest-typegen` to npm via OIDC trusted publishing (no npm token; the trusted publisher must be configured on npmjs.com), and the `release-typegen` job then waits for npm to serve the version (it can lag the publish by a few minutes) and opens the typegen release pull request with the exact pin in `packages/typegen` bumped, so one pull request both bumps the pin and releases typegen. release-please only builds a release pull request from commits already on its target branch, so the job commits the `fix(typegen):` pin bump to a staging branch, runs release-please against that branch, retargets the resulting pull request to `main`, deletes the staging branch and closes any other open typegen release pull request it supersedes. release-please tags it on merge because it matches merged release pull requests by label, title and the component in the head branch name, not by the branch they were opened against. `packages/typegen` (`node`, tags `typegen/vX.Y.Z`, config `release-please-config.typegen.json`, workflow `release-typegen.yml`) follows the same on-demand pattern and publishes `@supabase/typegen`; its manifest starts at `0.0.0` so the first release is `0.1.0`. On-demand means both workflows run release-please only on `workflow_dispatch` or on a push that changes their manifest file, which happens only when a release PR merges; merging ordinary `fix:`/`feat:` commits into the package opens no release PR until someone dispatches the workflow
-- bun installs through `oven-sh/setup-bun` (SHA-pinned, `bun-version: latest`), the same convention supabase-js uses. The runtime version deliberately floats; only the action itself is pinned, and dependabot's `github-actions` group keeps that SHA current. uv installs the same way through `astral-sh/setup-uv`; the Python version is pinned in the extractor's `.python-version`, since griffe parses with the running interpreter and a floating version would change what parses
-- `dependabot.yml` — every JavaScript package commits a `bun.lock`, so a single `bun` entry globs `/packages/*`; the Dart, Go and Python extractors have their own `pub`, `gomod` and `uv` entries. Do not move them back to the `npm` ecosystem: it rewrites `package.json` without touching `bun.lock`, which leaves the lockfile stale and fails every `bun install --frozen-lockfile` step. `oxfmt` is ignored there on purpose: postgrest-typegen formats its generated output with it, so a bump changes generated code and must be done manually in all JavaScript packages together. `@supabase/postgrest-typegen` is ignored too, since the postgrest-typegen release workflow bumps it in the typegen release pull request
+- `format.yml` (`Format`): runs `bun run format:check` at the root on every pull
+  request and every push to main, with no path filter, because the root config
+  covers every file in the repo
+- `capability-matrix-validate.yml` — Runs on push to main, PRs, and nightly;
+  Tier 1: schema/tests/typecheck/structural; Tier 2 (PRs + nightly): reference
+  checks against GitHub. Its display name (`Validate Capabilities`) is
+  referenced by `release.yml`'s `workflow_run` trigger — keep them in sync
+- `validate-sdk-compliance-<language>.yml` — One **reusable workflow** per
+  language (`swift`, `javascript`, `python`, `dart`), called by SDK repos;
+  validates `sdk-compliance.yaml` and applies its `api_coverage` policy.
+  `additions` (the default) checks PR-only API changes against the base branch,
+  while `full` checks the complete current surface on PR, push, or dispatch
+  events without a base checkout. Splitting per language avoids gating every
+  step on a `language` input. For `javascript` (the supabase-js pnpm monorepo)
+  pass `typedoc-packages` — comma-separated package dirs, each with a
+  `docs:json` script that owns its TypeDoc entrypoints; the JS path installs
+  with pnpm and merges all packages. The `python` wrapper takes no package
+  inputs: the extractor discovers packages from `pyproject.toml` files. Shared
+  steps live in composite actions under
+  `packages/capability-matrix/actions/sdk-compliance-*` (`-validate`,
+  `-check-setup`, `-check-symbols`, `-check-drift`), referenced through the
+  `_sdk-spec` checkout (`./_sdk-spec/packages/capability-matrix/actions/...`)
+  that the wrappers pin to `job.workflow_sha`, so wrapper and action code always
+  come from the same commit. The wrappers themselves must stay in
+  `.github/workflows/` (a GitHub requirement for `workflow_call`); keep them
+  thin shims, since wrapper-only commits do not bump the capability-matrix
+  component — force a release with a `Release-As: x.y.z` commit footer if one
+  ever needs to ship alone. The Swift wrapper's check job is slow because
+  `swift package dump-symbol-graph` cold-builds the whole package, so it takes a
+  `runner` input (macOS label, default `macos-latest`), skips pull requests that
+  touch none of `public-api-paths` or the compliance file (the `api-paths` input
+  of the setup action), and caches compiled dependencies and base-commit
+  symbols. Pull requests can read caches only from their own ref and the base
+  branch, so a push to the default branch in additions mode (`warm-cache`)
+  extracts once and saves them; pull requests only restore the build cache
+- `postgrest-typegen-validate.yml`: type check, lint, build and tests for
+  postgrest-typegen, plus `postgrest-js type tests`, which starts the
+  postgrest-js fixture database from supabase-js `master`, generates its types
+  with the pull request's generator and runs postgrest-js's own type tests
+  against them (SDK-1736). The second job is a required check on `main`, which
+  is why `pull_request` triggers the workflow without a path filter: a `changes`
+  job asks the API which files the pull request touches and the real jobs run
+  only when `packages/postgrest-typegen` or the workflow changed, since a
+  skipped job satisfies a required check while a workflow that never ran does
+  not
+- `capability-matrix-deploy-pages.yml` — Fetches all SDK compliance data,
+  rebuilds the site, and deploys to GitHub Pages (main push, daily cron, manual
+  dispatch)
+- `release.yml` — release-please for capability-matrix; postgrest-typegen and
+  typegen run release-please from their own workflows, so three components are
+  released in total. The repo root is deliberately not versioned anymore (the
+  historical `vX.Y.Z` tags up to 1.5.0 remain for consumers pinned to them).
+  Both configs set `tag-separator: "/"` because dependabot only recognizes
+  `package/vX.Y.Z` tags; releases before the switch used a `-` separator
+  (`capability-matrix-vX.Y.Z`), which release-please still finds since it
+  matches previous releases by component and version, not by separator.
+  `packages/capability-matrix` (`node`, tags `capability-matrix/vX.Y.Z`) gets a
+  changelog and version bump only, nothing is published; its tags are what SDK
+  repos pin the reusable compliance workflows at, since the compliance logic
+  lives in the package. The symbol extractors are not release-managed at all.
+  `packages/postgrest-typegen` (`node`, tags `postgrest-typegen/vX.Y.Z`)
+  additionally publishes: when its release is created, the
+  `publish-postgrest-typegen` job builds with bun and publishes
+  `@supabase/postgrest-typegen` to npm via OIDC trusted publishing (no npm
+  token; the trusted publisher must be configured on npmjs.com), and the
+  `release-typegen` job then waits for npm to serve the version (it can lag the
+  publish by a few minutes) and opens the typegen release pull request with the
+  exact pin in `packages/typegen` bumped, so one pull request both bumps the pin
+  and releases typegen. release-please only builds a release pull request from
+  commits already on its target branch, so the job commits the `fix(typegen):`
+  pin bump to a staging branch, runs release-please against that branch,
+  retargets the resulting pull request to `main`, deletes the staging branch and
+  closes any other open typegen release pull request it supersedes.
+  release-please tags it on merge because it matches merged release pull
+  requests by label, title and the component in the head branch name, not by the
+  branch they were opened against. `packages/typegen` (`node`, tags
+  `typegen/vX.Y.Z`, config `release-please-config.typegen.json`, workflow
+  `release-typegen.yml`) follows the same on-demand pattern and publishes
+  `@supabase/typegen`; its manifest starts at `0.0.0` so the first release is
+  `0.1.0`. On-demand means both workflows run release-please only on
+  `workflow_dispatch` or on a push that changes their manifest file, which
+  happens only when a release PR merges; merging ordinary `fix:`/`feat:` commits
+  into the package opens no release PR until someone dispatches the workflow
+- bun installs through `oven-sh/setup-bun` (SHA-pinned, `bun-version: latest`),
+  the same convention supabase-js uses. The runtime version deliberately floats;
+  only the action itself is pinned, and dependabot's `github-actions` group
+  keeps that SHA current. uv installs the same way through `astral-sh/setup-uv`;
+  the Python version is pinned in the extractor's `.python-version`, since
+  griffe parses with the running interpreter and a floating version would change
+  what parses
+- `dependabot.yml` — every JavaScript package commits a `bun.lock`, so a single
+  `bun` entry globs `/packages/*`; the Dart, Go and Python extractors have their
+  own `pub`, `gomod` and `uv` entries. Do not move them back to the `npm`
+  ecosystem: it rewrites `package.json` without touching `bun.lock`, which
+  leaves the lockfile stale and fails every `bun install --frozen-lockfile`
+  step. `oxfmt` is ignored there on purpose: postgrest-typegen formats its
+  generated output with it, so a bump changes generated code and must be done
+  manually in all JavaScript packages and the root `package.json` together. The
+  root is not a dependabot directory, since `oxfmt` is its only dependency.
+  `@supabase/postgrest-typegen` is ignored too, since the postgrest-typegen
+  release workflow bumps it in the typegen release pull request
 
 ## Feature IDs
 
-Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.sign_in_with_password`, `storage.file_buckets.create_file_bucket`). The area must match the file's `area` field. IDs must be globally unique across all capability files.
+Feature IDs use three segments: `{area}.{group}.{method}` (e.g.,
+`auth.sign_in.sign_in_with_password`,
+`storage.file_buckets.create_file_bucket`). The area must match the file's
+`area` field. IDs must be globally unique across all capability files.
 
 ## SDK Compliance Format
 
 Each SDK repo hosts a `sdk-compliance.yaml` at a known path. Format:
+
 ```yaml
 sdk: javascript
 features:
@@ -96,17 +242,33 @@ features:
   storage.file_buckets.upload: not_implemented
 ```
 
-Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
+Valid status values: `implemented`, `partially_implemented`, `not_implemented`,
+`not_applicable`.
 
-The `symbols` field is optional but enables the public API check in CI: when a PR adds a new public symbol not listed under any `symbols` entry, the check fails and prompts the author to register it.
+The `symbols` field is optional but enables the public API check in CI: when a
+PR adds a new public symbol not listed under any `symbols` entry, the check
+fails and prompts the author to register it.
 
 ## Adding a Feature
 
-1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for the relevant area.
-2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally unique.
+1. Pick or create a YAML file in `packages/capability-matrix/capabilities/` for
+   the relevant area.
+2. Add the feature entry; ID must be `{area}.{group}.{feature}` and globally
+   unique.
 3. Run `bun run validate` — catches schema errors and duplicate IDs.
-4. Optionally add a spec at `packages/capability-matrix/specs/{area}/{group}/{feature}.md`, following `specs/TEMPLATE.md`: only what an SDK implementer cannot get from the API spec, written as a contract that names no SDK and is precise enough that two implementers would build the same thing. See "Adding a spec file" in `CONTRIBUTING.md` for the three tests every sentence passes before a PR.
+4. Optionally add a spec at
+   `packages/capability-matrix/specs/{area}/{group}/{feature}.md`, following
+   `specs/TEMPLATE.md`: only what an SDK implementer cannot get from the API
+   spec, written as a contract that names no SDK and is precise enough that two
+   implementers would build the same thing. See "Adding a spec file" in
+   `CONTRIBUTING.md` for the three tests every sentence passes before a PR.
 
 ## Commit Style
 
-Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`. Scope is the registry area for capability and spec changes (`feat(auth)`, `docs(storage)`), the package directory name for a package's own tooling or docs (`fix(postgrest-typegen)`), and absent for anything outside a package. A new capability and its spec go in one `feat` commit. A spec on its own is `docs`. Use `feat(<area>)!:` for breaking changes to feature IDs (which affect all SDK compliance files referencing those IDs).
+Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`,
+`ci:`. Scope is the registry area for capability and spec changes (`feat(auth)`,
+`docs(storage)`), the package directory name for a package's own tooling or docs
+(`fix(postgrest-typegen)`), and absent for anything outside a package. A new
+capability and its spec go in one `feat` commit. A spec on its own is `docs`.
+Use `feat(<area>)!:` for breaking changes to feature IDs (which affect all SDK
+compliance files referencing those IDs).

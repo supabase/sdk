@@ -1,6 +1,6 @@
 {
   "name": "@supabase/capability-matrix-validator",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "private": true,
   "description": "Validator for the Supabase SDK capability matrix.",
   "type": "module",

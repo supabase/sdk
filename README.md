@@ -1,8 +1,12 @@
 # Supabase SDK
 
-Shared tooling and specifications for the Supabase client SDKs. This repository is a lightweight monorepo: each project lives as a flat sibling under `packages/`, with a single toolchain per package and no monorepo build tooling on top.
+Shared tooling and specifications for the Supabase client SDKs. This repository
+is a lightweight monorepo: each project lives as a flat sibling under
+`packages/`, with a single toolchain per package and no monorepo build tooling
+on top.
 
 > [!IMPORTANT]
+>
 > **Only repository collaborators can open pull requests here.**  
 > See the full notice at the top of [CONTRIBUTING.md](./CONTRIBUTING.md).
 
@@ -25,15 +29,22 @@ packages/       # One directory per project (flat siblings, one toolchain each)
                 # SDK compliance workflows consumed by the SDK repos
 ```
 
-The workflow and action paths under `.github/` are a public interface: SDK repos reference `supabase/sdk/.github/workflows/validate-sdk-compliance-<language>.yml`, `sync-sdk-compliance.yml`, and the `sdk-compliance-*` composite actions. Those file names and locations are stable.
+The workflow and action paths under `.github/` are a public interface: SDK repos
+reference
+`supabase/sdk/.github/workflows/validate-sdk-compliance-<language>.yml`,
+`sync-sdk-compliance.yml`, and the `sdk-compliance-*` composite actions. Those
+file names and locations are stable.
 
 ## SDK compliance
 
-If you are here to opt an SDK into compliance validation, or to update which features your SDK supports, see the [capability-matrix README](./packages/capability-matrix/README.md#sdk-compliance).
+If you are here to opt an SDK into compliance validation, or to update which
+features your SDK supports, see the
+[capability-matrix README](./packages/capability-matrix/README.md#sdk-compliance).
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md). Run each package's own toolchain from its directory:
+See [CONTRIBUTING.md](./CONTRIBUTING.md). Run each package's own toolchain from
+its directory:
 
 ```bash
 cd packages/capability-matrix && bun install && bun test
