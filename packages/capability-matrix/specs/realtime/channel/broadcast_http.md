@@ -8,6 +8,11 @@ Spec: [Realtime protocol](https://supabase.com/docs/guides/realtime/protocol)
 
 ## Behavior
 
+`{realtimeURL}` is the HTTP(S) base URL of the Realtime service, such as
+`https://<project>.supabase.co/realtime/v1`. When the client is configured with
+a WebSocket URL, the SDK maps `ws` to `http` and `wss` to `https`. It keeps the
+host, port, and path, without the `/websocket` path the socket connects to.
+
 The SDK sends one broadcast as one HTTP request to
 `{realtimeURL}/api/broadcast/{topic}/events/{event}`. It percent-encodes `topic`
 and `event` as path segments. For a private channel it adds `?private=true`. The
@@ -40,6 +45,12 @@ with that field, otherwise the `message` field when present.
 `persist` is a per-message option of this capability. It travels in the query
 string, as [Persist Broadcast Message](broadcast_persist.md) defines.
 
+HTTP 202 means the server accepted the broadcast, not that it stored it. With
+`persist`, the server also answers 202 when it does not store the message: when
+broadcast persistence is turned off for the project, when the sender's policies
+grant no `persistence`, or when the insert fails. The response does not say
+which, so the SDK cannot tell the app whether the message was stored.
+
 ### Timeout
 
 The call takes an optional timeout. It bounds the whole call, with the same
@@ -63,7 +74,8 @@ replay can deliver the broadcast to subscribers twice.
   so a payload with a top-level `private` key can move a private broadcast to
   the public topic and skip the private channel's RLS check.
 - `persist` needs version 2.150.0 or later. Older servers ignore it and still
-  answer 202, without storing the message.
+  answer 202, without storing the message. Broadcast persistence must also be
+  turned on for the project.
 
 ## Errors
 
