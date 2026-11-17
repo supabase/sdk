@@ -250,13 +250,17 @@ describe("resolveRpcFunctions", () => {
       });
     });
 
-    test("RETURNS TABLE columns in name order", () => {
+    test("RETURNS TABLE columns in name order, nullable unless marked", () => {
       const fn = only([
         baseFunction({
           name: "report",
           args: [
             arg("user_id", 23),
-            arg("title", 25, { mode: "table", has_default: null }),
+            arg("title", 25, {
+              mode: "table",
+              has_default: null,
+              is_nullable: false,
+            }),
             arg("id", 23, { mode: "table", has_default: null }),
           ],
           return_type_id: 2249,
@@ -276,12 +280,14 @@ describe("resolveRpcFunctions", () => {
             type_id: 23,
             format: "int4",
             type_schema: "pg_catalog",
+            is_nullable: true,
           },
           {
             name: "title",
             type_id: 25,
             format: "text",
             type_schema: "pg_catalog",
+            is_nullable: false,
           },
         ],
       });

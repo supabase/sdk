@@ -8,3 +8,15 @@
 
 # AI-assisted planning docs (agentic skill framework artefacts — not project documentation)
 /packages/capability-matrix/docs/superpowers/
+
+# Python bytecode caches
+__pycache__/
+
+# Root formatting toolchain (each package ignores its own node_modules)
+node_modules/
+
+# IntelliJ IDE's
+.idea/
+
+# npm install also works at the root; bun.lock is the lockfile we commit
+package-lock.json

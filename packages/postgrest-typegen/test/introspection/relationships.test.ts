@@ -42,7 +42,11 @@ const tableToViewDep: ViewKeyDependency = {
 
 describe("expandViewRelationships", () => {
   test("view→table expansion (constraint_type 'f')", () => {
-    const result = expandViewRelationships([postsAuthorFk], [viewToTableDep]);
+    const result = expandViewRelationships(
+      [postsAuthorFk],
+      [viewToTableDep],
+      () => true,
+    );
 
     expect(result).toEqual([
       {
@@ -59,7 +63,11 @@ describe("expandViewRelationships", () => {
   });
 
   test("table→view expansion (constraint_type 'f_ref')", () => {
-    const result = expandViewRelationships([postsAuthorFk], [tableToViewDep]);
+    const result = expandViewRelationships(
+      [postsAuthorFk],
+      [tableToViewDep],
+      () => true,
+    );
 
     expect(result).toEqual([
       {
@@ -75,10 +83,25 @@ describe("expandViewRelationships", () => {
     ]);
   });
 
+  test("a table that is not emitted keeps its view-side relationships only", () => {
+    const result = expandViewRelationships(
+      [postsAuthorFk],
+      [viewToTableDep, tableToViewDep],
+      () => false,
+    );
+
+    // view→table and view→view, but no table→view on the hidden `posts`
+    expect(result.map((r) => [r.relation, r.referenced_relation])).toEqual([
+      ["posts_view", "users"],
+      ["posts_view", "users_view"],
+    ]);
+  });
+
   test("view→view expansion combines both dependency kinds", () => {
     const result = expandViewRelationships(
       [postsAuthorFk],
       [viewToTableDep, tableToViewDep],
+      () => true,
     );
 
     // view→table, table→view, then view→view
@@ -140,7 +163,11 @@ describe("expandViewRelationships", () => {
       ],
     };
 
-    const result = expandViewRelationships([compositeFk], [compositeDep]);
+    const result = expandViewRelationships(
+      [compositeFk],
+      [compositeDep],
+      () => true,
+    );
 
     // 2 x 2 cartesian product of the view column permutations
     expect(result.map((r) => r.columns)).toEqual([
@@ -157,7 +184,9 @@ describe("expandViewRelationships", () => {
   });
 
   test("returns nothing when no view depends on the relationship", () => {
-    expect(expandViewRelationships([postsAuthorFk], [])).toEqual([]);
+    expect(expandViewRelationships([postsAuthorFk], [], () => true)).toEqual(
+      [],
+    );
   });
 });
 

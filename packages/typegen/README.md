@@ -1,12 +1,12 @@
 # @supabase/typegen
 
 The language registry behind `supabase gen types --lang <language>`. It maps
-each language name to the generator that renders PostgREST types for it, so
-that adding a language is a pull request in this repository plus a dependency
-bump in the Supabase CLI, with no per-language code in the CLI itself.
+each language name to the generator that renders PostgREST types for it, so that
+adding a language is a pull request in this repository plus a dependency bump in
+the Supabase CLI, with no per-language code in the CLI itself.
 
-> **Status:** alpha. The `Host`, `TypegenLanguage`, option and error types
-> are the contract with the CLI and follow semver from `1.0.0` on; before that,
+> **Status:** alpha. The `Host`, `TypegenLanguage`, option and error types are
+> the contract with the CLI and follow semver from `1.0.0` on; before that,
 > minor versions may change them.
 
 ## Where it sits
@@ -29,31 +29,31 @@ Introspection is not part of this package's logic. The consumer runs
 `introspect()` and hands the resulting `GeneratorMetadata` to the language it
 looked up here. `introspect`, `Queryable`, `IntrospectOptions`,
 `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are re-exported from
-`@supabase/postgrest-typegen`, so a consumer depends on this package alone:
-one dependency to bump, and the document is always produced by the same
-`postgrest-typegen` version the in-process generators were built against.
-That is why the dependency is pinned to an exact version rather than a
-range. The `Release postgrest-typegen` workflow opens the bump pull request
-as soon as each release is on npm, and each bump is a registry release.
-Depending on both packages directly would let a lockfile resolve two
-versions, introspecting with one and generating with the other.
+`@supabase/postgrest-typegen`, so a consumer depends on this package alone: one
+dependency to bump, and the document is always produced by the same
+`postgrest-typegen` version the in-process generators were built against. That
+is why the dependency is pinned to an exact version rather than a range. As soon
+as each release is on npm, the `Release postgrest-typegen` workflow opens a
+typegen release pull request that bumps the pin. Depending on both packages
+directly would let a lockfile resolve two versions, introspecting with one and
+generating with the other.
 
 The two kinds of generator relate to `postgrest-typegen` differently:
 
-- In-process generators import its types, so they depend on it. Today those
-  are the three bundled inside `postgrest-typegen`; permanently it will be the
+- In-process generators import its types, so they depend on it. Today those are
+  the three bundled inside `postgrest-typegen`; permanently it will be the
   TypeScript generator once it lives in supabase-js and is published to npm.
-- Out-of-process generators depend on nothing here. They read the JSON
-  document, whose shape is published as `generatorMetadataJsonSchema` and
-  versioned by `GENERATOR_METADATA_VERSION`, and can be written in any
-  language. `supabase_typegen` for Dart was the first; `supabase-typegen` for
-  Swift is the second.
+- Out-of-process generators depend on nothing here. They read the JSON document,
+  whose shape is published as `generatorMetadataJsonSchema` and versioned by
+  `GENERATOR_METADATA_VERSION`, and can be written in any language.
+  `supabase_typegen` for Dart was the first; `supabase-typegen` for Swift is the
+  second.
 
 This is why the registry is its own package rather than part of
-`postgrest-typegen`: once the TypeScript generator is imported from
-supabase-js, which itself imports `postgrest-typegen`'s types, a registry
-inside `postgrest-typegen` would close a dependency cycle. A registry above
-both does not.
+`postgrest-typegen`: once the TypeScript generator is imported from supabase-js,
+which itself imports `postgrest-typegen`'s types, a registry inside
+`postgrest-typegen` would close a dependency cycle. A registry above both does
+not.
 
 ## Languages
 
@@ -62,7 +62,7 @@ both does not.
 | `typescript` | in-process     | `generateTypescript` from `@supabase/postgrest-typegen` | consumer: `detect-one-to-one-relationships`, `postgrest-version`, `default-schema` |
 | `go`         | in-process     | `generateGo` from `@supabase/postgrest-typegen`         |                                                                                    |
 | `python`     | in-process     | `generatePython` from `@supabase/postgrest-typegen`     |                                                                                    |
-| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, fetched    | `--swift-access-control internal\|public`                                          |
+| `swift`      | out-of-process | `supabase-typegen --access-control <level>`, built      | `--swift-access-control internal\|public`, `--swift-typegen-source <source>`       |
 | `dart`       | out-of-process | `dart run supabase_typegen --output -` in the project   |                                                                                    |
 
 The three in-process entries are a transition: as each generator relocates to
@@ -70,22 +70,105 @@ its SDK repository (SDK-1641), its entry here changes to an out-of-process
 command, or for TypeScript to an import of the new npm package, and consumers
 notice nothing but a dependency bump.
 
-Swift moved first. `supabase-typegen` is a prebuilt executable from the
-supabase-swift releases, not a package dependency: as a SwiftPM product its
-swift-format dependency would pin every app's swift-syntax, and an Xcode
-project without a `Package.swift` has nothing to `swift run` from.
+Swift moved first. `supabase-typegen` is an executable in supabase-swift's
+`tools/supabase-typegen`, not a package dependency: as a SwiftPM product its
+swift-format dependency would pin every app's swift-syntax, and an Xcode project
+without a `Package.swift` has nothing to `swift run` from.
 
-The output targets one version's `@Table` macro, so the binary must match the
-project's supabase-swift. The entry reads that version from the nearest
-`Package.resolved` (in `cwd` or a parent; SwiftPM's, or Xcode's inside the
-`.xcodeproj` or `.xcworkspace`), downloads that release's asset once into
-`$XDG_CACHE_HOME/supabase/typegen/<version>/` (default `~/Library/Caches` on
-macOS, `~/.cache` elsewhere) and runs it. Without a version pin, or on a
-platform with no asset (anything but macOS and Linux x86_64), it runs
-`supabase-typegen` from PATH. `SUPABASE_TYPEGEN=<path>` overrides both.
+The output targets one commit's `@Table` macro, so the generator must match the
+project's supabase-swift. The entry builds it from source at a supabase-swift
+commit, which it picks in this order:
 
-`--swift-access-control` lost `private` and `package`, which the new
-generator does not accept.
+1. `--swift-typegen-source`, when given. The value is read in a fixed order,
+   without guessing:
+   - A value that starts with `./`, `../`, `/` or `~/` is a local checkout.
+     Relative paths must start with `./` or `../`, so a folder named `3.0.0` is
+     never read as a version, and `~` means the home folder. The entry checks
+     that the checkout has `tools/supabase-typegen`, runs
+     `swift build -c release --package-path <checkout>/tools/supabase-typegen`
+     in the checkout's own `.build` folder, so later builds are incremental, and
+     runs the binary from there. It never caches it, since the working tree can
+     hold uncommitted changes. This is the form for working on the generator, or
+     for a fork.
+   - 40 hex characters are a commit SHA. An abbreviated SHA is refused.
+   - A semantic version, with or without a leading `v`, is the commit its tag
+     `v<version>` (or `<version>`) points at, per `git ls-remote`; an annotated
+     tag's commit wins. A version below 3 is refused, since supabase-swift 2.x
+     has no generator.
+   - Anything else is a branch, resolved to its commit with `git ls-remote` on
+     every run, so new commits are picked up. A branch name that starts with `-`
+     or holds whitespace, `..`, control characters or anything else git could
+     read as an option or a refspec is refused before git runs.
+
+   A lookup that finds nothing names what it looked for, and for a branch name
+   that is also a folder in `cwd`, the `./` form to build it.
+
+2. The supabase-swift pin of the nearest `Package.resolved` that has one: in
+   `cwd` or a parent, SwiftPM's or Xcode's inside the `.xcodeproj` or
+   `.xcworkspace`. Lockfiles without a supabase-swift pin are skipped. For a
+   monorepo run from its root, when no parent has a pin, the entry also looks up
+   to two levels below `cwd`, skipping `.git`, `.build`, `node_modules`, `Pods`
+   and `DerivedData`; the pins found there must agree on the revision, or the
+   run fails and asks for `--swift-typegen-source`. The pin's `revision` is
+   built, so version, branch and revision pins all work.
+3. The latest supabase-swift 3.x release from `git ls-remote --tags`: the
+   highest stable 3.x once there is one, the highest 3.x prerelease before that
+   (with semantic version precedence, so `alpha.10` follows `alpha.9`), and
+   never another major version. A notice on stderr says so and asks to run from
+   the app's directory, or to pass `--swift-typegen-source`, to match the pinned
+   version.
+
+Every run prints the commit it uses to stderr, for example
+``Using branch `main` at `4f2a9c1…`.``. Except for a local checkout, the build
+then goes:
+
+1. Only a 40-character lowercase hex SHA reaches `git` as a revision, a version
+   must be a semantic version and a branch a plain branch name. Only regular
+   files the user owns count as `Package.resolved`, so another user's file in a
+   shared parent such as `/tmp` cannot pick the commit, and a malformed one
+   counts as no pin.
+2. A binary already in `$XDG_CACHE_HOME/supabase/typegen/<revision>/` (default
+   `~/Library/Caches` on macOS, `~/.cache` elsewhere; an empty or relative
+   `XDG_CACHE_HOME` is ignored) runs with no build.
+3. Otherwise it checks that `git` and `swift` (Swift 6.2 / Xcode 26 or newer)
+   are on PATH and, for a commit that did not come from upstream's own tags or
+   branches, that it is upstream's. GitHub serves every commit of the fork
+   network through the upstream URL, pull request heads included, so a version
+   pin's tag (`<version>` or `v<version>`, per `git ls-remote`) must point at
+   the revision, and a branch pin's revision must be an ancestor of that
+   upstream branch (a bare revision pin, or a SHA passed to
+   `--swift-typegen-source`: the default branch), checked in a commits-only
+   clone (`--filter=tree:0`, about 1.5 MB and a second). It then fetches the
+   single commit into a temporary folder, checks that `HEAD` is the revision,
+   and runs
+   `swift build -c release --package-path tools/supabase-typegen --disable-automatic-resolution`.
+   The flag builds the generator's committed `Package.resolved` exactly and
+   fails rather than resolve other dependency versions. Linux adds
+   `--static-swift-stdlib`, so the cached binary keeps working after the
+   toolchain that built it is removed or upgraded. Git's repository variables
+   (`GIT_DIR`, `GIT_INDEX_FILE` and the rest of
+   `git rev-parse --local-env-vars`) are removed from these steps, so running
+   inside a git hook cannot touch the user's repository.
+4. For a version, from the pin, the flag or the latest release,
+   `supabase-typegen --version` must print that version.
+5. The binary is copied beside its cache path and renamed into place, so
+   concurrent runs are safe. The temporary folder is removed in every case.
+
+The first build prints a line to stderr and takes a few minutes, mostly
+compiling swift-syntax: about 5.5 minutes on an Apple M3 with Swift 6.4, and
+about the same on Linux aarch64 with Swift 6.2 in Docker on that machine. A
+pinned build trusts nothing the app does not already run: the supabase-swift
+source at the pinned commit, the generator's pinned dependencies and the user's
+toolchain. A version or the latest release trusts the tag at the time of the
+run, and a branch anyone who can push to it, which is why a branch is never a
+default. supabase-swift 2.x has no `tools/supabase-typegen` and fails with a
+request to update to 3.0.0-alpha.1 or newer. The entry never runs a
+`supabase-typegen` from PATH, and `SUPABASE_TYPEGEN` is gone: a stale binary
+could generate code for the wrong version without a warning, and a local
+checkout covers the development loop. Windows is not supported.
+
+`--swift-access-control` lost `private` and `package`, which the new generator
+does not accept.
 
 ## Using the registry
 
@@ -117,13 +200,13 @@ defaults; unknown names and values outside a choice raise an
 `InvalidOptionError`.
 
 `audience` says who sets an option. `user` options are the CLI flags; render
-`options.filter((option) => option.audience === "user")`. `consumer` options
-are set by the calling program from what it knows about the target and never
-shown to users. TypeScript has three: `detect-one-to-one-relationships`
-(default on; the consumer turns it off for PostgREST 9 and below, where
-one-to-one joins come back as arrays), `postgrest-version` (emitted as
-`__InternalSupabase.PostgrestVersion`) and `default-schema` (default
-`public`). postgres-meta's hosted route sets them from its
+`options.filter((option) => option.audience === "user")`. `consumer` options are
+set by the calling program from what it knows about the target and never shown
+to users. TypeScript has three: `detect-one-to-one-relationships` (default on;
+the consumer turns it off for PostgREST 9 and below, where one-to-one joins come
+back as arrays), `postgrest-version` (emitted as
+`__InternalSupabase.PostgrestVersion`) and `default-schema` (default `public`).
+postgres-meta's hosted route sets them from its
 `detect_one_to_one_relationships` query parameter, `POSTGREST_VERSION` and
 `GENERATE_TYPES_DEFAULT_SCHEMA`. The Supabase CLI already sniffs the local
 stack's PostgREST version and used to expose the first one inverted as
@@ -152,29 +235,29 @@ A `Host` is what the consumer knows and the registry does not:
 - `env`: environment for spawned tools, usually `process.env`.
 - `signal`: optional `AbortSignal`; aborting cancels the generation and kills a
   spawned tool.
-- `spawn(request)`: optional. Runs a command to completion and resolves with
-  its exit code, stdout and stderr. It must reject with an error whose `code`
-  is `"ENOENT"` when the executable is not found, as Node's `child_process`
-  does. A host that cannot run processes leaves it out; an out-of-process
-  language then fails with `SpawnUnavailableError`, so hosted consumers offer
-  only `inProcess` languages.
+- `spawn(request)`: optional. Runs a command to completion and resolves with its
+  exit code, stdout and stderr. It must reject with an error whose `code` is
+  `"ENOENT"` when the executable is not found, as Node's `child_process` does. A
+  host that cannot run processes leaves it out; an out-of-process language then
+  fails with `SpawnUnavailableError`, so hosted consumers offer only `inProcess`
+  languages.
 - `format(code, fileName)`: optional. Replaces the formatter of in-process
   generators that format their own output. Only TypeScript does today, through
   `oxfmt`, with the file name `output.ts`. The CLI passes an identity function
   so its output stays byte-identical to what it emits today and `oxfmt` stays
   out of its bundle. Leave it out to get each generator's default, which for
   TypeScript needs `oxfmt` installed: it is an optional peer dependency, loaded
-  only when the default formatter runs, so hosts that always pass `format`
-  never need it.
+  only when the default formatter runs, so hosts that always pass `format` never
+  need it.
 
 `createNodeHost({ cwd, env, signal, format })` is a ready-made `Host` on
-`node:child_process` for consumers without their own process runner. On
-Windows it resolves the command through `PATH` and `PATHEXT` and runs `.bat`
-and `.cmd` scripts through the command interpreter, since Flutter ships `dart`
-as `dart.bat` there and `spawn` cannot start those directly; a command it
-cannot find is reported as `ENOENT` like everywhere else. A host built on
-another process runner needs the same treatment; `planSpawn` is exported so
-it starts the same `cmd.exe` line, and the pieces it is built from
+`node:child_process` for consumers without their own process runner. On Windows
+it resolves the command through `PATH` and `PATHEXT` and runs `.bat` and `.cmd`
+scripts through the command interpreter, since Flutter ships `dart` as
+`dart.bat` there and `spawn` cannot start those directly; a command it cannot
+find is reported as `ENOENT` like everywhere else. A host built on another
+process runner needs the same treatment; `planSpawn` is exported so it starts
+the same `cmd.exe` line, and the pieces it is built from
 (`resolveWindowsCommand`, `isWindowsScript`, `quoteForCmd`) are exported for a
 host that has to assemble the line itself. A token holding a double quote or a
 line break is refused, since cmd.exe toggles quoting on every `"` and nothing
@@ -206,10 +289,10 @@ executable, passes through unchanged.
 
 Add an entry to `src/languages/` and list it in `languages`. Two shapes exist:
 
-**In-process** (`inProcessLanguage`): wraps a generator function called in
-this process. Every dependency of that generator lands in the CLI bundle, so
-this is reserved for the transitional entries and, permanently, for TypeScript
-imported from supabase-js.
+**In-process** (`inProcessLanguage`): wraps a generator function called in this
+process. Every dependency of that generator lands in the CLI bundle, so this is
+reserved for the transitional entries and, permanently, for TypeScript imported
+from supabase-js.
 
 **Out-of-process** (`externalLanguage`): describes a command line. The registry
 runs it in the host's `cwd` with the sorted document from
@@ -221,8 +304,8 @@ code. The tool's contract:
   both from `@supabase/postgrest-typegen`.
 - Write only the generated code to stdout; diagnostics and summaries go to
   stderr.
-- Exit `0` on success. The entry's `classify` maps the tool's other exits to
-  the typed failures, for example Dart's exit `65` (data error) to
+- Exit `0` on success. The entry's `classify` maps the tool's other exits to the
+  typed failures, for example Dart's exit `65` (data error) to
   `MetadataRejectedError` and its "could not find package" stderr to
   `ToolNotInstalledError` with a `dart pub add` hint.
 
@@ -251,8 +334,8 @@ bun run build                # emits dist/
 
 ## Releases
 
-Released with release-please as its own component, tagged `typegen/vX.Y.Z`,
-and published to npm as `@supabase/typegen` through OIDC trusted publishing.
-A change to the `--lang` list or to the `Host`, option or error types is a
-change to the CLI's public surface: describe it in the pull request so it
-reaches the release notes the CLI reads before bumping.
+Released with release-please as its own component, tagged `typegen/vX.Y.Z`, and
+published to npm as `@supabase/typegen` through OIDC trusted publishing. A
+change to the `--lang` list or to the `Host`, option or error types is a change
+to the CLI's public surface: describe it in the pull request so it reaches the
+release notes the CLI reads before bumping.

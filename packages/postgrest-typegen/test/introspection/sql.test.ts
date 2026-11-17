@@ -625,7 +625,6 @@ describe("introspection SQL builders (generator-path option combination)", () =>
         from pg_constraint
         left join lateral unnest(confkey) with ordinality as _(col, ord) on true
         where contype='f'
-        and connamespace::regnamespace::text NOT IN ('information_schema','pg_catalog','pg_toast')
       ),
       views as (
         select

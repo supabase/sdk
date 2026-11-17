@@ -61,7 +61,8 @@
      and it undermines the sentence it hangs off. Fix the API spec upstream, then delete
      the line and its comment together. -->
 
-Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+Spec:
+[https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
 
 - `METHOD /path`
 
@@ -82,6 +83,14 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      - trade-offs an implementer should weigh, such as a network round trip on every call
 
      A check the SDK makes before the wire is defined under Errors, not here.
+
+     When the behavior is a flow, a sequence across capabilities, or a state machine, add a
+     Mermaid diagram in a fenced mermaid block next to the prose it illustrates:
+     sequenceDiagram for exchanges between the SDK, the service, and the app,
+     stateDiagram-v2 for states and transitions, flowchart for branching decisions. Skip it
+     for a single request and response. The diagram illustrates and the prose defines:
+     every state, transition, and trigger in the diagram is also in the prose, and the two
+     agree. A diagram names no SDK and does not show the service's internals.
 
      Not here: field-by-field request or response descriptions, status code tables, error
      code catalogs, what the service does beyond the premise of an SDK obligation,
@@ -110,7 +119,8 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      sentence that defines the check. -->
 
 - `error_code`: when the SDK sees it and what it does with it
-- A check before the wire: the input, the form it accepts, the error raised, the server answer it pre-empts, and why that answer is not enough
+- A check before the wire: the input, the form it accepts, the error raised, the
+  server answer it pre-empts, and how that answer would mislead the caller
 
 ## Notes
 
