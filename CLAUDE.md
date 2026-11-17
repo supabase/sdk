@@ -12,6 +12,8 @@ This is a lightweight monorepo of shared tooling for the Supabase client SDKs. P
 - `packages/postgrest-typegen/` — introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python. See its own `CLAUDE.md` for architecture and how postgres-meta and the CLI consume it.
 - `packages/typegen/`: the language registry for `supabase gen types --lang`. `languages` maps each name to a generator, either in-process (the four bundled in postgrest-typegen) or an external tool run in the user's project (Dart via `dart run supabase_typegen`). The CLI dispatches through it, so adding a language is a pull request here plus a CLI dependency bump. See its own `CLAUDE.md`.
 
+Outside `packages/`, `docs/` holds the SDK engineering docs. Start at `docs/README.md`. `docs/principles.md` holds the principles that every SDK change, and every capability or spec in this repo, follows.
+
 ## Commands
 
 The capability-matrix scripts live under `packages/capability-matrix/`. Run them from that directory:

@@ -20,12 +20,10 @@ that feel native in the language, and it keeps the state that only the client ca
 hold (for example the session, the Realtime connection or the user's configuration).
 It does not add its own product on top.
 
-A feature that one SDK adds on top of the service should not live only in that SDK.
-Users of the other SDKs ask for it too. Then every SDK must build, test, and maintain
-the same feature, or the SDKs drift apart.
-
-Example: when users want a helper that combines two service calls into one workflow,
-the helper goes in an example or a guide, not into the client.
+An SDK may add convenience on top of the service, such as a helper that makes a common
+task easier. That helper goes through the registry like any other feature, so every SDK
+of the same kind builds it the same way. What an SDK does not do is ship a feature that
+exists only in that SDK, outside the registry.
 
 ### Logic belongs in the service
 
@@ -39,6 +37,10 @@ when it must run there:
 The reason is reach. A change in the service reaches every user at once, including
 users who never upgrade their SDK. A change in the client reaches users only after each
 SDK ships a release and each user upgrades. Old SDK versions stay in use for years.
+
+Self-hosted projects get a service change when they upgrade their stack, but they still
+get it once, for every SDK. An SDK that talks to an older service returns that service's
+own answer.
 
 Example: a user asks the SDK to filter a Storage file list by size, and the service has
 no such filter. The SDK does not fetch every file and filter the list in the client.
@@ -80,6 +82,10 @@ until every SDK ships a release and every user upgrades.
 This applies to values that the service reads. An option that only the client reads,
 such as the session storage or the auto refresh of tokens, has its default in the SDK.
 
+This principle depends on the service treating a change to a default as a breaking
+change of its API, which goes through the service's versioning, not the SDK's. An SDK
+may document the service's default. It does not send it.
+
 Example: the service creates a bucket as private when the request has no `public`
 field. The SDK's `public` option has no value by default. When the user does not set it,
 the request has no `public` field, and the service decides. When the user sets it to
@@ -96,8 +102,11 @@ value, and it does not raise an error. It returns an error code that it does not
 the service sent it. A new value in the service then works with old SDK versions, and a
 later SDK release adds full support for it.
 
-This applies to values that the SDK decodes from a service response. A type that the
-SDK defines and emits itself, such as its auth state events, can be closed.
+A value set that the service cannot extend without a breaking change can be closed: a
+set fixed by Postgres, by a standard, or by a status with fixed states, such as the
+change events of Postgres changes or the status of an MFA factor. The spec of the
+feature states which service values are closed, so every SDK makes the same choice. A
+type that the SDK produces itself can be closed too, such as its auth state events.
 
 Example: the service adds a new factor type to the list of a user's MFA factors. An SDK
 that knows only `totp` and `phone` still decodes the list. The new factor appears with
@@ -116,8 +125,8 @@ with the custom HTTP client or a custom header, not with a new option.
 
 ### One concept, many idioms
 
-A user who knows one Supabase SDK recognizes the same concepts, names, and defaults in
-another. Each SDK still feels native to its language: its own types, error style, and
+A user who knows one Supabase SDK recognizes the same concepts and defaults in another,
+and the same names unless the language's conventions require another name. Each SDK still feels native to its language: its own types, error style, and
 async model. The spec fixes the concept. The SDK chooses the expression.
 
 Example: a spec says that the SDK returns nothing when the service answers with an
@@ -153,6 +162,11 @@ line.
 When an SDK does not match a spec, open an issue in that SDK's repository and cite the
 spec. Change a spec only when the spec is wrong, and say why in the PR. A spec that
 follows whichever SDK changed last stops being a contract.
+
+The fix follows the SDK's own versioning. When matching the spec is a breaking change
+for the SDK's users, the fix ships in the SDK's next major release. Until then, the
+SDK's `sdk-compliance.yaml` marks the feature `partially_implemented`, with a note that
+names the gap.
 
 Example: an earlier spec said "the existing SDKs validate the ID". That sentence
 described what some SDKs did that day. It was rewritten as a contract that every SDK

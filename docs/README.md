@@ -12,8 +12,10 @@ This tier is about how we work. What each feature does is in the
 This document and other documents in this folder are intended for reading by humans
 and AI agents alike.
 
-Agents load this README first, then load only the documents their task needs. They
-cite a principle by a link to its heading in findings and PR descriptions.
+Agents reach these documents in two ways: this repository's `CLAUDE.md` points to this
+README, and the `sdk-principles` skill in `supabase/agent-os` loads `principles.md` in
+any SDK repository. Agents cite a principle by a link to its heading in findings and PR
+descriptions.
 
 ## Layers
 
