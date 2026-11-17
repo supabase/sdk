@@ -126,8 +126,9 @@ with the custom HTTP client or a custom header, not with a new option.
 ### One concept, many idioms
 
 A user who knows one Supabase SDK recognizes the same concepts and defaults in another,
-and the same names unless the language's conventions require another name. Each SDK still feels native to its language: its own types, error style, and
-async model. The spec fixes the concept. The SDK chooses the expression.
+and the same names unless the language's conventions require another name. Each SDK
+still feels native to its language: its own types, error style, and async model. The
+spec fixes the concept. The SDK chooses the expression.
 
 Example: a spec says that the SDK returns nothing when the service answers with an
 empty body. It does not name the return type. Each SDK uses the empty return that its
