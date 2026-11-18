@@ -63,8 +63,10 @@ only `apikey`, as [Broadcast via HTTP](../channel/broadcast_http.md) states.
 ### Umbrella clients
 
 An SDK that holds a session supplies its own callback to the Realtime client.
-When there is no session, that callback returns the API key and not `null`. The
-token the channels hold then matches the API key the SDK pushes at sign-out.
+When there is no session, that callback returns the bearer token of the Realtime
+client's own headers and not `null`. That token is the API key, unless the app
+sets another `Authorization` header for Realtime. The SDK pushes the same token
+at sign-out, so the token the channels hold matches it.
 
 ## Notes
 
@@ -74,6 +76,13 @@ the
 shows. With a publishable key, a joined channel therefore keeps its earlier
 token after the token is cleared. That holds until the channel rejoins or the
 token expires.
+
+The server also throttles `access_token` messages. It holds a token that comes
+too soon after the last one it applied, and applies it later, as the
+[message handler](https://github.com/supabase/realtime/blob/a937f0d2e110442d9192dbfee7ae7c73496fea0e/lib/realtime_web/channels/realtime_channel.ex#L572-L612)
+shows. A message equal to the token the channel already has does not drop the
+held token. So when the user signs in and then out inside one throttle window,
+the server can apply the user's token after the SDK clears it.
 
 ## Related
 
