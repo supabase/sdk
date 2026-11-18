@@ -35,6 +35,10 @@ and no monorepo build tooling on top:
   language is a pull request here plus a CLI dependency bump. See its own
   `CLAUDE.md`.
 
+Outside `packages/`, `docs/` holds the SDK engineering docs. Start at
+`docs/README.md`. `docs/principles.md` holds the principles that every SDK
+change, and every capability or spec in this repo, follows.
+
 ## Commands
 
 Formatting runs from the repo root, but also runs as a pre-commit hook:
