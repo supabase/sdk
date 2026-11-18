@@ -7,8 +7,8 @@ Spec: [Realtime protocol](https://supabase.com/docs/guides/realtime/protocol)
 ## Behavior
 
 The app supplies the callback when it constructs the client. The callback is
-asynchronous and returns a string or `null`. The SDK calls it on connect and on
-each heartbeat, and applies the result by the rules below.
+asynchronous and returns a string or `null`. Each time the SDK calls it, the SDK
+applies the result by the rules below.
 
 ### Result
 
