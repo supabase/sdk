@@ -48,6 +48,8 @@ export interface SparkView {
   readonly schema: string;
   readonly name: string;
   readonly comment: string | null;
+  /** Absent in descriptions from a Spark that predates view columns. */
+  readonly columns?: ReadonlyArray<SparkColumn>;
 }
 
 export interface SparkEnum {
@@ -97,9 +99,9 @@ const UDT: Readonly<Record<string, string>> = {
 
 /**
  * The metadata `introspect()` would read from `pg_catalog`, built from Spark's description so the
- * shared generators run unchanged. The description has no functions, composite types or view
- * columns, so those come out empty. Temporary: `introspect()` replaces this once Spark's engine
- * exposes the catalogs it reads.
+ * shared generators run unchanged. The description has no functions or composite types, so those
+ * come out empty. Temporary: `introspect()` replaces this once Spark's engine exposes the catalogs
+ * it reads.
  */
 export const sparkGeneratorMetadata = (
   description: SparkSchemaDescription,
@@ -127,7 +129,15 @@ export const sparkGeneratorMetadata = (
       enums: found === undefined ? [] : [...found.labels],
     };
   };
-  const column = (t: SparkTable, c: SparkColumn) => {
+  const column = (
+    t: {
+      readonly schema: string;
+      readonly name: string;
+      readonly constraints: ReadonlyArray<SparkConstraint>;
+    },
+    c: SparkColumn,
+    updatable: boolean,
+  ) => {
     const check = t.constraints.find(
       (k) =>
         k.type === "c" && k.columns.length === 1 && k.columns[0] === c.name,
@@ -150,7 +160,7 @@ export const sparkGeneratorMetadata = (
             : null,
       is_generated: c.generated !== null && c.generated !== "",
       is_nullable: !c.not_null,
-      is_updatable: true,
+      is_updatable: updatable,
       is_unique: t.constraints.some(
         (k) =>
           k.type === "u" && k.columns.length === 1 && k.columns[0] === c.name,
@@ -161,6 +171,7 @@ export const sparkGeneratorMetadata = (
     };
   };
   const tables = description.tables.filter((t) => included(t.schema));
+  const views = description.views.filter((v) => included(v.schema));
   const schemaNames = [
     ...new Set([
       ...description.schemas.map((s) => s.name),
@@ -191,17 +202,22 @@ export const sparkGeneratorMetadata = (
       comment: t.comment,
     })),
     foreignTables: [],
-    views: description.views
-      .filter((v) => included(v.schema))
-      .map((v) => ({
-        id: relationId(v),
-        schema: v.schema,
-        name: v.name,
-        is_updatable: false,
-        comment: v.comment,
-      })),
+    views: views.map((v) => ({
+      id: relationId(v),
+      schema: v.schema,
+      name: v.name,
+      is_updatable: false,
+      comment: v.comment,
+    })),
     materializedViews: [],
-    columns: tables.flatMap((t) => t.columns.map((c) => column(t, c))),
+    columns: [
+      ...tables.flatMap((t) => t.columns.map((c) => column(t, c, true))),
+      ...views.flatMap((v) =>
+        (v.columns ?? []).map((c) =>
+          column({ ...v, constraints: [] }, c, false),
+        ),
+      ),
+    ],
     primaryKeys: tables.flatMap((t) =>
       (t.constraints.find((k) => k.type === "p")?.columns ?? []).map(
         (name) => ({

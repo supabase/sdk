@@ -215,8 +215,8 @@ const metadata = sparkGeneratorMetadata(description, { schemas: ["public"] });
 const code = await findLanguage("typescript")!.generate(metadata, {}, host);
 ```
 
-The description has no functions, composite types or view columns, so the
-document has none either. This is temporary: it goes away once Spark's engine
+The description has no functions or composite types, so the document has none
+either. This is temporary: it goes away once Spark's engine
 exposes the catalogs `introspect()` reads.
 
 ## Adding a language

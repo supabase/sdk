@@ -160,7 +160,16 @@ const description: SparkSchemaDescription = {
     ),
   ],
   views: [
-    { schema: "public", name: "open_posts", comment: "only open" },
+    {
+      schema: "public",
+      name: "open_posts",
+      comment: "only open",
+      columns: [
+        column("id", 1, "bigint"),
+        column("title", 2, "text"),
+        column("total", 3, "unknown"),
+      ],
+    },
     { schema: "private", name: "all_secrets", comment: null },
   ],
 };
@@ -379,7 +388,7 @@ describe("sparkGeneratorMetadata", () => {
     ).toEqual([]);
   });
 
-  test("has no functions, composite types or view columns", () => {
+  test("has no functions or composite types", () => {
     const metadata = sparkGeneratorMetadata(description, {
       schemas: ["public"],
     });
@@ -423,9 +432,12 @@ describe("sparkGeneratorMetadata through the typescript generator", () => {
     );
   });
 
-  test("renders views without columns", async () => {
+  test("renders a view's columns, and none for a description without them", async () => {
     expect(await generate(["public"])).toContain(
-      'Views: { "open_posts": { Row: { }',
+      'Views: { "open_posts": { Row: { "id": number | null,"title": string | null,"total": unknown }',
+    );
+    expect(await generate(["private"])).toContain(
+      'Views: { "all_secrets": { Row: { }',
     );
   });
 

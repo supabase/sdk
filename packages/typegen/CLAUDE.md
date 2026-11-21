@@ -59,8 +59,9 @@ lives in supabase-js.
   of from `pg_catalog`, which Spark does not have. It exists so the Supabase
   CLI and the platform stop keeping two copies of this mapping. Temporary:
   delete it once Spark's engine exposes the catalogs `introspect()` reads.
-  The description has no functions, composite types or view columns, so those
-  come out empty.
+  The description has no functions or composite types, so those come out
+  empty. A view's columns come from its `columns`, which older Spark builds
+  do not send.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`,
   plus the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
   `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts
