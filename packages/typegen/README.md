@@ -202,6 +202,23 @@ Every failure the registry raises extends `TypegenError` and carries the
 Anything a generator throws itself, or a `spawn` rejection other than a missing
 executable, passes through unchanged.
 
+## Spark
+
+Spark is Postgres-compatible but has no `pg_catalog`, so `introspect()` cannot
+read it. It describes its schema as JSON instead (`GET /_spark/v1/schema`), and
+`sparkGeneratorMetadata` maps that description to a `GeneratorMetadata`:
+
+```ts
+import { findLanguage, sparkGeneratorMetadata } from "@supabase/typegen";
+
+const metadata = sparkGeneratorMetadata(description, { schemas: ["public"] });
+const code = await findLanguage("typescript")!.generate(metadata, {}, host);
+```
+
+The description has no functions, composite types or view columns, so the
+document has none either. This is temporary: it goes away once Spark's engine
+exposes the catalogs `introspect()` reads.
+
 ## Adding a language
 
 Add an entry to `src/languages/` and list it in `languages`. Two shapes exist:

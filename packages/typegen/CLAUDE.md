@@ -54,6 +54,13 @@ lives in supabase-js.
   `postgrest-version` and `default-schema` are consumer options that the CLI
   and postgres-meta's hosted route set from what they know about the target.
   It honors `host.format`.
+- `src/spark.ts` -- `sparkGeneratorMetadata`: builds `GeneratorMetadata` from
+  the JSON schema description Spark serves (`GET /_spark/v1/schema`) instead
+  of from `pg_catalog`, which Spark does not have. It exists so the Supabase
+  CLI and the platform stop keeping two copies of this mapping. Temporary:
+  delete it once Spark's engine exposes the catalogs `introspect()` reads.
+  The description has no functions, composite types or view columns, so those
+  come out empty.
 - `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`,
   plus the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
   `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts

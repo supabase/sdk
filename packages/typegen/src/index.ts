@@ -36,6 +36,15 @@ export {
   typescript,
   TYPESCRIPT_FILE_NAME,
 } from "./languages/index.ts";
+export {
+  type SparkColumn,
+  type SparkConstraint,
+  type SparkEnum,
+  type SparkSchemaDescription,
+  type SparkTable,
+  type SparkView,
+  sparkGeneratorMetadata,
+} from "./spark.ts";
 export { dart } from "./languages/dart.ts";
 export { swift } from "./languages/swift.ts";
 export {
