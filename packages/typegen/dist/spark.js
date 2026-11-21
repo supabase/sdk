@@ -25,9 +25,9 @@ const UDT = {
 };
 /**
  * The metadata `introspect()` would read from `pg_catalog`, built from Spark's description so the
- * shared generators run unchanged. The description has no functions, composite types or view
- * columns, so those come out empty. Temporary: `introspect()` replaces this once Spark's engine
- * exposes the catalogs it reads.
+ * shared generators run unchanged. The description has no functions or composite types, so those
+ * come out empty. Temporary: `introspect()` replaces this once Spark's engine exposes the catalogs
+ * it reads.
  */
 export const sparkGeneratorMetadata = (description, options) => {
     const included = (schema) => options.schemas.includes(schema);
@@ -48,7 +48,7 @@ export const sparkGeneratorMetadata = (description, options) => {
             enums: found === undefined ? [] : [...found.labels],
         };
     };
-    const column = (t, c) => {
+    const column = (t, c, updatable) => {
         const check = t.constraints.find((k) => k.type === "c" && k.columns.length === 1 && k.columns[0] === c.name);
         return {
             table_id: relationId(t),
@@ -67,7 +67,7 @@ export const sparkGeneratorMetadata = (description, options) => {
                     : null,
             is_generated: c.generated !== null && c.generated !== "",
             is_nullable: !c.not_null,
-            is_updatable: true,
+            is_updatable: updatable,
             is_unique: t.constraints.some((k) => k.type === "u" && k.columns.length === 1 && k.columns[0] === c.name),
             // `pg_get_constraintdef` renders `CHECK (expr)`; the generators want `expr`.
             check: check === undefined ? null : check.def.slice(7, -1),
@@ -75,6 +75,7 @@ export const sparkGeneratorMetadata = (description, options) => {
         };
     };
     const tables = description.tables.filter((t) => included(t.schema));
+    const views = description.views.filter((v) => included(v.schema));
     const schemaNames = [
         ...new Set([
             ...description.schemas.map((s) => s.name),
@@ -105,9 +106,7 @@ export const sparkGeneratorMetadata = (description, options) => {
             comment: t.comment,
         })),
         foreignTables: [],
-        views: description.views
-            .filter((v) => included(v.schema))
-            .map((v) => ({
+        views: views.map((v) => ({
             id: relationId(v),
             schema: v.schema,
             name: v.name,
@@ -115,7 +114,10 @@ export const sparkGeneratorMetadata = (description, options) => {
             comment: v.comment,
         })),
         materializedViews: [],
-        columns: tables.flatMap((t) => t.columns.map((c) => column(t, c))),
+        columns: [
+            ...tables.flatMap((t) => t.columns.map((c) => column(t, c, true))),
+            ...views.flatMap((v) => (v.columns ?? []).map((c) => column({ ...v, constraints: [] }, c, false))),
+        ],
         primaryKeys: tables.flatMap((t) => (t.constraints.find((k) => k.type === "p")?.columns ?? []).map((name) => ({
             schema: t.schema,
             table_name: t.name,

@@ -41,6 +41,8 @@ export interface SparkView {
     readonly schema: string;
     readonly name: string;
     readonly comment: string | null;
+    /** Absent in descriptions from a Spark that predates view columns. */
+    readonly columns?: ReadonlyArray<SparkColumn>;
 }
 export interface SparkEnum {
     readonly schema: string;
@@ -61,9 +63,9 @@ export interface SparkSchemaDescription {
 }
 /**
  * The metadata `introspect()` would read from `pg_catalog`, built from Spark's description so the
- * shared generators run unchanged. The description has no functions, composite types or view
- * columns, so those come out empty. Temporary: `introspect()` replaces this once Spark's engine
- * exposes the catalogs it reads.
+ * shared generators run unchanged. The description has no functions or composite types, so those
+ * come out empty. Temporary: `introspect()` replaces this once Spark's engine exposes the catalogs
+ * it reads.
  */
 export declare const sparkGeneratorMetadata: (description: SparkSchemaDescription, options: {
     readonly schemas: ReadonlyArray<string>;
