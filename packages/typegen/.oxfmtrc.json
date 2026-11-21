@@ -11,5 +11,5 @@
   "arrowParens": "always",
   "bracketSameLine": false,
   "bracketSpacing": true,
-  "ignorePatterns": ["**/*.md", "**/*.yml", "**/*.yaml", "**/*.toml"]
+  "ignorePatterns": ["dist", "**/*.md", "**/*.yml", "**/*.yaml", "**/*.toml"]
 }
