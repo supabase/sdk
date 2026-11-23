@@ -33,12 +33,18 @@ exception: the client does not rejoin after it.
 ### Join errors that end the subscription
 
 A join error reply can mark the error as permanent: its `response` object
-carries `retryable` set to `false`. The client then does not rejoin the channel.
-It reports the error to the app with the reply's `reason` string, and it removes
-the channel from the socket as it does for `phx_close`. A subscribe call that
-waits for the join fails with that error. After a reconnect, the client does not
-rejoin the channel. A new subscribe call on the channel starts a new join with
-the rejoin attempt count at 1.
+carries `retryable` set to `false`. The client then marks the channel ended and
+stops rejoining it. It reports the error to the app with the reply's `reason`
+string. A subscribe call that waits for the join fails with that error. A
+reconnect does not rejoin an ended channel.
+
+The client rejoins an ended channel one time when the app gives the client an
+access token that differs from the token the failed join sent. That join sends
+the new token, and its rejoin attempt count starts at 1. When it also fails with
+`retryable` set to `false`, the channel stays ended until the next token change.
+A new subscribe call on an ended channel also starts a new join with the attempt
+count at 1. Unsubscribing an ended channel removes it from the socket, and a
+token change does not rejoin it after that.
 
 When `retryable` is absent, is `true`, or is not a boolean, the client rejoins
 by the rules in [Rejoin](#rejoin). The client keeps no list of error codes or
@@ -92,7 +98,9 @@ stateDiagram-v2
     [*] --> Joining: subscribe
     Joining --> Joined: join reply ok
     Joining --> Errored: join error or timeout, attempt + 1
-    Joining --> [*]: join error with retryable false, no rejoin
+    Joining --> Ended: join error with retryable false
+    Ended --> Joining: new access token or subscribe, attempt = 1
+    Ended --> [*]: unsubscribe
     Errored --> Joining: rejoin delay for attempt ends, 30 s after a rate limit
     Joining --> Errored: phx_error, attempt + 1
     Joined --> Errored: phx_error, attempt + 1
@@ -104,7 +112,8 @@ stateDiagram-v2
 ## Errors
 
 - A join error reply with `response.retryable` set to `false`: the client stops
-  rejoining, and the subscribe call fails with the reply's `reason`. See
+  rejoining until the access token changes, and the subscribe call fails with
+  the reply's `reason`. See
   [Join errors that end the subscription](#join-errors-that-end-the-subscription).
 
 ## Related
