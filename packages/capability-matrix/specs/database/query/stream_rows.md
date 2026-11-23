@@ -119,8 +119,9 @@ stateDiagram-v2
 
 ## Prerequisites
 
-The table has a primary key. A view has none, so it needs the caller to name the
-columns that identify a row.
+The relation is a table with a primary key. A view cannot be streamed: a
+Postgres publication holds only tables, so no change to a view reaches a
+`postgres_changes` binding.
 
 The changes reach the stream only when the table is in the `supabase_realtime`
 publication. See
