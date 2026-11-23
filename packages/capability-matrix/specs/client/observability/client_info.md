@@ -26,8 +26,10 @@ X-Client-Info: supabase-example/1.4.0; platform=Android; platform-version=15; ru
   release of the SDK.
 - `version` is the version of the SDK release that sends the request, without a
   `v` prefix.
-- Each parameter is a lowercase key from the table below, `=`, and a non-empty
-  value. A key appears at most once, and parameters can come in any order.
+- Each parameter has a key containing only ASCII letters, digits, underscores or
+  hyphens (`^[A-Za-z0-9_-]+$`), `=`, and a non-empty value. SDK-defined keys in
+  the table below are lowercase. Keys are unique case-insensitively, and
+  parameters can come in any order.
 - A parameter whose value the SDK cannot determine is left out. The SDK never
   sends an empty value or a placeholder such as `unknown`.
 - A value has no leading or trailing whitespace. Every character outside
@@ -46,6 +48,8 @@ X-Client-Info: supabase-example/1.4.0; platform=Android; platform-version=15; ru
 | `framework`             | The application framework, when the SDK can detect it: `electron`, `expo`, `flutter`, `next`, `nuxt`, `react-native`, `remix` or `sveltekit`.                                                                                                 |
 | `framework-version`     | The version of the framework.                                                                                                                                                                                                                 |
 | `features`              | The SDK features the request was built with, see [Features](#features).                                                                                                                                                                       |
+| `via`                   | The library built on the SDK that sends the request, as `name/version` in the form of the product token, see [Library-supplied parameters](#library-supplied-parameters).                                                                     |
+| `middleware`            | The middleware of that library the request passed through, see [Library-supplied parameters](#library-supplied-parameters).                                                                                                                   |
 
 A value that is not listed for `runtime` or `framework` is added to this file
 before an SDK sends it, so it can be aggregated across SDKs.
@@ -84,9 +88,43 @@ in aggregates until it is added here.
 ### Application-supplied value
 
 An `X-Client-Info` header the application sets through the client's global
-headers, matched case-insensitively, replaces the SDK's value on every request.
-This lets a library built on top of the SDK identify itself. The SDK still adds
-the `features` parameter to that value, as described below.
+headers, matched case-insensitively, replaces the SDK's value on every request,
+including the parameters the SDK detects itself. The SDK still adds the
+`features` parameter to that value, as described below.
+
+### Library-supplied parameters
+
+An SDK lets a library built on it supply custom key/value parameters when it
+creates a client, so the library can identify itself without replacing the SDK's
+value. Keys follow the syntax in [Format](#format). SDK-owned keys are reserved
+case-insensitively, even when the SDK does not emit them in the current
+environment: `platform`, `platform-version`, `platform-architecture`, `runtime`,
+`runtime-version`, `framework`, `framework-version` and `features`. Other custom
+keys are allowed; `via` and `middleware` are conventions shared by libraries.
+This reservation applies only to the library-parameter option, not to existing
+application-supplied header overrides.
+
+- Each pair is appended as `; key=value`, in the order supplied, to the value in
+  effect: the SDK's own, or the application-supplied one. The SDK trims the
+  value and encodes it as described under [Format](#format).
+- Omitted or empty library parameters leave existing behavior unchanged. The SDK
+  encodes only newly appended values; it does not validate, trim or re-encode
+  the existing header, and does not mutate application-owned options.
+- Every request with non-empty library parameters carries one `X-Client-Info`
+  header. The SDK removes an application-supplied header of another casing
+  instead of sending both.
+
+`via` is the library's own `name/version`, for example `example-lib/1.2.0`.
+
+`middleware` lists the middleware the library applied to the request. The value
+is a comma-separated list under a single key, with lowercase kebab-case tokens
+(`[a-z0-9-]`), sorted alphabetically and without duplicates. The parameter is
+left out when no middleware applies. Libraries may supply their own tokens.
+Known tokens include:
+
+| Token                      | Meaning                                                                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `oauth-protected-resource` | The client was created downstream of OAuth protected-resource middleware; this identifies composition, not proof of authentication or MCP traffic. |
 
 ### Features
 
@@ -130,15 +168,33 @@ The headers `X-Supabase-Client-Platform`, `X-Supabase-Client-Platform-Version`,
 sent. Their values are the `platform`, `platform-version`, `runtime` and
 `runtime-version` parameters.
 
+## Errors
+
+The SDK raises its own argument error, when the client is created and before any
+request, for a library-supplied parameter that:
+
+- has a key that does not match `^[A-Za-z0-9_-]+$`
+- has an SDK-owned reserved key, even when absent from the value in effect
+- has a key already in the value in effect or another supplied entry, compared
+  case-insensitively
+- has a value that is not a string, or is empty after trimming
+
+The gateway accepts an `X-Client-Info` header whatever it holds, so none of
+these is ever rejected on the wire. They surface only as wrong data, since a
+parameter is found by key and a repeated key leaves a consumer without a way to
+pick one of its two values.
+
 ## Notes
 
 A consumer of the header splits the value on `;` and trims each segment. The
 first segment is the product token, split on its last `/` into name and version.
 Each other segment is split on its first `=` into key and value, and the
-`features` value is split on `,`. Parameters are found by key, never by
-position. The full value is not a stable client identifier, since `features`
-changes between requests from the same client, so it is left out when counting
-clients.
+`features` and `middleware` values are split on `,`. Percent-encoded values are
+decoded as UTF-8 once, after separating parameters and list tokens. Parameters
+are found by key case-insensitively, never by position. Consumers retain raw
+metadata and tolerate unencoded legacy values. The full value is not a stable
+client identifier, since `features` changes between requests from the same
+client, so it is left out when counting clients.
 
 ## Related
 
