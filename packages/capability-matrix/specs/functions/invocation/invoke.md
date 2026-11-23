@@ -31,13 +31,14 @@ name can carry a query string.
 For example, the name `search?q=x` requests `/functions/v1/search?q=x`, not
 `/functions/v1/search%3Fq=x`.
 
-The query in the name must already be percent-encoded. Values that need
-encoding, such as a space, a non-ASCII character, or a bracket, go in the
-per-call query option, for an SDK that has one, which encodes them. An SDK whose
-URL parser cannot encode a raw query one character at a time rejects a query in
-the name that holds a character a URL query does not allow, or a `%` not
-followed by two hex digits. It throws its invalid-request error and sends
-nothing, rather than guessing an encoding.
+The caller writes the query in the name percent-encoded. The SDK does not
+validate or re-encode it: it hands the query to its URL parser as written, and a
+query that is already percent-encoded reaches the function unchanged. For raw
+characters, such as a space, a non-ASCII character, or a bracket, the result is
+the parser's and can differ between SDKs. Values that need encoding go in the
+per-call query option, for an SDK that has one, which encodes them. When the
+parser rejects the query, the SDK throws its invalid-request error and sends
+nothing; it never drops the query silently.
 
 The query items from the name merge with the query items the SDK adds. Those are
 the per-call query options, for an SDK that has them, and the
@@ -53,7 +54,7 @@ For example, with the region `eu-west-1`, the name
 
 - **Partial encoding breaks valid escapes.** Some URL parsers, given a string
   with one invalid character, percent-encode every `%` in it, so `a=%20&s=a b`
-  becomes `a=%2520&s=a%20b`. Rejecting the raw query avoids this.
+  becomes `a=%2520&s=a%20b`. This is why raw values belong in the query option.
 - **Assert the exact request URL.** A name with a query, and a name with a query
   plus a region, each get a test that asserts the full URL the request carries.
   A path-append API in a standard library, such as one that adds a path
