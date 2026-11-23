@@ -31,6 +31,14 @@ name can carry a query string.
 For example, the name `search?q=x` requests `/functions/v1/search?q=x`, not
 `/functions/v1/search%3Fq=x`.
 
+The query in the name must already be percent-encoded. Values that need
+encoding, such as a space, a non-ASCII character, or a bracket, go in the
+per-call query option, for an SDK that has one, which encodes them. An SDK whose
+URL parser cannot encode a raw query one character at a time rejects a query in
+the name that holds a character a URL query does not allow, or a `%` not
+followed by two hex digits. It throws its invalid-request error and sends
+nothing, rather than guessing an encoding.
+
 The query items from the name merge with the query items the SDK adds. Those are
 the per-call query options, for an SDK that has them, and the
 `forceFunctionRegion` item that region selection adds. When the same name
@@ -43,6 +51,9 @@ For example, with the region `eu-west-1`, the name
 
 ## Notes
 
+- **Partial encoding breaks valid escapes.** Some URL parsers, given a string
+  with one invalid character, percent-encode every `%` in it, so `a=%20&s=a b`
+  becomes `a=%2520&s=a%20b`. Rejecting the raw query avoids this.
 - **Assert the exact request URL.** A name with a query, and a name with a query
   plus a region, each get a test that asserts the full URL the request carries.
   A path-append API in a standard library, such as one that adds a path
