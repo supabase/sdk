@@ -28,16 +28,15 @@ Each PostgREST call emits one span of kind client and one
 request: the span covers all attempts, and the measurement is the duration of
 the whole call, from the start of the first attempt to the end of the last.
 
-When the span records, it is the active span while the request is sent. The
-propagated trace context (`traceparent`, see
-`client.observability.trace_propagation`) therefore names this span as the
-parent of the server-side spans.
+When the span records, the propagated trace context (`traceparent`, see
+`client.observability.trace_propagation`) names this span as the parent of the
+server-side spans.
 
 When the span does not record (for example, the app has no tracer provider, or
-its sampler drops the span), the SDK does not make it active. The propagated
-trace context is then the app's own active span, or none. A span that does not
-record can carry new IDs with the sampled flag off, and a server that samples by
-its parent would then drop its own spans.
+its sampler drops the span), the propagated trace context is the app's own
+active span, or none. A span that does not record can carry new IDs with the
+sampled flag off, and a server that samples by its parent would then drop its
+own spans.
 
 The tracer and the meter both have the instrumentation scope name
 `supabase.postgrest`.
@@ -133,7 +132,7 @@ sequenceDiagram
     participant SDK
     participant PostgREST
     App->>SDK: call
-    SDK->>SDK: start span, make it active
+    SDK->>SDK: start span
     SDK->>PostgREST: request with traceparent
     PostgREST-->>SDK: response
     SDK->>SDK: end span, record measurement
