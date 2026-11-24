@@ -16,6 +16,8 @@ on top.
 | ------------------------------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`packages/capability-matrix`](./packages/capability-matrix)             | TypeScript | The canonical feature registry for all Supabase client SDKs: capability YAML data, per-feature specs, JSON Schema, validator, and site generator. Renders [supabase.github.io/sdk](https://supabase.github.io/sdk/). |
 | [`packages/dart-symbol-extractor`](./packages/dart-symbol-extractor)     | Dart       | Public API symbol extractor for Dart SDKs, used by the Dart compliance workflow.                                                                                                                                     |
+| [`packages/doc-check`](./packages/doc-check)                             | TypeScript | Checks the API docs definition files an SDK generates against the schema of supabase.com/docs. Prototype.                                                                                                            |
+| [`packages/doc-generator`](./packages/doc-generator)                     | TypeScript | Generates the API docs definition files for supabase.com/docs from an SDK's doc comments (Swift symbol graphs, `griffe dump` for Python). Prototype.                                                                 |
 | [`packages/go-symbol-extractor`](./packages/go-symbol-extractor)         | Go         | Public API symbol extractor for Go SDKs, used by the Go compliance workflow.                                                                                                                                         |
 | [`packages/python-symbol-extractor`](./packages/python-symbol-extractor) | Python     | Public API symbol extractor for Python SDKs, used by the Python compliance workflow.                                                                                                                                 |
 | [`packages/postgrest-typegen`](./packages/postgrest-typegen)             | TypeScript | Introspects a PostgreSQL schema into the `GeneratorMetadata` contract and generates PostgREST types for TypeScript, Go, and Python.                                                                                  |
@@ -49,6 +51,8 @@ its directory:
 ```bash
 cd packages/capability-matrix && bun install && bun test
 cd packages/dart-symbol-extractor && dart pub get && dart test
+cd packages/doc-check && bun install && bun test
+cd packages/doc-generator && bun install && bun test
 cd packages/go-symbol-extractor && go test ./...
 cd packages/python-symbol-extractor && uv sync --frozen && uv run --frozen pytest
 ```

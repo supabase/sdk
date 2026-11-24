@@ -18,6 +18,8 @@
 
 /packages/capability-matrix/ @supabase/sdk
 /packages/dart-symbol-extractor/ @supabase/sdk
+/packages/doc-check/ @supabase/sdk
+/packages/doc-generator/ @supabase/sdk
 /packages/go-symbol-extractor/ @supabase/sdk
 /packages/python-symbol-extractor/ @supabase/sdk
 /packages/postgrest-typegen/ @supabase/sdk @spydon

@@ -11,7 +11,15 @@
   "arrowParens": "always",
   "bracketSameLine": false,
   "bracketSpacing": true,
-  "ignorePatterns": ["**/CHANGELOG.md", "**/*.yml", "**/*.yaml", "**/*.toml"],
+  "ignorePatterns": [
+    "**/CHANGELOG.md",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/*.toml",
+    "packages/doc-check/schema/definition.schema.json",
+    "packages/doc-check/test/corpus/**",
+    "packages/doc-generator/test/fixtures/**"
+  ],
   "overrides": [
     {
       "files": ["**/*.md"],

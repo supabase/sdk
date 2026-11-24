@@ -1,0 +1,5857 @@
+{
+  "metadata": {
+    "formatVersion": {
+      "major": 0,
+      "minor": 6,
+      "patch": 0
+    },
+    "generator": "Apple Swift version 6.4.2 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)"
+  },
+  "module": {
+    "name": "NotesKit",
+    "platform": {
+      "architecture": "arm64",
+      "vendor": "apple",
+      "operatingSystem": {
+        "name": "macosx",
+        "minimumVersion": {
+          "major": 14,
+          "minor": 0
+        }
+      }
+    }
+  },
+  "symbols": [
+    {
+      "kind": {
+        "identifier": "swift.func",
+        "displayName": "Function"
+      },
+      "identifier": {
+        "precise": "s:8NotesKit10makeClient3url0A00aD0C10Foundation3URLV_tF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "makeClient(url:)"
+      ],
+      "names": {
+        "title": "makeClient(url:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "makeClient"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "url"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "URL",
+            "preciseIdentifier": "s:10Foundation3URLV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "NotesClient",
+            "preciseIdentifier": "s:5Notes0A6ClientC"
+          }
+        ]
+      },
+      "docComment": {
+        "uri": "file:///fixture/Sources/NotesKit/NotesKit.swift",
+        "module": "NotesKit",
+        "lines": [
+          {
+            "range": {
+              "start": {
+                "line": 3,
+                "character": 4
+              },
+              "end": {
+                "line": 3,
+                "character": 69
+              }
+            },
+            "text": "Creates a client for the notes service at `url`, with the default"
+          },
+          {
+            "range": {
+              "start": {
+                "line": 4,
+                "character": 4
+              },
+              "end": {
+                "line": 4,
+                "character": 18
+              }
+            },
+            "text": "configuration."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 5,
+                "character": 3
+              },
+              "end": {
+                "line": 5,
+                "character": 3
+              }
+            },
+            "text": ""
+          },
+          {
+            "range": {
+              "start": {
+                "line": 6,
+                "character": 4
+              },
+              "end": {
+                "line": 6,
+                "character": 50
+              }
+            },
+            "text": "- Parameter url: The URL of the notes service."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 7,
+                "character": 4
+              },
+              "end": {
+                "line": 7,
+                "character": 45
+              }
+            },
+            "text": "- Returns: A client that is ready to use."
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "url",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "url"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "URL",
+                "preciseIdentifier": "s:10Foundation3URLV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "NotesClient",
+            "preciseIdentifier": "s:5Notes0A6ClientC"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "makeClient"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "url"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "URL",
+          "preciseIdentifier": "s:10Foundation3URLV"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "NotesClient",
+          "preciseIdentifier": "s:5Notes0A6ClientC"
+        }
+      ],
+      "accessLevel": "public",
+      "location": {
+        "uri": "file:///fixture/Sources/NotesKit/NotesKit.swift",
+        "position": {
+          "line": 8,
+          "character": 12
+        }
+      }
+    },
+    {
+      "kind": {
+        "identifier": "swift.class",
+        "displayName": "Class"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient"
+      ],
+      "names": {
+        "title": "NotesClient",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "NotesClient"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "class"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "NotesClient"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "final"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "class"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "NotesClient"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC3url13configurationAC10Foundation3URLV_AC13ConfigurationVtcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "init(url:configuration:)"
+      ],
+      "names": {
+        "title": "init(url:configuration:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "url"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "URL",
+            "preciseIdentifier": "s:10Foundation3URLV"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "configuration"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "NotesClient",
+            "preciseIdentifier": "s:5Notes0A6ClientC"
+          },
+          {
+            "kind": "text",
+            "spelling": "."
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Configuration",
+            "preciseIdentifier": "s:5Notes0A6ClientC13ConfigurationV"
+          },
+          {
+            "kind": "text",
+            "spelling": ")"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "url",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "url"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "URL",
+                "preciseIdentifier": "s:10Foundation3URLV"
+              }
+            ]
+          },
+          {
+            "name": "configuration",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "configuration"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "NotesClient",
+                "preciseIdentifier": "s:5Notes0A6ClientC"
+              },
+              {
+                "kind": "text",
+                "spelling": "."
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Configuration",
+                "preciseIdentifier": "s:5Notes0A6ClientC13ConfigurationV"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "url"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "URL",
+          "preciseIdentifier": "s:10Foundation3URLV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "configuration"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "NotesClient",
+          "preciseIdentifier": "s:5Notes0A6ClientC"
+        },
+        {
+          "kind": "text",
+          "spelling": "."
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Configuration",
+          "preciseIdentifier": "s:5Notes0A6ClientC13ConfigurationV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = .init())"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC6create5title4body7optionsAA4NoteVSS_SSAA13CreateOptionsVtYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "create(title:body:options:)"
+      ],
+      "names": {
+        "title": "create(title:body:options:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "create"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "title"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "body"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "options"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "CreateOptions",
+            "preciseIdentifier": "s:5Notes13CreateOptionsV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "title",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "title"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          },
+          {
+            "name": "body",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "body"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          },
+          {
+            "name": "options",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "options"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "CreateOptions",
+                "preciseIdentifier": "s:5Notes13CreateOptionsV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "create"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "title"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "body"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "options"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "CreateOptions",
+          "preciseIdentifier": "s:5Notes13CreateOptionsV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = .init()) "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC6create10contentsOf7optionsAA4NoteV10Foundation3URLV_AA13CreateOptionsVtYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "create(contentsOf:options:)"
+      ],
+      "names": {
+        "title": "create(contentsOf:options:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "create"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "contentsOf"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "URL",
+            "preciseIdentifier": "s:10Foundation3URLV"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "options"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "CreateOptions",
+            "preciseIdentifier": "s:5Notes13CreateOptionsV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "contentsOf",
+            "internalName": "fileURL",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "fileURL"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "URL",
+                "preciseIdentifier": "s:10Foundation3URLV"
+              }
+            ]
+          },
+          {
+            "name": "options",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "options"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "CreateOptions",
+                "preciseIdentifier": "s:5Notes13CreateOptionsV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "create"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "contentsOf"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "fileURL"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "URL",
+          "preciseIdentifier": "s:10Foundation3URLV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "options"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "CreateOptions",
+          "preciseIdentifier": "s:5Notes13CreateOptionsV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = .init()) "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC6delete6withIDy10Foundation4UUIDV_tYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "delete(withID:)"
+      ],
+      "names": {
+        "title": "delete(withID:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "delete"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "withID"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "UUID",
+            "preciseIdentifier": "s:10Foundation4UUIDV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "withID",
+            "internalName": "id",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "id"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "UUID",
+                "preciseIdentifier": "s:10Foundation4UUIDV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "()"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "delete"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "withID"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "id"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UUID",
+          "preciseIdentifier": "s:10Foundation4UUIDV"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC6remove2idy10Foundation4UUIDV_tYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "remove(id:)"
+      ],
+      "names": {
+        "title": "remove(id:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "remove"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "id"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "UUID",
+            "preciseIdentifier": "s:10Foundation4UUIDV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "id",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "id"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "UUID",
+                "preciseIdentifier": "s:10Foundation4UUIDV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "()"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "remove"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "id"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UUID",
+          "preciseIdentifier": "s:10Foundation4UUIDV"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        }
+      ],
+      "accessLevel": "public",
+      "availability": [
+        {
+          "domain": "*",
+          "message": "Use delete(withID:) instead.",
+          "isUnconditionallyDeprecated": true
+        }
+      ]
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC5erase2idy10Foundation4UUIDV_tYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "erase(id:)"
+      ],
+      "names": {
+        "title": "erase(id:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "erase"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "id"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "UUID",
+            "preciseIdentifier": "s:10Foundation4UUIDV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "id",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "id"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "UUID",
+                "preciseIdentifier": "s:10Foundation4UUIDV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "()"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "erase"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "id"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UUID",
+          "preciseIdentifier": "s:10Foundation4UUIDV"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        }
+      ],
+      "accessLevel": "public",
+      "availability": [
+        {
+          "domain": "*",
+          "isUnconditionallyDeprecated": true
+        }
+      ]
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC4list4pageSayAA4NoteVGAA4PageV_tYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "list(page:)"
+      ],
+      "names": {
+        "title": "list(page:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "list"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "page"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Page",
+            "preciseIdentifier": "s:5Notes4PageV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "page",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "page"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Page",
+                "preciseIdentifier": "s:5Notes4PageV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "list"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "page"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Page",
+          "preciseIdentifier": "s:5Notes4PageV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = Page()) "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        },
+        {
+          "kind": "text",
+          "spelling": "]"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC7archiveyAA4NoteVAFYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "archive(_:)"
+      ],
+      "names": {
+        "title": "archive(_:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "archive"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "note",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "note"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Note",
+                "preciseIdentifier": "s:5Notes4NoteV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "attribute",
+          "spelling": "@discardableResult"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "archive"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "_"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "note"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        },
+        {
+          "kind": "text",
+          "spelling": ") "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        }
+      ],
+      "accessLevel": "public",
+      "spi": true
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC3tag_4with9separator10onProgressyAA4NoteV_SSdSSySdYbcSgtF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "tag(_:with:separator:onProgress:)"
+      ],
+      "names": {
+        "title": "tag(_:with:separator:onProgress:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "tag"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Note",
+            "preciseIdentifier": "s:5Notes4NoteV"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "with"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "..., "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "separator"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "onProgress"
+          },
+          {
+            "kind": "text",
+            "spelling": ": (("
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Double",
+            "preciseIdentifier": "s:Sd"
+          },
+          {
+            "kind": "text",
+            "spelling": ") -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Void",
+            "preciseIdentifier": "s:s4Voida"
+          },
+          {
+            "kind": "text",
+            "spelling": ")?)"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "note",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "note"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Note",
+                "preciseIdentifier": "s:5Notes4NoteV"
+              }
+            ]
+          },
+          {
+            "name": "with",
+            "internalName": "tags",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "tags"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": "..."
+              }
+            ]
+          },
+          {
+            "name": "separator",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "separator"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          },
+          {
+            "name": "onProgress",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "onProgress"
+              },
+              {
+                "kind": "text",
+                "spelling": ": ("
+              },
+              {
+                "kind": "attribute",
+                "spelling": "@Sendable"
+              },
+              {
+                "kind": "text",
+                "spelling": " ("
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Double",
+                "preciseIdentifier": "s:Sd"
+              },
+              {
+                "kind": "text",
+                "spelling": ") -> "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Void",
+                "preciseIdentifier": "s:s4Voida"
+              },
+              {
+                "kind": "text",
+                "spelling": ")?"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "()"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "tag"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "_"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "note"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Note",
+          "preciseIdentifier": "s:5Notes4NoteV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "with"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "tags"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "..., "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "separator"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": " = \", \", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "onProgress"
+        },
+        {
+          "kind": "text",
+          "spelling": ": ("
+        },
+        {
+          "kind": "attribute",
+          "spelling": "@Sendable"
+        },
+        {
+          "kind": "text",
+          "spelling": " ("
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Double",
+          "preciseIdentifier": "s:Sd"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Void",
+          "preciseIdentifier": "s:s4Voida"
+        },
+        {
+          "kind": "text",
+          "spelling": ")? = nil)"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC13ConfigurationV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "Configuration"
+      ],
+      "names": {
+        "title": "NotesClient.Configuration",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Configuration"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Configuration"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Configuration"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC13ConfigurationV7timeoutSdvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "Configuration",
+        "timeout"
+      ],
+      "names": {
+        "title": "timeout",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "timeout"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "TimeInterval",
+            "preciseIdentifier": "c:@T@NSTimeInterval"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "timeout"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "TimeInterval",
+          "preciseIdentifier": "c:@T@NSTimeInterval"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC13ConfigurationV7headersSDyS2SGvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "Configuration",
+        "headers"
+      ],
+      "names": {
+        "title": "headers",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "headers"
+          },
+          {
+            "kind": "text",
+            "spelling": ": ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": " : "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "headers"
+        },
+        {
+          "kind": "text",
+          "spelling": ": ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": " : "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "]"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC13ConfigurationV7timeout7headersAESd_SDyS2SGtcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "Configuration",
+        "init(timeout:headers:)"
+      ],
+      "names": {
+        "title": "init(timeout:headers:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "timeout"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "TimeInterval",
+            "preciseIdentifier": "c:@T@NSTimeInterval"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "headers"
+          },
+          {
+            "kind": "text",
+            "spelling": ": ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": " : "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "])"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "timeout",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "timeout"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "TimeInterval",
+                "preciseIdentifier": "c:@T@NSTimeInterval"
+              }
+            ]
+          },
+          {
+            "name": "headers",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "headers"
+              },
+              {
+                "kind": "text",
+                "spelling": ": ["
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": " : "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": "]"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "timeout"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "TimeInterval",
+          "preciseIdentifier": "c:@T@NSTimeInterval"
+        },
+        {
+          "kind": "text",
+          "spelling": " = NotesClient.Configuration\n        .defaultTimeout, "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "headers"
+        },
+        {
+          "kind": "text",
+          "spelling": ": ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": " : "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "] = [:])"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.type.property",
+        "displayName": "Type Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC13ConfigurationV14defaultTimeoutSdvpZ",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "Configuration",
+        "defaultTimeout"
+      ],
+      "names": {
+        "title": "defaultTimeout",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "static"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "let"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "defaultTimeout"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "TimeInterval",
+            "preciseIdentifier": "c:@T@NSTimeInterval"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "let"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "defaultTimeout"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "TimeInterval",
+          "preciseIdentifier": "c:@T@NSTimeInterval"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes4NoteV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Note"
+      ],
+      "names": {
+        "title": "Note",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Note"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Note"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Note"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes4NoteV2id10Foundation4UUIDVvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Note",
+        "id"
+      ],
+      "names": {
+        "title": "id",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "let"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "id"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "UUID",
+            "preciseIdentifier": "s:10Foundation4UUIDV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "let"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "id"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UUID",
+          "preciseIdentifier": "s:10Foundation4UUIDV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes4NoteV5titleSSvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Note",
+        "title"
+      ],
+      "names": {
+        "title": "title",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "title"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "title"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes4PageV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Page"
+      ],
+      "names": {
+        "title": "Page",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Page"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Page"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Page"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes4PageV6offsetSivp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Page",
+        "offset"
+      ],
+      "names": {
+        "title": "offset",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "offset"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Int",
+            "preciseIdentifier": "s:Si"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "offset"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes4PageV5limitSivp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Page",
+        "limit"
+      ],
+      "names": {
+        "title": "limit",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "limit"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Int",
+            "preciseIdentifier": "s:Si"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "limit"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes4PageV6offset5limitACSi_Sitcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Page",
+        "init(offset:limit:)"
+      ],
+      "names": {
+        "title": "init(offset:limit:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "offset"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Int",
+            "preciseIdentifier": "s:Si"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "limit"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Int",
+            "preciseIdentifier": "s:Si"
+          },
+          {
+            "kind": "text",
+            "spelling": ")"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "offset",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "offset"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Int",
+                "preciseIdentifier": "s:Si"
+              }
+            ]
+          },
+          {
+            "name": "limit",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "limit"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Int",
+                "preciseIdentifier": "s:Si"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "offset"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        },
+        {
+          "kind": "text",
+          "spelling": " = 0, "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "limit"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Int",
+          "preciseIdentifier": "s:Si"
+        },
+        {
+          "kind": "text",
+          "spelling": " = 20)"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions"
+      ],
+      "names": {
+        "title": "CreateOptions",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "CreateOptions"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "CreateOptions"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "CreateOptions"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV4tagsSaySSGvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions",
+        "tags"
+      ],
+      "names": {
+        "title": "tags",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "tags"
+          },
+          {
+            "kind": "text",
+            "spelling": ": ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "tags"
+        },
+        {
+          "kind": "text",
+          "spelling": ": ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "]"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV7channelAA7ChannelVSgvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions",
+        "channel"
+      ],
+      "names": {
+        "title": "channel",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "channel"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Channel",
+            "preciseIdentifier": "s:5Notes7ChannelV"
+          },
+          {
+            "kind": "text",
+            "spelling": "?"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "channel"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Channel",
+          "preciseIdentifier": "s:5Notes7ChannelV"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV6folderAA6FolderVvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions",
+        "folder"
+      ],
+      "names": {
+        "title": "folder",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "folder"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Folder",
+            "preciseIdentifier": "s:5Notes6FolderV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "folder"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Folder",
+          "preciseIdentifier": "s:5Notes6FolderV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV8isTaggedSbvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions",
+        "isTagged"
+      ],
+      "names": {
+        "title": "isTagged",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "isTagged"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Bool",
+            "preciseIdentifier": "s:Sb"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "isTagged"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Bool",
+          "preciseIdentifier": "s:Sb"
+        },
+        {
+          "kind": "text",
+          "spelling": " { "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "get"
+        },
+        {
+          "kind": "text",
+          "spelling": " }"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes13CreateOptionsV4tags7channel6folderACSaySSG_AA7ChannelVSgAA6FolderVtcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "CreateOptions",
+        "init(tags:channel:folder:)"
+      ],
+      "names": {
+        "title": "init(tags:channel:folder:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "tags"
+          },
+          {
+            "kind": "text",
+            "spelling": ": ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "], "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "channel"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Channel",
+            "preciseIdentifier": "s:5Notes7ChannelV"
+          },
+          {
+            "kind": "text",
+            "spelling": "?, "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "folder"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Folder",
+            "preciseIdentifier": "s:5Notes6FolderV"
+          },
+          {
+            "kind": "text",
+            "spelling": ")"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "tags",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "tags"
+              },
+              {
+                "kind": "text",
+                "spelling": ": ["
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": "]"
+              }
+            ]
+          },
+          {
+            "name": "channel",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "channel"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Channel",
+                "preciseIdentifier": "s:5Notes7ChannelV"
+              },
+              {
+                "kind": "text",
+                "spelling": "?"
+              }
+            ]
+          },
+          {
+            "name": "folder",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "folder"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Folder",
+                "preciseIdentifier": "s:5Notes6FolderV"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "tags"
+        },
+        {
+          "kind": "text",
+          "spelling": ": ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "] = [], "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "channel"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Channel",
+          "preciseIdentifier": "s:5Notes7ChannelV"
+        },
+        {
+          "kind": "text",
+          "spelling": "? = nil, "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "folder"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Folder",
+          "preciseIdentifier": "s:5Notes6FolderV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = Folder(name: \"Inbox\"))"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes6FolderV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Folder"
+      ],
+      "names": {
+        "title": "Folder",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Folder"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Folder"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Folder"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes6FolderV4nameSSvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Folder",
+        "name"
+      ],
+      "names": {
+        "title": "name",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "name"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "name"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes6FolderV6parentACSgvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Folder",
+        "parent"
+      ],
+      "names": {
+        "title": "parent",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "parent"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Folder",
+            "preciseIdentifier": "s:5Notes6FolderV"
+          },
+          {
+            "kind": "text",
+            "spelling": "?"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "parent"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Folder",
+          "preciseIdentifier": "s:5Notes6FolderV"
+        },
+        {
+          "kind": "text",
+          "spelling": "? { "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "get"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "set"
+        },
+        {
+          "kind": "text",
+          "spelling": " }"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes6FolderV4nameACSS_tcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Folder",
+        "init(name:)"
+      ],
+      "names": {
+        "title": "init(name:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "name"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ")"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "name",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "name"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "name"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes7ChannelV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Channel"
+      ],
+      "names": {
+        "title": "Channel",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Channel"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Channel"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Channel"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes7ChannelV8rawValueSSvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Channel",
+        "rawValue"
+      ],
+      "names": {
+        "title": "rawValue",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "rawValue"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "rawValue"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes7ChannelV8rawValueACSS_tcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Channel",
+        "init(rawValue:)"
+      ],
+      "names": {
+        "title": "init(rawValue:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "rawValue"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ")"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "rawValue",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "rawValue"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "rawValue"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ")"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.type.property",
+        "displayName": "Type Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes7ChannelV5emailACvpZ",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Channel",
+        "email"
+      ],
+      "names": {
+        "title": "email",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "static"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "let"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "email"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Channel",
+            "preciseIdentifier": "s:5Notes7ChannelV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "let"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "email"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Channel",
+          "preciseIdentifier": "s:5Notes7ChannelV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A5ErrorV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesError"
+      ],
+      "names": {
+        "title": "NotesError",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "NotesError"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "NotesError"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "NotesError"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:s5ErrorP10FoundationE20localizedDescriptionSSvp::SYNTHESIZED::s:5Notes0A5ErrorV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesError",
+        "localizedDescription"
+      ],
+      "names": {
+        "title": "localizedDescription",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "localizedDescription"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          }
+        ]
+      },
+      "swiftExtension": {
+        "extendedModule": "Swift",
+        "typeKind": "swift.protocol"
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "localizedDescription"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": " { "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "get"
+        },
+        {
+          "kind": "text",
+          "spelling": " }"
+        }
+      ],
+      "accessLevel": "public",
+      "availability": [
+        {
+          "domain": "iOS",
+          "introduced": {
+            "major": 8,
+            "minor": 0
+          }
+        },
+        {
+          "domain": "macOS",
+          "introduced": {
+            "major": 10,
+            "minor": 10
+          }
+        },
+        {
+          "domain": "tvOS",
+          "introduced": {
+            "major": 9,
+            "minor": 0
+          }
+        },
+        {
+          "domain": "watchOS",
+          "introduced": {
+            "major": 2,
+            "minor": 0
+          }
+        }
+      ]
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A5ErrorV7messageSSvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesError",
+        "message"
+      ],
+      "names": {
+        "title": "message",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "let"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "message"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "let"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "message"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.protocol",
+        "displayName": "Protocol"
+      },
+      "identifier": {
+        "precise": "s:5Notes10FilterableP",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Filterable"
+      ],
+      "names": {
+        "title": "Filterable",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Filterable"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "protocol"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Filterable"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "protocol"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Filterable"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.enum",
+        "displayName": "Enumeration"
+      },
+      "identifier": {
+        "precise": "s:5Notes7ReadingO",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Reading"
+      ],
+      "names": {
+        "title": "Reading",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Reading"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "enum"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Reading"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "enum"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Reading"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes5QueryV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Query"
+      ],
+      "names": {
+        "title": "Query",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "Query"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "Query"
+          }
+        ]
+      },
+      "swiftGenerics": {
+        "parameters": [
+          {
+            "name": "Phase",
+            "index": 0,
+            "depth": 0
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "Query"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "Phase"
+        },
+        {
+          "kind": "text",
+          "spelling": ">"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes5QueryVACyxGycfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Query",
+        "init()"
+      ],
+      "names": {
+        "title": "init()",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "()"
+          }
+        ]
+      },
+      "functionSignature": {},
+      "swiftGenerics": {
+        "parameters": [
+          {
+            "name": "Phase",
+            "index": 0,
+            "depth": 0
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "()"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes5QueryVA2A10FilterableRzlE2eq_5valueACyxGSS_SStF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Query",
+        "eq(_:value:)"
+      ],
+      "names": {
+        "title": "eq(_:value:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "eq"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "value"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": ") -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Query",
+            "preciseIdentifier": "s:5Notes5QueryV"
+          },
+          {
+            "kind": "text",
+            "spelling": "<"
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Phase"
+          },
+          {
+            "kind": "text",
+            "spelling": ">"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "column",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "column"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          },
+          {
+            "name": "value",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "value"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Query",
+            "preciseIdentifier": "s:5Notes5QueryV"
+          },
+          {
+            "kind": "text",
+            "spelling": "<"
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Phase"
+          },
+          {
+            "kind": "text",
+            "spelling": ">"
+          }
+        ]
+      },
+      "swiftGenerics": {
+        "parameters": [
+          {
+            "name": "Phase",
+            "index": 0,
+            "depth": 0
+          }
+        ],
+        "constraints": [
+          {
+            "kind": "conformance",
+            "lhs": "Phase",
+            "rhs": "Filterable",
+            "rhsPrecise": "s:5Notes10FilterableP"
+          }
+        ]
+      },
+      "swiftExtension": {
+        "extendedModule": "Notes",
+        "typeKind": "swift.struct",
+        "constraints": [
+          {
+            "kind": "conformance",
+            "lhs": "Phase",
+            "rhs": "Filterable",
+            "rhsPrecise": "s:5Notes10FilterableP"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "eq"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "_"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "column"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "value"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": ") -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Query",
+          "preciseIdentifier": "s:5Notes5QueryV"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Phase"
+        },
+        {
+          "kind": "text",
+          "spelling": ">"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:5Notes0A6ClientC5share10noteWithID4with7options10Foundation3URLVAH4UUIDV_SSdAA12ShareOptionsVtYaKF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "NotesClient",
+        "share(noteWithID:with:options:)"
+      ],
+      "names": {
+        "title": "share(noteWithID:with:options:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "share"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "noteWithID"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "UUID",
+            "preciseIdentifier": "s:10Foundation4UUIDV"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "with"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "..., "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "options"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "ShareOptions",
+            "preciseIdentifier": "s:5Notes12ShareOptionsV"
+          },
+          {
+            "kind": "text",
+            "spelling": ") "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "async"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "URL",
+            "preciseIdentifier": "s:10Foundation3URLV"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "noteWithID",
+            "internalName": "id",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "id"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "UUID",
+                "preciseIdentifier": "s:10Foundation4UUIDV"
+              }
+            ]
+          },
+          {
+            "name": "with",
+            "internalName": "people",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "people"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": "..."
+              }
+            ]
+          },
+          {
+            "name": "options",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "options"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "ShareOptions",
+                "preciseIdentifier": "s:5Notes12ShareOptionsV"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "URL",
+            "preciseIdentifier": "s:10Foundation3URLV"
+          }
+        ]
+      },
+      "swiftExtension": {
+        "extendedModule": "Notes",
+        "typeKind": "swift.class"
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "share"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "noteWithID"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "id"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "UUID",
+          "preciseIdentifier": "s:10Foundation4UUIDV"
+        },
+        {
+          "kind": "text",
+          "spelling": ", "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "with"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "people"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "..., "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "options"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "ShareOptions",
+          "preciseIdentifier": "s:5Notes12ShareOptionsV"
+        },
+        {
+          "kind": "text",
+          "spelling": " = .init()) "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "async"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "URL",
+          "preciseIdentifier": "s:10Foundation3URLV"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.struct",
+        "displayName": "Structure"
+      },
+      "identifier": {
+        "precise": "s:5Notes12ShareOptionsV",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "ShareOptions"
+      ],
+      "names": {
+        "title": "ShareOptions",
+        "navigator": [
+          {
+            "kind": "identifier",
+            "spelling": "ShareOptions"
+          }
+        ],
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "struct"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "ShareOptions"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "struct"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "ShareOptions"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes12ShareOptionsV7canEditSbvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "ShareOptions",
+        "canEdit"
+      ],
+      "names": {
+        "title": "canEdit",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "canEdit"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Bool",
+            "preciseIdentifier": "s:Sb"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "canEdit"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Bool",
+          "preciseIdentifier": "s:Sb"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.property",
+        "displayName": "Instance Property"
+      },
+      "identifier": {
+        "precise": "s:5Notes12ShareOptionsV7messageSSSgvp",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "ShareOptions",
+        "message"
+      ],
+      "names": {
+        "title": "message",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "var"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "message"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "?"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "var"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "message"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "?"
+        }
+      ],
+      "accessLevel": "public"
+    },
+    {
+      "kind": {
+        "identifier": "swift.init",
+        "displayName": "Initializer"
+      },
+      "identifier": {
+        "precise": "s:5Notes12ShareOptionsV7canEdit7messageACSb_SSSgtcfc",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "ShareOptions",
+        "init(canEdit:message:)"
+      ],
+      "names": {
+        "title": "init(canEdit:message:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "init"
+          },
+          {
+            "kind": "text",
+            "spelling": "("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "canEdit"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "Bool",
+            "preciseIdentifier": "s:Sb"
+          },
+          {
+            "kind": "text",
+            "spelling": ", "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "message"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "String",
+            "preciseIdentifier": "s:SS"
+          },
+          {
+            "kind": "text",
+            "spelling": "?)"
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "canEdit",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "canEdit"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "Bool",
+                "preciseIdentifier": "s:Sb"
+              }
+            ]
+          },
+          {
+            "name": "message",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "message"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "String",
+                "preciseIdentifier": "s:SS"
+              },
+              {
+                "kind": "text",
+                "spelling": "?"
+              }
+            ]
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "init"
+        },
+        {
+          "kind": "text",
+          "spelling": "("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "canEdit"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Bool",
+          "preciseIdentifier": "s:Sb"
+        },
+        {
+          "kind": "text",
+          "spelling": " = false, "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "message"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "String",
+          "preciseIdentifier": "s:SS"
+        },
+        {
+          "kind": "text",
+          "spelling": "? = nil)"
+        }
+      ],
+      "accessLevel": "public"
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A5ErrorV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A5ErrorV",
+      "target": "s:s5ErrorP",
+      "targetFallback": "Swift.Error"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A5ErrorV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A5ErrorV7messageSSvp",
+      "target": "s:5Notes0A5ErrorV",
+      "targetFallback": "Notes.NotesError"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A6ClientC",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A6ClientC",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A6ClientC13ConfigurationV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes0A6ClientC13ConfigurationV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC13ConfigurationV",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC13ConfigurationV14defaultTimeoutSdvpZ",
+      "target": "s:5Notes0A6ClientC13ConfigurationV",
+      "targetFallback": "Notes.NotesClient.Configuration"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC13ConfigurationV7headersSDyS2SGvp",
+      "target": "s:5Notes0A6ClientC13ConfigurationV",
+      "targetFallback": "Notes.NotesClient.Configuration"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC13ConfigurationV7timeout7headersAESd_SDyS2SGtcfc",
+      "target": "s:5Notes0A6ClientC13ConfigurationV",
+      "targetFallback": "Notes.NotesClient.Configuration"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC13ConfigurationV7timeoutSdvp",
+      "target": "s:5Notes0A6ClientC13ConfigurationV",
+      "targetFallback": "Notes.NotesClient.Configuration"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC3tag_4with9separator10onProgressyAA4NoteV_SSdSSySdYbcSgtF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC3url13configurationAC10Foundation3URLV_AC13ConfigurationVtcfc",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC4list4pageSayAA4NoteVGAA4PageV_tYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC5erase2idy10Foundation4UUIDV_tYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC5share10noteWithID4with7options10Foundation3URLVAH4UUIDV_SSdAA12ShareOptionsVtYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC6create10contentsOf7optionsAA4NoteV10Foundation3URLV_AA13CreateOptionsVtYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC6create5title4body7optionsAA4NoteVSS_SSAA13CreateOptionsVtYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC6delete6withIDy10Foundation4UUIDV_tYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC6remove2idy10Foundation4UUIDV_tYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes0A6ClientC7archiveyAA4NoteVAFYaKF",
+      "target": "s:5Notes0A6ClientC",
+      "targetFallback": "Notes.NotesClient"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes12ShareOptionsV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes12ShareOptionsV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes12ShareOptionsV7canEdit7messageACSb_SSSgtcfc",
+      "target": "s:5Notes12ShareOptionsV",
+      "targetFallback": "Notes.ShareOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes12ShareOptionsV7canEditSbvp",
+      "target": "s:5Notes12ShareOptionsV",
+      "targetFallback": "Notes.ShareOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes12ShareOptionsV7messageSSSgvp",
+      "target": "s:5Notes12ShareOptionsV",
+      "targetFallback": "Notes.ShareOptions"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes13CreateOptionsV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes13CreateOptionsV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes13CreateOptionsV4tags7channel6folderACSaySSG_AA7ChannelVSgAA6FolderVtcfc",
+      "target": "s:5Notes13CreateOptionsV",
+      "targetFallback": "Notes.CreateOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes13CreateOptionsV4tagsSaySSGvp",
+      "target": "s:5Notes13CreateOptionsV",
+      "targetFallback": "Notes.CreateOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes13CreateOptionsV6folderAA6FolderVvp",
+      "target": "s:5Notes13CreateOptionsV",
+      "targetFallback": "Notes.CreateOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes13CreateOptionsV7channelAA7ChannelVSgvp",
+      "target": "s:5Notes13CreateOptionsV",
+      "targetFallback": "Notes.CreateOptions"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes13CreateOptionsV8isTaggedSbvp",
+      "target": "s:5Notes13CreateOptionsV",
+      "targetFallback": "Notes.CreateOptions"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes4NoteV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes4NoteV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes4NoteV2id10Foundation4UUIDVvp",
+      "target": "s:5Notes4NoteV",
+      "targetFallback": "Notes.Note"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes4NoteV5titleSSvp",
+      "target": "s:5Notes4NoteV",
+      "targetFallback": "Notes.Note"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes4PageV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes4PageV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes4PageV5limitSivp",
+      "target": "s:5Notes4PageV",
+      "targetFallback": "Notes.Page"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes4PageV6offset5limitACSi_Sitcfc",
+      "target": "s:5Notes4PageV",
+      "targetFallback": "Notes.Page"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes4PageV6offsetSivp",
+      "target": "s:5Notes4PageV",
+      "targetFallback": "Notes.Page"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes5QueryV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes5QueryV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes5QueryVA2A10FilterableRzlE2eq_5valueACyxGSS_SStF",
+      "target": "s:5Notes5QueryV",
+      "targetFallback": "Notes.Query"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes5QueryVACyxGycfc",
+      "target": "s:5Notes5QueryV",
+      "targetFallback": "Notes.Query"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes6FolderV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes6FolderV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes6FolderV4nameACSS_tcfc",
+      "target": "s:5Notes6FolderV",
+      "targetFallback": "Notes.Folder"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes6FolderV4nameSSvp",
+      "target": "s:5Notes6FolderV",
+      "targetFallback": "Notes.Folder"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes6FolderV6parentACSgvp",
+      "target": "s:5Notes6FolderV",
+      "targetFallback": "Notes.Folder"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes7ChannelV",
+      "target": "s:SY",
+      "targetFallback": "Swift.RawRepresentable"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes7ChannelV",
+      "target": "s:s16SendableMetatypeP",
+      "targetFallback": "Swift.SendableMetatype"
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes7ChannelV",
+      "target": "s:s8SendableP",
+      "targetFallback": "Swift.Sendable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes7ChannelV5emailACvpZ",
+      "target": "s:5Notes7ChannelV",
+      "targetFallback": "Notes.Channel"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes7ChannelV8rawValueACSS_tcfc",
+      "target": "s:5Notes7ChannelV",
+      "targetFallback": "Notes.Channel",
+      "sourceOrigin": {
+        "identifier": "s:SY8rawValuexSg03RawB0Qz_tcfc",
+        "displayName": "RawRepresentable.init(rawValue:)"
+      }
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:5Notes7ChannelV8rawValueSSvp",
+      "target": "s:5Notes7ChannelV",
+      "targetFallback": "Notes.Channel",
+      "sourceOrigin": {
+        "identifier": "s:SY8rawValue03RawB0Qzvp",
+        "displayName": "RawRepresentable.rawValue"
+      }
+    },
+    {
+      "kind": "conformsTo",
+      "source": "s:5Notes7ReadingO",
+      "target": "s:5Notes10FilterableP",
+      "targetFallback": "Notes.Filterable"
+    },
+    {
+      "kind": "memberOf",
+      "source": "s:s5ErrorP10FoundationE20localizedDescriptionSSvp::SYNTHESIZED::s:5Notes0A5ErrorV",
+      "target": "s:5Notes0A5ErrorV",
+      "targetFallback": "Notes.NotesError",
+      "sourceOrigin": {
+        "identifier": "s:s5ErrorP10FoundationE20localizedDescriptionSSvp",
+        "displayName": "Error.localizedDescription"
+      }
+    }
+  ]
+}
