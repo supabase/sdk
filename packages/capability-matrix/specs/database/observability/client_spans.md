@@ -93,6 +93,8 @@ arrives. Otherwise the span status is left unset.
 - The values of the keys `select`, `order`, `limit`, and `offset` are kept as
   sent. The match is exact and case-sensitive on the whole key, so an embedded
   key such as `posts.order` is redacted.
+- On an `rpc` call, every query value is redacted, the four keys above included.
+  The query of a `GET` or `HEAD` RPC call carries the function's arguments.
 - A repeated key is redacted at each occurrence.
 - User info and fragment are dropped.
 - Keys and kept values appear in their percent-encoded wire form.
