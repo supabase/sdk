@@ -28,9 +28,16 @@ Each PostgREST call emits one span of kind client and one
 request: the span covers all attempts, and the measurement is the duration of
 the whole call, from the start of the first attempt to the end of the last.
 
-The span is the active span while the request is sent. The propagated trace
-context (`traceparent`, see `client.observability.trace_propagation`) therefore
-names this span as the parent of the server-side spans.
+When the span records, it is the active span while the request is sent. The
+propagated trace context (`traceparent`, see
+`client.observability.trace_propagation`) therefore names this span as the
+parent of the server-side spans.
+
+When the span does not record (for example, the app has no tracer provider, or
+its sampler drops the span), the SDK does not make it active. The propagated
+trace context is then the app's own active span, or none. A span that does not
+record can carry new IDs with the sampled flag off, and a server that samples by
+its parent would then drop its own spans.
 
 The tracer and the meter both have the instrumentation scope name
 `supabase.postgrest`.
@@ -94,13 +101,13 @@ arrives. Otherwise the span status is left unset.
 Before:
 
 ```
-https://example.supabase.co/rest/v1/users?select=id,email&email=eq.john@doe.com&order=created_at.desc&limit=10
+https://example.supabase.co/rest/v1/users?select=id%2Cemail&email=eq.john@doe.com&order=created_at.desc&limit=10
 ```
 
 After:
 
 ```
-https://example.supabase.co/rest/v1/users?select=id,email&email=REDACTED&order=created_at.desc&limit=10
+https://example.supabase.co/rest/v1/users?select=id%2Cemail&email=REDACTED&order=created_at.desc&limit=10
 ```
 
 ### Request duration metric
