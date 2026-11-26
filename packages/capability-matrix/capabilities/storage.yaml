@@ -246,17 +246,9 @@ features:
     name: Update Iceberg Table
     description: Update an Iceberg table's schema or partition spec.
     group: analytics
-  - id: storage.analytics.rename_table
-    name: Rename Iceberg Table
-    description: Rename an Iceberg table to a new identifier within the same namespace.
-    group: analytics
   - id: storage.analytics.delete_table
     name: Delete Iceberg Table
     description: Drop an Iceberg table from a namespace.
-    group: analytics
-  - id: storage.analytics.register_table
-    name: Register Iceberg Table
-    description: Register an existing Iceberg table with a namespace by pointing the catalog at its metadata file, without creating new data.
     group: analytics
   - id: storage.analytics.table_exists
     name: Check Iceberg Table Exists
