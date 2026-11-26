@@ -230,10 +230,6 @@ features:
     name: Check Iceberg Namespace Exists
     description: Check whether a namespace exists without loading its properties, via the Iceberg REST Catalog API.
     group: analytics
-  - id: storage.analytics.update_namespace_properties
-    name: Update Iceberg Namespace Properties
-    description: Set and remove properties on a namespace via the Iceberg REST Catalog API, reporting which keys were updated, removed, or missing.
-    group: analytics
   - id: storage.analytics.create_table
     name: Create Iceberg Table
     description: Create a new Iceberg table within a namespace, including schema and partition spec definition.
