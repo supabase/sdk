@@ -1,0 +1,76 @@
+import { describe, expect, test } from "bun:test";
+import { findLanguage, languages } from "../src/index.ts";
+
+describe("languages", () => {
+  test("lists the three bundled generators followed by swift and dart", () => {
+    expect(languages.map((language) => language.name)).toEqual([
+      "typescript",
+      "go",
+      "python",
+      "swift",
+      "dart",
+    ]);
+  });
+
+  test("names are unique", () => {
+    const names = languages.map((language) => language.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  test("marks the bundled generators in-process and swift and dart out-of-process", () => {
+    expect(
+      Object.fromEntries(
+        languages.map((language) => [language.name, language.inProcess]),
+      ),
+    ).toEqual({
+      typescript: true,
+      go: true,
+      python: true,
+      swift: false,
+      dart: false,
+    });
+  });
+
+  test("keeps the flag name supabase gen types already exposes", () => {
+    const userOptions = (name: string) =>
+      findLanguage(name)?.options.filter(
+        (option) => option.audience === "user",
+      );
+    expect(userOptions("typescript")).toEqual([]);
+    expect(userOptions("swift")).toEqual([
+      {
+        name: "swift-access-control",
+        audience: "user",
+        kind: "choice",
+        choices: ["internal", "public"],
+        default: "internal",
+        help: "Access control for Swift generated types.",
+      },
+      {
+        name: "swift-typegen-source",
+        audience: "user",
+        kind: "string",
+        help: "Where to build supabase-typegen from: a supabase-swift version (3.0.0-alpha.1), a branch (main), a full commit SHA, or a local checkout (./supabase-swift). Default: the supabase-swift pin in the nearest Package.resolved, else the latest 3.x release.",
+      },
+    ]);
+    expect(findLanguage("go")?.options).toEqual([]);
+    expect(findLanguage("python")?.options).toEqual([]);
+    expect(findLanguage("dart")?.options).toEqual([]);
+  });
+
+  test("typescript carries the consumers' settings as consumer options", () => {
+    expect(
+      findLanguage("typescript")
+        ?.options.filter((option) => option.audience === "consumer")
+        .map((option) => [option.name, option.kind, option.default]),
+    ).toEqual([
+      ["detect-one-to-one-relationships", "boolean", true],
+      ["postgrest-version", "string", undefined],
+      ["default-schema", "string", "public"],
+    ]);
+  });
+
+  test("findLanguage returns undefined for an unknown name", () => {
+    expect(findLanguage("cobol")).toBeUndefined();
+  });
+});

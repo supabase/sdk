@@ -1,5 +1,5 @@
 import { LANGUAGES, STATUSES } from "./types.js";
-import type { ComplianceEntry, ComplianceMap, Language, LoadedArea, Status } from "./types.js";
+import type { ComplianceMap, Language, LoadedArea, Status } from "./types.js";
 
 export interface ComplianceFinding {
   level: "error";
@@ -8,12 +8,30 @@ export interface ComplianceFinding {
 
 type RawValue =
   | string
-  | { status?: string; note?: string; symbols?: string[]; supporting_symbols?: string[] };
+  | {
+      status?: string;
+      note?: string;
+      symbols?: string[];
+      supporting_symbols?: string[];
+      no_public_symbols?: boolean;
+    };
 
 export interface RawCompliance {
   sdk: string;
+  api_coverage?: ApiCoverageMode;
   features: Record<string, RawValue>;
   supporting_symbols?: string[];
+}
+
+const API_COVERAGE_MODES = ["additions", "full"] as const;
+export type ApiCoverageMode = (typeof API_COVERAGE_MODES)[number];
+
+export function getApiCoverageMode(raw: RawCompliance): ApiCoverageMode {
+  const mode: unknown = raw.api_coverage ?? "additions";
+  if (!API_COVERAGE_MODES.includes(mode as ApiCoverageMode)) {
+    throw new Error(`unknown api_coverage "${String(mode)}"`);
+  }
+  return mode as ApiCoverageMode;
 }
 
 // Pseudo feature ID reported for symbols registered in the top-level
@@ -24,7 +42,7 @@ function checkSymbolList(
   value: unknown,
   label: string,
   context: string,
-  findings: ComplianceFinding[]
+  findings: ComplianceFinding[],
 ): void {
   if (value === undefined) return;
   if (!Array.isArray(value) || value.some((s) => typeof s !== "string")) {
@@ -35,9 +53,38 @@ function checkSymbolList(
   }
 }
 
+function checkNoPublicSymbols(
+  id: string,
+  value: Exclude<RawValue, string>,
+  findings: ComplianceFinding[],
+): void {
+  const flag: unknown = value.no_public_symbols;
+  if (flag === undefined) return;
+  if (typeof flag !== "boolean") {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols must be a boolean`,
+    });
+    return;
+  }
+  if (!flag) return;
+  if (!value.note) {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols requires a note explaining how the capability is exposed`,
+    });
+  }
+  if (Array.isArray(value.symbols) && value.symbols.length > 0) {
+    findings.push({
+      level: "error",
+      message: `"${id}": no_public_symbols cannot be combined with symbols`,
+    });
+  }
+}
+
 export function validateCompliance(
   raw: RawCompliance,
-  knownIds: Set<string>
+  knownIds: Set<string>,
 ): ComplianceFinding[] {
   const findings: ComplianceFinding[] = [];
 
@@ -45,7 +92,22 @@ export function validateCompliance(
     findings.push({ level: "error", message: `unknown sdk "${raw.sdk}"` });
   }
 
-  checkSymbolList(raw.supporting_symbols, "supporting_symbols", "top level", findings);
+  if (
+    raw.api_coverage !== undefined &&
+    !API_COVERAGE_MODES.includes(raw.api_coverage as ApiCoverageMode)
+  ) {
+    findings.push({
+      level: "error",
+      message: `unknown api_coverage "${raw.api_coverage}"`,
+    });
+  }
+
+  checkSymbolList(
+    raw.supporting_symbols,
+    "supporting_symbols",
+    "top level",
+    findings,
+  );
 
   for (const [id, value] of Object.entries(raw.features ?? {})) {
     if (!knownIds.has(id)) {
@@ -70,16 +132,28 @@ export function validateCompliance(
     }
 
     if (!STATUSES.includes(status as Status)) {
-      findings.push({ level: "error", message: `"${id}": unknown status "${status}"` });
+      findings.push({
+        level: "error",
+        message: `"${id}": unknown status "${status}"`,
+      });
     }
 
     if (status === "partially_implemented" && !note) {
-      findings.push({ level: "error", message: `"${id}": partially_implemented requires a note` });
+      findings.push({
+        level: "error",
+        message: `"${id}": partially_implemented requires a note`,
+      });
     }
 
     if (typeof value === "object" && value !== null) {
+      checkNoPublicSymbols(id, value, findings);
       checkSymbolList(value.symbols, "symbols", `"${id}"`, findings);
-      checkSymbolList(value.supporting_symbols, "supporting_symbols", `"${id}"`, findings);
+      checkSymbolList(
+        value.supporting_symbols,
+        "supporting_symbols",
+        `"${id}"`,
+        findings,
+      );
     }
   }
 
@@ -115,7 +189,10 @@ export function collectFeatureIds(areas: LoadedArea[]): Set<string> {
   return ids;
 }
 
-export function findMissingFeatureIds(raw: RawCompliance, knownIds: Set<string>): string[] {
+export function findMissingFeatureIds(
+  raw: RawCompliance,
+  knownIds: Set<string>,
+): string[] {
   const declared = new Set(Object.keys(raw.features ?? {}));
   return [...knownIds].filter((id) => !declared.has(id)).sort();
 }
@@ -136,7 +213,7 @@ export function buildSymbolIndex(raw: RawCompliance): Map<string, string> {
 
   const entries = Object.entries(raw.features ?? {}).filter(
     (entry): entry is [string, Exclude<RawValue, string>] =>
-      typeof entry[1] === "object" && entry[1] !== null
+      typeof entry[1] === "object" && entry[1] !== null,
   );
 
   for (const [featureId, value] of entries) {

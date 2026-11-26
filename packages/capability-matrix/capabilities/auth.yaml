@@ -13,6 +13,8 @@ groups:
     title: Identity Linking
   - id: mfa
     title: Multi-Factor Authentication
+  - id: mfa_recovery_codes
+    title: MFA Recovery Codes
   - id: oauth_server
     title: OAuth Server
   - id: admin
@@ -23,6 +25,8 @@ groups:
     title: Admin — Passkeys
   - id: mfa_admin
     title: Admin — Multi-Factor Authentication
+  - id: sso_admin
+    title: Admin — SSO Providers
 features:
   - id: auth.admin.create_provider
     name: Admin Create Provider
@@ -76,6 +80,10 @@ features:
     name: Admin Sign Out
     description: Revoke a user's session server-side by their access token. Requires admin/service role.
     group: admin
+  - id: auth.admin.update_mfa_factor
+    name: Admin Update MFA Factor
+    description: Update the mutable settings of a specific MFA factor on a user's account, such as its friendly name or the phone number of a phone factor. Requires admin/service role.
+    group: mfa_admin
   - id: auth.admin.update_provider
     name: Admin Update Provider
     description: Update an existing custom provider. Requires admin/service role.
@@ -124,6 +132,26 @@ features:
     name: MFA Verify
     description: Verify a code against an active MFA challenge to complete second-factor authentication.
     group: mfa
+  - id: auth.mfa_recovery_codes.generate
+    name: MFA Recovery Codes Generate
+    description: Generate a new set of single-use recovery codes for a user who does not already have one.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.get_status
+    name: MFA Recovery Codes Get Status
+    description: Return the enrollment status of a user's recovery codes, including how many remain unused.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.regenerate
+    name: MFA Recovery Codes Regenerate
+    description: Replace a user's existing set of recovery codes with a newly generated set, invalidating the previous codes.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.unenroll
+    name: MFA Recovery Codes Unenroll
+    description: Remove a user's recovery codes factor, invalidating all remaining codes.
+    group: mfa_recovery_codes
+  - id: auth.mfa_recovery_codes.verify
+    name: MFA Recovery Codes Verify
+    description: Verify a single-use recovery code to upgrade the session to a higher authenticator assurance level.
+    group: mfa_recovery_codes
   - id: auth.oauth_admin.create_client
     name: Admin Create OAuth Client
     description: Register a new OAuth client application. Requires admin/service role.
@@ -210,7 +238,7 @@ features:
     group: session
   - id: auth.session.get_user
     name: Get User
-    description: Fetch the authenticated user's profile from the server, verifying the token.
+    description: Fetch the authenticated user's profile from the Auth server. The server authenticates the supplied access token before answering, so a successful response also proves the token is currently valid and its session has not been revoked.
     group: session
   - id: auth.session.refresh_session
     name: Refresh Session
@@ -292,3 +320,23 @@ features:
     name: Verify OTP
     description: Verify a one-time password or token hash to complete sign-in or email confirmation.
     group: sign_in
+  - id: auth.sso_admin.create_provider
+    name: Admin Create SSO Provider
+    description: Register a single sign-on identity provider from its SAML 2.0 metadata URL or metadata XML, with optional email domains, attribute mapping, and NameID format. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.delete_provider
+    name: Admin Delete SSO Provider
+    description: Remove a registered single sign-on identity provider together with its domain assignments. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.get_provider
+    name: Admin Get SSO Provider
+    description: Fetch a registered single sign-on identity provider by its ID or resource ID, including its SAML metadata and domains. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.list_providers
+    name: Admin List SSO Providers
+    description: List the registered single sign-on identity providers, optionally filtered by resource ID or resource ID prefix. Requires admin/service role.
+    group: sso_admin
+  - id: auth.sso_admin.update_provider
+    name: Admin Update SSO Provider
+    description: Update a registered single sign-on identity provider's SAML metadata, domains, attribute mapping, NameID format, resource ID, or disabled state. Requires admin/service role.
+    group: sso_admin

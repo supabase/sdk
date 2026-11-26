@@ -1,0 +1,2481 @@
+import { describe, expect, test } from "bun:test";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readdir,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+import {
+  generateTypescript as rawGenerateTypescript,
+  pgTypeToTsType,
+} from "../../src/generation/typescript.ts";
+import { resolveRpcFunctions } from "../../src/rpc.ts";
+import { sortGeneratorMetadata } from "../../src/sort.ts";
+import type {
+  PostgresSchema,
+  PostgresType,
+  PostgresView,
+} from "../../src/types.ts";
+import {
+  baseColumn,
+  baseForeignTable,
+  baseFunction,
+  baseMaterializedView,
+  baseRelationship,
+  baseTable,
+  baseView,
+  buildMetadata,
+  int4Type,
+  textType,
+  userStatusEnum,
+} from "./fixtures.ts";
+
+// Generators expect pre-sorted metadata (the caller applies the canonical sort
+// pass); mirror that here so fixture construction order doesn't matter.
+const generateTypescript = (
+  metadata: Parameters<typeof rawGenerateTypescript>[0],
+  opts?: Parameters<typeof rawGenerateTypescript>[1],
+) => rawGenerateTypescript(sortGeneratorMetadata(metadata), opts);
+
+// The generated output ends with a long, fix-independent tail (helper types
+// and Constants). Tests that only assert on the Database type snapshot this
+// leading section to keep the inline snapshots focused.
+const databaseSection = (result: string) =>
+  result.slice(0, result.indexOf("\ntype DatabaseWithoutInternals"));
+
+describe("typescript typegen", () => {
+  test("table Row/Insert/Update with enum, identity ALWAYS, default and nullable", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({
+            name: "id",
+            format: "int8",
+            is_identity: true,
+            identity_generation: "ALWAYS",
+            ordinal_position: 1,
+          }),
+          baseColumn({
+            name: "status",
+            format: "user_status",
+            is_nullable: true,
+            ordinal_position: 2,
+          }),
+          baseColumn({ name: "label", format: "text", ordinal_position: 3 }),
+          baseColumn({
+            name: "score",
+            format: "int4",
+            default_value: "0",
+            ordinal_position: 4,
+          }),
+          baseColumn({
+            name: "meta",
+            format: "jsonb",
+            is_nullable: true,
+            ordinal_position: 5,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                id: number
+                label: string
+                meta: Json | null
+                score: number
+                status: Database["public"]["Enums"]["user_status"] | null
+              }
+              ComputedFields: never
+              Insert: {
+                id?: never
+                label: string
+                meta?: Json | null
+                score?: number
+                status?: Database["public"]["Enums"]["user_status"] | null
+              }
+              Update: {
+                id?: never
+                label?: string
+                meta?: Json | null
+                score?: number
+                status?: Database["public"]["Enums"]["user_status"] | null
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        public: {
+          Enums: {
+            user_status: ["ACTIVE", "INACTIVE"],
+          },
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("omits stored generated columns from Insert and Update", async () => {
+    // Ported from supabase/postgres-meta#1105: `GENERATED ALWAYS AS … STORED`
+    // columns are not writable, so they stay on Row but become `?: never` on
+    // Insert and Update, matching identity ALWAYS columns.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({
+            name: "height_cm",
+            format: "numeric",
+            is_nullable: true,
+            ordinal_position: 1,
+          }),
+          baseColumn({
+            name: "height_in",
+            format: "numeric",
+            is_nullable: true,
+            is_generated: true,
+            is_updatable: false,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                height_cm: number | null
+                height_in: number | null
+              }
+              ComputedFields: never
+              Insert: {
+                height_cm?: number | null
+                height_in?: never
+              }
+              Update: {
+                height_cm?: number | null
+                height_in?: never
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("narrows a non-nullable json column to NonNullable<Json>", async () => {
+    // Ported from supabase/postgres-meta#1085: the generated Json type itself
+    // includes null, so a NOT NULL json/jsonb column must be narrowed with
+    // NonNullable to reflect the database constraint. Nullable json columns
+    // keep the plain `Json | null` union.
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [
+          baseColumn({
+            name: "required_metadata",
+            format: "jsonb",
+            ordinal_position: 1,
+          }),
+          baseColumn({
+            name: "optional_metadata",
+            format: "jsonb",
+            is_nullable: true,
+            ordinal_position: 2,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                optional_metadata: Json | null
+                required_metadata: NonNullable<Json>
+              }
+              ComputedFields: never
+              Insert: {
+                optional_metadata?: Json | null
+                required_metadata: NonNullable<Json>
+              }
+              Update: {
+                optional_metadata?: Json | null
+                required_metadata?: NonNullable<Json>
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("resolves an enum by the column's type_schema, not the table's own schema", async () => {
+    // A table in `tenant` referencing `public.user_status`, while `tenant`
+    // also defines its own same-named enum with different variants. Without
+    // consulting type_schema, resolution falls back to preferring an enum in
+    // the table's own schema and silently picks the wrong one.
+    const tenantSchema = { id: 2, name: "tenant", owner: "postgres" };
+    const tenantStatusEnum = {
+      ...userStatusEnum,
+      id: 101,
+      schema: "tenant",
+      enums: ["PENDING", "DONE"],
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [{ id: 1, name: "public", owner: "postgres" }, tenantSchema],
+        types: [userStatusEnum, tenantStatusEnum],
+        tables: [baseTable({ id: 2, schema: "tenant", name: "accounts" })],
+        columns: [
+          baseColumn({
+            table_id: 2,
+            schema: "tenant",
+            table: "accounts",
+            name: "status",
+            format: "user_status",
+            type_schema: "public",
+            ordinal_position: 1,
+          }),
+        ],
+      }),
+    );
+
+    expect(result).toContain(
+      'status: Database["public"]["Enums"]["user_status"]',
+    );
+    expect(result).not.toContain(
+      'status: Database["tenant"]["Enums"]["user_status"]',
+    );
+  });
+
+  test("relationships without detectOneToOneRelationships omit isOneToOne", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "tickets" })],
+        columns: [
+          baseColumn({ table_id: 1, name: "owner_id", format: "int8" }),
+        ],
+        relationships: [baseRelationship()],
+      }),
+    );
+
+    expect(result).not.toContain("isOneToOne");
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                owner_id: number
+              }
+              ComputedFields: never
+              Insert: {
+                owner_id: number
+              }
+              Update: {
+                owner_id?: number
+              }
+              Relationships: [
+                {
+                  foreignKeyName: "tickets_owner_id_fkey"
+                  columns: ["owner_id"]
+                  referencedRelation: "users"
+                  referencedColumns: ["id"]
+                },
+              ]
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        public: {
+          Enums: {
+            user_status: ["ACTIVE", "INACTIVE"],
+          },
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("relationships with detectOneToOneRelationships include isOneToOne", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "tickets" })],
+        columns: [
+          baseColumn({ table_id: 1, name: "owner_id", format: "int8" }),
+        ],
+        relationships: [baseRelationship({ is_one_to_one: true })],
+      }),
+      { detectOneToOneRelationships: true },
+    );
+
+    expect(result).toContain("isOneToOne: true");
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                owner_id: number
+              }
+              ComputedFields: never
+              Insert: {
+                owner_id: number
+              }
+              Update: {
+                owner_id?: number
+              }
+              Relationships: [
+                {
+                  foreignKeyName: "tickets_owner_id_fkey"
+                  columns: ["owner_id"]
+                  isOneToOne: true
+                  referencedRelation: "users"
+                  referencedColumns: ["id"]
+                },
+              ]
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        public: {
+          Enums: {
+            user_status: ["ACTIVE", "INACTIVE"],
+          },
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("postgrestVersion emits __InternalSupabase.PostgrestVersion", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "id", format: "int8" })],
+      }),
+      { postgrestVersion: "12" },
+    );
+
+    expect(result).toContain('PostgrestVersion: "12"');
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        // Allows to automatically instantiate createClient with right options
+        // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+        __InternalSupabase: {
+          PostgrestVersion: "12"
+        }
+        public: {
+          Tables: {
+            tickets: {
+              Row: {
+                id: number
+              }
+              ComputedFields: never
+              Insert: {
+                id: number
+              }
+              Update: {
+                id?: number
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        public: {
+          Enums: {
+            user_status: ["ACTIVE", "INACTIVE"],
+          },
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("a document without rpcFunctions generates the same output", async () => {
+    // Version 1 documents predating the collection stay valid; the generator
+    // resolves the collection itself and must emit the same types.
+    const withoutRpc = buildMetadata({
+      tables: [baseTable({ id: 1, name: "category" })],
+      columns: [baseColumn({ table_id: 1, name: "name", format: "text" })],
+      functions: [
+        baseFunction({
+          id: 1,
+          name: "name_translated",
+          args: [{ mode: "in", name: "", type_id: 500, has_default: false }],
+          argument_types: "category",
+          identity_argument_types: "category",
+          return_type_id: 25,
+          return_type: "text",
+        }),
+        baseFunction({
+          id: 2,
+          name: "add",
+          args: [{ mode: "in", name: "a", type_id: 23, has_default: false }],
+          argument_types: "a integer",
+        }),
+      ],
+      types: [
+        userStatusEnum,
+        textType,
+        int4Type,
+        {
+          id: 500,
+          name: "category",
+          schema: "public",
+          format: "category",
+          enums: [],
+          attributes: [],
+          comment: null,
+          type_relation_id: 1,
+        },
+      ],
+    });
+    const withRpc = {
+      ...withoutRpc,
+      rpcFunctions: resolveRpcFunctions(withoutRpc),
+    };
+    expect(withRpc.rpcFunctions.map((fn) => fn.name)).toEqual([
+      "add",
+      "name_translated",
+    ]);
+
+    const result = await generateTypescript(withRpc);
+    expect(await generateTypescript(withoutRpc)).toBe(result);
+    expect(result).toContain("name_translated: string | null");
+    expect(result).toContain("add: { Args: { a: number }; Returns: number }");
+  });
+
+  test("function signature with args and scalar return", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        functions: [
+          baseFunction({
+            name: "add",
+            args: [
+              { mode: "in", name: "a", type_id: 23, has_default: false },
+              { mode: "in", name: "b", type_id: 23, has_default: true },
+            ],
+            argument_types: "a integer, b integer",
+            return_type_id: 23,
+            return_type: "integer",
+          }),
+        ],
+        types: [userStatusEnum, int4Type],
+      }),
+    );
+
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            add: { Args: { a: number; b?: number }; Returns: number }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        public: {
+          Enums: {
+            user_status: ["ACTIVE", "INACTIVE"],
+          },
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("zero-argument function emits Record<PropertyKey, never> for Args", async () => {
+    // Ported from supabase/postgres-meta#1035: `Args: never` breaks
+    // postgrest-js, which treats `never extends { '': Row }` as a computed
+    // field and omits same-named table columns from select results, and it
+    // makes the whole Database type uninhabited for tools doing sound type
+    // math on it. `Record<PropertyKey, never>` is the accurate type for a
+    // function callable with no arguments.
+    //
+    // postgrest-js 1.21.1 through 2.100.0 (supabase-js 2.74.0 through
+    // 2.100.0) have no guard against `Args: never` and drop the column, so
+    // this is asserted directly as well: updating the snapshot alone must not
+    // be enough to go back.
+    const result = await generateTypescript(
+      buildMetadata({
+        functions: [baseFunction()],
+        types: [userStatusEnum, int4Type],
+      }),
+    );
+
+    expect(result).toContain(
+      "get_status: { Args: Record<PropertyKey, never>; Returns: number }",
+    );
+    expect(result).not.toContain("Args: never");
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            get_status: { Args: Record<PropertyKey, never>; Returns: number }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("computed field lands in Row when its parameter is named", async () => {
+    // Ported from supabase/postgres-meta#1034: computed fields were matched by
+    // comparing `argument_types` — `pg_get_function_arguments()` — against the
+    // table name. That string carries the parameter name when the parameter has
+    // one, so `name_translated(category category)` produced `category category`
+    // and never matched, dropping the field from `Row` and making
+    // `.select("name_translated")` a SelectQueryError. The unnamed
+    // `name_translated(category)` matched and worked, which is why this
+    // reproduced for some schemas and not others. Matching on the argument's
+    // composite type covers both spellings.
+    const categoryRowType: PostgresType = {
+      id: 500,
+      name: "category",
+      schema: "public",
+      format: "category",
+      enums: [],
+      attributes: [],
+      comment: null,
+      // The table's own composite type points back at the table's oid.
+      type_relation_id: 1,
+    };
+    // A variadic argument arrives as the array type, which is backed by no
+    // relation and so must never be taken for a computed field.
+    const categoryArrayType: PostgresType = {
+      id: 501,
+      name: "_category",
+      schema: "public",
+      format: "category[]",
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: null,
+    };
+    const metadata = (
+      argName: string,
+      mode: "in" | "inout" | "variadic" = "in",
+      typeId = 500,
+    ) =>
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "category" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            name: "name",
+            format: "text",
+            ordinal_position: 1,
+          }),
+        ],
+        functions: [
+          baseFunction({
+            name: "name_translated",
+            args: [
+              { mode, name: argName, type_id: typeId, has_default: false },
+            ],
+            argument_types: argName ? `${argName} category` : "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [userStatusEnum, textType, categoryRowType, categoryArrayType],
+      });
+
+    const named = await generateTypescript(metadata("category"));
+    expect(named).toContain("name_translated: string | null");
+
+    // The unnamed spelling already worked; keep it working.
+    const unnamed = await generateTypescript(metadata(""));
+    expect(unnamed).toContain("name_translated: string | null");
+
+    // `INOUT` is a valid PostgREST computed field and counts as an input arg
+    // everywhere else in this generator, so it belongs in `Row` too.
+    const inout = await generateTypescript(metadata("category", "inout"));
+    expect(inout).toContain("name_translated: string | null");
+
+    // A variadic argument is an array of the row type, not the row type.
+    const variadic = await generateTypescript(
+      metadata("category", "variadic", 501),
+    );
+    expect(variadic).not.toContain("name_translated: string | null");
+  });
+
+  test("relations declare their computed fields next to Row", async () => {
+    // PostgREST leaves computed fields out of `select('*')`. postgrest-js used
+    // to infer which `Row` keys those are from `Functions`, which fails once a
+    // `Row`'s column types are overridden. `ComputedFields` names them
+    // explicitly, `never` when there are none. A named row parameter is typed
+    // without the computed fields, since PostgREST never takes them as input
+    // and fills the keys it does not receive with NULL. An unnamed one keeps
+    // the plain `Row` reference, which postgrest-js versions predating
+    // `ComputedFields` match on to recognise a computed field.
+    const rowType = (
+      id: number,
+      name: string,
+      relationId: number,
+    ): PostgresType => ({
+      id,
+      name,
+      schema: "public",
+      format: name,
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: relationId,
+    });
+    const rowArg = (name: string, typeId: number) => ({
+      mode: "in" as const,
+      name,
+      type_id: typeId,
+      has_default: false,
+    });
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [
+          baseTable({ id: 1, name: "category" }),
+          baseTable({ id: 2, name: "tag" }),
+        ],
+        views: [baseView({ id: 3, name: "category_view" })],
+        columns: [1, 2, 3].map((tableId) =>
+          baseColumn({
+            table_id: tableId,
+            name: "name",
+            format: "text",
+            is_nullable: false,
+            ordinal_position: 1,
+          }),
+        ),
+        functions: [
+          baseFunction({
+            id: 301,
+            name: "name_translated",
+            args: [rowArg("", 500)],
+            argument_types: "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+          baseFunction({
+            id: 302,
+            name: "slug",
+            args: [rowArg("cat", 500)],
+            argument_types: "cat category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+          baseFunction({
+            id: 303,
+            name: "label",
+            args: [rowArg("v", 502)],
+            argument_types: "v category_view",
+            identity_argument_types: "category_view",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          rowType(500, "category", 1),
+          rowType(502, "category_view", 3),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            category: {
+              Row: {
+                name: string
+                name_translated: string | null
+                slug: string | null
+              }
+              ComputedFields: "name_translated" | "slug"
+              Insert: {
+                name: string
+              }
+              Update: {
+                name?: string
+              }
+              Relationships: []
+            }
+            tag: {
+              Row: {
+                name: string
+              }
+              ComputedFields: never
+              Insert: {
+                name: string
+              }
+              Update: {
+                name?: string
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            category_view: {
+              Row: {
+                name: string
+                label: string | null
+              }
+              ComputedFields: "label"
+              Relationships: []
+            }
+          }
+          Functions: {
+            label: {
+              Args: {
+                v: Omit<
+                  Database["public"]["Views"]["category_view"]["Row"],
+                  Database["public"]["Views"]["category_view"]["ComputedFields"]
+                >
+              }
+              Returns: string
+            }
+            name_translated: {
+              Args: { "": Database["public"]["Tables"]["category"]["Row"] }
+              Returns: {
+                error: true
+              } & "the function public.name_translated with parameter or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache"
+            }
+            slug: {
+              Args: {
+                cat: Omit<
+                  Database["public"]["Tables"]["category"]["Row"],
+                  Database["public"]["Tables"]["category"]["ComputedFields"]
+                >
+              }
+              Returns: string
+            }
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("a function named like a column is neither in Row nor a computed field", async () => {
+    // PostgREST resolves the name to the column, so the function is not
+    // selectable through it. Emitting it anyway declared the key twice in
+    // `Row`, once with the column's type and once nullable.
+    const categoryRowType: PostgresType = {
+      id: 500,
+      name: "category",
+      schema: "public",
+      format: "category",
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: 1,
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable({ id: 1, name: "category" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            name: "name",
+            format: "text",
+            is_nullable: false,
+            ordinal_position: 1,
+          }),
+        ],
+        functions: [
+          baseFunction({
+            name: "name",
+            args: [{ mode: "in", name: "", type_id: 500, has_default: false }],
+            argument_types: "category",
+            identity_argument_types: "category",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [userStatusEnum, textType, categoryRowType],
+      }),
+    );
+
+    expect(result).toContain("name: string\n");
+    expect(result).not.toContain("name: string | null");
+    expect(result).toContain("ComputedFields: never");
+    // The function itself is still callable through rpc.
+    expect(result).toMatch(
+      /name: \{\s+Args: \{ "": Database\["public"\]\["Tables"\]\["category"\]\["Row"\] \}/,
+    );
+  });
+
+  test("composite args on foreign tables and materialized views resolve to their Row", async () => {
+    // `pgTypeToTsType` used to resolve a relation-typed value against `tables`
+    // and `views` only, so an argument typed as a foreign table or as a
+    // materialized view fell through to `unknown` even though both are
+    // generated (foreign tables under `Tables`, materialized views under
+    // `Views`) and have a `Row` to point at.
+    const relationType = (
+      id: number,
+      name: string,
+      relationId: number,
+    ): PostgresType => ({
+      id,
+      name,
+      schema: "public",
+      format: name,
+      enums: [],
+      attributes: [],
+      comment: null,
+      type_relation_id: relationId,
+    });
+    const labelFunction = (
+      id: number,
+      relation: string,
+      typeId: number,
+      argName: string,
+    ) =>
+      baseFunction({
+        id,
+        name: `${relation}_label`,
+        args: [
+          { mode: "in", name: argName, type_id: typeId, has_default: false },
+        ],
+        argument_types: `${argName} ${relation}`,
+        return_type_id: 25,
+        return_type: "text",
+      });
+
+    const result = await generateTypescript(
+      buildMetadata({
+        foreignTables: [baseForeignTable({ id: 1, name: "remote_tickets" })],
+        materializedViews: [
+          baseMaterializedView({ id: 2, name: "tickets_matview" }),
+        ],
+        columns: [
+          baseColumn({ table_id: 1, name: "id", format: "int4" }),
+          baseColumn({ table_id: 2, name: "id", format: "int4" }),
+        ],
+        functions: [
+          labelFunction(300, "remote_tickets", 500, "ft"),
+          labelFunction(301, "tickets_matview", 501, "mv"),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          relationType(500, "remote_tickets", 1),
+          relationType(501, "tickets_matview", 2),
+        ],
+      }),
+    );
+
+    // Named row parameters are typed without the relation's computed fields.
+    expect(result).toMatch(
+      /ft: Omit<\s*Database\["public"\]\["Tables"\]\["remote_tickets"\]\["Row"\],\s*Database\["public"\]\["Tables"\]\["remote_tickets"\]\["ComputedFields"\]\s*>/,
+    );
+    expect(result).toMatch(
+      /mv: Omit<\s*Database\["public"\]\["Views"\]\["tickets_matview"\]\["Row"\],\s*Database\["public"\]\["Views"\]\["tickets_matview"\]\["ComputedFields"\]\s*>/,
+    );
+    expect(result).not.toContain("ft: unknown");
+    expect(result).not.toContain("mv: unknown");
+  });
+
+  test("interval maps to string", () => {
+    const schema = {
+      id: 1,
+      name: "public",
+      owner: "postgres",
+    } as PostgresSchema;
+    expect(
+      pgTypeToTsType(schema, "interval", {
+        types: [],
+        schemas: [schema],
+        tables: [],
+        views: [],
+      }),
+    ).toBe("string");
+  });
+
+  test("a relation-typed value resolves in its own schema before its own kind", async () => {
+    // Relation-typed values carry a bare type name, so the resolver has to pick
+    // between same-named relations using `preferredSchema`. It used to settle
+    // the relation kind first and the schema second, which let a table-like
+    // relation in an unrelated schema outrank the view the caller actually
+    // meant. Harmless while only tables and views were consulted; adding
+    // foreign tables and materialized views made it reachable.
+    const schemas = [
+      { id: 1, name: "public", owner: "postgres" },
+      { id: 2, name: "other", owner: "postgres" },
+    ] as PostgresSchema[];
+    const resolve = (context: Parameters<typeof pgTypeToTsType>[2]) =>
+      pgTypeToTsType(schemas[0]!, "foo", context);
+
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "public", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "other", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Views']["foo"]['Row']`);
+
+    // Same rule the other way round: the foreign table is the one in the
+    // preferred schema, so it wins over the view in the unrelated schema.
+    expect(
+      resolve({
+        types: [],
+        schemas,
+        tables: [],
+        views: [baseView({ id: 10, schema: "other", name: "foo" })],
+        foreignTables: [
+          baseForeignTable({ id: 11, schema: "public", name: "foo" }),
+        ],
+      }),
+    ).toBe(`Database["public"]['Tables']["foo"]['Row']`);
+  });
+
+  test("a function argument resolves in the schema that owns its type", async () => {
+    // Argument and return types used to be resolved without telling the
+    // resolver which schema owns them, so it guessed the schema being
+    // generated. The call sites already hold the resolved `PostgresType`, which
+    // carries the owning schema, so they pass it: an argument genuinely typed
+    // `other.foo` must not resolve to a same-named relation in `public`.
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [
+          { id: 1, name: "public", owner: "postgres" },
+          { id: 2, name: "other", owner: "postgres" },
+        ],
+        tables: [baseTable({ id: 20, schema: "other", name: "foo" })],
+        views: [baseView({ id: 21, schema: "public", name: "foo" })],
+        columns: [
+          baseColumn({
+            table_id: 20,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+          baseColumn({
+            table_id: 21,
+            table: "foo",
+            name: "id",
+            format: "int4",
+          }),
+        ],
+        functions: [
+          baseFunction({
+            id: 310,
+            schema: "public",
+            name: "describe",
+            args: [{ mode: "in", name: "a", type_id: 500, has_default: false }],
+            argument_types: "a other.foo",
+            return_type_id: 25,
+            return_type: "text",
+          }),
+        ],
+        types: [
+          userStatusEnum,
+          textType,
+          int4Type,
+          {
+            id: 500,
+            name: "foo",
+            schema: "other",
+            format: "foo",
+            enums: [],
+            attributes: [],
+            comment: null,
+            type_relation_id: 20,
+          },
+        ],
+      }),
+    );
+
+    expect(result).toMatch(
+      /a: Omit<\s*Database\["other"\]\["Tables"\]\["foo"\]\["Row"\],\s*Database\["other"\]\["Tables"\]\["foo"\]\["ComputedFields"\]\s*>/,
+    );
+    expect(result).not.toContain('Database["public"]["Views"]["foo"]["Row"]');
+  });
+
+  test("types owned by a schema that is not generated fall back rather than dangle", async () => {
+    // A column can reference an enum, a composite type or a relation that lives
+    // in a schema the caller did not ask to generate. Emitting
+    // `Database["other"][...]` there would dangle, because no `other` key is
+    // written, so each kind degrades instead: an enum inlines its variants as a
+    // string union (the values travel with the type, so nothing is lost) while
+    // composites and relations, whose shape lives in the schema that was
+    // skipped, go to `unknown`.
+    const outsideEnum: PostgresType = {
+      id: 600,
+      name: "mood",
+      schema: "other",
+      format: "mood",
+      enums: ["happy", "sad"],
+      attributes: [],
+      comment: null,
+      type_relation_id: null,
+    };
+    const outsideComposite: PostgresType = {
+      id: 601,
+      name: "point3",
+      schema: "other",
+      format: "point3",
+      enums: [],
+      attributes: [{ name: "x", type_id: 23 }],
+      comment: null,
+      type_relation_id: null,
+    };
+    const column = (position: number, name: string, format: string) =>
+      baseColumn({
+        table_id: 1,
+        table: "holder",
+        ordinal_position: position,
+        name,
+        format,
+        type_schema: "other",
+        is_nullable: true,
+      });
+
+    const result = await generateTypescript(
+      buildMetadata({
+        // `other` is deliberately absent from `schemas`, while types and
+        // relations belonging to it are still in the metadata. `introspect()`
+        // produces the type half of that itself: it filters relations by
+        // schema but queries `types` with no filter at all, so an
+        // out-of-schema enum or composite arrives on the canonical path. The
+        // relation half only arrives from a custom `GeneratorMetadata`
+        // producer, which the contract explicitly allows.
+        schemas: [{ id: 1, name: "public", owner: "postgres" }],
+        tables: [
+          baseTable({ id: 1, name: "holder" }),
+          baseTable({ id: 20, schema: "other", name: "remote" }),
+        ],
+        views: [baseView({ id: 21, schema: "other", name: "remote_view" })],
+        columns: [
+          column(1, "mood_col", "mood"),
+          column(2, "point_col", "point3"),
+          column(3, "row_col", "remote"),
+          column(4, "view_col", "remote_view"),
+        ],
+        types: [userStatusEnum, textType, outsideEnum, outsideComposite],
+      }),
+    );
+
+    expect(result).toContain('mood_col: "happy" | "sad" | null');
+    expect(result).toContain("point_col: unknown");
+    expect(result).toContain("row_col: unknown");
+    expect(result).toContain("view_col: unknown");
+    // Nothing may reference the schema that was never generated.
+    expect(result).not.toContain('Database["other"]');
+  });
+
+  test("a non-updatable column on a writable view is `never` in Update", async () => {
+    // A view can be writable overall while individual columns are not, for
+    // instance a computed expression alongside plain passthrough columns. Those
+    // columns have to be spelled `?: never` so writing one is a type error
+    // rather than a runtime rejection. The Insert side of this is already
+    // covered; the Update side was not.
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          baseView({ id: 30, name: "editable_view", is_update_enabled: true }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 30,
+            table: "editable_view",
+            ordinal_position: 1,
+            name: "writable",
+            is_nullable: true,
+          }),
+          baseColumn({
+            table_id: 30,
+            table: "editable_view",
+            ordinal_position: 2,
+            name: "computed",
+            is_nullable: true,
+            is_updatable: false,
+          }),
+        ],
+      }),
+    );
+
+    const update = result.slice(result.indexOf("Update: {"));
+    expect(update).toContain("computed?: never");
+    expect(update).toContain("writable?: string | null");
+  });
+
+  test("views emit Insert and Update independently based on trigger-aware writability", async () => {
+    // Ported from supabase/postgres-meta#1062 (improved): views made writable
+    // by INSTEAD OF triggers get Insert/Update types even though they are not
+    // auto-updatable, and the two are gated independently so a view with only
+    // an INSTEAD OF INSERT trigger gets only an Insert type.
+    const viewColumn = (
+      tableId: number,
+      view: string,
+      overrides: Parameters<typeof baseColumn>[0] = {},
+    ) =>
+      baseColumn({
+        table_id: tableId,
+        table: view,
+        name: "id",
+        format: "int8",
+        is_nullable: true,
+        ...overrides,
+      });
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          baseView({
+            id: 1,
+            name: "insert_only_view",
+            is_insert_enabled: true,
+          }),
+          baseView({
+            id: 2,
+            name: "update_only_view",
+            is_update_enabled: true,
+          }),
+          baseView({
+            id: 3,
+            name: "auto_updatable_view",
+            is_updatable: true,
+            is_insert_enabled: true,
+            is_update_enabled: true,
+          }),
+          baseView({ id: 4, name: "read_only_view" }),
+        ],
+        columns: [
+          viewColumn(1, "insert_only_view"),
+          viewColumn(1, "insert_only_view", {
+            name: "derived",
+            format: "text",
+            is_updatable: false,
+            ordinal_position: 2,
+          }),
+          viewColumn(2, "update_only_view"),
+          viewColumn(3, "auto_updatable_view"),
+          viewColumn(4, "read_only_view"),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            auto_updatable_view: {
+              Row: {
+                id: number | null
+              }
+              ComputedFields: never
+              Insert: {
+                id?: number | null
+              }
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+            insert_only_view: {
+              Row: {
+                derived: string | null
+                id: number | null
+              }
+              ComputedFields: never
+              Insert: {
+                derived?: never
+                id?: number | null
+              }
+              Relationships: []
+            }
+            read_only_view: {
+              Row: {
+                id: number | null
+              }
+              ComputedFields: never
+              Relationships: []
+            }
+            update_only_view: {
+              Row: {
+                id: number | null
+              }
+              ComputedFields: never
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("views without the trigger-aware flags fall back to is_updatable", async () => {
+    // Version 1 metadata produced before is_insert_enabled and
+    // is_update_enabled existed must keep the original contract: an
+    // auto-updatable view gets both Insert and Update, a non-updatable view
+    // gets neither.
+    const legacyView = (
+      overrides: Partial<Omit<PostgresView, "columns">>,
+    ): Omit<PostgresView, "columns"> => {
+      const {
+        is_insert_enabled: _insertFlag,
+        is_update_enabled: _updateFlag,
+        ...view
+      } = baseView(overrides);
+      return view;
+    };
+    const result = await generateTypescript(
+      buildMetadata({
+        views: [
+          legacyView({ id: 1, name: "legacy_updatable", is_updatable: true }),
+          legacyView({ id: 2, name: "legacy_read_only" }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            table: "legacy_updatable",
+            name: "id",
+            format: "int8",
+            is_nullable: true,
+          }),
+          baseColumn({
+            table_id: 2,
+            table: "legacy_read_only",
+            name: "id",
+            format: "int8",
+            is_nullable: true,
+          }),
+        ],
+      }),
+    );
+
+    expect(databaseSection(result)).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        public: {
+          Tables: {
+            [_ in never]: never
+          }
+          Views: {
+            legacy_read_only: {
+              Row: {
+                id: number | null
+              }
+              ComputedFields: never
+              Relationships: []
+            }
+            legacy_updatable: {
+              Row: {
+                id: number | null
+              }
+              ComputedFields: never
+              Insert: {
+                id?: number | null
+              }
+              Update: {
+                id?: number | null
+              }
+              Relationships: []
+            }
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            user_status: "ACTIVE" | "INACTIVE"
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+      "
+    `);
+  });
+
+  test("defaultSchema option targets a non-public schema", async () => {
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [{ id: 2, name: "api", owner: "postgres" }],
+        tables: [baseTable({ id: 1, schema: "api", name: "widgets" })],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            schema: "api",
+            name: "id",
+            format: "int8",
+          }),
+        ],
+        types: [],
+      }),
+      { defaultSchema: "api" },
+    );
+
+    expect(result).toContain('Extract<keyof Database, "api">');
+    expect(result).toMatchInlineSnapshot(`
+      "export type Json =
+        | string
+        | number
+        | boolean
+        | null
+        | { [key: string]: Json | undefined }
+        | Json[]
+
+      export type Database = {
+        api: {
+          Tables: {
+            widgets: {
+              Row: {
+                id: number
+              }
+              ComputedFields: never
+              Insert: {
+                id: number
+              }
+              Update: {
+                id?: number
+              }
+              Relationships: []
+            }
+          }
+          Views: {
+            [_ in never]: never
+          }
+          Functions: {
+            [_ in never]: never
+          }
+          Enums: {
+            [_ in never]: never
+          }
+          CompositeTypes: {
+            [_ in never]: never
+          }
+        }
+      }
+
+      type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+      type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "api">]
+
+      export type Tables<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+              DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+            DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+          }
+          ? R
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])
+          ? (DefaultSchema["Tables"] &
+              DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+          : never
+
+      export type TablesInsert<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+          }
+          ? I
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+          : never
+
+      export type TablesUpdate<
+        DefaultSchemaTableNameOrOptions extends
+          | keyof DefaultSchema["Tables"]
+          | { schema: keyof DatabaseWithoutInternals },
+        TableName extends (DefaultSchemaTableNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+          : never) = never,
+      > = DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+          }
+          ? U
+          : never
+        : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+          ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+          : never
+
+      export type Enums<
+        DefaultSchemaEnumNameOrOptions extends
+          | keyof DefaultSchema["Enums"]
+          | { schema: keyof DatabaseWithoutInternals },
+        EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+          : never) = never,
+      > = DefaultSchemaEnumNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+          ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+          : never
+
+      export type CompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+          | keyof DefaultSchema["CompositeTypes"]
+          | { schema: keyof DatabaseWithoutInternals },
+        CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+          schema: keyof DatabaseWithoutInternals
+        }
+          ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+          : never) = never,
+      > = PublicCompositeTypeNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+      }
+        ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+          ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+          : never
+
+      export const Constants = {
+        api: {
+          Enums: {},
+        },
+      } as const
+      "
+    `);
+  });
+
+  test("a default schema that is not generated falls back to the first generated schema", async () => {
+    // `DefaultSchema` used to resolve to `never` here, which made every helper
+    // without a `{ schema }` option `unknown`: any table name was accepted and
+    // no column could be read. Only the compiler can tell, so the generated
+    // file is typechecked, not only inspected.
+    const result = await generateTypescript(
+      buildMetadata({
+        schemas: [
+          { id: 3, name: "personal", owner: "postgres" },
+          { id: 2, name: "audit", owner: "postgres" },
+        ],
+        tables: [
+          baseTable({ id: 1, schema: "audit", name: "users" }),
+          baseTable({ id: 4, schema: "personal", name: "notes" }),
+        ],
+        columns: [
+          baseColumn({
+            table_id: 1,
+            schema: "audit",
+            name: "id",
+            format: "int8",
+          }),
+          baseColumn({
+            table_id: 4,
+            schema: "personal",
+            name: "body",
+            format: "text",
+          }),
+        ],
+        types: [],
+      }),
+    );
+
+    expect(result).toContain('Extract<keyof Database, "audit">');
+
+    const root = await mkdtemp(
+      join(tmpdir(), "postgrest-typegen-default-schema-"),
+    );
+    try {
+      await writeFile(join(root, "database.ts"), result);
+      await writeFile(
+        join(root, "usage.ts"),
+        `import type { Tables, TablesInsert, TablesUpdate } from "./database"
+
+declare const row: Tables<"users">
+declare const insert: TablesInsert<"users">
+declare const update: TablesUpdate<"users">
+declare const note: Tables<{ schema: "personal" }, "notes">
+const id: number = row.id
+const insertId: number = insert.id
+const updateId: number | undefined = update.id
+const body: string = note.body
+// @ts-expect-error a table outside the default schema needs the schema option
+type Notes = Tables<"notes">
+// @ts-expect-error a row needs its columns
+const wrongRow: Tables<"users"> = { nope: true }
+
+export type { Notes }
+export { id, insertId, updateId, body, wrongRow }
+`,
+      );
+      const proc = Bun.spawn({
+        cmd: [
+          join(import.meta.dir, "..", "..", "node_modules", ".bin", "tsc"),
+          "--noEmit",
+          "--strict",
+          "--module",
+          "esnext",
+          "--moduleResolution",
+          "bundler",
+          "usage.ts",
+        ],
+        cwd: root,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
+      const [stdout, exitCode] = await Promise.all([
+        proc.stdout.text(),
+        proc.exited,
+      ]);
+      expect(stdout).toBe("");
+      expect(exitCode).toBe(0);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("format option substitutes the default oxfmt formatter", async () => {
+    const calls: string[] = [];
+    const result = await generateTypescript(
+      buildMetadata({
+        tables: [baseTable()],
+        columns: [baseColumn({ name: "id", format: "int8" })],
+      }),
+      {
+        format: async (code) => {
+          calls.push(code);
+          return "// formatted by custom formatter\n";
+        },
+      },
+    );
+
+    expect(calls).toHaveLength(1);
+    expect(result).toBe("// formatted by custom formatter\n");
+  });
+});
+
+describe("oxfmt loading", () => {
+  const packageRoot = join(import.meta.dir, "..", "..");
+
+  const runProbe = async (root: string) => {
+    const proc = Bun.spawn({
+      cmd: [
+        "bun",
+        "--no-install",
+        join(root, "test", "generation", "oxfmt-load-probe.ts"),
+      ],
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      proc.stdout.text(),
+      proc.stderr.text(),
+      proc.exited,
+    ]);
+    expect(stderr).toBe("");
+    expect(exitCode).toBe(0);
+    return JSON.parse(stdout) as {
+      afterCallerFormat: string[];
+      afterDefaultFormat: string[];
+      defaultFormatError: string | null;
+    };
+  };
+
+  // A copy of the package whose node_modules links to every installed
+  // package except oxfmt, so only that import fails to resolve.
+  const copyPackageWithoutOxfmt = async () => {
+    const root = await mkdtemp(join(tmpdir(), "postgrest-typegen-no-oxfmt-"));
+    await cp(join(packageRoot, "src"), join(root, "src"), { recursive: true });
+    for (const file of ["fixtures.ts", "oxfmt-load-probe.ts"]) {
+      await cp(
+        join(packageRoot, "test", "generation", file),
+        join(root, "test", "generation", file),
+      );
+    }
+    const realModules = join(packageRoot, "node_modules");
+    const linkedModules = join(root, "node_modules");
+    await mkdir(linkedModules);
+    for (const entry of await readdir(realModules)) {
+      if (entry === "oxfmt" || entry === "@oxfmt") continue;
+      await symlink(join(realModules, entry), join(linkedModules, entry));
+    }
+    return root;
+  };
+
+  test("oxfmt is loaded only when the caller supplies no format", async () => {
+    const { afterCallerFormat, afterDefaultFormat, defaultFormatError } =
+      await runProbe(packageRoot);
+    expect(afterCallerFormat).toEqual([]);
+    expect(afterDefaultFormat).not.toEqual([]);
+    expect(defaultFormatError).toBeNull();
+  });
+
+  test("a caller-supplied format works without oxfmt installed, and the default explains what is missing", async () => {
+    const root = await copyPackageWithoutOxfmt();
+    try {
+      const { afterCallerFormat, defaultFormatError } = await runProbe(root);
+      expect(afterCallerFormat).toEqual([]);
+      expect(defaultFormatError).toContain("oxfmt is not installed");
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+});

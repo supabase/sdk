@@ -14,6 +14,8 @@ export const CORE_LANGUAGES = [
   "flutter",
   "python",
   "swift",
+  "csharp",
+  "kotlin",
 ] as const satisfies readonly Language[];
 
 export const STATUSES = [
@@ -24,7 +26,7 @@ export const STATUSES = [
 ] as const;
 export type Status = (typeof STATUSES)[number];
 
-export interface Group {
+interface Group {
   id: string;
   title: string;
 }
@@ -55,7 +57,7 @@ export interface Finding {
   message: string;
 }
 
-export interface ComplianceEntry {
+interface ComplianceEntry {
   status: Status;
   note?: string;
   /** Entry points that implement the feature. Verified by the drift check. */

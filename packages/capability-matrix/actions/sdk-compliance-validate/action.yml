@@ -1,0 +1,26 @@
+name: Validate SDK compliance file
+description: Validates the calling repo's compliance file against the capability spec. Expects the calling repo at the workspace root and the supabase/sdk checkout at _sdk-spec (the reusable workflows set both up).
+
+inputs:
+  compliance-file:
+    description: Path to sdk-compliance.yaml in the calling repo
+    default: sdk-compliance.yaml
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+      with:
+        bun-version: latest
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile
+      working-directory: _sdk-spec/packages/capability-matrix
+
+    - name: Validate compliance file
+      shell: bash
+      env:
+        COMPLIANCE_FILE: ${{ inputs.compliance-file }}
+      run: bun run validate-compliance -- "$GITHUB_WORKSPACE/$COMPLIANCE_FILE"
+      working-directory: _sdk-spec/packages/capability-matrix

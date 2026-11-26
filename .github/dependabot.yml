@@ -1,0 +1,76 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      github-actions:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: bun
+    directories:
+      - /packages/*
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      - dependency-name: oxfmt
+      - dependency-name: "@supabase/postgrest-typegen"
+    groups:
+      bun:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: pub
+    directory: /packages/dart-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      pub:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: gomod
+    directory: /packages/go-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      gomod:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: uv
+    directory: /packages/python-symbol-extractor
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      uv:
+        update-types:
+          - minor
+          - patch

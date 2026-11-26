@@ -1,0 +1,125 @@
+# CLAUDE.md -- @supabase/typegen
+
+## What This Package Does
+
+The language registry for `supabase gen types --lang <language>`. It exports
+`languages`, a list of `TypegenLanguage` entries mapping a `--lang` name to the
+generator that renders it, so new languages need a pull request here and a
+dependency bump in the CLI, never CLI code. See SDK-1955 for the decision and
+SDK-1956 for the CLI adapter that replaces the CLI's hardcoded switch.
+
+Introspection is NOT implemented here: the consumer calls `introspect()` and
+passes the `GeneratorMetadata` in. `introspect`, `Queryable`,
+`IntrospectOptions`, `GeneratorMetadata` and `GENERATOR_METADATA_VERSION` are
+re-exported from `@supabase/postgrest-typegen` so the CLI depends on this
+package alone and cannot end up with two postgrest-typegen versions. The
+contract's compatibility rule, how `GENERATOR_METADATA_VERSION` relates to the
+package version and who reviews contract changes are in
+`packages/postgrest-typegen/README.md` under "Contract compatibility". The
+registry sits above `postgrest-typegen` and the future per-SDK generator
+packages (SDK-1641) to avoid a dependency cycle once TypeScript's generator
+lives in supabase-js.
+
+## Architecture
+
+- `src/contract.ts` -- the public contract with the CLI: `Host` (cwd, env,
+  signal, optional `spawn`, optional `format`), `OptionSpec`/`OptionValues`,
+  `TypegenLanguage`. Changing these is a semver-relevant change for the CLI.
+- `src/errors.ts` -- `TypegenError` and its subclasses (`InvalidOptionError`,
+  `SpawnUnavailableError`, `ToolNotInstalledError`, `ToolFailedError`,
+  `MetadataRejectedError`). The CLI maps these to its actionability model
+  generically; keep the fields stable.
+- `src/options.ts` -- `resolveOptions`: defaults plus validation, run at the
+  start of every `generate`.
+- `src/languages/in-process.ts` -- `inProcessLanguage`: wraps a generator
+  function; sorts the metadata first.
+- `src/languages/external.ts` -- `externalLanguage`: runs a command in the
+  host's `cwd` with `serializeGeneratorMetadata(sortGeneratorMetadata(m))` on
+  stdin, returns stdout, classifies failures through the entry's `classify`.
+- `src/languages/dart.ts` -- the first out-of-process entry:
+  `dart run supabase_typegen --output -`. No `--schema` flag: the document on
+  stdin already holds the schemas the consumer introspected.
+- `src/languages/swift.ts` -- `supabase-typegen --access-control <level>`, built
+  from source (SDK-3043) at a supabase-swift commit picked in this order
+  (SDK-3045): the `swift-typegen-source` option (a local checkout starting with
+  `./`, `../`, `/` or `~/`, built in place and never cached; a full SHA; a
+  version, resolved through its tag; a branch, resolved on every run, all with
+  `git ls-remote`), the supabase-swift pin of the nearest `Package.resolved`
+  that has one (`cwd` and parents, then up to two levels down, where the pins
+  must agree), or the latest 3.x release with a notice. Each run logs the commit
+  it uses. The binary is cached per commit. There is no PATH fallback and no
+  `SUPABASE_TYPEGEN`; Windows is refused. Before fetching a commit that did not
+  come from upstream's own refs it proves the commit is upstream's (tag for a
+  version pin, ancestry of the branch otherwise), since GitHub serves fork
+  commits by SHA. The value parsing, `git ls-remote` parsing and semver
+  selection are pure exported functions (`parseTypegenSource`, `parseRefs`,
+  `compareVersions`, `latestRelease`) with direct tests. The build steps run
+  through `host.spawn` with a temporary folder as `cwd`. The only entry that
+  touches the network or the file system; `createSwift` takes the platform, the
+  temporary directory and the progress `log` so tests stay hermetic.
+  `swift-access-control` maps to `--access-control` and accepts only `internal`
+  and `public`. Exit `65` is a rejected document.
+- `src/languages/index.ts` -- the three in-process entries and the `languages`
+  list. `typescript` has no user options; `detect-one-to-one-relationships`
+  (default true; the CLI's deprecated `--postgrest-v9-compat` sets it false),
+  `postgrest-version` and `default-schema` are consumer options that the CLI and
+  postgres-meta's hosted route set from what they know about the target. It
+  honors `host.format`.
+- `src/node-host.ts` -- `createNodeHost`, a `Host` on `node:child_process`, plus
+  the exported Windows pieces (`resolveWindowsCommand`, `isWindowsScript`,
+  `quoteForCmd`, `planSpawn`) the Supabase CLI's own host reuses so both hosts
+  start a `.bat` through cmd.exe with the same command line.
+
+## Invariants
+
+- User option `name`s are the CLI flag names verbatim (`swift-access-control`).
+  `audience: "user"` options are flags; `"consumer"` options are set by the
+  calling program and never rendered. `--postgrest-v9-compat` stopped being a
+  registry option on purpose: it targets PostgREST 9 (2022) and only ever worked
+  with `--db-url`, so the CLI adapter keeps it as a deprecated alias.
+- `generate` always sorts before generating and returns complete file contents
+  for every language. The bundled generators end their output with a single
+  newline and in-process entries pass it on verbatim, adding a newline only when
+  a `Host.format` implementation dropped it; out-of-process entries return the
+  tool's stdout verbatim. The CLI writes the result as-is.
+- In-process TypeScript formats through `host.format` when given. The CLI passes
+  identity to keep `oxfmt` out of its bundle and its output unchanged.
+- Out-of-process tools: stdout is code, stderr is diagnostics, exit 0 is
+  success. `dart run` keeps stdout clean when it is not a terminal.
+- `inProcess` must be accurate: hosted consumers (postgres-meta) filter on it.
+- Keep the dependency list minimal; everything here lands in the CLI bundle.
+- `@supabase/postgrest-typegen` is pinned exactly, not a caret range: the
+  registry promises consumers one postgrest-typegen version for introspection
+  and generation alike. The `Release postgrest-typegen` workflow opens a typegen
+  release pull request that bumps the pin after each release; dependabot ignores
+  this dependency.
+
+## Commands
+
+```bash
+bun run test                 # bun:test with a fake host; the node-host test spawns a shell script
+bun run check-types
+bun run check-types:consumer # tsc --project tsconfig.consumer.json
+bun run format-and-lint
+bun run knip
+bun run build                # tsc --project tsconfig.build.json, emits dist/
+```
+
+`check-types:consumer` compiles `src/` with `@tsconfig/bun` plus
+`customConditions: ["bun"]`, which is how the Supabase CLI type-checks this
+package and, through it, `@supabase/postgrest-typegen`: both packages' `bun`
+exports conditions hand the CLI `src/*.ts` rather than `dist/*.d.ts`, so the
+pinned postgrest-typegen source must also pass stricter flags such as
+`noUncheckedIndexedAccess`. A pin bump that fails this check must wait for a
+postgrest-typegen fix.
+
+## Tests
+
+`test/fixtures.ts` holds a deliberately unsorted `GeneratorMetadata` validated
+with `parseGeneratorMetadata`. `test/in-process.test.ts` asserts each bundled
+language's output equals the direct generator call on sorted input (the
+byte-identity acceptance criterion, without Docker). `test/dart.test.ts` and
+`test/swift.test.ts` cover the handoff and every error classification with the
+fake host from `test/helpers.ts`. `test/swift.test.ts` also runs the source
+build through `createNodeHost` against fake `git` and `swift` shell scripts on
+PATH; `test/node-host.test.ts` runs a fake `dart` shell script on PATH.

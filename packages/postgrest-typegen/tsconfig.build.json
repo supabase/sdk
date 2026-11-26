@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "@tsconfig/node24/tsconfig.json",
+    "@tsconfig/node-ts/tsconfig.json"
+  ],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "rootDir": "./src",
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["./src"],
+  "exclude": ["**/*.test.ts"]
+}

@@ -1,7 +1,95 @@
 {
-  "name": "postgrest-typegen",
-  "private": true,
-  "version": "0.0.0",
-  "description": "Type generator for PostgREST schemas (not yet implemented).",
-  "type": "module"
+  "name": "@supabase/postgrest-typegen",
+  "version": "0.8.1",
+  "description": "Type generation for PostgREST from PostgreSQL schemas",
+  "keywords": [
+    "codegen",
+    "pg",
+    "postgres",
+    "postgrest",
+    "typegen",
+    "types"
+  ],
+  "homepage": "https://github.com/supabase/sdk",
+  "bugs": "https://github.com/supabase/sdk/issues",
+  "license": "MIT",
+  "author": "Supabase",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/supabase/sdk.git",
+    "directory": "packages/postgrest-typegen"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./introspection": {
+      "bun": "./src/introspection/index.ts",
+      "types": "./dist/introspection/index.d.ts",
+      "import": "./dist/introspection/index.js",
+      "require": "./dist/introspection/index.js",
+      "default": "./dist/introspection/index.js"
+    },
+    "./generation": {
+      "bun": "./src/generation/index.ts",
+      "types": "./dist/generation/index.d.ts",
+      "import": "./dist/generation/index.js",
+      "require": "./dist/generation/index.js",
+      "default": "./dist/generation/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "check-types": "tsc --noEmit",
+    "check-types:consumer": "tsc --project tsconfig.consumer.json",
+    "format-and-lint": "oxfmt --check . && oxlint --deny-warnings src test scripts",
+    "format-and-lint:fix": "oxfmt . && oxlint --fix src test scripts",
+    "generate:postgrest-js-types": "bun scripts/generate-postgrest-js-types.ts",
+    "knip": "knip",
+    "test": "bun scripts/run-tests.ts test/"
+  },
+  "dependencies": {
+    "arktype": "2.2.10"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.1.0",
+    "@tsconfig/bun": "^1.0.11",
+    "@tsconfig/node-ts": "^23.6.4",
+    "@tsconfig/node24": "^24.0.5",
+    "@types/bun": "^1.4.0",
+    "@types/node": "^26.3.0",
+    "@types/pg": "^8.23.1",
+    "knip": "^6.32.3",
+    "oxfmt": "0.66.0",
+    "oxlint": "1.94.0",
+    "oxlint-tsgolint": "7.0.2007",
+    "pg": "^8.23.0",
+    "testcontainers": "^12.1.0",
+    "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "oxfmt": "0.66.0"
+  },
+  "peerDependenciesMeta": {
+    "oxfmt": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

@@ -1,5 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { validateCompliance, normalizeCompliance, collectFeatureIds, buildSymbolIndex, findMissingFeatureIds, TOP_LEVEL_SUPPORTING } from "../src/compliance";
+import { describe, it, expect } from "bun:test";
+import {
+  validateCompliance,
+  normalizeCompliance,
+  collectFeatureIds,
+  buildSymbolIndex,
+  findMissingFeatureIds,
+  getApiCoverageMode,
+  TOP_LEVEL_SUPPORTING,
+} from "../src/compliance";
 import { checkDrift } from "../src/drift-check";
 import { checkNewSymbols } from "../src/api-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
@@ -23,7 +31,11 @@ function sym(name: string): ParsedSymbol {
   return { name, kind: "method", file: "src/index.ts" };
 }
 
-const knownIds = new Set(["auth.sign_up", "auth.sign_in_with_password", "auth.mfa_enroll"]);
+const knownIds = new Set([
+  "auth.sign_up",
+  "auth.sign_in_with_password",
+  "auth.mfa_enroll",
+]);
 
 describe("validateCompliance", () => {
   it("passes a valid sparse file with scalar statuses", () => {
@@ -41,17 +53,47 @@ describe("validateCompliance", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.mfa_enroll": { status: "partially_implemented", note: "TOTP only" },
+        "auth.mfa_enroll": {
+          status: "partially_implemented",
+          note: "TOTP only",
+        },
       },
     };
     expect(validateCompliance(raw, knownIds)).toEqual([]);
+  });
+
+  it.each(["additions", "full"] as const)(
+    "accepts the %s API coverage mode",
+    (api_coverage) => {
+      const raw = {
+        sdk: "javascript",
+        api_coverage,
+        features: {},
+      };
+      expect(validateCompliance(raw, knownIds)).toEqual([]);
+    },
+  );
+
+  it("rejects an unknown API coverage mode", () => {
+    const raw = {
+      sdk: "javascript",
+      api_coverage: "partial",
+      features: {},
+    };
+    expect(validateCompliance(raw as never, knownIds)).toContainEqual({
+      level: "error",
+      message: 'unknown api_coverage "partial"',
+    });
   });
 
   it("allows note on any status", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "not_implemented", note: "Blocked on platform support" },
+        "auth.sign_up": {
+          status: "not_implemented",
+          note: "Blocked on platform support",
+        },
       },
     };
     expect(validateCompliance(raw, knownIds)).toEqual([]);
@@ -60,19 +102,30 @@ describe("validateCompliance", () => {
   it("errors on unknown sdk", () => {
     const raw = { sdk: "ruby", features: {} };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes('unknown sdk "ruby"'))).toBe(true);
+    expect(findings.some((f) => f.message.includes('unknown sdk "ruby"'))).toBe(
+      true,
+    );
   });
 
   it("errors on unknown feature id", () => {
-    const raw = { sdk: "javascript", features: { "auth.nonexistent": "implemented" } };
+    const raw = {
+      sdk: "javascript",
+      features: { "auth.nonexistent": "implemented" },
+    };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes('unknown feature id "auth.nonexistent"'))).toBe(true);
+    expect(
+      findings.some((f) =>
+        f.message.includes('unknown feature id "auth.nonexistent"'),
+      ),
+    ).toBe(true);
   });
 
   it("errors on unknown status value", () => {
     const raw = { sdk: "javascript", features: { "auth.sign_up": "done" } };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes('unknown status "done"'))).toBe(true);
+    expect(
+      findings.some((f) => f.message.includes('unknown status "done"')),
+    ).toBe(true);
   });
 
   it("errors when partially_implemented has no note", () => {
@@ -81,7 +134,37 @@ describe("validateCompliance", () => {
       features: { "auth.mfa_enroll": { status: "partially_implemented" } },
     };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes("requires a note"))).toBe(true);
+    expect(findings.some((f) => f.message.includes("requires a note"))).toBe(
+      true,
+    );
+  });
+});
+
+describe("getApiCoverageMode", () => {
+  it("defaults to additions", () => {
+    expect(getApiCoverageMode({ sdk: "javascript", features: {} })).toBe(
+      "additions",
+    );
+  });
+
+  it("returns an explicit full mode", () => {
+    expect(
+      getApiCoverageMode({
+        sdk: "javascript",
+        api_coverage: "full",
+        features: {},
+      }),
+    ).toBe("full");
+  });
+
+  it("rejects an unknown mode at runtime", () => {
+    expect(() =>
+      getApiCoverageMode({
+        sdk: "javascript",
+        api_coverage: "partial",
+        features: {},
+      } as never),
+    ).toThrow('unknown api_coverage "partial"');
   });
 });
 
@@ -98,10 +181,18 @@ describe("normalizeCompliance", () => {
   it("preserves note from map-form entries", () => {
     const raw = {
       sdk: "javascript",
-      features: { "auth.mfa_enroll": { status: "partially_implemented", note: "TOTP only" } },
+      features: {
+        "auth.mfa_enroll": {
+          status: "partially_implemented",
+          note: "TOTP only",
+        },
+      },
     };
     const map = normalizeCompliance(raw);
-    expect(map["auth.mfa_enroll"]).toEqual({ status: "partially_implemented", note: "TOTP only" });
+    expect(map["auth.mfa_enroll"]).toEqual({
+      status: "partially_implemented",
+      note: "TOTP only",
+    });
   });
 });
 
@@ -110,7 +201,10 @@ describe("symbols field", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+        },
       },
     };
     expect(validateCompliance(raw, knownIds)).toEqual([]);
@@ -121,11 +215,16 @@ describe("symbols field", () => {
       sdk: "javascript",
       features: {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        "auth.sign_up": { status: "implemented", symbols: "GoTrueClient.signUp" } as any,
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: "GoTrueClient.signUp",
+        } as any,
       },
     };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes("symbols must be an array"))).toBe(true);
+    expect(
+      findings.some((f) => f.message.includes("symbols must be an array")),
+    ).toBe(true);
   });
 
   it("errors when symbols contains non-strings", () => {
@@ -137,18 +236,96 @@ describe("symbols field", () => {
       },
     };
     const findings = validateCompliance(raw, knownIds);
-    expect(findings.some((f) => f.message.includes("symbols must be an array of strings"))).toBe(true);
+    expect(
+      findings.some((f) =>
+        f.message.includes("symbols must be an array of strings"),
+      ),
+    ).toBe(true);
   });
 
   it("normalizeCompliance preserves symbols", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+        },
       },
     };
     const map = normalizeCompliance(raw);
     expect(map["auth.sign_up"].symbols).toEqual(["GoTrueClient.signUp"]);
+  });
+});
+
+describe("no_public_symbols field", () => {
+  it("accepts an entry with a note and no symbols", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          note: "Exposed through a logger hierarchy.",
+          no_public_symbols: true,
+        },
+      },
+    };
+    expect(validateCompliance(raw, knownIds)).toEqual([]);
+  });
+
+  it("errors when no_public_symbols is not a boolean", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        "auth.sign_up": {
+          status: "implemented",
+          note: "n",
+          no_public_symbols: "yes",
+        } as any,
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("no_public_symbols must be a boolean"),
+      ),
+    ).toBe(true);
+  });
+
+  it("errors when no_public_symbols has no note", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": { status: "implemented", no_public_symbols: true },
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("no_public_symbols requires a note"),
+      ),
+    ).toBe(true);
+  });
+
+  it("errors when no_public_symbols is combined with symbols", () => {
+    const raw = {
+      sdk: "flutter",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          note: "n",
+          no_public_symbols: true,
+          symbols: ["AuthClient.signUp"],
+        },
+      },
+    };
+    const findings = validateCompliance(raw, knownIds);
+    expect(
+      findings.some((f) =>
+        f.message.includes("cannot be combined with symbols"),
+      ),
+    ).toBe(true);
   });
 });
 
@@ -172,20 +349,37 @@ describe("supporting_symbols field", () => {
     const raw = {
       sdk: "javascript",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      features: { "auth.sign_up": { status: "implemented", supporting_symbols: [42] } as any },
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          supporting_symbols: [42],
+        } as any,
+      },
     };
     const findings = validateCompliance(raw, knownIds);
     expect(
-      findings.some((f) => f.message === '"auth.sign_up": supporting_symbols must be an array of strings')
+      findings.some(
+        (f) =>
+          f.message ===
+          '"auth.sign_up": supporting_symbols must be an array of strings',
+      ),
     ).toBe(true);
   });
 
   it("errors when top-level supporting_symbols is not an array of strings", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = { sdk: "javascript", features: {}, supporting_symbols: "AuthException" } as any;
+    const raw = {
+      sdk: "javascript",
+      features: {},
+      supporting_symbols: "AuthException",
+    } as any;
     const findings = validateCompliance(raw, knownIds);
     expect(
-      findings.some((f) => f.message === "top level: supporting_symbols must be an array of strings")
+      findings.some(
+        (f) =>
+          f.message ===
+          "top level: supporting_symbols must be an array of strings",
+      ),
     ).toBe(true);
   });
 
@@ -193,16 +387,26 @@ describe("supporting_symbols field", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+        "auth.sign_up": {
+          status: "implemented",
+          supporting_symbols: ["SignUpOptions"],
+        },
       },
     };
-    expect(normalizeCompliance(raw)["auth.sign_up"].supporting_symbols).toEqual(["SignUpOptions"]);
+    expect(normalizeCompliance(raw)["auth.sign_up"].supporting_symbols).toEqual(
+      ["SignUpOptions"],
+    );
   });
 
   it("omits supporting_symbols from the normalized entry when absent", () => {
     const raw = {
       sdk: "javascript",
-      features: { "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] } },
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+        },
+      },
     };
     expect(normalizeCompliance(raw)["auth.sign_up"]).toEqual({
       status: "implemented",
@@ -230,7 +434,10 @@ describe("supporting_symbols field", () => {
     const compliance = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+        "auth.sign_up": {
+          status: "implemented",
+          supporting_symbols: ["SignUpOptions"],
+        },
       },
     };
     const findings = checkDrift([sym("SignUpOptions")], compliance);
@@ -252,9 +459,11 @@ describe("supporting_symbols field", () => {
     const result = checkNewSymbols(
       [],
       [sym("SignUpOptions"), sym("AuthException"), sym("Unregistered")],
-      compliance
+      compliance,
     );
-    expect(result.uncoveredSymbols.map((s) => s.name)).toEqual(["Unregistered"]);
+    expect(result.uncoveredSymbols.map((s) => s.name)).toEqual([
+      "Unregistered",
+    ]);
   });
 });
 
@@ -263,7 +472,10 @@ describe("buildSymbolIndex", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+        },
         "auth.sign_in_with_password": {
           status: "implemented",
           symbols: ["GoTrueClient.signInWithPassword"],
@@ -272,11 +484,16 @@ describe("buildSymbolIndex", () => {
     };
     const index = buildSymbolIndex(raw);
     expect(index.get("GoTrueClient.signUp")).toBe("auth.sign_up");
-    expect(index.get("GoTrueClient.signInWithPassword")).toBe("auth.sign_in_with_password");
+    expect(index.get("GoTrueClient.signInWithPassword")).toBe(
+      "auth.sign_in_with_password",
+    );
   });
 
   it("returns empty map when no symbols are declared", () => {
-    const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
+    const raw = {
+      sdk: "javascript",
+      features: { "auth.sign_up": "implemented" },
+    };
     const index = buildSymbolIndex(raw);
     expect(index.size).toBe(0);
   });
@@ -285,22 +502,34 @@ describe("buildSymbolIndex", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", supporting_symbols: ["SignUpOptions"] },
+        "auth.sign_up": {
+          status: "implemented",
+          supporting_symbols: ["SignUpOptions"],
+        },
       },
     };
     expect(buildSymbolIndex(raw).get("SignUpOptions")).toBe("auth.sign_up");
   });
 
   it("indexes top-level supporting symbols against the pseudo feature id", () => {
-    const raw = { sdk: "javascript", features: {}, supporting_symbols: ["AuthException"] };
-    expect(buildSymbolIndex(raw).get("AuthException")).toBe(TOP_LEVEL_SUPPORTING);
+    const raw = {
+      sdk: "javascript",
+      features: {},
+      supporting_symbols: ["AuthException"],
+    };
+    expect(buildSymbolIndex(raw).get("AuthException")).toBe(
+      TOP_LEVEL_SUPPORTING,
+    );
   });
 
   it("attributes a symbol to the capability that implements it over any supporting list", () => {
     const raw = {
       sdk: "javascript",
       features: {
-        "auth.sign_up": { status: "implemented", symbols: ["GoTrueClient.signUp"] },
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["GoTrueClient.signUp"],
+        },
         "auth.mfa_enroll": {
           status: "implemented",
           supporting_symbols: ["GoTrueClient.signUp"],
@@ -308,13 +537,18 @@ describe("buildSymbolIndex", () => {
       },
       supporting_symbols: ["GoTrueClient.signUp"],
     };
-    expect(buildSymbolIndex(raw).get("GoTrueClient.signUp")).toBe("auth.sign_up");
+    expect(buildSymbolIndex(raw).get("GoTrueClient.signUp")).toBe(
+      "auth.sign_up",
+    );
   });
 });
 
 describe("findMissingFeatureIds", () => {
   it("returns ids present in knownIds but absent from raw.features", () => {
-    const raw = { sdk: "javascript", features: { "auth.sign_up": "implemented" } };
+    const raw = {
+      sdk: "javascript",
+      features: { "auth.sign_up": "implemented" },
+    };
     const missing = findMissingFeatureIds(raw, knownIds);
     expect(missing).toContain("auth.sign_in_with_password");
     expect(missing).toContain("auth.mfa_enroll");

@@ -18,7 +18,7 @@ features:
     group: authentication_integration
   - id: client.authentication_integration.cross_client_token_sync
     name: Cross-Client Token Synchronization
-    description: The client listens for auth state change events and automatically propagates the current JWT to all sub-clients (database, realtime, storage, functions) so requests stay authenticated without manual intervention.
+    description: Every sub-client (database, realtime, storage, functions) stays authenticated with the current JWT as the session signs in, refreshes, and signs out, without the caller updating any of them by hand. Whether the client pushes the token on auth state change events or each sub-client resolves it per request is an implementation detail.
     group: authentication_integration
   - id: client.authentication_integration.oauth_flow_type
     name: OAuth Flow Type Selection
@@ -47,4 +47,12 @@ features:
   - id: client.observability.trace_propagation
     name: Distributed Trace Context Propagation
     description: Inject standard trace context headers into outgoing requests so server-side spans can be correlated with client-side traces in a distributed tracing system.
+    group: observability
+  - id: client.observability.diagnostic_logging
+    name: Diagnostic Logging
+    description: Supply a logger at construction time to receive the SDK's log emissions, such as request outcomes, retry decisions and background-work lifecycle events. The SDK is silent by default and never logs credentials, tokens or payloads.
+    group: observability
+  - id: client.observability.client_info
+    name: Client Info Header
+    description: Identify the SDK, its version and the environment it runs in (platform, runtime, framework) in a structured X-Client-Info header on every request, together with the SDK features the request was built with.
     group: observability

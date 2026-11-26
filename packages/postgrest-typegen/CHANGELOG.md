@@ -1,0 +1,138 @@
+# Changelog
+
+## [0.8.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.8.0...postgrest-typegen/v0.8.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** infer nullability on PostgreSQL 14 ([#355](https://github.com/supabase/sdk/issues/355)) ([35647c3](https://github.com/supabase/sdk/commit/35647c301dc80adcbc909913d214a8fed3a8405b))
+
+## [0.8.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.7.0...postgrest-typegen/v0.8.0) (2026-11-11)
+
+
+### Features
+
+* **postgrest-typegen:** infer RETURNS TABLE column nullability ([#338](https://github.com/supabase/sdk/issues/338)) ([5f418f6](https://github.com/supabase/sdk/commit/5f418f6c3a4ffde065df7514f78be542b4ae42b8))
+
+## [0.7.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.6.0...postgrest-typegen/v0.7.0) (2026-11-05)
+
+
+### Features
+
+* **postgrest-typegen:** follow views in extra search path schemas ([#329](https://github.com/supabase/sdk/issues/329)) ([4bda137](https://github.com/supabase/sdk/commit/4bda137533f883e18180ef759ec37c4848e7a567))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** keep view relationships backed by foreign keys in other schemas ([#327](https://github.com/supabase/sdk/issues/327)) ([e723a30](https://github.com/supabase/sdk/commit/e723a305150f91868e61ec7b51fcc41561eb5b6e))
+
+## [0.6.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.5.0...postgrest-typegen/v0.6.0) (2026-10-16)
+
+
+### Features
+
+* **postgrest-typegen:** infer view column nullability from the source column ([#284](https://github.com/supabase/sdk/issues/284)) ([1e8c266](https://github.com/supabase/sdk/commit/1e8c266fa9aa2eb75fd09f9d03660580bcc26662))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** a sole unnamed row parameter is never callable through /rpc ([#277](https://github.com/supabase/sdk/issues/277)) ([08c6cc9](https://github.com/supabase/sdk/commit/08c6cc9b480a6843b254d6381052264b5e118e26))
+* **postgrest-typegen:** narrow the computed-field fallback and key RPC groups safely ([#272](https://github.com/supabase/sdk/issues/272)) ([e3f5c0e](https://github.com/supabase/sdk/commit/e3f5c0ee79670c68118b16fe7b2baa3fbb8e54c2))
+
+## [0.5.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.4.0...postgrest-typegen/v0.5.0) (2026-10-14)
+
+
+### Features
+
+* **postgrest-typegen:** resolve the PostgREST RPC surface into rpcFunctions ([#271](https://github.com/supabase/sdk/issues/271)) ([a8ed508](https://github.com/supabase/sdk/commit/a8ed5083b1a3bf0e2f49e5ee3e533e27499970b5))
+* **typegen:** run the Swift generator from supabase-swift's supabase-typegen ([#264](https://github.com/supabase/sdk/issues/264)) ([3489596](https://github.com/supabase/sdk/commit/3489596e617439acb10a2d6ef0073a5ff0d3a133))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** fall back to the first generated schema for DefaultSchema ([#262](https://github.com/supabase/sdk/issues/262)) ([fa321ee](https://github.com/supabase/sdk/commit/fa321ee5e66dd1d140817b7b79b9b611090f5217))
+
+## [0.4.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.1...postgrest-typegen/v0.4.0) (2026-09-30)
+
+
+### Features
+
+* **postgrest-typegen:** declare computed fields next to Row and type named row parameters without them ([#243](https://github.com/supabase/sdk/issues/243)) ([233066b](https://github.com/supabase/sdk/commit/233066b722627dcae2922372c933ea73821147d9))
+
+## [0.3.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.3.0...postgrest-typegen/v0.3.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **typegen:** generators emit the final newline themselves, registry passes it through ([#233](https://github.com/supabase/sdk/issues/233)) ([9bf2dc8](https://github.com/supabase/sdk/commit/9bf2dc8ee2d3603a016a4085fffdc6234b0737c7))
+
+## [0.3.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.5...postgrest-typegen/v0.3.0) (2026-09-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **postgrest-typegen:** make oxfmt an optional peer dependency loaded only by the default formatter ([#225](https://github.com/supabase/sdk/issues/225))
+
+### Features
+
+* **postgrest-typegen:** make oxfmt an optional peer dependency loaded only by the default formatter ([#225](https://github.com/supabase/sdk/issues/225)) ([73deb6e](https://github.com/supabase/sdk/commit/73deb6e6a99f4a75105620827db0e101fd8a422b))
+
+## [0.2.5](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.4...postgrest-typegen/v0.2.5) (2026-09-25)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** compile under noUncheckedIndexedAccess ([#217](https://github.com/supabase/sdk/issues/217)) ([a8a4927](https://github.com/supabase/sdk/commit/a8a4927577e0c4a62d032cff026c857a4ce69d68))
+
+## [0.2.4](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.2.3...postgrest-typegen/v0.2.4) (2026-09-25)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** require Node 22.12 or newer ([#214](https://github.com/supabase/sdk/issues/214)) ([c6de214](https://github.com/supabase/sdk/commit/c6de2140c2b94687921a33cae2967d47299f2e22))
+
+## [0.2.3](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.2...postgrest-typegen/v0.2.3) (2026-09-24)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** order the view copies of a foreign key deterministically ([#207](https://github.com/supabase/sdk/issues/207)) ([7ce6f25](https://github.com/supabase/sdk/commit/7ce6f2527ee425bb1c641a7440585a063187a51c))
+
+## [0.2.2](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.1...postgrest-typegen-v0.2.2) (2026-09-15)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** order generated output with a fixed collation ([#181](https://github.com/supabase/sdk/issues/181)) ([af7f8e8](https://github.com/supabase/sdk/commit/af7f8e852590184be777be90e8345529c78fd169))
+* **postgrest-typegen:** resolve composite args on foreign tables and matviews ([#143](https://github.com/supabase/sdk/issues/143)) ([e422eb7](https://github.com/supabase/sdk/commit/e422eb73b6a540a875bfc8ef809c78f8dd6b33b9))
+* **postgrest-typegen:** update-only trigger views, PG18 virtual generated columns, legacy metadata compatibility ([#128](https://github.com/supabase/sdk/issues/128)) ([50661bd](https://github.com/supabase/sdk/commit/50661bd5d95dd0e1cdbf524d2108500c54f2e3b7))
+
+## [0.2.1](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.2.0...postgrest-typegen-v0.2.1) (2026-09-02)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** escape database values in Swift string literals ([#123](https://github.com/supabase/sdk/issues/123)) ([4a5cef5](https://github.com/supabase/sdk/commit/4a5cef5e721328973f3c8ac16aa6af8c1eced4aa))
+* **postgrest-typegen:** escape Go struct tags for pathological column names ([#122](https://github.com/supabase/sdk/issues/122)) ([42c0249](https://github.com/supabase/sdk/commit/42c0249b3b41302c0ec7760acb0447350561de21))
+* **postgrest-typegen:** generated columns, NonNullable json, zero-arg Args, trigger-writable views ([#125](https://github.com/supabase/sdk/issues/125)) ([67650c6](https://github.com/supabase/sdk/commit/67650c6a8bed428ea3e11c90e1a6dd533851c70a))
+* **postgrest-typegen:** inline pg-format literal and drop the dependency ([#138](https://github.com/supabase/sdk/issues/138)) ([2c16a15](https://github.com/supabase/sdk/commit/2c16a156b169a1cd6b6d160850278dbfef5d7715))
+* **postgrest-typegen:** python escaping, 3.9 imports, JsonValue json columns, composite nullability ([#124](https://github.com/supabase/sdk/issues/124)) ([d1f9b3b](https://github.com/supabase/sdk/commit/d1f9b3bb90a59bd1b62d633e0982728d989a4fc2))
+
+## [0.2.0](https://github.com/supabase/sdk/compare/postgrest-typegen-v0.1.0...postgrest-typegen-v0.2.0) (2026-08-31)
+
+
+### Features
+
+* **postgrest-typegen:** formatter hook, oxfmt default, concurrent introspection ([#118](https://github.com/supabase/sdk/issues/118)) ([fa2286c](https://github.com/supabase/sdk/commit/fa2286c75bb4ec628bb4e466bf21143a24cfcb73))
+
+## 0.1.0 (2026-08-28)
+
+
+### Features
+
+* **postgrest-typegen:** add PostgREST introspection engine (+ transitional TS/Go/Python/Swift generators) ([#94](https://github.com/supabase/sdk/issues/94)) ([3d63578](https://github.com/supabase/sdk/commit/3d63578e066b2efa7bc62d6c592f568221f2aef8))
+
+
+### Miscellaneous Chores
+
+* release 1.3.0 ([#97](https://github.com/supabase/sdk/issues/97)) ([ee2ef6e](https://github.com/supabase/sdk/commit/ee2ef6e5d2da7fb9b9676b39666ca2152d463dbc))

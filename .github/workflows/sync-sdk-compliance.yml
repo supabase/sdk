@@ -12,12 +12,9 @@ on:
         type: string
         default: main
     secrets:
-      app-id:
-        description: GitHub App ID used to open the pull request (provide this or client-id)
-        required: false
       client-id:
-        description: GitHub App client ID used to open the pull request (provide this or app-id)
-        required: false
+        description: GitHub App client ID used to open the pull request
+        required: true
       private-key:
         description: GitHub App private key used to open the pull request
         required: true
@@ -32,26 +29,26 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout SDK repo
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.base-branch }}
           persist-credentials: false
 
       - name: Checkout capability spec
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: supabase/sdk
           ref: ${{ job.workflow_sha }}
           path: _sdk-spec
           persist-credentials: false
 
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
-          node-version: "22"
+          bun-version: latest
 
       - name: Install capability matrix tooling
-        run: npm ci
+        run: bun install --frozen-lockfile
         working-directory: _sdk-spec/packages/capability-matrix
 
       - name: Insert new capability IDs
@@ -59,15 +56,14 @@ jobs:
         env:
           COMPLIANCE_FILE: ${{ inputs.compliance-file }}
         run: |
-          npm run sync-compliance -- \
+          bun run sync-compliance -- \
             "$GITHUB_WORKSPACE/$COMPLIANCE_FILE" \
             --new-ids-output "$GITHUB_WORKSPACE/new_ids.txt"
 
       - name: Generate token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ secrets.app-id }}
           client-id: ${{ secrets.client-id }}
           private-key: ${{ secrets.private-key }}
 

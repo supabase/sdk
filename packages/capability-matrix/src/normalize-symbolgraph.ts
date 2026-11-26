@@ -1,34 +1,36 @@
 import { relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ParsedSymbol, ParseResult } from "./normalize-typedoc.js";
-export type { ParsedSymbol, ParseResult };
+export type { ParseResult };
 
 export interface SymbolGraphSymbol {
   kind: { identifier: string };
   pathComponents: string[];
   location?: { uri: string; position?: { line: number; character: number } };
+  spi?: boolean;
 }
 
 // Kind identifiers that map to ParsedSymbol kinds.
 // swift.deinit and all unrecognised kinds are skipped.
 const KIND_MAP: Record<string, ParsedSymbol["kind"]> = {
-  "swift.class":          "class",
-  "swift.struct":         "class",
-  "swift.enum":           "class",
-  "swift.protocol":       "class",
-  "swift.actor":          "class",
-  "swift.func":           "function",
-  "swift.func.op":        "function",
-  "swift.method":         "method",
-  "swift.type.method":    "method",
-  "swift.init":           "method",
-  "swift.subscript":      "method",
+  "swift.class": "class",
+  "swift.struct": "class",
+  "swift.enum": "class",
+  "swift.protocol": "class",
+  "swift.actor": "class",
+  "swift.func": "function",
+  "swift.func.op": "function",
+  "swift.method": "method",
+  "swift.type.method": "method",
+  "swift.init": "method",
+  "swift.subscript": "method",
   "swift.type.subscript": "method",
-  "swift.property":       "property",
-  "swift.type.property":  "property",
-  "swift.enum.case":      "property",
-  "swift.typealias":      "variable",
+  "swift.property": "property",
+  "swift.type.property": "property",
+  "swift.enum.case": "property",
+  "swift.typealias": "variable",
   "swift.associatedtype": "variable",
-  "swift.var":            "variable",
+  "swift.var": "variable",
 };
 
 export function normalizeSymbolGraph(
@@ -49,6 +51,7 @@ export function normalizeSymbolGraph(
     if (sym.location?.position !== undefined) {
       parsed.line = sym.location.position.line + 1;
     }
+    if (sym.spi === true) parsed.spi = true;
     result.push(parsed);
   }
 
@@ -67,6 +70,6 @@ function qualifiedName(pathComponents: string[]): string {
 
 function resolveFile(uri: string | undefined, sdkRoot: string): string {
   if (!uri) return "";
-  const path = uri.startsWith("file://") ? uri.slice(7) : uri;
+  const path = uri.startsWith("file:") ? fileURLToPath(uri) : uri;
   return sdkRoot ? relative(sdkRoot, path) : path;
 }

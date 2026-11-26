@@ -18,7 +18,8 @@ export function buildSourceMap(complianceYamlText: string): SourceMap {
   for (const pair of features.items) {
     const key = pair.key;
     if (!isScalar(key) || typeof key.value !== "string") continue;
-    if (key.range) featureLines.set(key.value, lineCounter.linePos(key.range[0]).line);
+    if (key.range)
+      featureLines.set(key.value, lineCounter.linePos(key.range[0]).line);
 
     const entry = pair.value;
     if (!isMap(entry)) continue;

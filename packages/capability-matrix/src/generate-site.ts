@@ -1,10 +1,23 @@
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadAreas } from "./load.js";
 import { computeParity } from "./report.js";
 import { LANGUAGES } from "./types.js";
-import type { ComplianceFile, ComplianceMap, Feature, Language, LoadedArea, ParityReport } from "./types.js";
+import type {
+  ComplianceFile,
+  ComplianceMap,
+  Feature,
+  Language,
+  LoadedArea,
+  ParityReport,
+} from "./types.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -18,7 +31,8 @@ const LANG_LABELS: Record<Language, string> = {
   kotlin: "Kotlin",
 };
 
-const SPEC_GITHUB_BASE = "https://github.com/supabase/sdk/blob/main/packages/capability-matrix/specs";
+const SPEC_GITHUB_BASE =
+  "https://github.com/supabase/sdk/blob/main/packages/capability-matrix/specs";
 
 function buildSpecSet(root: string): Set<string> {
   const specsDir = join(root, "specs");
@@ -30,11 +44,14 @@ function buildSpecSet(root: string): Set<string> {
       for (const nsEntry of readdirSync(areaDir, { withFileTypes: true })) {
         if (!nsEntry.isDirectory()) continue;
         for (const file of readdirSync(join(areaDir, nsEntry.name))) {
-          if (file.endsWith(".md")) ids.add(`${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`);
+          if (file.endsWith(".md"))
+            ids.add(`${areaEntry.name}.${nsEntry.name}.${file.slice(0, -3)}`);
         }
-       }
-     }
-  } catch { /* specs dir absent */ }
+      }
+    }
+  } catch {
+    /* specs dir absent */
+  }
   return ids;
 }
 
@@ -64,7 +81,11 @@ function esc(s: string) {
 
 // ── Cell rendering ───────────────────────────────────────────────────────────
 
-function statusCell(feature: Feature, lang: Language, compliance: Partial<Record<Language, ComplianceMap>>): string {
+function statusCell(
+  feature: Feature,
+  lang: Language,
+  compliance: Partial<Record<Language, ComplianceMap>>,
+): string {
   const entry = compliance[lang]?.[feature.id];
   const status = entry?.status ?? "not_implemented";
   switch (status) {
@@ -81,7 +102,12 @@ function statusCell(feature: Feature, lang: Language, compliance: Partial<Record
 
 // ── Area table ───────────────────────────────────────────────────────────────
 
-function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, ComplianceMap>>, parity: ParityReport, specs: Set<string>): string {
+function renderArea(
+  loaded: LoadedArea,
+  compliance: Partial<Record<Language, ComplianceMap>>,
+  parity: ParityReport,
+  specs: Set<string>,
+): string {
   const { area } = loaded;
 
   // Group features preserving insertion order
@@ -99,7 +125,7 @@ function renderArea(loaded: LoadedArea, compliance: Partial<Record<Language, Com
       const nameHtml = specs.has(f.id)
         ? `<a class="feature-spec-link" href="${esc(`${SPEC_GITHUB_BASE}/${f.id.replaceAll(".", "/")}.md`)}" target="_blank" rel="noopener noreferrer">${esc(f.name)}</a>`
         : esc(f.name);
-      rows += `      <tr>
+      rows += `      <tr data-id="${esc(f.id)}">
         <td class="feature-name">
           <div class="feature-name-text">${nameHtml}</div>
           <div class="feature-desc">${esc(f.description)}</div>
@@ -137,13 +163,12 @@ export function renderHtml(
   compliance: Partial<Record<Language, ComplianceMap>>,
   parity: ParityReport,
   specs: Set<string>,
-  buildDate: string
+  buildDate: string,
 ): string {
-
   const navLinks = areas
     .map(
       (a) =>
-        `<a href="#area-${esc(a.area.area)}" class="nav-link">${esc(a.area.title)}</a>`
+        `<a href="#area-${esc(a.area.area)}" class="nav-link">${esc(a.area.title)}</a>`,
     )
     .join("");
 
@@ -171,7 +196,9 @@ export function renderHtml(
     })
     .join("");
 
-  const areaSections = areas.map((a) => renderArea(a, compliance, parity, specs)).join("\n");
+  const areaSections = areas
+    .map((a) => renderArea(a, compliance, parity, specs))
+    .join("\n");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -311,6 +338,22 @@ export function renderHtml(
       transition: color 0.15s, border-color 0.15s;
     }
     .nav-link:hover { color: #171717; border-bottom-color: #3ECF8E; }
+    .nav-search {
+      margin-left: auto;
+      align-self: center;
+      flex-shrink: 0;
+      width: 220px;
+      padding: 0.3rem 0.6rem;
+      font: inherit;
+      font-size: 0.8rem;
+      color: #171717;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+    }
+    .nav-search:focus { outline: none; border-color: #3ECF8E; }
+    .search-empty { color: #666; font-size: 0.9rem; }
+    [hidden] { display: none !important; }
 
     /* ── Main content ──────────────────────────────────────── */
     .site-main { padding: 2rem; }
@@ -459,7 +502,7 @@ export function renderHtml(
         <span class="label">Overall parity</span>
         <span class="value">${pct(clamp01(parity.overall))}</span>
       </div>
-      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift) — a feature only counts if none of them are missing or partial.</p>
+      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift, C#, Kotlin) — a feature only counts if none of them are missing or partial.</p>
     </div>
     <div class="metric-card">
       <div class="metric-top">
@@ -480,9 +523,11 @@ export function renderHtml(
 
 <nav class="site-nav">
   ${navLinks}
+  <input type="search" id="feature-search" class="nav-search" placeholder="Search features…" aria-label="Search features" autocomplete="off">
 </nav>
 
 <main class="site-main">
+  <p id="search-empty" class="search-empty" hidden>No features match your search.</p>
   ${areaSections}
 </main>
 
@@ -513,6 +558,35 @@ export function renderHtml(
     { rootMargin: '-40px 0px -60% 0px', threshold: 0 }
   );
   sections.forEach(s => observer.observe(s));
+
+  // Filter feature rows by search query
+  const search = document.getElementById('feature-search');
+  const empty = document.getElementById('search-empty');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    let total = 0;
+    sections.forEach(section => {
+      let sectionHits = 0;
+      let group = null;
+      let groupHits = 0;
+      section.querySelectorAll('tbody tr').forEach(row => {
+        if (row.classList.contains('group-row')) {
+          if (group) group.hidden = groupHits === 0;
+          group = row;
+          groupHits = 0;
+          return;
+        }
+        const text = (row.dataset.id + ' ' + row.querySelector('.feature-name').textContent).toLowerCase();
+        const hit = !q || text.includes(q);
+        row.hidden = !hit;
+        if (hit) { groupHits++; sectionHits++; }
+      });
+      if (group) group.hidden = groupHits === 0;
+      section.hidden = sectionHits === 0;
+      total += sectionHits;
+    });
+    empty.hidden = total > 0;
+  });
 </script>
 
 </body>
@@ -534,7 +608,8 @@ function main() {
 
   const { areas, findings } = loadAreas(capDir);
   if (findings.length > 0) {
-    for (const f of findings) console.error(`${f.level.toUpperCase()} ${f.file}: ${f.message}`);
+    for (const f of findings)
+      console.error(`${f.level.toUpperCase()} ${f.file}: ${f.message}`);
     if (findings.some((f) => f.level === "error")) process.exit(1);
   }
 
@@ -542,7 +617,9 @@ function main() {
   let parity = computeParity(areas, compliance);
 
   if (compliancePath) {
-    const fileData = JSON.parse(readFileSync(compliancePath, "utf8")) as ComplianceFile;
+    const fileData = JSON.parse(
+      readFileSync(compliancePath, "utf8"),
+    ) as ComplianceFile;
     compliance = fileData.compliance;
     parity = fileData.parity;
   }
@@ -553,7 +630,9 @@ function main() {
 
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "index.html"), html, "utf8");
-  console.log(`Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`);
+  console.log(
+    `Site built → site/index.html (${(html.length / 1024).toFixed(1)} KB)`,
+  );
 
   // Ensure compliance.json is in the output directory so it is served by
   // GitHub Pages alongside index.html and is queryable by external sources.

@@ -1,0 +1,13 @@
+{
+  "name": "supabase-sdk-repo",
+  "private": true,
+  "description": "Repo-wide formatting for the supabase/sdk monorepo. The packages keep their own toolchains.",
+  "scripts": {
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "prepare": "git config core.hooksPath .githooks || true"
+  },
+  "devDependencies": {
+    "oxfmt": "0.66.0"
+  }
+}

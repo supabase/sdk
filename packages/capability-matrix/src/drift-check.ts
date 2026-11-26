@@ -16,15 +16,17 @@ export function checkDrift(
   for (const [featureId, value] of Object.entries(compliance.features ?? {})) {
     let status: string | undefined;
     let symbols: string[] | undefined;
+    let noPublicSymbols = false;
 
     if (typeof value === "string") {
       status = value;
     } else if (typeof value === "object" && value !== null) {
       status = value.status;
       symbols = value.symbols;
+      noPublicSymbols = value.no_public_symbols === true;
     }
 
-    if (status !== "implemented") continue;
+    if (status !== "implemented" || noPublicSymbols) continue;
 
     if (!symbols || symbols.length === 0) {
       findings.push({ featureId });
@@ -41,7 +43,10 @@ export function checkDrift(
   return findings;
 }
 
-export function formatDriftSummary(findings: DriftFinding[], sdkName: string): string {
+export function formatDriftSummary(
+  findings: DriftFinding[],
+  sdkName: string,
+): string {
   const missingSymbol = findings.filter((f) => f.symbol !== undefined);
   const unverifiable = findings.filter((f) => f.symbol === undefined);
 
@@ -54,7 +59,9 @@ export function formatDriftSummary(findings: DriftFinding[], sdkName: string): s
     lines.push(
       "",
       `The following capabilities are marked \`implemented\` in the matrix but could not be found in ${sdkName}:`,
-      ...missingSymbol.map((f) => `  - ${f.featureId} → expected symbol: ${f.symbol}`),
+      ...missingSymbol.map(
+        (f) => `  - ${f.featureId} → expected symbol: ${f.symbol}`,
+      ),
     );
   }
 
@@ -63,7 +70,8 @@ export function formatDriftSummary(findings: DriftFinding[], sdkName: string): s
       "",
       `The following capabilities are marked \`implemented\` in ${sdkName} but have no registered symbols to verify:`,
       ...unverifiable.map(
-        (f) => `  - ${f.featureId} (no \`symbols\` list — cannot confirm implementation exists)`,
+        (f) =>
+          `  - ${f.featureId} (no \`symbols\` list — cannot confirm implementation exists)`,
       ),
     );
   }

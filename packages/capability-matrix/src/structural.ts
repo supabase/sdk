@@ -66,6 +66,8 @@ export function checkSpecs(specsDir: string, knownIds: Set<string>): Finding[] {
         }
       }
     }
-  } catch { /* specs dir absent */ }
+  } catch {
+    /* specs dir absent */
+  }
   return findings;
 }

@@ -16,7 +16,9 @@ async function main(): Promise<void> {
   const [compliancePath, prFile, annotationPath] = process.argv.slice(2);
 
   if (!compliancePath || !prFile) {
-    console.error("Usage: check-drift <sdk-compliance.yaml> <pr-symbols.json> [annotation-file-path]");
+    console.error(
+      "Usage: check-drift <sdk-compliance.yaml> <pr-symbols.json> [annotation-file-path]",
+    );
     return;
   }
 
@@ -69,4 +71,6 @@ async function main(): Promise<void> {
   console.error(summary);
 }
 
-main().catch((e) => { console.error(e); });
+main().catch((e) => {
+  console.error(e);
+});

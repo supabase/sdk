@@ -1,0 +1,43 @@
+# Validates that the PR title follows Conventional Commits, using a plain
+# run step because this repository only allows GitHub-owned and verified
+# actions.
+name: PR Title is Conventional
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  validate:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check title against Conventional Commits
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          # Keep the types and examples in sync with the commit types and scopes documented in CONTRIBUTING.md.
+          pattern='^(feat|fix|docs|chore|refactor|test|ci)(\([^)]+\))?!?: .+'
+          if [[ "$PR_TITLE" =~ $pattern ]]; then
+            echo "PR title is valid: $PR_TITLE"
+          else
+            echo "::error::PR title is not a valid Conventional Commits header: \"$PR_TITLE\""
+            echo "Expected format: type(optional scope)!: description"
+            echo "Allowed types: feat, fix, docs, chore, refactor, test, ci"
+            echo "Examples:"
+            echo "  feat(storage): add file_buckets.list_file_buckets with spec"
+            echo "  docs(auth): clarify the session.get_claims spec"
+            echo "  fix(capability-matrix): correct the status enum in the schema"
+            echo "  feat(auth)!: rename auth.sign_in.signup to auth.sign_in.sign_up"
+            exit 1
+          fi

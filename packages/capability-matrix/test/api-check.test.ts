@@ -1,5 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { checkNewSymbols, formatErrorMessage, formatRemovedMessage } from "../src/api-check";
+import { describe, it, expect } from "bun:test";
+import {
+  checkFullCoverage,
+  checkNewSymbols,
+  formatErrorMessage,
+  formatRemovedMessage,
+} from "../src/api-check";
 import type { ParsedSymbol } from "../src/normalize-typedoc";
 
 function sym(name: string, line?: number): ParsedSymbol {
@@ -36,7 +41,9 @@ describe("checkNewSymbols", () => {
     const pr = [sym("AuthClient.signInWithPasskey")];
     const result = checkNewSymbols(base, pr, compliance);
     expect(result.newSymbols).toEqual(["AuthClient.signInWithPasskey"]);
-    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.signInWithPasskey")]);
+    expect(result.uncoveredSymbols).toEqual([
+      sym("AuthClient.signInWithPasskey"),
+    ]);
   });
 
   it("ignores symbols that exist in both base and PR", () => {
@@ -59,15 +66,77 @@ describe("checkNewSymbols", () => {
     const base: ParsedSymbol[] = [];
     const pr = [sym("AuthClient.foo"), sym("AuthClient.bar")];
     const result = checkNewSymbols(base, pr, compliance);
-    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.foo"), sym("AuthClient.bar")]);
+    expect(result.uncoveredSymbols).toEqual([
+      sym("AuthClient.foo"),
+      sym("AuthClient.bar"),
+    ]);
   });
 
   it("preserves file and line through to uncoveredSymbols", () => {
-    const withLocation: ParsedSymbol = { name: "AuthClient.signInWithPasskey", kind: "method", file: "src/auth.ts", line: 42 };
+    const withLocation: ParsedSymbol = {
+      name: "AuthClient.signInWithPasskey",
+      kind: "method",
+      file: "src/auth.ts",
+      line: 42,
+    };
     const result = checkNewSymbols([], [withLocation], compliance);
     expect(result.uncoveredSymbols).toHaveLength(1);
     expect(result.uncoveredSymbols[0].file).toBe("src/auth.ts");
     expect(result.uncoveredSymbols[0].line).toBe(42);
+  });
+});
+
+describe("checkFullCoverage", () => {
+  it("reports every unregistered symbol in the current API", () => {
+    const current = [
+      sym("AuthClient.signIn"),
+      sym("AuthClient.signUp"),
+      sym("AuthClient.unregistered"),
+    ];
+
+    const result = checkFullCoverage(current, compliance);
+
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.unregistered")]);
+  });
+
+  it("reports every registered symbol missing from the current API", () => {
+    const result = checkFullCoverage([sym("AuthClient.signIn")], compliance);
+
+    expect(result.removedRegisteredSymbols).toEqual([
+      { symbol: "AuthClient.signUp", featureId: "auth.sign_up" },
+    ]);
+  });
+
+  it("accepts an entirely covered and current API", () => {
+    const result = checkFullCoverage(
+      [sym("AuthClient.signIn"), sym("AuthClient.signUp")],
+      compliance,
+    );
+
+    expect(result.uncoveredSymbols).toEqual([]);
+    expect(result.removedRegisteredSymbols).toEqual([]);
+  });
+
+  it("counts feature and top-level supporting symbols as coverage", () => {
+    const withSupporting = {
+      sdk: "javascript",
+      features: {
+        "auth.sign_up": {
+          status: "implemented",
+          symbols: ["AuthClient.signUp"],
+          supporting_symbols: ["SignUpOptions"],
+        },
+      },
+      supporting_symbols: ["AuthException"],
+    };
+
+    const result = checkFullCoverage(
+      [sym("AuthClient.signUp"), sym("SignUpOptions"), sym("AuthException")],
+      withSupporting,
+    );
+
+    expect(result.uncoveredSymbols).toEqual([]);
+    expect(result.removedRegisteredSymbols).toEqual([]);
   });
 });
 
@@ -121,7 +190,11 @@ describe("checkNewSymbols — removed registered symbols", () => {
       },
       supporting_symbols: ["AuthException"],
     };
-    const base = [sym("AuthClient.signUp"), sym("SignUpOptions"), sym("AuthException")];
+    const base = [
+      sym("AuthClient.signUp"),
+      sym("SignUpOptions"),
+      sym("AuthException"),
+    ];
     const pr = [sym("AuthClient.signUp")];
     const result = checkNewSymbols(base, pr, withSupporting);
     expect(result.removedRegisteredSymbols).toEqual([
@@ -133,7 +206,10 @@ describe("checkNewSymbols — removed registered symbols", () => {
 
 describe("formatErrorMessage", () => {
   it("includes all uncovered symbols in output", () => {
-    const msg = formatErrorMessage([sym("AuthClient.signInWithPasskey")], "javascript");
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+    );
     expect(msg).toContain("❌ Capability matrix check failed");
     expect(msg).toContain("AuthClient.signInWithPasskey (javascript)");
     expect(msg).toContain("sdk-compliance.yaml");
@@ -146,23 +222,56 @@ describe("formatErrorMessage", () => {
   });
 
   it("includes defined-at with file and line when both are present", () => {
-    const s: ParsedSymbol = { name: "SupabaseClient.signInWithPasskey", kind: "method", file: "Sources/Auth/SupabaseClient.swift", line: 142 };
+    const s: ParsedSymbol = {
+      name: "SupabaseClient.signInWithPasskey",
+      kind: "method",
+      file: "Sources/Auth/SupabaseClient.swift",
+      line: 142,
+    };
     const msg = formatErrorMessage([s], "swift");
     expect(msg).toContain("SupabaseClient.signInWithPasskey (swift)");
     expect(msg).toContain("defined at: Sources/Auth/SupabaseClient.swift:142");
   });
 
   it("includes defined-at with file only when line is absent", () => {
-    const s: ParsedSymbol = { name: "AuthClient.signUp", kind: "method", file: "src/auth.ts" };
+    const s: ParsedSymbol = {
+      name: "AuthClient.signUp",
+      kind: "method",
+      file: "src/auth.ts",
+    };
     const msg = formatErrorMessage([s], "javascript");
     expect(msg).toContain("defined at: src/auth.ts");
     expect(msg).not.toContain("defined at: src/auth.ts:");
   });
 
   it("omits defined-at when file is empty", () => {
-    const s: ParsedSymbol = { name: "AuthClient.signUp", kind: "method", file: "" };
+    const s: ParsedSymbol = {
+      name: "AuthClient.signUp",
+      kind: "method",
+      file: "",
+    };
     const msg = formatErrorMessage([s], "javascript");
     expect(msg).not.toContain("defined at:");
+  });
+
+  it("names the comparison base in additions mode", () => {
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+      "additions",
+      "main",
+    );
+    expect(msg).toContain("relative to the base branch (main)");
+  });
+
+  it("describes a static audit in full mode", () => {
+    const msg = formatErrorMessage(
+      [sym("AuthClient.signInWithPasskey")],
+      "javascript",
+      "full",
+    );
+    expect(msg).toContain("Public API is not registered");
+    expect(msg).not.toContain("base branch");
   });
 });
 
@@ -187,5 +296,66 @@ describe("formatRemovedMessage", () => {
     );
     expect(msg).toContain("AuthClient.signUp (swift) → auth.sign_up");
     expect(msg).toContain("AuthClient.signIn (swift) → auth.sign_in");
+  });
+});
+
+// An @_spi symbol is API a caller can opt into, so a declared one that
+// disappears is drift like any other. Declaring one is optional, though:
+// experimental API should not have to enter the matrix to land.
+describe("spi symbols", () => {
+  function spi(name: string): ParsedSymbol {
+    return { ...sym(name), spi: true };
+  }
+
+  it("does not require a new spi symbol to be registered", () => {
+    const result = checkNewSymbols(
+      [],
+      [spi("AuthClient.passkeys")],
+      compliance,
+    );
+    expect(result.newSymbols).toEqual(["AuthClient.passkeys"]);
+    expect(result.uncoveredSymbols).toEqual([]);
+  });
+
+  it("does not require an spi symbol to be registered in full coverage", () => {
+    const result = checkFullCoverage(
+      [
+        sym("AuthClient.signIn"),
+        sym("AuthClient.signUp"),
+        spi("AuthClient.passkeys"),
+      ],
+      compliance,
+    );
+    expect(result.uncoveredSymbols).toEqual([]);
+  });
+
+  it("reports a registered spi symbol that was removed", () => {
+    const result = checkNewSymbols(
+      [sym("AuthClient.signIn"), spi("AuthClient.signUp")],
+      [sym("AuthClient.signIn")],
+      compliance,
+    );
+    expect(result.removedRegisteredSymbols).toEqual([
+      { symbol: "AuthClient.signUp", featureId: "auth.sign_up" },
+    ]);
+  });
+
+  it("requires registration when an spi symbol becomes public", () => {
+    const result = checkNewSymbols(
+      [spi("AuthClient.passkeys")],
+      [sym("AuthClient.passkeys")],
+      compliance,
+    );
+    expect(result.newSymbols).toEqual(["AuthClient.passkeys"]);
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.passkeys")]);
+  });
+
+  it("still reports an uncovered public symbol next to an spi one", () => {
+    const result = checkNewSymbols(
+      [],
+      [spi("AuthClient.passkeys"), sym("AuthClient.unregistered")],
+      compliance,
+    );
+    expect(result.uncoveredSymbols).toEqual([sym("AuthClient.unregistered")]);
   });
 });

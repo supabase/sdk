@@ -1,0 +1,190 @@
+name: Release postgrest-typegen
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .release-please-manifest.postgrest-typegen.json
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs['packages/postgrest-typegen--release_created'] }}
+      tag_name: ${{ steps.release.outputs['packages/postgrest-typegen--tag_name'] }}
+      version: ${{ steps.release.outputs['packages/postgrest-typegen--version'] }}
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.GH_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+        with:
+          config-file: release-please-config.postgrest-typegen.json
+          manifest-file: .release-please-manifest.postgrest-typegen.json
+          target-branch: ${{ github.ref_name }}
+          token: ${{ steps.app-token.outputs.token }}
+
+  publish-postgrest-typegen:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/postgrest-typegen
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install latest npm for OIDC trusted publishing
+        run: |
+          mkdir -p "$HOME/.npm-global"
+          npm config set prefix "$HOME/.npm-global"
+          echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+          npm install -g npm@latest
+          npm --version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
+
+  release-typegen:
+    needs: [release-please, publish-postgrest-typegen]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: packages/typegen
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+      BASE_BRANCH: ${{ github.ref_name }}
+      STAGING_BRANCH: typegen-postgrest-typegen-${{ needs.release-please.outputs.version }}
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.GH_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: latest
+
+      - name: Wait for the release to be served by npm
+        run: |
+          for attempt in $(seq 1 40); do
+            if npm view "@supabase/postgrest-typegen@${VERSION}" version >/dev/null 2>&1; then
+              exit 0
+            fi
+            echo "Attempt ${attempt}: @supabase/postgrest-typegen@${VERSION} is not on npm yet"
+            sleep 15
+          done
+          echo "::error::@supabase/postgrest-typegen@${VERSION} did not appear on npm within 10 minutes"
+          exit 1
+
+      - name: Bump the pin
+        id: bump
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          bun add --exact "@supabase/postgrest-typegen@${VERSION}"
+          if git diff --quiet -- package.json bun.lock; then
+            echo "packages/typegen already pins @supabase/postgrest-typegen@${VERSION}; nothing to do."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          release_branch="release-please--branches--${STAGING_BRANCH}--components--typegen"
+          if [ -n "$(gh pr list --head "$release_branch" --state open --json number --jq '.[0].number')" ]; then
+            echo "A typegen release pull request for this pin is already open."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # release-please only builds release pull requests from commits already on
+      # their target branch, so the pin bump goes to a staging branch, the
+      # release pull request is opened against it and then retargeted.
+      - name: Push the pin bump to a staging branch
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "$(gh api "/users/${APP_SLUG}[bot]" --jq .id)+${APP_SLUG}[bot]@users.noreply.github.com"
+          git checkout -b "$STAGING_BRANCH"
+          git add package.json bun.lock
+          git commit -m "fix(typegen): bump @supabase/postgrest-typegen to ${VERSION}"
+          git push --force origin "$STAGING_BRANCH"
+
+      - name: Open the typegen release pull request
+        if: steps.bump.outputs.changed == 'true'
+        id: release-pr
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          config-file: release-please-config.typegen.json
+          manifest-file: .release-please-manifest.typegen.json
+          target-branch: ${{ env.STAGING_BRANCH }}
+          skip-github-release: true
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Retarget the release pull request
+        if: steps.bump.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR: ${{ steps.release-pr.outputs.pr }}
+        run: |
+          if [ -z "$PR" ]; then
+            echo "::error::release-please opened no typegen release pull request against ${STAGING_BRANCH}"
+            exit 1
+          fi
+          number="$(jq -r .number <<<"$PR")"
+          title="chore(${BASE_BRANCH}): $(jq -r .title <<<"$PR" | sed 's/^[^:]*: //')"
+          gh pr edit "$number" --base "$BASE_BRANCH" --title "$title"
+          git push origin --delete "$STAGING_BRANCH"
+
+          superseded="$(gh pr list --head "release-please--branches--${BASE_BRANCH}--components--typegen" --base "$BASE_BRANCH" --state open --json number --jq '.[0].number')"
+          if [ -n "$superseded" ]; then
+            gh pr close "$superseded" --delete-branch
+          fi

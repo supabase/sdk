@@ -45,10 +45,16 @@ class SupabaseClient {
       );
       // All symbols should have a non-null, positive line number.
       for (final sym in symbols) {
-        expect(sym.line, isNotNull,
-            reason: '${sym.name} should have a line number');
-        expect(sym.line, greaterThan(0),
-            reason: '${sym.name} line should be > 0');
+        expect(
+          sym.line,
+          isNotNull,
+          reason: '${sym.name} should have a line number',
+        );
+        expect(
+          sym.line,
+          greaterThan(0),
+          reason: '${sym.name} line should be > 0',
+        );
       }
       // Spot-check that SupabaseClient is on line 1 (first non-empty line) and
       // signIn follows the setter on line 7.
@@ -118,8 +124,10 @@ enum Provider {
 ''';
       final names = _names(extractFromSource(source, 'lib/provider.dart'));
 
-      expect(names,
-          containsAll(['Provider', 'Provider.label', 'Provider.connect']));
+      expect(
+        names,
+        containsAll(['Provider', 'Provider.label', 'Provider.connect']),
+      );
       expect(names, isNot(contains('Provider.google')));
     });
 
@@ -138,9 +146,9 @@ extension on int {
       final names = _names(extractFromSource(source, 'lib/ext.dart'));
 
       expect(
-          names,
-          containsAll(
-              ['Logging', 'Logging.log', 'StringX', 'StringX.isBlank']));
+        names,
+        containsAll(['Logging', 'Logging.log', 'StringX', 'StringX.isBlank']),
+      );
       expect(names, isNot(contains('isPositive')));
     });
 
@@ -155,9 +163,8 @@ extension type UserId(String value) {
       expect(names, containsAll(['UserId', 'UserId.isValid']));
     });
 
-    test(
-        'reports line of declaration keyword, not annotation, for annotated members',
-        () {
+    test('reports line of declaration keyword, not annotation, for annotated '
+        'members', () {
       const source = '''
 class MyClient {
   @override
@@ -167,15 +174,22 @@ class MyClient {
 }
 ''';
       final symbols = extractFromSource(source, 'lib/client.dart');
-      // `void signIn()` is on the line after @override (not on @override's line).
+      // `void signIn()` is on the line after @override, not on the line of
+      // @override itself.
       final signInLine = _byName(symbols, 'MyClient.signIn').line!;
       final signOutLine = _byName(symbols, 'MyClient.signOut').line!;
-      // signOut's declaration line must be strictly after signIn's annotation line,
-      // confirming firstTokenAfterCommentAndMetadata skips metadata.
-      expect(signOutLine, greaterThan(signInLine + 1),
-          reason:
-              'signOut should start after signIn and its @Deprecated annotation');
-      // Neither should land on line 1 (the class keyword line) or line 2 (@override).
+      // signOut's declaration line must be strictly after signIn's
+      // annotation line, confirming firstTokenAfterCommentAndMetadata skips
+      // metadata.
+      expect(
+        signOutLine,
+        greaterThan(signInLine + 1),
+        reason:
+            'signOut should start after signIn and its @Deprecated '
+            'annotation',
+      );
+      // Neither should land on line 1 (the class keyword line) or line 2
+      // (@override).
       expect(signInLine, greaterThan(2));
       expect(signOutLine, greaterThan(signInLine));
     });
@@ -243,8 +257,11 @@ typedef Json = Map<String, dynamic>;
     test('includes non-null line numbers for all symbols', () {
       final symbols = parseDartProject('test/fixtures/sample_project');
       for (final sym in symbols) {
-        expect(sym.line, isNotNull,
-            reason: '${sym.name} should have a line number');
+        expect(
+          sym.line,
+          isNotNull,
+          reason: '${sym.name} should have a line number',
+        );
         expect(sym.line, greaterThan(0));
       }
     });
@@ -266,15 +283,17 @@ build/
       expect(matcher.ignores('packages/auth/lib/client.dart'), isFalse);
     });
 
-    test('directory patterns exclude their contents, not just the directory',
-        () {
-      final matcher = IgnoreMatcher.parse('build/\nexamples/\n');
+    test(
+      'directory patterns exclude their contents, not just the directory',
+      () {
+        final matcher = IgnoreMatcher.parse('build/\nexamples/\n');
 
-      expect(matcher.ignores('build/app.dart'), isTrue);
-      expect(matcher.ignores('packages/a/build/gen.dart'), isTrue);
-      expect(matcher.ignores('examples/p/lib/main.dart'), isTrue);
-      // A file whose name merely starts with the pattern is not excluded.
-      expect(matcher.ignores('lib/build_helper.dart'), isFalse);
-    });
+        expect(matcher.ignores('build/app.dart'), isTrue);
+        expect(matcher.ignores('packages/a/build/gen.dart'), isTrue);
+        expect(matcher.ignores('examples/p/lib/main.dart'), isTrue);
+        // A file whose name merely starts with the pattern is not excluded.
+        expect(matcher.ignores('lib/build_helper.dart'), isFalse);
+      },
+    );
   });
 }

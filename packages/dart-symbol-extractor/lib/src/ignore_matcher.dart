@@ -13,8 +13,6 @@ import 'package:path/path.dart' as p;
 class IgnoreMatcher {
   IgnoreMatcher._(this._rules);
 
-  final List<_Rule> _rules;
-
   /// Loads `.sdk-parse-ignore` from [root]. Returns an empty matcher when the
   /// file is absent.
   factory IgnoreMatcher.load(String root) {
@@ -45,6 +43,8 @@ class IgnoreMatcher {
     }
     return IgnoreMatcher._(rules);
   }
+
+  final List<_Rule> _rules;
 
   /// Whether [relativePath] (POSIX-style, relative to root) is ignored.
   /// [isDirectory] toggles directory-only patterns. A directory pattern also
@@ -92,8 +92,8 @@ class IgnoreMatcher {
 
 class _Rule {
   _Rule(String pattern, this.negated, this.directoryOnly)
-      : selfOrBelow = RegExp('$pattern(/.*)?\$'),
-        below = RegExp('$pattern/');
+    : selfOrBelow = RegExp('$pattern(/.*)?\$'),
+      below = RegExp('$pattern/');
 
   /// Matches the pattern itself and anything nested beneath it.
   final RegExp selfOrBelow;

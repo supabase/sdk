@@ -1,5 +1,7 @@
-name: Release
+name: Release capability-matrix
 
+# packages/postgrest-typegen and packages/typegen are released on demand, see
+# release-postgrest-typegen.yml and release-typegen.yml
 on:
   workflow_run:
     workflows: ["Validate Capabilities"]
@@ -24,9 +26,9 @@ jobs:
     steps:
       - name: Generate token
         id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ secrets.APP_ID }}
+          client-id: ${{ vars.GH_APP_CLIENT_ID }}
           private-key: ${{ secrets.PRIVATE_KEY }}
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0

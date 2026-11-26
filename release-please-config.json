@@ -1,8 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "tag-separator": "/",
   "packages": {
-    ".": {
-      "release-type": "simple"
+    "packages/capability-matrix": {
+      "release-type": "node",
+      "package-name": "@supabase/capability-matrix-validator",
+      "component": "capability-matrix"
     }
   }
 }

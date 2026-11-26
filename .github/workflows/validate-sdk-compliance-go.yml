@@ -8,45 +8,68 @@ on:
         type: string
         default: sdk-compliance.yaml
       sdk-ref:
-        description: Ref to checkout from supabase/sdk for tooling (defaults to main; override only during pre-merge testing)
+        description: Ref to checkout from supabase/sdk for tooling and spec (defaults to the commit this workflow was called at; override only during pre-merge testing)
         type: string
-        default: main
+        default: ""
 
-# The composite actions below are referenced by full commit SHA rather than
-# a branch: a calling repository's actions policy applies transitively to
-# these references, and enterprise policies can require every action to be
-# pinned to a full-length SHA. The pin moves deliberately when the actions
-# themselves change.
+# Tooling, composite actions, and capability spec all resolve from the single
+# supabase/sdk commit the caller pinned this workflow at (job.workflow_sha).
+# `uses:` cannot carry an expression, so a remote action reference would
+# freeze action code at some earlier release while the spec checkout moved
+# independently. That skew is what broke consumers when the spec repo's
+# layout changed. Checking out supabase/sdk once and referencing the actions locally
+# keeps everything at one immutable SHA.
 jobs:
   validate:
     name: Validate compliance file
     runs-on: ubuntu-latest
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-validate@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
+      - name: Checkout SDK repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout compliance tooling
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || job.workflow_sha }}
+          path: _sdk-spec
+          persist-credentials: false
+
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-validate
         with:
           compliance-file: ${{ inputs.compliance-file }}
-          sdk-ref: ${{ inputs.sdk-ref }}
 
   # Unlike the other language workflows this one carries no drift step, so it
   # never posts PR comments and the job needs no pull-requests permission.
-  # The blocking new-symbol check below already fails a PR that removes or
-  # renames a registered symbol.
+  # The blocking public API check below already fails when a registered symbol
+  # is removed or renamed within the coverage scope selected by the manifest.
   check:
     name: Check public API against capability matrix
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-setup@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
+      - name: Checkout compliance tooling
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          sdk-ref: ${{ inputs.sdk-ref }}
+          repository: supabase/sdk
+          ref: ${{ inputs.sdk-ref || job.workflow_sha }}
+          path: _sdk-spec
+          persist-credentials: false
+
+      - id: api_check_setup
+        uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-setup
+        with:
+          compliance-file: ${{ inputs.compliance-file }}
 
       # The Go extractor parses syntactically with the standard library's
       # go/parser, so the target checkouts need no dependency resolution and
       # the tool itself downloads nothing.
       - name: Setup Go
-        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
           # Nothing to cache for a stdlib-only tool, and the default cache
@@ -55,13 +78,19 @@ jobs:
           cache: false
 
       - name: Extract Go symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
+        env:
+          COVERAGE_MODE: ${{ steps.api_check_setup.outputs.coverage-mode }}
         run: |
-          for b in pr base; do
+          BRANCHES=(pr)
+          if [ "$COVERAGE_MODE" = "additions" ]; then BRANCHES+=(base); fi
+          for b in "${BRANCHES[@]}"; do
             go run . "$GITHUB_WORKSPACE/_sdk-$b" \
               > "$GITHUB_WORKSPACE/$b-symbols.json"
           done
         working-directory: _sdk-spec/packages/go-symbol-extractor
 
-      - uses: supabase/sdk/.github/actions/sdk-compliance-check-symbols@29e402daf432bccac26cfac1280b491b140d6d20 # v1.2.0
+      - uses: ./_sdk-spec/packages/capability-matrix/actions/sdk-compliance-check-symbols
+        if: steps.api_check_setup.outputs.should-run == 'true'
         with:
           compliance-file: ${{ inputs.compliance-file }}

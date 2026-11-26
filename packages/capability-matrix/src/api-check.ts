@@ -1,11 +1,14 @@
 import { buildSymbolIndex } from "./compliance.js";
-import type { RawCompliance } from "./compliance.js";
+import type { ApiCoverageMode, RawCompliance } from "./compliance.js";
 import type { ParsedSymbol } from "./normalize-typedoc.js";
 
-export interface CheckResult {
-  newSymbols: string[];
+export interface CoverageCheckResult {
   uncoveredSymbols: ParsedSymbol[];
   removedRegisteredSymbols: Array<{ symbol: string; featureId: string }>;
+}
+
+export interface CheckResult extends CoverageCheckResult {
+  newSymbols: string[];
 }
 
 export function checkNewSymbols(
@@ -13,14 +16,20 @@ export function checkNewSymbols(
   prSymbols: ParsedSymbol[],
   compliance: RawCompliance,
 ): CheckResult {
-  const baseNames = new Set(baseSymbols.map((s) => s.name));
+  // An @_spi symbol that turns public is new public API, so only public base
+  // symbols count as already present.
+  const basePublicNames = new Set(
+    baseSymbols.filter((s) => !s.spi).map((s) => s.name),
+  );
   const prNames = new Set(prSymbols.map((s) => s.name));
 
-  const newSymbolObjs = prSymbols.filter((s) => !baseNames.has(s.name));
+  const newSymbolObjs = prSymbols.filter((s) => !basePublicNames.has(s.name));
   const newSymbols = newSymbolObjs.map((s) => s.name);
 
   const symbolIndex = buildSymbolIndex(compliance);
-  const uncoveredSymbols = newSymbolObjs.filter((s) => !symbolIndex.has(s.name));
+  const uncoveredSymbols = newSymbolObjs.filter(
+    (s) => !s.spi && !symbolIndex.has(s.name),
+  );
 
   const removedRegisteredSymbols = baseSymbols
     .filter((s) => !prNames.has(s.name) && symbolIndex.has(s.name))
@@ -29,14 +38,33 @@ export function checkNewSymbols(
   return { newSymbols, uncoveredSymbols, removedRegisteredSymbols };
 }
 
+export function checkFullCoverage(
+  currentSymbols: ParsedSymbol[],
+  compliance: RawCompliance,
+): CoverageCheckResult {
+  const currentNames = new Set(currentSymbols.map((symbol) => symbol.name));
+  const symbolIndex = buildSymbolIndex(compliance);
+  const uncoveredSymbols = currentSymbols.filter(
+    (symbol) => !symbol.spi && !symbolIndex.has(symbol.name),
+  );
+  const removedRegisteredSymbols = [...symbolIndex.entries()]
+    .filter(([symbol]) => !currentNames.has(symbol))
+    .map(([symbol, featureId]) => ({ symbol, featureId }));
+
+  return { uncoveredSymbols, removedRegisteredSymbols };
+}
+
 export function formatErrorMessage(
   uncoveredSymbols: ParsedSymbol[],
   sdkName: string,
+  mode: ApiCoverageMode = "additions",
+  baseRef?: string,
 ): string {
-  const lines: string[] = [
-    "❌ Capability matrix check failed",
-    "New public API detected that is not in the capability matrix:",
-  ];
+  const scope =
+    mode === "full"
+      ? "Public API is not registered in the capability matrix:"
+      : `New public API detected relative to the base branch${baseRef ? ` (${baseRef})` : ""} that is not in the capability matrix:`;
+  const lines: string[] = ["❌ Capability matrix check failed", scope];
   for (const s of uncoveredSymbols) {
     lines.push(`  - ${s.name} (${sdkName})`);
     if (s.file) {
@@ -76,7 +104,9 @@ export function formatRemovedMessage(
   const lines: string[] = [
     "❌ Capability matrix check failed",
     "Registered public API was removed — sdk-compliance.yaml is now stale:",
-    ...removedRegisteredSymbols.map((r) => `  - ${r.symbol} (${sdkName}) → ${r.featureId}`),
+    ...removedRegisteredSymbols.map(
+      (r) => `  - ${r.symbol} (${sdkName}) → ${r.featureId}`,
+    ),
     "",
     "Update the affected feature entries in sdk-compliance.yaml:",
     "  - Remove the symbol from the symbols list",

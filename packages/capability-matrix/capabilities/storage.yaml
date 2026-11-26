@@ -98,6 +98,10 @@ features:
     name: Upload with Signed URL
     description: Upload a file using a pre-signed upload URL, without requiring standard authentication.
     group: file_buckets
+  - id: storage.file_buckets.resumable_upload
+    name: Resumable Upload
+    description: Upload a large file in chunks with the tus protocol, with pause, resume, cancel, and recovery of an interrupted upload after the process restarts.
+    group: file_buckets
   - id: storage.vector_buckets.access_vector_index
     name: Access Vector Index
     description: Scope subsequent vector operations to a specific index within a bucket.
@@ -146,6 +150,10 @@ features:
     name: List Vector Buckets
     description: List all vector buckets with prefix filtering and cursor-based pagination.
     group: vector_buckets
+  - id: storage.vector_buckets.get_vector_bucket
+    name: Get Vector Bucket
+    description: Retrieve metadata for a specific vector bucket.
+    group: vector_buckets
   - id: storage.vector_buckets.delete_vector_bucket
     name: Delete Vector Bucket
     description: Delete an empty vector bucket and all its indexes.
@@ -185,6 +193,10 @@ features:
   - id: storage.file_buckets.purge_bucket_cache
     name: Purge Bucket CDN Cache
     description: Invalidate the CDN cache for all objects in a bucket. Supports an optional transformations flag to purge only resized/formatted variants while leaving original cached files intact.
+    group: file_buckets
+  - id: storage.file_buckets.purge_project_cache
+    name: Purge Project CDN Cache
+    description: Invalidate the CDN cache for all objects in every bucket of the project. Supports an optional transformations flag to purge only resized/formatted variants while leaving original cached files intact.
     group: file_buckets
   - id: storage.analytics.create_analytics_bucket
     name: Create Analytics Bucket
@@ -266,7 +278,51 @@ features:
     name: Automatic Retry
     description: Automatically retry a failed storage request, with control over how many attempts are made before the error surfaces to the caller.
     group: configuration
+  - id: storage.file_buckets.download_specific_version
+    name: Download Specific File Version
+    description: Download a file for a specific noncurrent or current version, rather than whichever version is currently at that path.
+    group: file_buckets
+  - id: storage.file_buckets.file_info_specific_version
+    name: Get File Info for a Specific Version
+    description: Retrieve a file's metadata for a specific noncurrent or current version, including its version id, archived timestamp, and delete-marker/versioned flags.
+    group: file_buckets
+  - id: storage.file_buckets.move_specific_version
+    name: Move a Specific File Version
+    description: Move a specific version of a file, current or noncurrent, rather than the version currently at the source path. Moving a version to the same path restores it in place.
+    group: file_buckets
+  - id: storage.file_buckets.copy_specific_version
+    name: Copy a Specific File Version
+    description: Copy a specific version of a file, current or noncurrent, rather than the version currently at the source path.
+    group: file_buckets
+  - id: storage.file_buckets.remove_specific_version
+    name: Delete a Specific File Version
+    description: Delete an exact (path, version) pair, current or archived, rather than whichever version is currently at that path.
+    group: file_buckets
+  - id: storage.file_buckets.list_file_versions
+    name: List File Versions and Delete Markers
+    description: Include noncurrent file versions and/or delete markers when listing files, and expose per-file version metadata (version id, archived timestamp, delete-marker and versioned flags) in list results.
+    group: file_buckets
+  - id: storage.file_buckets.bucket_versioning_status
+    name: Bucket Versioning Status
+    description: Enable, suspend, or read a bucket's versioning status, which controls whether writes retain distinct historical file versions or replace the bucket's logical null version.
+    group: file_buckets
+  - id: storage.file_buckets.get_bucket_lifecycle
+    name: Get Bucket Lifecycle
+    description: Retrieve the lifecycle policy stored on a file bucket. Fails when no policy is stored.
+    group: file_buckets
+  - id: storage.file_buckets.update_bucket_lifecycle
+    name: Update Bucket Lifecycle
+    description: Replace the lifecycle policy on a file bucket. The rules sent are the full policy. Currently only noncurrent-version expiration is accepted.
+    group: file_buckets
+  - id: storage.file_buckets.delete_bucket_lifecycle
+    name: Delete Bucket Lifecycle
+    description: Remove the lifecycle policy from a file bucket. Succeeds even when no policy is stored.
+    group: file_buckets
   - id: storage.errors.error_codes
     name: Service Error Codes
     description: Expose the machine-readable service-specific error code (e.g. NoSuchKey, AccessDenied) returned by the Storage server on a thrown error, covering both file and vector bucket operations.
     group: errors
+  - id: storage.file_buckets.transfer_progress
+    name: Transfer Progress
+    description: Report how many bytes an upload or a download has moved so far, and the total when it is known, while the transfer runs.
+    group: file_buckets
