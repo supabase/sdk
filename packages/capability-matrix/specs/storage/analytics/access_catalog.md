@@ -43,6 +43,7 @@ The other capabilities in this group name the operations it serves.
 
 ## Notes
 
-The service does not serve every Iceberg REST operation. See
-[Update Namespace Properties](update_namespace_properties.md),
-[Rename Table](rename_table.md), and [Register Table](register_table.md).
+The service does not serve every Iceberg REST operation. It has no route to
+update namespace properties, rename a table, or register a table
+([routes](https://github.com/supabase/storage/blob/f6deeb7/src/http/routes/iceberg/index.ts#L35-L39)),
+so the matrix has no capability for them.
