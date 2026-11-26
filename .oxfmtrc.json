@@ -11,5 +11,14 @@
   "arrowParens": "always",
   "bracketSameLine": false,
   "bracketSpacing": true,
-  "ignorePatterns": ["**/*.md", "**/*.yml", "**/*.yaml", "**/*.toml"]
+  "ignorePatterns": ["**/CHANGELOG.md", "**/*.yml", "**/*.yaml", "**/*.toml"],
+  "overrides": [
+    {
+      "files": ["**/*.md"],
+      "options": {
+        "embeddedLanguageFormatting": "off",
+        "proseWrap": "always"
+      }
+    }
+  ]
 }

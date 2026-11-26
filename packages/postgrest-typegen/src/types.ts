@@ -71,6 +71,12 @@ const postgresFunctionSchema = type({
     // so the trailing rows are padded with NULL. postgres-meta types this as a
     // plain boolean, but the opt-in validator must accept the real output.
     has_default: "boolean | null",
+    /**
+     * Set on the `table` arguments, the columns of a `RETURNS TABLE` result:
+     * `false` when the column can never be null. Absent from documents
+     * produced before it was added, which read as `true`.
+     */
+    "is_nullable?": "boolean",
   }).array(),
   argument_types: "string",
   identity_argument_types: "string",
@@ -208,7 +214,19 @@ const rpcFunctionReturnsSchema = rpcTypeReferenceSchema.merge({
    * The columns of a `RETURNS TABLE (…)` result, in name order; `null` for
    * every other return type, including a record built from `OUT` parameters.
    */
-  columns: rpcTypeReferenceSchema.merge({ name: "string" }).array().or("null"),
+  columns: rpcTypeReferenceSchema
+    .merge({
+      name: "string",
+      /**
+       * `false` when the column can never be null: the last statement of a
+       * `BEGIN ATOMIC` body proves it, or a `@notNull` line of the function
+       * comment names it. Absent from documents produced before it was
+       * added, which read as `true`.
+       */
+      "is_nullable?": "boolean",
+    })
+    .array()
+    .or("null"),
 });
 export type RpcFunctionReturns = typeof rpcFunctionReturnsSchema.infer;
 

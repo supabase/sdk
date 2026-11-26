@@ -61,7 +61,10 @@ export class SpawnUnavailableError extends TypegenError {
   }
 }
 
-/** An out-of-process generator exited unsuccessfully. */
+/**
+ * An out-of-process generator, or a step that builds one, exited
+ * unsuccessfully.
+ */
 export class ToolFailedError extends TypegenError {
   readonly command: readonly string[];
   readonly exitCode: number | null;
