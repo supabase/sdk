@@ -147,11 +147,13 @@ token header:
 - Otherwise, inferred from the JWK's `kty` and `crv`.
 
 The header is attacker-controlled until its signature is verified, while the
-published key set is not, so binding from the JWK removes algorithm confusion by
-construction. The header's `alg` must never select the verification algorithm.
-It is used for routing in step 3, and after binding it must name the bound
-algorithm, the same agreement the server enforces, so a token the server would
-reject is never accepted locally.
+published key set is not, as its download
+[stays on the Auth server's origin](../../../../../docs/principles.md#redirects-stay-on-the-origin),
+so binding from the JWK removes algorithm confusion by construction. The
+header's `alg` must never select the verification algorithm. It is used for
+routing in step 3, and after binding it must name the bound algorithm, the same
+agreement the server enforces, so a token the server would reject is never
+accepted locally.
 
 Local verification covers these bindings:
 
