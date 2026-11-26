@@ -54,12 +54,13 @@ the last report comes before the body ends.
 
 **Resent bodies.** When the SDK sends the body of an upload again, because its
 retry policy repeats the request or because the server answers with a redirect
-that repeats it (HTTP 307 or 308), the new request counts from 0, and the SDK
-sends a report with bytes moved 0 and the same total before the first byte of
-the new request. The caller sees the count go down instead of a count that
-passes the total. A download does not repeat once it has returned (see Download
-File as Stream, `storage.file_buckets.download_as_stream`), so its count never
-goes down.
+that repeats it (HTTP 307 or 308) and
+[stays on the origin](../../../../../docs/principles.md#redirects-stay-on-the-origin),
+the new request counts from 0, and the SDK sends a report with bytes moved 0 and
+the same total before the first byte of the new request. The caller sees the
+count go down instead of a count that passes the total. A download does not
+repeat once it has returned (see Download File as Stream,
+`storage.file_buckets.download_as_stream`), so its count never goes down.
 
 ## Notes
 
