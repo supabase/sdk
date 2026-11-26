@@ -502,7 +502,7 @@ export function renderHtml(
         <span class="label">Overall parity</span>
         <span class="value">${pct(clamp01(parity.overall))}</span>
       </div>
-      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift) — a feature only counts if none of them are missing or partial.</p>
+      <p class="metric-desc">% of tracked features fully implemented in every core SDK (JavaScript, Flutter, Python, Swift, C#, Kotlin) — a feature only counts if none of them are missing or partial.</p>
     </div>
     <div class="metric-card">
       <div class="metric-top">

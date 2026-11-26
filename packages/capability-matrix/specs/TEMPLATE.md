@@ -61,14 +61,17 @@
      and it undermines the sentence it hangs off. Fix the API spec upstream, then delete
      the line and its comment together. -->
 
-Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
+Spec:
+[https://github.com/supabase/auth/blob/master/openapi.yaml](https://github.com/supabase/auth/blob/master/openapi.yaml)
 
 - `METHOD /path`
 
 ## Behavior
 
 <!-- Required. What the SDK layer adds, in SDK-neutral terms. Typical content:
-     - defaults the SDK fills in, such as the current session's access token
+     - defaults the SDK fills in, such as the current session's access token, but never
+       a default the service applies to an absent field: the SDK leaves that field out
+       (../../../docs/principles.md#the-service-owns-its-defaults)
      - state the SDK keeps or changes, such as the stored session or a key cache
      - how the SDK reshapes the response
      - what must happen before or after this call, across capabilities
@@ -80,6 +83,14 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      - trade-offs an implementer should weigh, such as a network round trip on every call
 
      A check the SDK makes before the wire is defined under Errors, not here.
+
+     When the behavior is a flow, a sequence across capabilities, or a state machine, add a
+     Mermaid diagram in a fenced mermaid block next to the prose it illustrates:
+     sequenceDiagram for exchanges between the SDK, the service, and the app,
+     stateDiagram-v2 for states and transitions, flowchart for branching decisions. Skip it
+     for a single request and response. The diagram illustrates and the prose defines:
+     every state, transition, and trigger in the diagram is also in the prose, and the two
+     agree. A diagram names no SDK and does not show the service's internals.
 
      Not here: field-by-field request or response descriptions, status code tables, error
      code catalogs, what the service does beyond the premise of an SDK obligation,
@@ -97,10 +108,19 @@ Spec: [https://github.com/supabase/auth/blob/master/openapi.yaml](https://github
      the rest. A check before the wire states the input it applies to, the form it accepts,
      the error the SDK raises (its own argument error, never the server error type), and
      the server answer it pre-empts, with status and error_code, so a reader knows what the
-     check saves them from. Remove this section if there are none. -->
+     check saves them from. Remove this section if there are none.
+
+     A check before the wire is the exception, not the default: validation belongs to the
+     service (../../../docs/principles.md#validation-belongs-to-the-service). Every
+     copy of a service rule in an SDK goes stale when the service changes the rule, so a
+     limit the service enforces, such as a maximum payload size, is never checked here. Add
+     a check only when the service's own answer would mislead the caller, for example a
+     malformed id answered with the same status as a missing record, and say so in the
+     sentence that defines the check. -->
 
 - `error_code`: when the SDK sees it and what it does with it
-- A check before the wire: the input, the form it accepts, the error raised, and the server answer it pre-empts
+- A check before the wire: the input, the form it accepts, the error raised, the
+  server answer it pre-empts, and how that answer would mislead the caller
 
 ## Notes
 

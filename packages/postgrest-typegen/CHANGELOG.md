@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.8.1](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.8.0...postgrest-typegen/v0.8.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** infer nullability on PostgreSQL 14 ([#355](https://github.com/supabase/sdk/issues/355)) ([35647c3](https://github.com/supabase/sdk/commit/35647c301dc80adcbc909913d214a8fed3a8405b))
+
+## [0.8.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.7.0...postgrest-typegen/v0.8.0) (2026-11-11)
+
+
+### Features
+
+* **postgrest-typegen:** infer RETURNS TABLE column nullability ([#338](https://github.com/supabase/sdk/issues/338)) ([5f418f6](https://github.com/supabase/sdk/commit/5f418f6c3a4ffde065df7514f78be542b4ae42b8))
+
+## [0.7.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.6.0...postgrest-typegen/v0.7.0) (2026-11-05)
+
+
+### Features
+
+* **postgrest-typegen:** follow views in extra search path schemas ([#329](https://github.com/supabase/sdk/issues/329)) ([4bda137](https://github.com/supabase/sdk/commit/4bda137533f883e18180ef759ec37c4848e7a567))
+
+
+### Bug Fixes
+
+* **postgrest-typegen:** keep view relationships backed by foreign keys in other schemas ([#327](https://github.com/supabase/sdk/issues/327)) ([e723a30](https://github.com/supabase/sdk/commit/e723a305150f91868e61ec7b51fcc41561eb5b6e))
+
 ## [0.6.0](https://github.com/supabase/sdk/compare/postgrest-typegen/v0.5.0...postgrest-typegen/v0.6.0) (2026-10-16)
 
 

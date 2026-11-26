@@ -19,7 +19,7 @@ function entry(status: string, symbols?: string[]) {
     : { status: status as never };
 }
 
-describe("computeParity — strict overall/perArea (core langs only)", () => {
+describe("computeParity — strict overall/perArea (core langs: js, flutter, python, swift, csharp, kotlin)", () => {
   it("returns 0 overall when all features have no compliance data", () => {
     const a = area("auth", [feature("auth.a"), feature("auth.b")]);
     const report = computeParity([a], {});
@@ -34,27 +34,42 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
       flutter: { "auth.a": entry("implemented") },
       python: { "auth.a": entry("implemented") },
       swift: { "auth.a": entry("implemented") },
+      csharp: { "auth.a": entry("implemented") },
+      kotlin: { "auth.a": entry("implemented") },
     };
     const report = computeParity([a], c);
     expect(report.overall).toBe(1);
     expect(report.perArea.auth).toBe(1);
   });
 
-  it("ignores csharp/go/kotlin status entirely for the strict pass check", () => {
+  it("ignores go status entirely for the strict pass check", () => {
     const a = area("auth", [feature("auth.a")]);
     const c: Partial<Record<Language, ComplianceMap>> = {
       javascript: { "auth.a": entry("implemented") },
       flutter: { "auth.a": entry("implemented") },
       python: { "auth.a": entry("implemented") },
       swift: { "auth.a": entry("implemented") },
-      csharp: { "auth.a": entry("not_implemented") },
+      csharp: { "auth.a": entry("implemented") },
+      kotlin: { "auth.a": entry("implemented") },
       go: { "auth.a": entry("not_implemented") },
-      kotlin: { "auth.a": entry("not_implemented") },
     };
     const report = computeParity([a], c);
     expect(report.overall).toBe(1);
-    // but csharp/go/kotlin still get their own (low) completion score
-    expect(report.perLanguage.csharp).toBe(0);
+    // but go still gets its own (low) completion score
+    expect(report.perLanguage.go).toBe(0);
+  });
+
+  it("fails a feature when csharp or kotlin is not implemented", () => {
+    const a = area("auth", [feature("auth.a")]);
+    const c: Partial<Record<Language, ComplianceMap>> = {
+      javascript: { "auth.a": entry("implemented") },
+      flutter: { "auth.a": entry("implemented") },
+      python: { "auth.a": entry("implemented") },
+      swift: { "auth.a": entry("implemented") },
+      csharp: { "auth.a": entry("implemented") },
+      kotlin: { "auth.a": entry("not_implemented") },
+    };
+    expect(computeParity([a], c).overall).toBe(0);
   });
 
   it("fails a feature when a core lang is only partially_implemented", () => {
@@ -76,6 +91,8 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
       flutter: { "auth.a": entry("implemented") },
       python: { "auth.a": entry("implemented") },
       swift: { "auth.a": entry("not_applicable") },
+      csharp: { "auth.a": entry("implemented") },
+      kotlin: { "auth.a": entry("implemented") },
     };
     const report = computeParity([a], c);
     expect(report.overall).toBe(1);
@@ -88,6 +105,8 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
       flutter: { "auth.a": entry("not_applicable") },
       python: { "auth.a": entry("not_applicable") },
       swift: { "auth.a": entry("not_applicable") },
+      csharp: { "auth.a": entry("not_applicable") },
+      kotlin: { "auth.a": entry("not_applicable") },
     };
     const report = computeParity([a], c);
     expect(report.overall).toBe(0);
@@ -109,6 +128,14 @@ describe("computeParity — strict overall/perArea (core langs only)", () => {
         "auth.b": entry("implemented"),
       },
       swift: { "auth.a": entry("implemented"), "auth.b": entry("implemented") },
+      csharp: {
+        "auth.a": entry("implemented"),
+        "auth.b": entry("implemented"),
+      },
+      kotlin: {
+        "auth.a": entry("implemented"),
+        "auth.b": entry("implemented"),
+      },
     };
     // auth.a passes (all core implemented), auth.b fails (flutter not_implemented) -> 1/2
     const report = computeParity([a], c);
@@ -167,14 +194,16 @@ describe("computeParity — coverageScope", () => {
     expect(report.coverageScope).toBe(0);
   });
 
-  it("ignores csharp/go/kotlin cells even if they have symbols", () => {
+  it("counts csharp and kotlin cells but ignores go", () => {
     const a = area("auth", [feature("auth.a")]);
     const c: Partial<Record<Language, ComplianceMap>> = {
       javascript: { "auth.a": entry("implemented") }, // done, no symbols
       csharp: { "auth.a": entry("implemented", ["Csharp.Foo"]) },
+      kotlin: { "auth.a": entry("implemented", ["Kotlin.Foo"]) },
+      go: { "auth.a": entry("implemented") }, // not core, ignored
     };
-    // only javascript counts as a core done cell -> 0/1
+    // done core cells: javascript, csharp, kotlin (3); with symbols: 2 -> 2/3
     const report = computeParity([a], c);
-    expect(report.coverageScope).toBe(0);
+    expect(report.coverageScope).toBeCloseTo(2 / 3, 6);
   });
 });

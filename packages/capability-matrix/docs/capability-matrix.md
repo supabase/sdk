@@ -1,10 +1,15 @@
 # Capability Matrix
 
-The capability matrix is the canonical feature registry for all Supabase client SDKs. It defines what features exist (ID, name, description, grouping) across the supported client SDKs, and each SDK repo declares which features it implements via its own `sdk-compliance.yaml` file.
+The capability matrix is the canonical feature registry for all Supabase client
+SDKs. It defines what features exist (ID, name, description, grouping) across
+the supported client SDKs, and each SDK repo declares which features it
+implements via its own `sdk-compliance.yaml` file.
 
 ## Feature IDs
 
-Feature IDs use three segments: `{area}.{group}.{method}` (e.g., `auth.sign_in.email`, `storage.buckets.create`). IDs are defined in this repo's `capabilities/*.yaml` files and must be globally unique.
+Feature IDs use three segments: `{area}.{group}.{method}` (e.g.,
+`auth.sign_in.email`, `storage.buckets.create`). IDs are defined in this repo's
+`capabilities/*.yaml` files and must be globally unique.
 
 ## SDK Compliance Format
 
@@ -23,7 +28,8 @@ features:
   storage.objects.upload: not_implemented
 ```
 
-Valid status values: `implemented`, `partially_implemented`, `not_implemented`, `not_applicable`.
+Valid status values: `implemented`, `partially_implemented`, `not_implemented`,
+`not_applicable`.
 
 `api_coverage` controls the blocking public API check. It defaults to
 `additions`, which compares a pull request with its target branch and requires
@@ -34,20 +40,43 @@ pull requests, pushes, and manual workflow dispatches.
 
 ### Registering symbols
 
-CI asks two different questions about an SDK's public API, and each one reads a different field.
+CI asks two different questions about an SDK's public API, and each one reads a
+different field.
 
-- **Is this capability really implemented?** The **drift check** (non-blocking warning) re-verifies every feature marked `implemented` against the SDK's actual public API. If a registered symbol can no longer be found (renamed, removed), or if an `implemented` feature has no symbols registered at all to verify against, CI posts a warning so the entry can be corrected. This reads `symbols`.
+- **Is this capability really implemented?** The **drift check** (non-blocking
+  warning) re-verifies every feature marked `implemented` against the SDK's
+  actual public API. If a registered symbol can no longer be found (renamed,
+  removed), or if an `implemented` feature has no symbols registered at all to
+  verify against, CI posts a warning so the entry can be corrected. This reads
+  `symbols`.
 - **Is every required public symbol accounted for?** The **public API check**
   (blocking) reads `symbols` and `supporting_symbols` alike. In `additions` mode
   it checks symbols added relative to the target branch. In `full` mode it
   checks the complete current API and also fails when a registered symbol no
   longer exists.
 
-`symbols` is therefore for **entry points**: the methods a user calls to exercise the capability. Keep the list short and precise, because every name in it is a claim that the feature exists.
+`symbols` is therefore for **entry points**: the methods a user calls to
+exercise the capability. Keep the list short and precise, because every name in
+it is a claim that the feature exists.
 
-`supporting_symbols` is for the rest of the public surface that hangs off those entry points: option types, result types, schema models, exceptions. These need to be accounted for so the new-symbol check stays meaningful, but they do not evidence a capability and are never drift-verified.
+`supporting_symbols` is for the rest of the public surface that hangs off those
+entry points: option types, result types, schema models, exceptions. These need
+to be accounted for so the new-symbol check stays meaningful, but they do not
+evidence a capability and are never drift-verified.
 
-Each language's extractor defines the symbol spelling its compliance file uses. Go symbols are qualified by the package's directory path relative to the SDK root: `auth.Admin.CreateUser` for a module-root package, `auth/customprovider.Builder` for a nested package, with methods and fields appending their member name. The Go extractor fails when a package is not named after its directory, so the spelling is always unambiguous across a multi-module repository.
+Each language's extractor defines the symbol spelling its compliance file uses.
+Go symbols are qualified by the package's directory path relative to the SDK
+root: `auth.Admin.CreateUser` for a module-root package,
+`auth/customprovider.Builder` for a nested package, with methods and fields
+appending their member name. The Go extractor fails when a package is not named
+after its directory, so the spelling is always unambiguous across a multi-module
+repository. Python symbols carry no module prefix: a class is its bare name and
+a method appends to it (`AsyncClient.rpc`), and a definition re-exported from a
+private module keeps the name it was defined with. Swift symbols include `@_spi`
+declarations. Register them like any other symbol: the drift check verifies
+them, and removing a registered one fails the public API check. The public API
+check never requires an `@_spi` symbol to be registered, so experimental API can
+land before it enters the matrix.
 
 ```yaml
 storage.analytics.create_table:
@@ -59,7 +88,12 @@ storage.analytics.create_table:
     - CreateTableRequest.schema
 ```
 
-Some capabilities are implemented without any public symbol of their own, for example when the SDK exposes them through a language-standard mechanism such as a logger hierarchy. Mark such an entry with `no_public_symbols: true` and explain in `note` how the capability is reached. The drift check then skips it instead of warning that it cannot be verified. The flag requires a `note` and cannot be combined with `symbols`.
+Some capabilities are implemented without any public symbol of their own, for
+example when the SDK exposes them through a language-standard mechanism such as
+a logger hierarchy. Mark such an entry with `no_public_symbols: true` and
+explain in `note` how the capability is reached. The drift check then skips it
+instead of warning that it cannot be verified. The flag requires a `note` and
+cannot be combined with `symbols`.
 
 ```yaml
 client.observability.diagnostic_logging:
@@ -68,7 +102,9 @@ client.observability.diagnostic_logging:
   no_public_symbols: true
 ```
 
-Types shared across several features can be listed once in a top-level `supporting_symbols` list instead of being attributed to whichever feature happens to use them:
+Types shared across several features can be listed once in a top-level
+`supporting_symbols` list instead of being attributed to whichever feature
+happens to use them:
 
 ```yaml
 sdk: flutter
@@ -78,4 +114,8 @@ supporting_symbols:
   - TableMetadata
 ```
 
-Do not pad `symbols` with supporting types to satisfy the new-symbol check, and do not repeat one shared list across several features to give each of them something to point at. Both inflate what the matrix claims is implemented, make drift warnings fan out across features that do not own the symbol, and leave the symbol-to-feature attribution arbitrary.
+Do not pad `symbols` with supporting types to satisfy the new-symbol check, and
+do not repeat one shared list across several features to give each of them
+something to point at. Both inflate what the matrix claims is implemented, make
+drift warnings fan out across features that do not own the symbol, and leave the
+symbol-to-feature attribution arbitrary.

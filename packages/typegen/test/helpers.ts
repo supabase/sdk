@@ -1,3 +1,6 @@
+import { mkdtempSync, realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { Host, SpawnRequest, SpawnResult } from "../src/index.ts";
 
 export interface FakeHost extends Host {
@@ -43,3 +46,7 @@ export const rejection = (promise: Promise<unknown>): Promise<unknown> =>
     () => undefined,
     (caught: unknown) => caught,
   );
+
+/** A new empty folder under the system's temporary folder, with links resolved. */
+export const temporaryFolder = (prefix: string): string =>
+  realpathSync(mkdtempSync(join(tmpdir(), prefix)));

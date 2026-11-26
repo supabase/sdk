@@ -1,5 +1,55 @@
 # Changelog
 
+## [2.4.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.3.0...capability-matrix/v2.4.0) (2026-11-12)
+
+
+### Features
+
+* **auth:** Update get_claims to be specific about error handling ([#323](https://github.com/supabase/sdk/issues/323)) ([3cfec20](https://github.com/supabase/sdk/commit/3cfec2022d5bd6a5abc8c23bdce869a934fde184))
+* **capability-matrix:** verify Swift @_spi symbols ([#356](https://github.com/supabase/sdk/issues/356)) ([4f67282](https://github.com/supabase/sdk/commit/4f6728274476337c298ab7b00f98c85fe50507e3))
+* **client:** add client_info capability with the X-Client-Info header spec ([#340](https://github.com/supabase/sdk/issues/340)) ([2d2e0ed](https://github.com/supabase/sdk/commit/2d2e0ed57ff5a4846af84cd3400fd6f7b8109ba1))
+
+## [2.3.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.2.0...capability-matrix/v2.3.0) (2026-11-09)
+
+
+### Features
+
+* **capability-matrix:** rewrite the Python symbol extractor in Python ([33d9f4f](https://github.com/supabase/sdk/commit/33d9f4fa8af2c0f04e5da1723d4da6dabd381b79))
+* **storage:** add storage.vector_buckets.get_vector_bucket ([#320](https://github.com/supabase/sdk/issues/320)) ([091b0e5](https://github.com/supabase/sdk/commit/091b0e58db8b075090fe5ddf65cef77ea2710a6a))
+
+## [2.2.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.1.0...capability-matrix/v2.2.0) (2026-11-05)
+
+
+### Features
+
+* **realtime:** add foreground liveness probe and network path wake capabilities ([#325](https://github.com/supabase/sdk/issues/325)) ([6a3d779](https://github.com/supabase/sdk/commit/6a3d7790611395c3d763d5caec2aca0c61f1c3dc))
+
+## [2.1.0](https://github.com/supabase/sdk/compare/capability-matrix/v2.0.0...capability-matrix/v2.1.0) (2026-11-04)
+
+
+### Features
+
+* **capability-matrix:** speed up the Swift public API check ([#322](https://github.com/supabase/sdk/issues/322)) ([897f366](https://github.com/supabase/sdk/commit/897f36616f80973c3e139af4fc0670f52722f73a))
+
+## [2.0.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.20.0...capability-matrix/v2.0.0) (2026-11-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* **functions:** rename set_auth_token to auth_token ([#90](https://github.com/supabase/sdk/issues/90))
+
+### Features
+
+* **functions:** rename set_auth_token to auth_token ([#90](https://github.com/supabase/sdk/issues/90)) ([b73f439](https://github.com/supabase/sdk/commit/b73f43995161e83bd2d1043d268f9fdfb992e5a7))
+
+## [1.20.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.19.0...capability-matrix/v1.20.0) (2026-11-03)
+
+
+### Features
+
+* **auth:** Add spec for `AuthClient.signOut()` ([#302](https://github.com/supabase/sdk/issues/302)) ([cb01912](https://github.com/supabase/sdk/commit/cb01912a86d3aeb365830d20fcde3fe94b301c81))
+* **realtime:** add broadcast_persist capability and spec ([#310](https://github.com/supabase/sdk/issues/310)) ([9a4432e](https://github.com/supabase/sdk/commit/9a4432e699ed209135fb3ff0181e1fc07f56b0a9))
+
 ## [1.19.0](https://github.com/supabase/sdk/compare/capability-matrix/v1.18.0...capability-matrix/v1.19.0) (2026-10-21)
 
 

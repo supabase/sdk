@@ -7,6 +7,7 @@ export interface SymbolGraphSymbol {
   kind: { identifier: string };
   pathComponents: string[];
   location?: { uri: string; position?: { line: number; character: number } };
+  spi?: boolean;
 }
 
 // Kind identifiers that map to ParsedSymbol kinds.
@@ -50,6 +51,7 @@ export function normalizeSymbolGraph(
     if (sym.location?.position !== undefined) {
       parsed.line = sym.location.position.line + 1;
     }
+    if (sym.spi === true) parsed.spi = true;
     result.push(parsed);
   }
 

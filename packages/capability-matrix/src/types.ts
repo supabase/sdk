@@ -14,6 +14,8 @@ export const CORE_LANGUAGES = [
   "flutter",
   "python",
   "swift",
+  "csharp",
+  "kotlin",
 ] as const satisfies readonly Language[];
 
 export const STATUSES = [

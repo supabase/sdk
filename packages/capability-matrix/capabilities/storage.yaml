@@ -150,6 +150,10 @@ features:
     name: List Vector Buckets
     description: List all vector buckets with prefix filtering and cursor-based pagination.
     group: vector_buckets
+  - id: storage.vector_buckets.get_vector_bucket
+    name: Get Vector Bucket
+    description: Retrieve metadata for a specific vector bucket.
+    group: vector_buckets
   - id: storage.vector_buckets.delete_vector_bucket
     name: Delete Vector Bucket
     description: Delete an empty vector bucket and all its indexes.
