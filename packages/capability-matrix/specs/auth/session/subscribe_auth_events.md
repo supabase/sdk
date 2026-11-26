@@ -90,34 +90,35 @@ sequenceDiagram
 
 ### Event per operation
 
-| Operation                                                                                                                 | Event                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Subscribe                                                                                                                 | `INITIAL_SESSION`, to the new subscription only, once initialization finishes |
-| Sign up that returns a session                                                                                            | `SIGNED_IN`                                                                   |
-| Sign up that returns no session (confirmation required)                                                                   | none                                                                          |
-| Sign in with password, ID token, Web3, passkey, or anonymously                                                            | `SIGNED_IN`                                                                   |
-| Exchange a PKCE code for a flow the SDK started with a password reset request                                             | `PASSWORD_RECOVERY`                                                           |
-| Exchange a PKCE code for a flow the SDK started with an email change request, for the user the client holds               | `USER_UPDATED`                                                                |
-| Exchange a PKCE code for a flow the SDK started with an email change request, while the client holds another user or none | `SIGNED_IN`                                                                   |
-| Detect a session in a redirect URL whose `type` is `recovery`                                                             | `PASSWORD_RECOVERY`                                                           |
-| Exchange a PKCE code for any other flow, or detect a session in any other redirect URL                                    | `SIGNED_IN`                                                                   |
-| Verify an OTP of type `recovery`                                                                                          | `PASSWORD_RECOVERY`                                                           |
-| Verify an OTP of type `email_change` or `phone_change` that returns a session for the user the client holds               | `USER_UPDATED`                                                                |
-| Verify an OTP of type `email_change` or `phone_change` that returns a session while the client holds another user or none | `SIGNED_IN`                                                                   |
-| Verify an OTP of any other type that returns a session                                                                    | `SIGNED_IN`                                                                   |
-| Verify an OTP that returns no session                                                                                     | none                                                                          |
-| Set a session from an access token and a refresh token                                                                    | `SIGNED_IN`, once, even when setting it refreshed the session                 |
-| A refresh, scheduled or on demand, that succeeds                                                                          | `TOKEN_REFRESHED`                                                             |
-| A refresh that fails without a rejection of the refresh token                                                             | none                                                                          |
-| A refresh rejected with a code under [Errors](#errors), while the held access token is still valid                        | none                                                                          |
-| A refresh rejected with a code under [Errors](#errors), while the held access token is expired                            | `SIGNED_OUT`                                                                  |
-| Update the user                                                                                                           | `USER_UPDATED`                                                                |
-| Link an identity with an ID token                                                                                         | `USER_UPDATED`                                                                |
-| Exchange a PKCE code for a redirect that completes a link-identity flow the SDK started                                   | `USER_UPDATED`                                                                |
-| Unlink an identity                                                                                                        | `USER_UPDATED`, with the identity removed from the held session's user        |
-| Verify an MFA challenge or an MFA recovery code                                                                           | `MFA_CHALLENGE_VERIFIED`                                                      |
-| Sign out with scope `global` or `local`                                                                                   | `SIGNED_OUT`                                                                  |
-| Sign out with scope `others`                                                                                              | none                                                                          |
+| Operation                                                                                                                                  | Event                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Subscribe                                                                                                                                  | `INITIAL_SESSION`, to the new subscription only, once initialization finishes |
+| Sign up that returns a session                                                                                                             | `SIGNED_IN`                                                                   |
+| Sign up that returns no session (confirmation required)                                                                                    | none                                                                          |
+| Sign in with password, ID token, Web3, passkey, or anonymously                                                                             | `SIGNED_IN`                                                                   |
+| Exchange a PKCE code for a flow the SDK started with a password reset request                                                              | `PASSWORD_RECOVERY`                                                           |
+| Exchange a PKCE code for a flow the SDK started with an email change or link-identity request, for the user the client holds               | `USER_UPDATED`                                                                |
+| Exchange a PKCE code for a flow the SDK started with an email change or link-identity request, while the client holds another user or none | `SIGNED_IN`                                                                   |
+| Detect a session in a redirect URL whose `type` is `recovery`                                                                              | `PASSWORD_RECOVERY`                                                           |
+| Detect a session in a redirect URL whose `type` is `email_change`, for the user the client holds                                           | `USER_UPDATED`                                                                |
+| Detect a session in a redirect URL whose `type` is `email_change`, while the client holds another user or none                             | `SIGNED_IN`                                                                   |
+| Exchange a PKCE code for any other flow, or detect a session in any other redirect URL                                                     | `SIGNED_IN`                                                                   |
+| Verify an OTP of type `recovery`                                                                                                           | `PASSWORD_RECOVERY`                                                           |
+| Verify an OTP of type `email_change` or `phone_change` that returns a session for the user the client holds                                | `USER_UPDATED`                                                                |
+| Verify an OTP of type `email_change` or `phone_change` that returns a session while the client holds another user or none                  | `SIGNED_IN`                                                                   |
+| Verify an OTP of any other type that returns a session                                                                                     | `SIGNED_IN`                                                                   |
+| Verify an OTP that returns no session                                                                                                      | none                                                                          |
+| Set a session from an access token and a refresh token                                                                                     | `SIGNED_IN`, once, even when setting it refreshed the session                 |
+| A refresh, scheduled or on demand, that succeeds                                                                                           | `TOKEN_REFRESHED`                                                             |
+| A refresh that fails without a rejection of the refresh token                                                                              | none                                                                          |
+| A refresh rejected with a code under [Errors](#errors), while the held access token is still valid                                         | none                                                                          |
+| A refresh rejected with a code under [Errors](#errors), while the held access token is expired                                             | `SIGNED_OUT`                                                                  |
+| Update the user                                                                                                                            | `USER_UPDATED`                                                                |
+| Link an identity with an ID token                                                                                                          | `USER_UPDATED`                                                                |
+| Unlink an identity                                                                                                                         | `USER_UPDATED`, with the identity removed from the held session's user        |
+| Verify an MFA challenge or an MFA recovery code                                                                                            | `MFA_CHALLENGE_VERIFIED`                                                      |
+| Sign out with scope `global` or `local`                                                                                                    | `SIGNED_OUT`                                                                  |
+| Sign out with scope `others`                                                                                                               | none                                                                          |
 
 Detecting a session in a recovery redirect produces `PASSWORD_RECOVERY` alone,
 not `SIGNED_IN` followed by `PASSWORD_RECOVERY`.
