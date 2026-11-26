@@ -15,8 +15,8 @@ settings. For the app's own requests outside the SDK, the custom HTTP client
 still handles redirects as the app set it up to.
 
 A custom HTTP client can follow a redirect itself, before the SDK sees the
-redirect, thus outside of the SDK's scope of control. For example, a
-replacement `fetch` function can ignore the `redirect: "manual"` option that
-the SDK passes to it. When the SDK cannot prevent that, the SDK's docs for the
-custom HTTP client option must state that the custom HTTP client must not follow a
-redirect to another origin.
+redirect, thus outside of the SDK's scope of control. For example, a replacement
+`fetch` function can ignore the `redirect: "manual"` option that the SDK passes
+to it. When the SDK cannot prevent that, the SDK's docs for the custom HTTP
+client option must state that the custom HTTP client must not follow a redirect
+to another origin.
