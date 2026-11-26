@@ -254,7 +254,7 @@ features:
     group: configuration
   - id: database.configuration.request_timeout
     name: Request Timeout
-    description: Set a global request timeout in milliseconds at construction time; in-flight requests are cancelled once the deadline is reached.
+    description: Set a request timeout at construction time, optionally overridden per request; an attempt that exceeds it is cancelled and fails with a timeout error distinct from caller cancellation.
     group: configuration
   - id: database.generated_types.typed_queries
     name: Typed Table Queries
