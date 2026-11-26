@@ -8,7 +8,7 @@ Setting `postgres_changes_options.wait` to `true` on the channel config defers r
 
 ## Prerequisites
 
-Only meaningful on a channel with a `postgres_changes` binding; has no effect on channels without one. Requires a Realtime server version that sends the subscription-active confirmation message.
+Only meaningful on a channel with a `postgres_changes` binding; has no effect on channels without one. Requires Realtime server v2.143.2 or later, which sends the subscription-active confirmation message.
 
 ## Errors
 
@@ -17,5 +17,5 @@ Only meaningful on a channel with a `postgres_changes` binding; has no effect on
 
 ## Related
 
-- [Subscribe to Postgres Changes](realtime.subscriptions.postgres_changes) — the underlying subscription this option confirms
-- [Subscribe](realtime.channel.subscribe) — the join call whose success is delayed by this option
+- `realtime.subscriptions.postgres_changes` — the underlying subscription this option confirms
+- `realtime.channel.subscribe` — the join call whose success is delayed by this option
