@@ -121,6 +121,46 @@ Example: the service adds a new factor type to the list of a user's MFA factors.
 An SDK that knows only `totp` and `phone` still decodes the list. The new factor
 appears with its raw type, and the calls that do not use it keep working.
 
+### Redirects stay on the origin
+
+An SDK sends its HTTP requests to the Supabase services. When the answer to a
+request is a redirect away from the request's origin, the SDK does not follow
+it, whatever redirect policy its HTTP client carries. The rule holds for an HTTP
+client that the user supplies, and for a redirect that a service sends on
+purpose, such as one from an Edge Function. The SDK returns the redirect
+response as it returns any other response outside the 2xx range. Within the
+request's origin, the SDK may follow a redirect as its HTTP client's policy
+decides.
+
+The origin of a request is the origin of its URL, as
+[RFC 6454](https://www.rfc-editor.org/rfc/rfc6454.html#section-4) defines it:
+the scheme, host, and port. A subdomain is another origin, and so is the same
+host under another scheme. The rule compares URLs and nothing else, so it
+applies the same way whoever runs the service: Supabase's platform, a
+self-hosted stack, or a local stack that the Supabase CLI starts. Another
+project's host on Supabase's platform is another origin too, and it can belong
+to anyone.
+
+The reason is that an HTTP client removes at most the headers it knows to be
+sensitive, such as `Authorization`, when a redirect leaves the origin. The API
+key and the global headers are not among them, so the client sends them on to
+the other origin. A 307 or 308 redirect sends the request body there too. On a
+server, the key is often a secret key, and with it the other origin can act as
+the project. The SDK would also return that origin's answer as if the service
+had sent it.
+
+Some runtimes, such as a browser, hide where a redirect leads until they have
+followed it. An SDK there asks the runtime to follow no redirect at all. In a
+browser, the SDK then receives an
+[opaque redirect response](https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect),
+with status 0. It returns that response as it returns any other response outside
+the 2xx range. Where the SDK cannot refuse a redirect to another origin, because
+its runtime or a user's HTTP client follows it first, the SDK's docs say so.
+
+Example: a server uses the secret key with a project URL whose host now
+redirects to another domain. The SDK returns the redirect as an error. The other
+domain never receives the key.
+
 ### Convenience over configuration
 
 A client works with good defaults and the fewest inputs: the project URL and a
