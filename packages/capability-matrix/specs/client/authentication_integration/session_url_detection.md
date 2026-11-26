@@ -39,9 +39,11 @@ type. The first matching row applies:
 3. `code` is present: the SDK exchanges the code as defined in
    [Concurrent PKCE Flows](../../auth/sign_in/concurrent_pkce_flows.md), with
    the `sb_flow_id` parameter as the flow ID when present.
-4. `access_token` is present: the redirect carries implicit tokens. The SDK
-   requires `refresh_token`, `token_type`, and `expires_in` as well, fetches the
-   user with the access token, and stores the session.
+4. `access_token` is present: the redirect carries implicit tokens. Unless the
+   app turned on the option that accepts them, the SDK raises an error, as
+   defined under Errors. Otherwise it requires `refresh_token`, `token_type`,
+   and `expires_in` as well, fetches the user with the access token, and stores
+   the session.
 5. `sb` is present: the server marks its redirects with this empty parameter, so
    a URL with the marker and no result is an error.
 6. Otherwise the URL is not an auth redirect. The call says so, and detection
@@ -60,15 +62,17 @@ flowchart TD
   r3 -- yes --> exchange["Exchange the code,<br/>see Concurrent PKCE Flows"]
   exchange --> purpose{"Purpose of the<br/>flow that completed"}
   purpose -- recovery --> recovery["PASSWORD_RECOVERY"]
-  purpose -- "email_change, link_identity" --> updated["USER_UPDATED"]
+  purpose -- "email_change, link_identity" --> held{"Session's user is<br/>the user the client held?"}
+  held -- yes --> updated["USER_UPDATED"]
+  held -- no --> signedIn
   purpose -- sign_in --> signedIn["SIGNED_IN"]
   r3 -- no --> r4{"access_token?"}
-  r4 -- yes --> check{"Reject option on, or<br/>refresh_token, token_type<br/>or expires_in missing?"}
+  r4 -- yes --> check{"Accept option off, or<br/>refresh_token, token_type<br/>or expires_in missing?"}
   check -- yes --> fail
   check -- no --> store["GET /user, store the session"]
   store --> type{"type parameter"}
   type -- recovery --> recovery
-  type -- email_change --> updated
+  type -- email_change --> held
   type -- "other or none" --> signedIn
   r4 -- no --> r5{"sb?"}
   r5 -- yes --> fail
@@ -78,21 +82,24 @@ flowchart TD
 The default test for an auth redirect is that row 1 to 5 matches. A bare `code`
 matches it, which is why the predicate exists.
 
-The SDK accepts implicit tokens in row 4 even when it starts every flow with
-PKCE, because the server sends tokens in the fragment for a link that started
-without a code challenge, such as an invite or a link generated through the
-admin API
+The SDK offers an option that accepts implicit tokens in row 4, off by default.
+It applies even when the SDK starts every flow with PKCE, because the server
+sends tokens in the fragment for a link that started without a code challenge,
+such as an invite or a link generated through the admin API
 ([handler](https://github.com/supabase/auth/blob/a7e97d665b9ea03853edb66d014bcde323f7894b/internal/api/verify.go#L135-L138)).
-The SDK offers an option that rejects them, as defined under Errors.
 
 After it stores the session, the SDK emits one auth event:
 
 - For a code, the purpose of the pending flow that completed decides the event:
   `recovery` emits `PASSWORD_RECOVERY`, `email_change` and `link_identity` emit
-  `USER_UPDATED`, and `sign_in` emits `SIGNED_IN`.
+  a user change, and `sign_in` emits `SIGNED_IN`.
 - For implicit tokens, the `type` parameter decides the event: `recovery` emits
-  `PASSWORD_RECOVERY`, `email_change` emits `USER_UPDATED`, and any other value,
+  `PASSWORD_RECOVERY`, `email_change` emits a user change, and any other value,
   or none, emits `SIGNED_IN`.
+- A user change is `USER_UPDATED` when the client held a session before the
+  redirect and that session's user ID equals the new session's user ID.
+  Otherwise it is `SIGNED_IN`: the link was opened on a device that held no
+  session, or held another user's.
 
 A platform can deliver the same URL more than once, for example as the launch
 URL and again on the deep link stream. The SDK keeps the outcome of at least the
@@ -140,8 +147,9 @@ a successful result, so a reload does not deliver the redirect again.
   removes no pending flow and keeps the current session.
 - Incomplete tokens: an `access_token` without `refresh_token`, `token_type`, or
   `expires_in` raises the SDK's auth error, and no request is sent.
-- Implicit tokens rejected: when the app turned on the option that rejects
-  implicit tokens, row 4 raises the SDK's auth error, and no request is sent.
+- Implicit tokens rejected: unless the app turned on the option that accepts
+  implicit tokens, row 4 raises the SDK's auth error, stores nothing, and sends
+  no request.
 - Marker without a result: row 5 raises the SDK's auth error.
 - Code exchange: the errors of
   [Concurrent PKCE Flows](../../auth/sign_in/concurrent_pkce_flows.md#errors)
@@ -153,9 +161,10 @@ a successful result, so a reload does not deliver the redirect again.
   holds a valid token pair signs the app in as that pair's user, so an attacker
   who gets the app to open a link with the attacker's own tokens signs the
   victim in to the attacker's account. A code is safe from this, because its
-  verifier never leaves the device that started the flow. An app that sends no
-  invites and generates no links through the admin API turns on the option that
-  rejects implicit tokens.
+  verifier never leaves the device that started the flow. This is why the option
+  that accepts implicit tokens is off by default. An app turns it on only when
+  it receives token links from outside the client's PKCE flows, such as invites
+  or links generated through the admin API.
 - Stateless server-side SDKs hold no session and no pending flows, so this
   capability is `not_applicable` to them. They exchange a code with a verifier
   the app supplies.
