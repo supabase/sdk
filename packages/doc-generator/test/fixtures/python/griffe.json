@@ -1,0 +1,4120 @@
+{
+  "notes": {
+    "analysis": "static",
+    "docstring": {
+      "endlineno": 5,
+      "lineno": 1,
+      "parsed": [
+        {
+          "kind": "text",
+          "value": "A small package with one of everything the griffe adapter has to handle.\n\nIts `griffe dump` is checked in as ../../griffe.json, so the tests need no\nPython. Run `bun run refresh-fixtures` after changing it."
+        }
+      ],
+      "value": "A small package with one of everything the griffe adapter has to handle.\n\nIts `griffe dump` is checked in as ../../griffe.json, so the tests need no\nPython. Run `bun run refresh-fixtures` after changing it."
+    },
+    "exports": [
+      "AsyncNotesClient",
+      "CreateOptions",
+      "Folder",
+      "Note",
+      "NotesClient",
+      "NotesError",
+      "SearchOptions",
+      "SyncNotesClient",
+      "create_client"
+    ],
+    "imports": {
+      "AsyncNotesClient": "notes.client.AsyncNotesClient",
+      "CreateOptions": "notes.types.CreateOptions",
+      "Folder": "notes.types.Folder",
+      "Note": "notes.types.Note",
+      "NotesClient": "notes.client.NotesClient",
+      "NotesError": "notes.types.NotesError",
+      "SearchOptions": "notes.types.SearchOptions",
+      "SyncNotesClient": "notes.client.SyncNotesClient",
+      "create_client": "notes.client.create_client"
+    },
+    "is_class_private": false,
+    "is_deprecated": false,
+    "is_exported": false,
+    "is_imported": false,
+    "is_private": false,
+    "is_public": true,
+    "is_special": false,
+    "is_wildcard_exposed": false,
+    "kind": "module",
+    "members": {
+      "AsyncNotesClient": {
+        "analysis": "static",
+        "endlineno": 7,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 7,
+        "name": "AsyncNotesClient",
+        "path": "notes.AsyncNotesClient",
+        "runtime": true,
+        "target_path": "notes.client.AsyncNotesClient"
+      },
+      "CreateOptions": {
+        "analysis": "static",
+        "endlineno": 8,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 8,
+        "name": "CreateOptions",
+        "path": "notes.CreateOptions",
+        "runtime": true,
+        "target_path": "notes.types.CreateOptions"
+      },
+      "Folder": {
+        "analysis": "static",
+        "endlineno": 8,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 8,
+        "name": "Folder",
+        "path": "notes.Folder",
+        "runtime": true,
+        "target_path": "notes.types.Folder"
+      },
+      "Note": {
+        "analysis": "static",
+        "endlineno": 8,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 8,
+        "name": "Note",
+        "path": "notes.Note",
+        "runtime": true,
+        "target_path": "notes.types.Note"
+      },
+      "NotesClient": {
+        "analysis": "static",
+        "endlineno": 7,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 7,
+        "name": "NotesClient",
+        "path": "notes.NotesClient",
+        "runtime": true,
+        "target_path": "notes.client.NotesClient"
+      },
+      "NotesError": {
+        "analysis": "static",
+        "endlineno": 8,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 8,
+        "name": "NotesError",
+        "path": "notes.NotesError",
+        "runtime": true,
+        "target_path": "notes.types.NotesError"
+      },
+      "SearchOptions": {
+        "analysis": "static",
+        "endlineno": 8,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 8,
+        "name": "SearchOptions",
+        "path": "notes.SearchOptions",
+        "runtime": true,
+        "target_path": "notes.types.SearchOptions"
+      },
+      "SyncNotesClient": {
+        "analysis": "static",
+        "endlineno": 7,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 7,
+        "name": "SyncNotesClient",
+        "path": "notes.SyncNotesClient",
+        "runtime": true,
+        "target_path": "notes.client.SyncNotesClient"
+      },
+      "__all__": {
+        "analysis": "static",
+        "endlineno": 20,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": false,
+        "is_public": false,
+        "is_special": true,
+        "is_wildcard_exposed": false,
+        "kind": "attribute",
+        "labels": [
+          "module-attribute"
+        ],
+        "lineno": 10,
+        "name": "__all__",
+        "path": "notes.__all__",
+        "relative_package_filepath": "notes/__init__.py",
+        "runtime": true,
+        "value": {
+          "cls": "ExprList",
+          "elements": [
+            "'AsyncNotesClient'",
+            "'CreateOptions'",
+            "'Folder'",
+            "'Note'",
+            "'NotesClient'",
+            "'NotesError'",
+            "'SearchOptions'",
+            "'SyncNotesClient'",
+            "'create_client'"
+          ]
+        }
+      },
+      "_io": {
+        "analysis": "static",
+        "imports": {
+          "Any": "typing.Any",
+          "Callable": "collections.abc.Callable",
+          "Generator": "collections.abc.Generator"
+        },
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": true,
+        "is_public": false,
+        "is_special": false,
+        "is_wildcard_exposed": false,
+        "kind": "module",
+        "members": {
+          "Any": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "Any",
+            "path": "notes._io.Any",
+            "runtime": true,
+            "target_path": "typing.Any"
+          },
+          "Callable": {
+            "analysis": "static",
+            "endlineno": 1,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 1,
+            "name": "Callable",
+            "path": "notes._io.Callable",
+            "runtime": true,
+            "target_path": "collections.abc.Callable"
+          },
+          "Generator": {
+            "analysis": "static",
+            "endlineno": 1,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 1,
+            "name": "Generator",
+            "path": "notes._io.Generator",
+            "runtime": true,
+            "target_path": "collections.abc.Generator"
+          },
+          "HttpMethod": {
+            "analysis": "static",
+            "docstring": {
+              "endlineno": 5,
+              "lineno": 5,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "What a method that runs on both a sync and an async client returns."
+                }
+              ],
+              "value": "What a method that runs on both a sync and an async client returns."
+            },
+            "endlineno": 4,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "type alias",
+            "lineno": 4,
+            "name": "HttpMethod",
+            "path": "notes._io.HttpMethod",
+            "relative_package_filepath": "notes/_io.py",
+            "runtime": true,
+            "type_parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "type-var",
+                "name": "T"
+              }
+            ],
+            "value": {
+              "cls": "ExprSubscript",
+              "left": {
+                "cls": "ExprName",
+                "member": "HttpMethod",
+                "name": "Generator"
+              },
+              "slice": {
+                "cls": "ExprTuple",
+                "elements": [
+                  {
+                    "cls": "ExprName",
+                    "member": "HttpMethod",
+                    "name": "Any"
+                  },
+                  {
+                    "cls": "ExprName",
+                    "member": "HttpMethod",
+                    "name": "Any"
+                  },
+                  {
+                    "cls": "ExprName",
+                    "member": "HttpMethod",
+                    "name": "T"
+                  }
+                ],
+                "implicit": true
+              }
+            }
+          },
+          "handle_http_io": {
+            "analysis": "static",
+            "decorators": [],
+            "endlineno": 9,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "function",
+            "lineno": 8,
+            "name": "handle_http_io",
+            "parameters": [
+              {
+                "annotation": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "handle_http_io",
+                    "name": "Callable"
+                  },
+                  "slice": {
+                    "cls": "ExprTuple",
+                    "elements": [
+                      "...",
+                      {
+                        "cls": "ExprSubscript",
+                        "left": {
+                          "cls": "ExprName",
+                          "member": "handle_http_io",
+                          "name": "HttpMethod"
+                        },
+                        "slice": {
+                          "cls": "ExprName",
+                          "member": "handle_http_io",
+                          "name": "T"
+                        }
+                      }
+                    ],
+                    "implicit": true
+                  }
+                },
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "method"
+              }
+            ],
+            "path": "notes._io.handle_http_io",
+            "relative_package_filepath": "notes/_io.py",
+            "returns": {
+              "cls": "ExprSubscript",
+              "left": {
+                "cls": "ExprName",
+                "member": "handle_http_io",
+                "name": "Callable"
+              },
+              "slice": {
+                "cls": "ExprTuple",
+                "elements": [
+                  "...",
+                  {
+                    "cls": "ExprName",
+                    "member": "handle_http_io",
+                    "name": "T"
+                  }
+                ],
+                "implicit": true
+              }
+            },
+            "runtime": true,
+            "type_parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "type-var",
+                "name": "T"
+              }
+            ]
+          }
+        },
+        "name": "_io",
+        "path": "notes._io",
+        "relative_package_filepath": "notes/_io.py",
+        "runtime": true
+      },
+      "client": {
+        "analysis": "static",
+        "imports": {
+          "Callable": "collections.abc.Callable",
+          "CreateOptions": "notes.types.CreateOptions",
+          "Folder": "notes.types.Folder",
+          "HttpMethod": "notes._io.HttpMethod",
+          "Literal": "typing.Literal",
+          "Note": "notes.types.Note",
+          "SearchOptions": "notes.types.SearchOptions",
+          "Self": "typing.Self",
+          "handle_http_io": "notes._io.handle_http_io",
+          "overload": "typing.overload",
+          "types": "notes.types"
+        },
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": false,
+        "kind": "module",
+        "members": {
+          "AsyncNotesClient": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "AsyncNotesClient",
+                "name": "NotesClient"
+              }
+            ],
+            "decorators": [],
+            "endlineno": 103,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 57,
+            "members": {
+              "archive": {
+                "analysis": "static",
+                "decorators": [],
+                "endlineno": 103,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "labels": [
+                  "async"
+                ],
+                "lineno": 102,
+                "name": "archive",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "archive",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "note_id"
+                  }
+                ],
+                "path": "notes.client.AsyncNotesClient.archive",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "archive",
+                  "name": "Note"
+                },
+                "runtime": true
+              },
+              "create": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 89,
+                  "lineno": 67,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Creates a note with a title and a body.\n\nThe note is stored at once.\n\n```python\nnote = await client.create(\"Hello\", \"World\")\n```"
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "The title of the note.",
+                          "name": "title"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "The text of the note. It may be\nempty.",
+                          "name": "body",
+                          "value": "''"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprBinOp",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "create",
+                              "name": "CreateOptions"
+                            },
+                            "operator": "|",
+                            "right": "None"
+                          },
+                          "description": "How the note is created.",
+                          "name": "options",
+                          "value": "None"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "Tags to attach to the note.",
+                          "name": "tags",
+                          "value": "()"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprSubscript",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "create",
+                              "name": "Literal"
+                            },
+                            "slice": {
+                              "cls": "ExprTuple",
+                              "elements": [
+                                "'email'",
+                                "'sms'"
+                              ],
+                              "implicit": true
+                            }
+                          },
+                          "description": "Who is told about the note.",
+                          "name": "channel",
+                          "value": "'email'"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "Anything else to store with the note.",
+                          "name": "metadata",
+                          "value": "{}"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "returns",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "Note"
+                          },
+                          "description": "The stored note.",
+                          "name": ""
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If the service rejects the note."
+                        }
+                      ]
+                    }
+                  ],
+                  "value": "Creates a note with a title and a body.\n\nThe note is stored at once.\n\n```python\nnote = await client.create(\"Hello\", \"World\")\n```\n\nArgs:\n    title: The title of the note.\n    body: The text of the note. It may be\n        empty.\n    options: How the note is created.\n    tags: Tags to attach to the note.\n    channel: Who is told about the note.\n    metadata: Anything else to store with the note.\n\nReturns:\n    The stored note.\n\nRaises:\n    NotesError: If the service rejects the note."
+                },
+                "endlineno": 90,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "labels": [
+                  "async"
+                ],
+                "lineno": 58,
+                "name": "create",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "title"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "''",
+                    "kind": "positional or keyword",
+                    "name": "body"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "create",
+                        "name": "CreateOptions"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "kind": "positional or keyword",
+                    "name": "options"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "()",
+                    "kind": "variadic positional",
+                    "name": "tags"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprSubscript",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "create",
+                        "name": "Literal"
+                      },
+                      "slice": {
+                        "cls": "ExprTuple",
+                        "elements": [
+                          "'email'",
+                          "'sms'"
+                        ],
+                        "implicit": true
+                      }
+                    },
+                    "default": "'email'",
+                    "kind": "keyword-only",
+                    "name": "channel"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "{}",
+                    "kind": "variadic keyword",
+                    "name": "metadata"
+                  }
+                ],
+                "path": "notes.client.AsyncNotesClient.create",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "create",
+                  "name": "Note"
+                },
+                "runtime": true
+              },
+              "delete": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 100,
+                  "lineno": 93,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Deletes a note."
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "delete",
+                            "name": "str"
+                          },
+                          "description": "The id of the note to delete.",
+                          "name": "note_id"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If there is no such note."
+                        }
+                      ]
+                    }
+                  ],
+                  "value": "Deletes a note.\n\nArgs:\n    note_id: The id of the note to delete.\n\nRaises:\n    NotesError: If there is no such note."
+                },
+                "endlineno": 100,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "labels": [
+                  "async"
+                ],
+                "lineno": 92,
+                "name": "delete",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "delete",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "note_id"
+                  }
+                ],
+                "path": "notes.client.AsyncNotesClient.delete",
+                "relative_package_filepath": "notes/client.py",
+                "returns": "None",
+                "runtime": true
+              }
+            },
+            "name": "AsyncNotesClient",
+            "path": "notes.client.AsyncNotesClient",
+            "relative_package_filepath": "notes/client.py",
+            "runtime": true
+          },
+          "Callable": {
+            "analysis": "static",
+            "endlineno": 1,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 1,
+            "name": "Callable",
+            "path": "notes.client.Callable",
+            "runtime": true,
+            "target_path": "collections.abc.Callable"
+          },
+          "CreateOptions": {
+            "analysis": "static",
+            "endlineno": 6,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 6,
+            "name": "CreateOptions",
+            "path": "notes.client.CreateOptions",
+            "runtime": true,
+            "target_path": "notes.types.CreateOptions"
+          },
+          "Folder": {
+            "analysis": "static",
+            "endlineno": 6,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 6,
+            "name": "Folder",
+            "path": "notes.client.Folder",
+            "runtime": true,
+            "target_path": "notes.types.Folder"
+          },
+          "HttpMethod": {
+            "analysis": "static",
+            "endlineno": 5,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 5,
+            "name": "HttpMethod",
+            "path": "notes.client.HttpMethod",
+            "runtime": true,
+            "target_path": "notes._io.HttpMethod"
+          },
+          "Literal": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "Literal",
+            "path": "notes.client.Literal",
+            "runtime": true,
+            "target_path": "typing.Literal"
+          },
+          "Note": {
+            "analysis": "static",
+            "endlineno": 6,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 6,
+            "name": "Note",
+            "path": "notes.client.Note",
+            "runtime": true,
+            "target_path": "notes.types.Note"
+          },
+          "NotesClient": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [],
+            "docstring": {
+              "endlineno": 10,
+              "lineno": 10,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "What the sync and the async client share."
+                }
+              ],
+              "value": "What the sync and the async client share."
+            },
+            "endlineno": 54,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 9,
+            "members": {
+              "default_folder": {
+                "analysis": "static",
+                "endlineno": 12,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 12,
+                "name": "default_folder",
+                "path": "notes.client.NotesClient.default_folder",
+                "relative_package_filepath": "notes/client.py",
+                "runtime": true,
+                "value": "'Inbox'"
+              },
+              "in_folder": {
+                "analysis": "static",
+                "decorators": [],
+                "endlineno": 32,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 31,
+                "name": "in_folder",
+                "parameters": [
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "in_folder",
+                      "name": "Self"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "in_folder",
+                      "name": "Folder"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "folder"
+                  }
+                ],
+                "path": "notes.client.NotesClient.in_folder",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "in_folder",
+                  "name": "Self"
+                },
+                "runtime": true
+              },
+              "move": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 49,
+                  "lineno": 45,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Moves a note to another folder."
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If there is no such note."
+                        }
+                      ]
+                    }
+                  ],
+                  "value": "Moves a note to another folder.\n\nRaises:\n    NotesError: If there is no such note."
+                },
+                "endlineno": 49,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 34,
+                "name": "move",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "move",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "note_id"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprAttribute",
+                      "values": [
+                        {
+                          "cls": "ExprName",
+                          "member": "move",
+                          "name": "types"
+                        },
+                        {
+                          "cls": "ExprName",
+                          "member": null,
+                          "name": "Folder"
+                        }
+                      ]
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "folder"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "move",
+                        "name": "float"
+                      },
+                      "operator": "|",
+                      "right": {
+                        "cls": "ExprName",
+                        "member": "move",
+                        "name": "int"
+                      }
+                    },
+                    "default": "0",
+                    "kind": "positional or keyword",
+                    "name": "priority"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprSubscript",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "move",
+                        "name": "Literal"
+                      },
+                      "slice": "True"
+                    },
+                    "default": "True",
+                    "kind": "keyword-only",
+                    "name": "strict"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": "None",
+                      "operator": "|",
+                      "right": {
+                        "cls": "ExprName",
+                        "member": "move",
+                        "name": "Folder"
+                      }
+                    },
+                    "default": "None",
+                    "kind": "keyword-only",
+                    "name": "owner"
+                  },
+                  {
+                    "annotation": null,
+                    "default": "None",
+                    "kind": "keyword-only",
+                    "name": "context"
+                  }
+                ],
+                "path": "notes.client.NotesClient.move",
+                "relative_package_filepath": "notes/client.py",
+                "returns": "None",
+                "runtime": true
+              },
+              "search": {
+                "analysis": "static",
+                "decorators": [
+                  {
+                    "endlineno": 14,
+                    "lineno": 14,
+                    "value": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "handle_http_io"
+                    }
+                  }
+                ],
+                "docstring": {
+                  "endlineno": 27,
+                  "lineno": 16,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Finds the notes that match a query."
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "search",
+                            "name": "SearchOptions"
+                          },
+                          "description": "What to search for, and how many notes\nto return.",
+                          "name": "options"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "search",
+                            "name": "int"
+                          },
+                          "description": "The page of results to return, counted from 1.",
+                          "name": "page",
+                          "value": "1"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "examples",
+                      "value": [
+                        [
+                          "text",
+                          "Find the notes about Python:"
+                        ],
+                        [
+                          "examples",
+                          ">>> client.search(SearchOptions(query=\"python\"))"
+                        ]
+                      ]
+                    }
+                  ],
+                  "value": "Finds the notes that match a query.\n\nArgs:\n    options: What to search for, and how many notes\n        to return.\n    page: The page of results to return, counted from 1.\n\nExamples:\n    Find the notes about Python:\n\n    >>> client.search(SearchOptions(query=\"python\"))"
+                },
+                "endlineno": 29,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 14,
+                "name": "search",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "search",
+                      "name": "SearchOptions"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "options"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "search",
+                      "name": "int"
+                    },
+                    "default": "1",
+                    "kind": "keyword-only",
+                    "name": "page"
+                  }
+                ],
+                "path": "notes.client.NotesClient.search",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "search",
+                    "name": "HttpMethod"
+                  },
+                  "slice": {
+                    "cls": "ExprSubscript",
+                    "left": {
+                      "cls": "ExprName",
+                      "member": "search",
+                      "name": "list"
+                    },
+                    "slice": {
+                      "cls": "ExprName",
+                      "member": "search",
+                      "name": "Note"
+                    }
+                  }
+                },
+                "runtime": true
+              },
+              "version": {
+                "analysis": "static",
+                "decorators": [
+                  {
+                    "endlineno": 51,
+                    "lineno": 51,
+                    "value": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "staticmethod"
+                    }
+                  }
+                ],
+                "docstring": {
+                  "endlineno": 53,
+                  "lineno": 53,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "The version of the notes API this client speaks."
+                    }
+                  ],
+                  "value": "The version of the notes API this client speaks."
+                },
+                "endlineno": 54,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "labels": [
+                  "staticmethod"
+                ],
+                "lineno": 51,
+                "name": "version",
+                "parameters": [],
+                "path": "notes.client.NotesClient.version",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "version",
+                  "name": "str"
+                },
+                "runtime": true
+              }
+            },
+            "name": "NotesClient",
+            "path": "notes.client.NotesClient",
+            "relative_package_filepath": "notes/client.py",
+            "runtime": true
+          },
+          "SearchOptions": {
+            "analysis": "static",
+            "endlineno": 6,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 6,
+            "name": "SearchOptions",
+            "path": "notes.client.SearchOptions",
+            "runtime": true,
+            "target_path": "notes.types.SearchOptions"
+          },
+          "Self": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "Self",
+            "path": "notes.client.Self",
+            "runtime": true,
+            "target_path": "typing.Self"
+          },
+          "SyncNotesClient": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "SyncNotesClient",
+                "name": "NotesClient"
+              }
+            ],
+            "decorators": [],
+            "endlineno": 152,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 106,
+            "members": {
+              "archive": {
+                "analysis": "static",
+                "decorators": [],
+                "endlineno": 152,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 151,
+                "name": "archive",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "archive",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "note_id"
+                  }
+                ],
+                "path": "notes.client.SyncNotesClient.archive",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "archive",
+                  "name": "Note"
+                },
+                "runtime": true
+              },
+              "create": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 138,
+                  "lineno": 116,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Creates a note with a title and a body.\n\nThe note is stored at once.\n\n```python\nnote = client.create(\"Hello\", \"World\")\n```"
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "The title of the note.",
+                          "name": "title"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "The text of the note. It may be\nempty.",
+                          "name": "body",
+                          "value": "''"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprBinOp",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "create",
+                              "name": "CreateOptions"
+                            },
+                            "operator": "|",
+                            "right": "None"
+                          },
+                          "description": "How the note is created.",
+                          "name": "options",
+                          "value": "None"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "Tags to attach to the note.",
+                          "name": "tags",
+                          "value": "()"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprSubscript",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "create",
+                              "name": "Literal"
+                            },
+                            "slice": {
+                              "cls": "ExprTuple",
+                              "elements": [
+                                "'email'",
+                                "'sms'"
+                              ],
+                              "implicit": true
+                            }
+                          },
+                          "description": "Who is told about the note.",
+                          "name": "channel",
+                          "value": "'email'"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "str"
+                          },
+                          "description": "Anything else to store with the note.",
+                          "name": "metadata",
+                          "value": "{}"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "returns",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "create",
+                            "name": "Note"
+                          },
+                          "description": "The stored note.",
+                          "name": ""
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If the service rejects the note."
+                        }
+                      ]
+                    }
+                  ],
+                  "value": "Creates a note with a title and a body.\n\nThe note is stored at once.\n\n```python\nnote = client.create(\"Hello\", \"World\")\n```\n\nArgs:\n    title: The title of the note.\n    body: The text of the note. It may be\n        empty.\n    options: How the note is created.\n    tags: Tags to attach to the note.\n    channel: Who is told about the note.\n    metadata: Anything else to store with the note.\n\nReturns:\n    The stored note.\n\nRaises:\n    NotesError: If the service rejects the note."
+                },
+                "endlineno": 139,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 107,
+                "name": "create",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "title"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "''",
+                    "kind": "positional or keyword",
+                    "name": "body"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "create",
+                        "name": "CreateOptions"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "kind": "positional or keyword",
+                    "name": "options"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "()",
+                    "kind": "variadic positional",
+                    "name": "tags"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprSubscript",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "create",
+                        "name": "Literal"
+                      },
+                      "slice": {
+                        "cls": "ExprTuple",
+                        "elements": [
+                          "'email'",
+                          "'sms'"
+                        ],
+                        "implicit": true
+                      }
+                    },
+                    "default": "'email'",
+                    "kind": "keyword-only",
+                    "name": "channel"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "create",
+                      "name": "str"
+                    },
+                    "default": "{}",
+                    "kind": "variadic keyword",
+                    "name": "metadata"
+                  }
+                ],
+                "path": "notes.client.SyncNotesClient.create",
+                "relative_package_filepath": "notes/client.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "create",
+                  "name": "Note"
+                },
+                "runtime": true
+              },
+              "delete": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 149,
+                  "lineno": 142,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Deletes a note."
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "delete",
+                            "name": "str"
+                          },
+                          "description": "The id of the note to delete.",
+                          "name": "note_id"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If there is no such note."
+                        }
+                      ]
+                    }
+                  ],
+                  "value": "Deletes a note.\n\nArgs:\n    note_id: The id of the note to delete.\n\nRaises:\n    NotesError: If there is no such note."
+                },
+                "endlineno": 149,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 141,
+                "name": "delete",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "delete",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional-only",
+                    "name": "note_id"
+                  }
+                ],
+                "path": "notes.client.SyncNotesClient.delete",
+                "relative_package_filepath": "notes/client.py",
+                "returns": "None",
+                "runtime": true
+              }
+            },
+            "name": "SyncNotesClient",
+            "path": "notes.client.SyncNotesClient",
+            "relative_package_filepath": "notes/client.py",
+            "runtime": true
+          },
+          "create_client": {
+            "analysis": "static",
+            "decorators": [],
+            "docstring": {
+              "endlineno": 162,
+              "lineno": 162,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "Creates a client for the notes service at `url`."
+                }
+              ],
+              "value": "Creates a client for the notes service at `url`."
+            },
+            "endlineno": 163,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "function",
+            "lineno": 159,
+            "name": "create_client",
+            "parameters": [
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "create_client",
+                  "name": "str"
+                },
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "url"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "create_client",
+                  "name": "bool"
+                },
+                "default": "False",
+                "kind": "keyword-only",
+                "name": "is_async"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprBinOp",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "create_client",
+                    "name": "float"
+                  },
+                  "operator": "|",
+                  "right": "None"
+                },
+                "default": "None",
+                "kind": "keyword-only",
+                "name": "timeout"
+              }
+            ],
+            "path": "notes.client.create_client",
+            "relative_package_filepath": "notes/client.py",
+            "returns": {
+              "cls": "ExprName",
+              "member": "create_client",
+              "name": "NotesClient"
+            },
+            "runtime": true,
+            "type_parameters": [
+              {
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "create_client",
+                  "name": "NotesClient"
+                },
+                "default": null,
+                "kind": "type-var",
+                "name": "Client"
+              }
+            ]
+          },
+          "handle_http_io": {
+            "analysis": "static",
+            "endlineno": 5,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 5,
+            "name": "handle_http_io",
+            "path": "notes.client.handle_http_io",
+            "runtime": true,
+            "target_path": "notes._io.handle_http_io"
+          },
+          "overload": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "overload",
+            "path": "notes.client.overload",
+            "runtime": true,
+            "target_path": "typing.overload"
+          },
+          "run_all": {
+            "analysis": "static",
+            "decorators": [],
+            "docstring": {
+              "endlineno": 167,
+              "lineno": 167,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "Calls `callback` once for each value."
+                }
+              ],
+              "value": "Calls `callback` once for each value."
+            },
+            "endlineno": 167,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "function",
+            "lineno": 166,
+            "name": "run_all",
+            "parameters": [
+              {
+                "annotation": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "run_all",
+                    "name": "Callable"
+                  },
+                  "slice": {
+                    "cls": "ExprTuple",
+                    "elements": [
+                      {
+                        "cls": "ExprName",
+                        "member": "run_all",
+                        "name": "P"
+                      },
+                      "None"
+                    ],
+                    "implicit": true
+                  }
+                },
+                "default": null,
+                "kind": "positional or keyword",
+                "name": "callback"
+              },
+              {
+                "annotation": {
+                  "cls": "ExprVarPositional",
+                  "value": {
+                    "cls": "ExprName",
+                    "member": "run_all",
+                    "name": "Ts"
+                  }
+                },
+                "default": "()",
+                "kind": "variadic positional",
+                "name": "values"
+              }
+            ],
+            "path": "notes.client.run_all",
+            "relative_package_filepath": "notes/client.py",
+            "returns": "None",
+            "runtime": true,
+            "type_parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "type-var-tuple",
+                "name": "Ts"
+              },
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "param-spec",
+                "name": "P"
+              }
+            ]
+          },
+          "types": {
+            "analysis": "static",
+            "endlineno": 4,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 4,
+            "name": "types",
+            "path": "notes.client.types",
+            "runtime": true,
+            "target_path": "notes.types"
+          }
+        },
+        "name": "client",
+        "path": "notes.client",
+        "relative_package_filepath": "notes/client.py",
+        "runtime": true
+      },
+      "create_client": {
+        "analysis": "static",
+        "endlineno": 7,
+        "inherited": false,
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": true,
+        "is_imported": true,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": true,
+        "kind": "alias",
+        "lineno": 7,
+        "name": "create_client",
+        "path": "notes.create_client",
+        "runtime": true,
+        "target_path": "notes.client.create_client"
+      },
+      "history": {
+        "analysis": "static",
+        "imports": {
+          "Iterator": "collections.abc.Iterator",
+          "Note": "notes.types.Note"
+        },
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": false,
+        "kind": "module",
+        "members": {
+          "HistoryClient": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [],
+            "endlineno": 54,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 10,
+            "members": {
+              "versions": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 53,
+                  "lineno": 12,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Lists the earlier versions of a note, newest first.\n\nEach version is the note as it was saved. Its metadata is a\ndictionary:\n\n```python\n{\"editor\": \"ada@example.com\"}\n```"
+                    },
+                    {
+                      "kind": "admonition",
+                      "title": "Note",
+                      "value": {
+                        "annotation": "note",
+                        "description": "A version is kept for 30 days."
+                      }
+                    },
+                    {
+                      "kind": "admonition",
+                      "title": "See Also",
+                      "value": {
+                        "annotation": "see-also",
+                        "description": "`SharingClient.share`, to share a version."
+                      }
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "versions",
+                            "name": "str"
+                          },
+                          "description": "The id of the note.",
+                          "name": "note_id"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "other parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "versions",
+                            "name": "int"
+                          },
+                          "description": "How many versions to list at most.",
+                          "name": "limit",
+                          "value": "10"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "versions",
+                            "name": "str"
+                          },
+                          "description": "Only the versions whose metadata has these values.",
+                          "name": "**filters",
+                          "value": "{}"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "yields",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "versions",
+                            "name": "Note"
+                          },
+                          "description": "One version at a time.",
+                          "name": ""
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "warns",
+                      "value": [
+                        {
+                          "annotation": "UserWarning",
+                          "description": "When the note has no versions."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "examples",
+                      "value": [
+                        [
+                          "text",
+                          "Print the titles of the last two versions:"
+                        ],
+                        [
+                          "examples",
+                          ">>> for version in client.versions(\"note-1\", limit=2):\n...     print(version.title)\nHello\nHello, world"
+                        ],
+                        [
+                          "text",
+                          "Only the versions Ada saved:\n\n```python\nversions = list(client.versions(\"note-1\", editor=\"ada@example.com\"))\n```"
+                        ]
+                      ]
+                    }
+                  ],
+                  "value": "Lists the earlier versions of a note, newest first.\n\nEach version is the note as it was saved. Its metadata is a\ndictionary:\n\n```python\n{\"editor\": \"ada@example.com\"}\n```\n\nNote:\n    A version is kept for 30 days.\n\nSee Also:\n    `SharingClient.share`, to share a version.\n\nArgs:\n    note_id: The id of the note.\n\nOther Parameters:\n    limit: How many versions to list at most.\n    **filters: Only the versions whose metadata has these values.\n\nYields:\n    One version at a time.\n\nWarns:\n    UserWarning: When the note has no versions.\n\nExamples:\n    Print the titles of the last two versions:\n\n    >>> for version in client.versions(\"note-1\", limit=2):\n    ...     print(version.title)\n    Hello\n    Hello, world\n\n    Only the versions Ada saved:\n\n    ```python\n    versions = list(client.versions(\"note-1\", editor=\"ada@example.com\"))\n    ```"
+                },
+                "endlineno": 54,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 11,
+                "name": "versions",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "versions",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "note_id"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "versions",
+                      "name": "int"
+                    },
+                    "default": "10",
+                    "kind": "positional or keyword",
+                    "name": "limit"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "versions",
+                      "name": "str"
+                    },
+                    "default": "{}",
+                    "kind": "variadic keyword",
+                    "name": "filters"
+                  }
+                ],
+                "path": "notes.history.HistoryClient.versions",
+                "relative_package_filepath": "notes/history.py",
+                "returns": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": "versions",
+                    "name": "Iterator"
+                  },
+                  "slice": {
+                    "cls": "ExprName",
+                    "member": "versions",
+                    "name": "Note"
+                  }
+                },
+                "runtime": true
+              }
+            },
+            "name": "HistoryClient",
+            "path": "notes.history.HistoryClient",
+            "relative_package_filepath": "notes/history.py",
+            "runtime": true
+          },
+          "Iterator": {
+            "analysis": "static",
+            "endlineno": 5,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 5,
+            "name": "Iterator",
+            "path": "notes.history.Iterator",
+            "runtime": true,
+            "target_path": "collections.abc.Iterator"
+          },
+          "Note": {
+            "analysis": "static",
+            "endlineno": 7,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 7,
+            "name": "Note",
+            "path": "notes.history.Note",
+            "runtime": true,
+            "target_path": "notes.types.Note"
+          }
+        },
+        "name": "history",
+        "path": "notes.history",
+        "relative_package_filepath": "notes/history.py",
+        "runtime": true
+      },
+      "sharing": {
+        "analysis": "static",
+        "imports": {
+          "Literal": "typing.Literal",
+          "dataclass": "dataclasses.dataclass",
+          "deprecated": "warnings.deprecated"
+        },
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": false,
+        "kind": "module",
+        "members": {
+          "Literal": {
+            "analysis": "static",
+            "endlineno": 6,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 6,
+            "name": "Literal",
+            "path": "notes.sharing.Literal",
+            "runtime": true,
+            "target_path": "typing.Literal"
+          },
+          "ShareOptions": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [
+              {
+                "endlineno": 10,
+                "lineno": 10,
+                "value": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "dataclass"
+                }
+              }
+            ],
+            "docstring": {
+              "endlineno": 12,
+              "lineno": 12,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "How a note is shared."
+                }
+              ],
+              "value": "How a note is shared."
+            },
+            "endlineno": 19,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "labels": [
+              "dataclass"
+            ],
+            "lineno": 10,
+            "members": {
+              "__init__": {
+                "decorators": [],
+                "endlineno": 0,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": true,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 0,
+                "name": "__init__",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "bool"
+                    },
+                    "default": "False",
+                    "docstring": {
+                      "endlineno": 15,
+                      "lineno": 15,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "Whether the people may change the note."
+                        }
+                      ],
+                      "value": "Whether the people may change the note."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "can_edit"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "str"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "docstring": {
+                      "endlineno": 19,
+                      "lineno": 18,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "A message to send along with the link. When `None`, no message is\nsent."
+                        }
+                      ],
+                      "value": "A message to send along with the link. When `None`, no message is\nsent."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "message"
+                  }
+                ],
+                "path": "notes.sharing.ShareOptions.__init__",
+                "relative_package_filepath": "notes/sharing.py",
+                "returns": "None",
+                "runtime": true
+              },
+              "can_edit": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "bool"
+                },
+                "docstring": {
+                  "endlineno": 15,
+                  "lineno": 15,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Whether the people may change the note."
+                    }
+                  ],
+                  "value": "Whether the people may change the note."
+                },
+                "endlineno": 14,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 14,
+                "name": "can_edit",
+                "path": "notes.sharing.ShareOptions.can_edit",
+                "relative_package_filepath": "notes/sharing.py",
+                "runtime": true,
+                "value": "False"
+              },
+              "message": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprBinOp",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "str"
+                  },
+                  "operator": "|",
+                  "right": "None"
+                },
+                "docstring": {
+                  "endlineno": 19,
+                  "lineno": 18,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "A message to send along with the link. When `None`, no message is\nsent."
+                    }
+                  ],
+                  "value": "A message to send along with the link. When `None`, no message is\nsent."
+                },
+                "endlineno": 17,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 17,
+                "name": "message",
+                "path": "notes.sharing.ShareOptions.message",
+                "relative_package_filepath": "notes/sharing.py",
+                "runtime": true,
+                "value": "None"
+              }
+            },
+            "name": "ShareOptions",
+            "path": "notes.sharing.ShareOptions",
+            "relative_package_filepath": "notes/sharing.py",
+            "runtime": true
+          },
+          "SharingClient": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [],
+            "endlineno": 63,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 22,
+            "members": {
+              "send_link": {
+                "analysis": "static",
+                "decorators": [
+                  {
+                    "endlineno": 60,
+                    "lineno": 60,
+                    "value": {
+                      "arguments": [
+                        "'Use share() instead.'"
+                      ],
+                      "cls": "ExprCall",
+                      "function": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "deprecated"
+                      }
+                    }
+                  }
+                ],
+                "docstring": {
+                  "endlineno": 62,
+                  "lineno": 62,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Sends a link to a note to its owner."
+                    }
+                  ],
+                  "value": "Sends a link to a note to its owner."
+                },
+                "endlineno": 63,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 60,
+                "name": "send_link",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "send_link",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "note_id"
+                  }
+                ],
+                "path": "notes.sharing.SharingClient.send_link",
+                "relative_package_filepath": "notes/sharing.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "send_link",
+                  "name": "str"
+                },
+                "runtime": true
+              },
+              "share": {
+                "analysis": "static",
+                "decorators": [],
+                "docstring": {
+                  "endlineno": 57,
+                  "lineno": 30,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Shares a note with other people.\n\nEach person gets a link to the note. The link stops working when the\nnote is deleted."
+                    },
+                    {
+                      "kind": "admonition",
+                      "title": "Warning",
+                      "value": {
+                        "annotation": "warning",
+                        "description": "Anyone who has the link can read the note."
+                      }
+                    },
+                    {
+                      "kind": "parameters",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "share",
+                            "name": "str"
+                          },
+                          "description": "The id of the note to share.",
+                          "name": "note_id"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "share",
+                            "name": "str"
+                          },
+                          "description": "The email addresses of the people to share the note\nwith.",
+                          "name": "*people",
+                          "value": "()"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprSubscript",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "share",
+                              "name": "Literal"
+                            },
+                            "slice": {
+                              "cls": "ExprTuple",
+                              "elements": [
+                                "'reader'",
+                                "'editor'"
+                              ],
+                              "implicit": true
+                            }
+                          },
+                          "description": "What the people may do with the note.",
+                          "name": "role",
+                          "value": "'reader'"
+                        },
+                        {
+                          "annotation": {
+                            "cls": "ExprBinOp",
+                            "left": {
+                              "cls": "ExprName",
+                              "member": "share",
+                              "name": "ShareOptions"
+                            },
+                            "operator": "|",
+                            "right": "None"
+                          },
+                          "description": "What the people are told.",
+                          "name": "options",
+                          "value": "None"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "returns",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": "share",
+                            "name": "str"
+                          },
+                          "description": "The link that opens the note.",
+                          "name": ""
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "raises",
+                      "value": [
+                        {
+                          "annotation": {
+                            "cls": "ExprName",
+                            "member": null,
+                            "name": "NotesError"
+                          },
+                          "description": "If the service rejects the request."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "examples",
+                      "value": [
+                        [
+                          "text",
+                          "Share a note with an editor:\n\n```python\nlink = client.share(note.id, \"ada@example.com\", role=\"editor\")\n```"
+                        ]
+                      ]
+                    }
+                  ],
+                  "value": "Shares a note with other people.\n\nEach person gets a link to the note. The link stops working when the\nnote is deleted.\n\nWarning:\n    Anyone who has the link can read the note.\n\nArgs:\n    note_id: The id of the note to share.\n    *people: The email addresses of the people to share the note\n        with.\n    role: What the people may do with the note.\n    options: What the people are told.\n\nReturns:\n    The link that opens the note.\n\nRaises:\n    NotesError: If the service rejects the request.\n\nExamples:\n    Share a note with an editor:\n\n    ```python\n    link = client.share(note.id, \"ada@example.com\", role=\"editor\")\n    ```"
+                },
+                "endlineno": 58,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 23,
+                "name": "share",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "share",
+                      "name": "str"
+                    },
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "note_id"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": "share",
+                      "name": "str"
+                    },
+                    "default": "()",
+                    "kind": "variadic positional",
+                    "name": "people"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprSubscript",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "share",
+                        "name": "Literal"
+                      },
+                      "slice": {
+                        "cls": "ExprTuple",
+                        "elements": [
+                          "'reader'",
+                          "'editor'"
+                        ],
+                        "implicit": true
+                      }
+                    },
+                    "default": "'reader'",
+                    "kind": "keyword-only",
+                    "name": "role"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": "share",
+                        "name": "ShareOptions"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "kind": "keyword-only",
+                    "name": "options"
+                  }
+                ],
+                "path": "notes.sharing.SharingClient.share",
+                "relative_package_filepath": "notes/sharing.py",
+                "returns": {
+                  "cls": "ExprName",
+                  "member": "share",
+                  "name": "str"
+                },
+                "runtime": true
+              }
+            },
+            "name": "SharingClient",
+            "path": "notes.sharing.SharingClient",
+            "relative_package_filepath": "notes/sharing.py",
+            "runtime": true
+          },
+          "dataclass": {
+            "analysis": "static",
+            "endlineno": 5,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 5,
+            "name": "dataclass",
+            "path": "notes.sharing.dataclass",
+            "runtime": true,
+            "target_path": "dataclasses.dataclass"
+          },
+          "deprecated": {
+            "analysis": "static",
+            "endlineno": 7,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 7,
+            "name": "deprecated",
+            "path": "notes.sharing.deprecated",
+            "runtime": true,
+            "target_path": "warnings.deprecated"
+          }
+        },
+        "name": "sharing",
+        "path": "notes.sharing",
+        "relative_package_filepath": "notes/sharing.py",
+        "runtime": true
+      },
+      "types": {
+        "analysis": "static",
+        "imports": {
+          "BaseModel": "pydantic.BaseModel",
+          "ClassVar": "typing.ClassVar",
+          "Literal": "typing.Literal",
+          "dataclass": "dataclasses.dataclass",
+          "field": "dataclasses.field"
+        },
+        "is_class_private": false,
+        "is_deprecated": false,
+        "is_exported": false,
+        "is_imported": false,
+        "is_private": false,
+        "is_public": true,
+        "is_special": false,
+        "is_wildcard_exposed": false,
+        "kind": "module",
+        "members": {
+          "BaseModel": {
+            "analysis": "static",
+            "endlineno": 4,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 4,
+            "name": "BaseModel",
+            "path": "notes.types.BaseModel",
+            "runtime": true,
+            "target_path": "pydantic.BaseModel"
+          },
+          "BaseOptions": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [
+              {
+                "endlineno": 22,
+                "lineno": 22,
+                "value": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "dataclass"
+                }
+              }
+            ],
+            "endlineno": 28,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "labels": [
+              "dataclass"
+            ],
+            "lineno": 22,
+            "members": {
+              "__init__": {
+                "decorators": [],
+                "endlineno": 0,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": true,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 0,
+                "name": "__init__",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "float"
+                    },
+                    "default": "30.0",
+                    "docstring": {
+                      "endlineno": 25,
+                      "lineno": 25,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "Seconds to wait for the service."
+                        }
+                      ],
+                      "value": "Seconds to wait for the service."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "timeout"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "int"
+                    },
+                    "default": "3",
+                    "kind": "positional or keyword",
+                    "name": "_retries"
+                  }
+                ],
+                "path": "notes.types.BaseOptions.__init__",
+                "relative_package_filepath": "notes/types.py",
+                "returns": "None",
+                "runtime": true
+              },
+              "_retries": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "int"
+                },
+                "endlineno": 27,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": true,
+                "is_public": false,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 27,
+                "name": "_retries",
+                "path": "notes.types.BaseOptions._retries",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "3"
+              },
+              "timeout": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "float"
+                },
+                "docstring": {
+                  "endlineno": 25,
+                  "lineno": 25,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Seconds to wait for the service."
+                    }
+                  ],
+                  "value": "Seconds to wait for the service."
+                },
+                "endlineno": 24,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 24,
+                "name": "timeout",
+                "path": "notes.types.BaseOptions.timeout",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "30.0"
+              },
+              "version": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "int"
+                },
+                "endlineno": 28,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute"
+                ],
+                "lineno": 28,
+                "name": "version",
+                "path": "notes.types.BaseOptions.version",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "1"
+              }
+            },
+            "name": "BaseOptions",
+            "path": "notes.types.BaseOptions",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "ClassVar": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "ClassVar",
+            "path": "notes.types.ClassVar",
+            "runtime": true,
+            "target_path": "typing.ClassVar"
+          },
+          "CreateOptions": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "CreateOptions",
+                "name": "BaseOptions"
+              }
+            ],
+            "decorators": [
+              {
+                "endlineno": 31,
+                "lineno": 31,
+                "value": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "dataclass"
+                }
+              }
+            ],
+            "docstring": {
+              "endlineno": 33,
+              "lineno": 33,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "How a note is created."
+                }
+              ],
+              "value": "How a note is created."
+            },
+            "endlineno": 44,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "labels": [
+              "dataclass"
+            ],
+            "lineno": 31,
+            "members": {
+              "__init__": {
+                "decorators": [],
+                "endlineno": 0,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": true,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 0,
+                "name": "__init__",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "float"
+                    },
+                    "default": "30.0",
+                    "docstring": {
+                      "endlineno": 25,
+                      "lineno": 25,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "Seconds to wait for the service."
+                        }
+                      ],
+                      "value": "Seconds to wait for the service."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "timeout"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "int"
+                    },
+                    "default": "3",
+                    "kind": "positional or keyword",
+                    "name": "_retries"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprSubscript",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "list"
+                      },
+                      "slice": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "str"
+                      }
+                    },
+                    "default": {
+                      "arguments": [],
+                      "cls": "ExprCall",
+                      "function": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "list"
+                      }
+                    },
+                    "docstring": {
+                      "endlineno": 36,
+                      "lineno": 36,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "Tags to attach to the note."
+                        }
+                      ],
+                      "value": "Tags to attach to the note."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "tags"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "Folder"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "docstring": {
+                      "endlineno": 40,
+                      "lineno": 39,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "Where the note is filed. When `None`,\nthe note goes to the inbox."
+                        }
+                      ],
+                      "value": "Where the note is filed. When `None`,\nthe note goes to the inbox."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "folder"
+                  }
+                ],
+                "path": "notes.types.CreateOptions.__init__",
+                "relative_package_filepath": "notes/types.py",
+                "returns": "None",
+                "runtime": true
+              },
+              "folder": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprBinOp",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "Folder"
+                  },
+                  "operator": "|",
+                  "right": "None"
+                },
+                "docstring": {
+                  "endlineno": 40,
+                  "lineno": 39,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Where the note is filed. When `None`,\nthe note goes to the inbox."
+                    }
+                  ],
+                  "value": "Where the note is filed. When `None`,\nthe note goes to the inbox."
+                },
+                "endlineno": 38,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 38,
+                "name": "folder",
+                "path": "notes.types.CreateOptions.folder",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "None"
+              },
+              "is_tagged": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": "is_tagged",
+                  "name": "bool"
+                },
+                "endlineno": 44,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "property"
+                ],
+                "lineno": 43,
+                "name": "is_tagged",
+                "path": "notes.types.CreateOptions.is_tagged",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              },
+              "tags": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "list"
+                  },
+                  "slice": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "str"
+                  }
+                },
+                "docstring": {
+                  "endlineno": 36,
+                  "lineno": 36,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "Tags to attach to the note."
+                    }
+                  ],
+                  "value": "Tags to attach to the note."
+                },
+                "endlineno": 35,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 35,
+                "name": "tags",
+                "path": "notes.types.CreateOptions.tags",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": {
+                  "arguments": [
+                    {
+                      "cls": "ExprKeyword",
+                      "function": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "field"
+                      },
+                      "name": "default_factory",
+                      "value": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "list"
+                      }
+                    }
+                  ],
+                  "cls": "ExprCall",
+                  "function": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "field"
+                  }
+                }
+              }
+            },
+            "name": "CreateOptions",
+            "path": "notes.types.CreateOptions",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "Envelope": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "Envelope",
+                "name": "BaseModel"
+              }
+            ],
+            "decorators": [],
+            "docstring": {
+              "endlineno": 63,
+              "lineno": 63,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "What the service wraps a result in."
+                }
+              ],
+              "value": "What the service wraps a result in."
+            },
+            "endlineno": 65,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 62,
+            "members": {
+              "data": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "T"
+                },
+                "endlineno": 65,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "instance-attribute"
+                ],
+                "lineno": 65,
+                "name": "data",
+                "path": "notes.types.Envelope.data",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              }
+            },
+            "name": "Envelope",
+            "path": "notes.types.Envelope",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true,
+            "type_parameters": [
+              {
+                "annotation": null,
+                "default": null,
+                "kind": "type-var",
+                "name": "T"
+              }
+            ]
+          },
+          "Folder": {
+            "analysis": "static",
+            "bases": [],
+            "decorators": [
+              {
+                "endlineno": 11,
+                "lineno": 11,
+                "value": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "dataclass"
+                }
+              }
+            ],
+            "docstring": {
+              "endlineno": 13,
+              "lineno": 13,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "A place to file notes."
+                }
+              ],
+              "value": "A place to file notes."
+            },
+            "endlineno": 19,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "labels": [
+              "dataclass"
+            ],
+            "lineno": 11,
+            "members": {
+              "__init__": {
+                "decorators": [],
+                "endlineno": 0,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": true,
+                "is_wildcard_exposed": false,
+                "kind": "function",
+                "lineno": 0,
+                "name": "__init__",
+                "parameters": [
+                  {
+                    "annotation": null,
+                    "default": null,
+                    "kind": "positional or keyword",
+                    "name": "self"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprName",
+                      "member": null,
+                      "name": "str"
+                    },
+                    "default": null,
+                    "docstring": {
+                      "endlineno": 16,
+                      "lineno": 16,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "The name of the folder."
+                        }
+                      ],
+                      "value": "The name of the folder."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "name"
+                  },
+                  {
+                    "annotation": {
+                      "cls": "ExprBinOp",
+                      "left": {
+                        "cls": "ExprName",
+                        "member": null,
+                        "name": "Folder"
+                      },
+                      "operator": "|",
+                      "right": "None"
+                    },
+                    "default": "None",
+                    "docstring": {
+                      "endlineno": 19,
+                      "lineno": 19,
+                      "parsed": [
+                        {
+                          "kind": "text",
+                          "value": "The folder this folder is in, if any."
+                        }
+                      ],
+                      "value": "The folder this folder is in, if any."
+                    },
+                    "kind": "positional or keyword",
+                    "name": "parent"
+                  }
+                ],
+                "path": "notes.types.Folder.__init__",
+                "relative_package_filepath": "notes/types.py",
+                "returns": "None",
+                "runtime": true
+              },
+              "name": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "str"
+                },
+                "docstring": {
+                  "endlineno": 16,
+                  "lineno": 16,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "The name of the folder."
+                    }
+                  ],
+                  "value": "The name of the folder."
+                },
+                "endlineno": 15,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "instance-attribute"
+                ],
+                "lineno": 15,
+                "name": "name",
+                "path": "notes.types.Folder.name",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              },
+              "parent": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprBinOp",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "Folder"
+                  },
+                  "operator": "|",
+                  "right": "None"
+                },
+                "docstring": {
+                  "endlineno": 19,
+                  "lineno": 19,
+                  "parsed": [
+                    {
+                      "kind": "text",
+                      "value": "The folder this folder is in, if any."
+                    }
+                  ],
+                  "value": "The folder this folder is in, if any."
+                },
+                "endlineno": 18,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 18,
+                "name": "parent",
+                "path": "notes.types.Folder.parent",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "None"
+              }
+            },
+            "name": "Folder",
+            "path": "notes.types.Folder",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "Literal": {
+            "analysis": "static",
+            "endlineno": 2,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 2,
+            "name": "Literal",
+            "path": "notes.types.Literal",
+            "runtime": true,
+            "target_path": "typing.Literal"
+          },
+          "Note": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "Note",
+                "name": "BaseModel"
+              }
+            ],
+            "decorators": [],
+            "docstring": {
+              "endlineno": 56,
+              "lineno": 56,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "A stored note."
+                }
+              ],
+              "value": "A stored note."
+            },
+            "endlineno": 59,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 55,
+            "members": {
+              "id": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "str"
+                },
+                "endlineno": 58,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "instance-attribute"
+                ],
+                "lineno": 58,
+                "name": "id",
+                "path": "notes.types.Note.id",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              },
+              "title": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "str"
+                },
+                "endlineno": 59,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "instance-attribute"
+                ],
+                "lineno": 59,
+                "name": "title",
+                "path": "notes.types.Note.title",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              }
+            },
+            "name": "Note",
+            "path": "notes.types.Note",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "NoteEnvelope": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprSubscript",
+                "left": {
+                  "cls": "ExprName",
+                  "member": "NoteEnvelope",
+                  "name": "Envelope"
+                },
+                "slice": {
+                  "cls": "ExprName",
+                  "member": "NoteEnvelope",
+                  "name": "Note"
+                }
+              }
+            ],
+            "decorators": [],
+            "endlineno": 69,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 68,
+            "members": {
+              "cursor": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprBinOp",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "str"
+                  },
+                  "operator": "|",
+                  "right": "None"
+                },
+                "endlineno": 69,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 69,
+                "name": "cursor",
+                "path": "notes.types.NoteEnvelope.cursor",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "None"
+              }
+            },
+            "name": "NoteEnvelope",
+            "path": "notes.types.NoteEnvelope",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "NotesError": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "NotesError",
+                "name": "Exception"
+              }
+            ],
+            "decorators": [],
+            "docstring": {
+              "endlineno": 8,
+              "lineno": 8,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "Why the notes service rejected a call."
+                }
+              ],
+              "value": "Why the notes service rejected a call."
+            },
+            "endlineno": 8,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 7,
+            "name": "NotesError",
+            "path": "notes.types.NotesError",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "SearchOptions": {
+            "analysis": "static",
+            "bases": [
+              {
+                "cls": "ExprName",
+                "member": "SearchOptions",
+                "name": "BaseModel"
+              }
+            ],
+            "decorators": [],
+            "docstring": {
+              "endlineno": 48,
+              "lineno": 48,
+              "parsed": [
+                {
+                  "kind": "text",
+                  "value": "How notes are searched."
+                }
+              ],
+              "value": "How notes are searched."
+            },
+            "endlineno": 52,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": false,
+            "is_private": false,
+            "is_public": true,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "class",
+            "lineno": 47,
+            "members": {
+              "limit": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "int"
+                },
+                "endlineno": 51,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 51,
+                "name": "limit",
+                "path": "notes.types.SearchOptions.limit",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "20"
+              },
+              "order": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprSubscript",
+                  "left": {
+                    "cls": "ExprName",
+                    "member": null,
+                    "name": "Literal"
+                  },
+                  "slice": {
+                    "cls": "ExprTuple",
+                    "elements": [
+                      "'asc'",
+                      "'desc'"
+                    ],
+                    "implicit": true
+                  }
+                },
+                "endlineno": 52,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "class-attribute",
+                  "instance-attribute"
+                ],
+                "lineno": 52,
+                "name": "order",
+                "path": "notes.types.SearchOptions.order",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true,
+                "value": "'asc'"
+              },
+              "query": {
+                "analysis": "static",
+                "annotation": {
+                  "cls": "ExprName",
+                  "member": null,
+                  "name": "str"
+                },
+                "endlineno": 50,
+                "is_class_private": false,
+                "is_deprecated": false,
+                "is_exported": false,
+                "is_imported": false,
+                "is_private": false,
+                "is_public": true,
+                "is_special": false,
+                "is_wildcard_exposed": false,
+                "kind": "attribute",
+                "labels": [
+                  "instance-attribute"
+                ],
+                "lineno": 50,
+                "name": "query",
+                "path": "notes.types.SearchOptions.query",
+                "relative_package_filepath": "notes/types.py",
+                "runtime": true
+              }
+            },
+            "name": "SearchOptions",
+            "path": "notes.types.SearchOptions",
+            "relative_package_filepath": "notes/types.py",
+            "runtime": true
+          },
+          "dataclass": {
+            "analysis": "static",
+            "endlineno": 1,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 1,
+            "name": "dataclass",
+            "path": "notes.types.dataclass",
+            "runtime": true,
+            "target_path": "dataclasses.dataclass"
+          },
+          "field": {
+            "analysis": "static",
+            "endlineno": 1,
+            "inherited": false,
+            "is_class_private": false,
+            "is_deprecated": false,
+            "is_exported": false,
+            "is_imported": true,
+            "is_private": false,
+            "is_public": false,
+            "is_special": false,
+            "is_wildcard_exposed": true,
+            "kind": "alias",
+            "lineno": 1,
+            "name": "field",
+            "path": "notes.types.field",
+            "runtime": true,
+            "target_path": "dataclasses.field"
+          }
+        },
+        "name": "types",
+        "path": "notes.types",
+        "relative_package_filepath": "notes/types.py",
+        "runtime": true
+      }
+    },
+    "name": "notes",
+    "path": "notes",
+    "relative_package_filepath": "notes/__init__.py",
+    "runtime": true
+  }
+}

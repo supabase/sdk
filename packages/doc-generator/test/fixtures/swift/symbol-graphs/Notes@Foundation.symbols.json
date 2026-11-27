@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "formatVersion": {
+      "major": 0,
+      "minor": 6,
+      "patch": 0
+    },
+    "generator": "Apple Swift version 6.4.2 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)"
+  },
+  "module": {
+    "name": "Notes",
+    "platform": {
+      "architecture": "arm64",
+      "vendor": "apple",
+      "operatingSystem": {
+        "name": "macosx",
+        "minimumVersion": {
+          "major": 14,
+          "minor": 0
+        }
+      }
+    }
+  },
+  "symbols": [
+    {
+      "kind": {
+        "identifier": "swift.type.method",
+        "displayName": "Type Method"
+      },
+      "identifier": {
+        "precise": "s:10Foundation11JSONDecoderC5NotesE5notesACyFZ",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "JSONDecoder",
+        "notes()"
+      ],
+      "names": {
+        "title": "notes()",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "static"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "notes"
+          },
+          {
+            "kind": "text",
+            "spelling": "() -> "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "JSONDecoder",
+            "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+          }
+        ]
+      },
+      "docComment": {
+        "uri": "file:///fixture/Sources/Notes/Query.swift",
+        "module": "Notes",
+        "lines": [
+          {
+            "range": {
+              "start": {
+                "line": 41,
+                "character": 6
+              },
+              "end": {
+                "line": 41,
+                "character": 58
+              }
+            },
+            "text": "A decoder that reads the dates of the notes service."
+          }
+        ]
+      },
+      "functionSignature": {
+        "returns": [
+          {
+            "kind": "typeIdentifier",
+            "spelling": "JSONDecoder",
+            "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+          }
+        ]
+      },
+      "swiftExtension": {
+        "extendedModule": "Foundation",
+        "typeKind": "swift.class"
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "static"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "notes"
+        },
+        {
+          "kind": "text",
+          "spelling": "() -> "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "JSONDecoder",
+          "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+        }
+      ],
+      "accessLevel": "public",
+      "location": {
+        "uri": "file:///fixture/Sources/Notes/Query.swift",
+        "position": {
+          "line": 42,
+          "character": 21
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "memberOf",
+      "source": "s:10Foundation11JSONDecoderC5NotesE5notesACyFZ",
+      "target": "s:10Foundation11JSONDecoderC",
+      "targetFallback": "Foundation.JSONDecoder"
+    }
+  ]
+}

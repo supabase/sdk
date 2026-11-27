@@ -1,0 +1,442 @@
+{
+  "metadata": {
+    "formatVersion": {
+      "major": 0,
+      "minor": 6,
+      "patch": 0
+    },
+    "generator": "Apple Swift version 6.4.2 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)"
+  },
+  "module": {
+    "name": "Notes",
+    "platform": {
+      "architecture": "arm64",
+      "vendor": "apple",
+      "operatingSystem": {
+        "name": "macosx",
+        "minimumVersion": {
+          "major": 14,
+          "minor": 0
+        }
+      }
+    }
+  },
+  "symbols": [
+    {
+      "kind": {
+        "identifier": "swift.method",
+        "displayName": "Instance Method"
+      },
+      "identifier": {
+        "precise": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF",
+        "interfaceLanguage": "swift"
+      },
+      "pathComponents": [
+        "Array",
+        "decode(as:decoder:)"
+      ],
+      "names": {
+        "title": "decode(as:decoder:)",
+        "subHeading": [
+          {
+            "kind": "keyword",
+            "spelling": "func"
+          },
+          {
+            "kind": "text",
+            "spelling": " "
+          },
+          {
+            "kind": "identifier",
+            "spelling": "decode"
+          },
+          {
+            "kind": "text",
+            "spelling": "<"
+          },
+          {
+            "kind": "genericParameter",
+            "spelling": "T"
+          },
+          {
+            "kind": "text",
+            "spelling": ">("
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "as"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "T",
+            "preciseIdentifier": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF1TL_qd__mfp"
+          },
+          {
+            "kind": "text",
+            "spelling": ".Type, "
+          },
+          {
+            "kind": "externalParam",
+            "spelling": "decoder"
+          },
+          {
+            "kind": "text",
+            "spelling": ": "
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "JSONDecoder",
+            "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+          },
+          {
+            "kind": "text",
+            "spelling": "?) "
+          },
+          {
+            "kind": "keyword",
+            "spelling": "throws"
+          },
+          {
+            "kind": "text",
+            "spelling": " -> ["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "T",
+            "preciseIdentifier": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF1TL_qd__mfp"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "docComment": {
+        "uri": "file:///fixture/Sources/Notes/Query.swift",
+        "module": "Notes",
+        "lines": [
+          {
+            "range": {
+              "start": {
+                "line": 25,
+                "character": 6
+              },
+              "end": {
+                "line": 25,
+                "character": 43
+              }
+            },
+            "text": "Decodes every note into another type."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 26,
+                "character": 5
+              },
+              "end": {
+                "line": 26,
+                "character": 5
+              }
+            },
+            "text": ""
+          },
+          {
+            "range": {
+              "start": {
+                "line": 27,
+                "character": 6
+              },
+              "end": {
+                "line": 27,
+                "character": 19
+              }
+            },
+            "text": "- Parameters:"
+          },
+          {
+            "range": {
+              "start": {
+                "line": 28,
+                "character": 6
+              },
+              "end": {
+                "line": 28,
+                "character": 50
+              }
+            },
+            "text": "  - type: The type to decode each note into."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 29,
+                "character": 6
+              },
+              "end": {
+                "line": 29,
+                "character": 86
+              }
+            },
+            "text": "  - decoder: The decoder to use. When `nil`, ``Foundation/JSONDecoder/notes()``."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 30,
+                "character": 6
+              },
+              "end": {
+                "line": 30,
+                "character": 41
+              }
+            },
+            "text": "- Returns: One value for each note."
+          },
+          {
+            "range": {
+              "start": {
+                "line": 31,
+                "character": 6
+              },
+              "end": {
+                "line": 31,
+                "character": 78
+              }
+            },
+            "text": "- Throws: The decoding error of the first note that does not fit `type`."
+          }
+        ]
+      },
+      "functionSignature": {
+        "parameters": [
+          {
+            "name": "as",
+            "internalName": "type",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "type"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "T",
+                "preciseIdentifier": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF1TL_qd__mfp"
+              },
+              {
+                "kind": "text",
+                "spelling": ".Type"
+              }
+            ]
+          },
+          {
+            "name": "decoder",
+            "declarationFragments": [
+              {
+                "kind": "identifier",
+                "spelling": "decoder"
+              },
+              {
+                "kind": "text",
+                "spelling": ": "
+              },
+              {
+                "kind": "typeIdentifier",
+                "spelling": "JSONDecoder",
+                "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+              },
+              {
+                "kind": "text",
+                "spelling": "?"
+              }
+            ]
+          }
+        ],
+        "returns": [
+          {
+            "kind": "text",
+            "spelling": "["
+          },
+          {
+            "kind": "typeIdentifier",
+            "spelling": "T"
+          },
+          {
+            "kind": "text",
+            "spelling": "]"
+          }
+        ]
+      },
+      "swiftGenerics": {
+        "parameters": [
+          {
+            "name": "Element",
+            "index": 0,
+            "depth": 0
+          },
+          {
+            "name": "T",
+            "index": 0,
+            "depth": 1
+          }
+        ],
+        "constraints": [
+          {
+            "kind": "sameType",
+            "lhs": "Element",
+            "rhs": "Note",
+            "rhsPrecise": "s:5Notes4NoteV"
+          },
+          {
+            "kind": "conformance",
+            "lhs": "T",
+            "rhs": "Decodable",
+            "rhsPrecise": "s:Se"
+          }
+        ]
+      },
+      "swiftExtension": {
+        "extendedModule": "Swift",
+        "typeKind": "swift.struct",
+        "constraints": [
+          {
+            "kind": "sameType",
+            "lhs": "Element",
+            "rhs": "Note",
+            "rhsPrecise": "s:5Notes4NoteV"
+          }
+        ]
+      },
+      "declarationFragments": [
+        {
+          "kind": "keyword",
+          "spelling": "func"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "identifier",
+          "spelling": "decode"
+        },
+        {
+          "kind": "text",
+          "spelling": "<"
+        },
+        {
+          "kind": "genericParameter",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": ">("
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "as"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "internalParam",
+          "spelling": "type"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T",
+          "preciseIdentifier": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF1TL_qd__mfp"
+        },
+        {
+          "kind": "text",
+          "spelling": ".Type = T.self, "
+        },
+        {
+          "kind": "externalParam",
+          "spelling": "decoder"
+        },
+        {
+          "kind": "text",
+          "spelling": ": "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "JSONDecoder",
+          "preciseIdentifier": "s:10Foundation11JSONDecoderC"
+        },
+        {
+          "kind": "text",
+          "spelling": "? = nil) "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "throws"
+        },
+        {
+          "kind": "text",
+          "spelling": " -> ["
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T",
+          "preciseIdentifier": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF1TL_qd__mfp"
+        },
+        {
+          "kind": "text",
+          "spelling": "] "
+        },
+        {
+          "kind": "keyword",
+          "spelling": "where"
+        },
+        {
+          "kind": "text",
+          "spelling": " "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "T"
+        },
+        {
+          "kind": "text",
+          "spelling": " : "
+        },
+        {
+          "kind": "typeIdentifier",
+          "spelling": "Decodable",
+          "preciseIdentifier": "s:Se"
+        }
+      ],
+      "accessLevel": "public",
+      "location": {
+        "uri": "file:///fixture/Sources/Notes/Query.swift",
+        "position": {
+          "line": 32,
+          "character": 14
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "kind": "memberOf",
+      "source": "s:Sa5NotesAA4NoteVRszlE6decode2as7decoderSayqd__Gqd__m_10Foundation11JSONDecoderCSgtKSeRd__lF",
+      "target": "s:Sa",
+      "targetFallback": "Swift.Array"
+    }
+  ]
+}

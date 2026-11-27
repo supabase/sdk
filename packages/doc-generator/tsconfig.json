@@ -1,0 +1,13 @@
+{
+  "extends": [
+    "@tsconfig/node24/tsconfig.json",
+    "@tsconfig/node-ts/tsconfig.json"
+  ],
+  "compilerOptions": {
+    "customConditions": ["bun"],
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["node", "bun"]
+  },
+  "include": ["src", "test"]
+}

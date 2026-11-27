@@ -18,6 +18,42 @@ and no monorepo build tooling on top:
   SDK implements.
 - `packages/dart-symbol-extractor/` — Dart public API symbol extractor used by
   the Dart compliance workflow.
+- `packages/doc-generator/`: generates the API docs definition files that
+  supabase.com/docs reads (one Markdown file with YAML frontmatter per public
+  function, with a doc comment or without one) from an SDK's doc comments alone.
+  One generator for every SDK: a source adapter per doc format
+  (`swift-symbol-graph`, `griffe`) turns tool output into the API model in
+  `src/model.ts`, and everything after that is shared. The adapter decides which
+  functions are public and names each one in the terms of its language. The id
+  of a definition is that name in lowercase words, so ids are not shared between
+  SDKs and it does not read `sdk-compliance.yaml`. `strict: true` in a config,
+  or `--strict`, makes a public function without a doc comment an error, which
+  is the check that an SDK's public API is documented. SDK repositories hold
+  only a `package.json` and a `doc-generator.config.mjs`.
+  `doc-generator preview <docs-checkout>` copies the generated definitions into
+  a local checkout of supabase/supabase, where the docs site reads them from
+  disk, then starts the docs site there and opens the page, to see them as
+  supabase.com will show them (`--copy-only` only copies); the docs repository's
+  folder layout is written down only in `src/preview.ts`. `generate()` is pure
+  and the output is byte-for-byte deterministic; `test/fixtures/` holds real
+  tool output and golden files, rebuilt with `bun run refresh-fixtures`. Each
+  language has a page next to its adapter, `src/sources/<language>/README.md`,
+  on how to write doc comments: which functions get a definition, how the id is
+  made, an example from the `Sharing` fixtures and the definition it becomes, or
+  a placeholder when the language has no adapter yet. The package README links
+  to them, and `test/readme.test.ts` fails when a page and its fixtures differ
+  or a link is broken, so change the fixture first and copy it into the page.
+  Prototype, not published. See its README.
+- `packages/doc-check/`: checks those definition files against the docs team's
+  schema. The schema comes from one of three sources: the copy bundled under
+  `schema/` (the default, with its upstream commit and SHA-256 as
+  `BUNDLED_SCHEMA` in `src/schema.ts`), a URL (`--schema-url`), or a file in a
+  Git repository at a branch, tag or full commit SHA (`--schema-git`,
+  `--schema-ref`, `--schema-path`; fetched with the `git` command as one commit
+  and one file). Exit 1 means invalid definitions, exit 2 means the check could
+  not run. Deliberately separate from the generator and parsing with
+  gray-matter, the parser the docs site uses. Its tests run a local HTTP server
+  and create a Git repository in a temporary folder. Prototype, not published.
 - `packages/go-symbol-extractor/` — Go public API symbol extractor used by the
   Go compliance workflow.
 - `packages/python-symbol-extractor/`: Python public API symbol extractor used
@@ -166,6 +202,11 @@ capabilities/*.yaml  →  validate (AJV schema)  →  aggregate (GitHub API fetc
   only when `packages/postgrest-typegen` or the workflow changed, since a
   skipped job satisfies a required check while a workflow that never ran does
   not
+- `doc-check-validate.yml` and `doc-generator-validate.yml`: type check, lint,
+  knip, build and tests for the two doc packages, then the built command under
+  Node, which is how SDK repositories run it. The doc-generator workflow also
+  runs when `packages/doc-check` changes and installs its dependencies first,
+  because the generator's tests link it from `../doc-check`
 - `capability-matrix-deploy-pages.yml` — Fetches all SDK compliance data,
   rebuilds the site, and deploys to GitHub Pages (main push, daily cron, manual
   dispatch)
