@@ -68,6 +68,10 @@ features:
     name: Select Rows
     description: Read rows from a table or view with column selection.
     group: query
+  - id: database.query.stream_rows
+    name: Stream Rows (Live Query)
+    description: Read the rows of a table that match a filter as a stream of full result sets, kept in sync with the database by Postgres changes over a dedicated Realtime channel.
+    group: query
   - id: database.using_filters.contained_by
     name: Filter Contained By
     description: For jsonb, array, and range columns — match only rows where every element in the column is contained by the given value.
