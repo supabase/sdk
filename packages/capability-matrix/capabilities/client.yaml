@@ -54,5 +54,5 @@ features:
     group: observability
   - id: client.observability.client_info
     name: Client Info Header
-    description: Identify the SDK, its version and the environment it runs in (platform, runtime, framework) in a structured X-Client-Info header on every request, together with the SDK features the request was built with.
+    description: Identify the SDK, its version and the environment it runs in (platform, runtime, framework) in a structured X-Client-Info header on every request, together with the SDK features the request was built with. A library built on the SDK can append its own parameters to the value.
     group: observability
