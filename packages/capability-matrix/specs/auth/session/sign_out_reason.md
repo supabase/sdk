@@ -23,6 +23,22 @@ The reason takes one of the following values:
 - **session-missing** — a previously stored session could not be recovered
   because it was absent or missing required data.
 
+An SDK may split session-expired in two, as long as both stay distinguishable
+from user-initiated and session-missing:
+
+- **session-expired** — the server answered `refresh_token_not_found`,
+  `session_expired`, or an OAuth `invalid_grant` on refresh.
+- **session-revoked** — the server answered `refresh_token_already_used`,
+  `user_banned`, or `session_not_found` (on refresh, or on any call the SDK
+  authorized with the held session's access token).
+
+An SDK that does not split them reports session-expired for all six answers.
+
+A reason exists only on a `SIGNED_OUT` event. A refresh rejected during
+initialization emits no `SIGNED_OUT`, and neither does one rejected while the
+held access token is still valid, so neither carries a reason. See
+[Subscribe to Auth Events](subscribe_auth_events.md).
+
 A sign-out can itself run into a rejected refresh. The reason then follows what
 the sign-out asked for, as [Sign Out](sign_out.md) defines per scope. It is
 **user-initiated** when the sign-out ends the current session (the `local` and
